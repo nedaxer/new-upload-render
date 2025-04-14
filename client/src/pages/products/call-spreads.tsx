@@ -73,38 +73,38 @@ export default function CallSpreads() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Forex</h3>
-              <p className="mb-4">Trade call spreads on major, minor, and exotic currency pairs.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Bitcoin</h3>
+              <p className="mb-4">Trade call spreads on Bitcoin with defined floor and ceiling levels.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/forex">View Forex Markets</Link>
+                <Link href="/markets/commodities">View Bitcoin Markets</Link>
               </Button>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Stock Indices</h3>
-              <p className="mb-4">Trade call spreads on major US and global stock indices.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Ethereum</h3>
+              <p className="mb-4">Trade call spreads on Ethereum with price-dependent outcomes.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/stock-indices">View Indices Markets</Link>
+                <Link href="/markets/commodities">View Ethereum Markets</Link>
               </Button>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Commodities</h3>
-              <p className="mb-4">Trade call spreads on gold, silver, oil, and natural gas.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Altcoins</h3>
+              <p className="mb-4">Trade call spreads on Solana, Cardano, Ripple, and other leading cryptocurrencies.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/commodities">View Commodities Markets</Link>
+                <Link href="/markets/commodities">View Cryptocurrency Markets</Link>
               </Button>
             </div>
           </div>
