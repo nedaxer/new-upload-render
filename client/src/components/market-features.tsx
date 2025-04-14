@@ -5,27 +5,25 @@ import { ArrowRight } from "lucide-react";
 // Custom icon component to map icon names to JSX
 const DynamicIcon = ({ name }: { name: string }) => {
   switch (name) {
-    case 'exchange-dollar':
+    case 'currency-bitcoin':
       return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-          <path d="M7 10V7a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v0" />
-          <circle cx="12" cy="14" r="8" />
-          <path d="M12 10.5v7" />
-          <path d="m9 13 3-2.5 3 2.5" />
+          <path d="M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m3.94.694-.347 1.969M7.517 7.5l-.346-1.97M11.765 4.216l-.346-1.97M16 15h2M16 11h2M12 4v16"/>
         </svg>
       );
-    case 'line-chart':
+    case 'currency-ethereum':
       return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-          <path d="M3 3v18h18" />
-          <path d="m19 9-5 5-4-4-3 3" />
+          <path d="M6 12l6-9 6 9M6 12l6 9 6-9M6 12l6-2 6 2"/>
         </svg>
       );
-    case 'oil':
+    case 'coins':
       return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-          <path d="M14 13.348C14 10.7666 18 8.9999 18 5.9999C18 3.7899 16.21 1.9999 14 1.9999C11.79 1.9999 10 3.7899 10 5.9999C10 8.9999 14 10.7666 14 13.348Z" />
-          <path d="M14 14C10.686 14 8 16.686 8 20C8 23.314 10.686 26 14 26C17.314 26 20 23.314 20 20C20 16.686 17.314 14 14 14Z" />
+          <circle cx="8" cy="8" r="6"/>
+          <path d="M18.09 10.37A6 6 0 1 1 10.34 18"/>
+          <path d="M7 6h1v4"/>
+          <path d="m16.71 13.88.7.71-2.82 2.82"/>
         </svg>
       );
     case 'calendar-event':
