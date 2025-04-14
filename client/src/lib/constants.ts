@@ -56,8 +56,8 @@ export const heroSlides = [
     description: "Bitcoin, Ethereum, and altcoins with limited risk on a regulated exchange",
     image: "https://images.unsplash.com/photo-1639322537228-f710d846310a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80",
     alt: "Cryptocurrency trading",
-    primaryButton: { label: "Open Account", href: "#" },
-    secondaryButton: { label: "Download App", href: "#" },
+    primaryButton: { label: "Open Account", href: "/account/register" },
+    secondaryButton: { label: "Login", href: "/account/login" },
   },
   {
     id: 2,
@@ -65,7 +65,8 @@ export const heroSlides = [
     description: "Powerful blockchain analytics, technical indicators, and real-time order execution",
     image: "https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80",
     alt: "Crypto trading platform",
-    primaryButton: { label: "Learn More", href: "#" },
+    primaryButton: { label: "Open Account", href: "/account/register" },
+    secondaryButton: { label: "Learn More", href: "/markets/commodities" },
   },
   {
     id: 3,
@@ -73,7 +74,8 @@ export const heroSlides = [
     description: "Access digital asset markets from our mobile app with the same powerful features",
     image: "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80",
     alt: "Mobile crypto trading",
-    primaryButton: { label: "Download App", href: "#" },
+    primaryButton: { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nadex.touch" },
+    secondaryButton: { label: "iOS App", href: "https://apps.apple.com/us/app/nadex" },
   },
 ];
 
@@ -216,5 +218,11 @@ export const footerLinks = {
     { label: "Risk Disclosure", href: "/legal/risk" },
     { label: "CFTC Rule 4.41", href: "/legal/cftc" },
     { label: "Site Map", href: "/site-map" },
+  ],
+  account: [
+    { label: "Login", href: "/account/login" },
+    { label: "Register", href: "/account/register" },
+    { label: "Forgot Password", href: "/account/forgot-password" },
+    { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nadex.touch" },
   ],
 };

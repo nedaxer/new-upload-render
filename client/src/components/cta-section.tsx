@@ -19,14 +19,14 @@ export const CTASection = () => {
                   asChild
                   className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-6 py-3 rounded-md w-full md:w-auto"
                 >
-                  <Link href="#">Open Account</Link>
+                  <Link href="/account/register">Open Account</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
                   className="bg-transparent border border-white hover:bg-white hover:bg-opacity-20 text-white font-semibold px-6 py-3 rounded-md w-full md:w-auto"
                 >
-                  <Link href="#">Try Demo</Link>
+                  <Link href="/account/login">Sign In</Link>
                 </Button>
               </div>
             </div>

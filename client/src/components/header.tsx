@@ -118,12 +118,18 @@ export const Header = () => {
             ))}
 
             <div className="flex flex-col space-y-3 mt-6">
+              <Link 
+                href="/account/login"
+                className="text-[#0033a0] hover:text-[#ff5900] font-medium text-center py-2"
+              >
+                Login to your account
+              </Link>
               <Button
                 asChild
                 variant="outline"
                 className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white w-full"
               >
-                <a href="/manifest.json" download className="flex items-center justify-center">
+                <a href="https://play.google.com/store/apps/details?id=com.nadex.touch" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
                   <Download className="mr-2 h-4 w-4" />
                   Download App
                 </a>
@@ -132,7 +138,7 @@ export const Header = () => {
                 asChild
                 className="bg-[#ff5900] hover:bg-opacity-90 text-white w-full"
               >
-                <Link href="#">Open Account</Link>
+                <Link href="/account/register">Open Account</Link>
               </Button>
             </div>
           </div>

@@ -79,7 +79,7 @@ export const Footer = () => {
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-gray-900 w-full"
                 >
-                  <a href="/manifest.json" download className="flex items-center justify-center">
+                  <a href="https://play.google.com/store/apps/details?id=com.nadex.touch" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
                     <Download className="mr-2 h-4 w-4" />
                     Download App
                   </a>
@@ -102,7 +102,7 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
           <div className="lg:col-span-2">
             <h3 className="text-lg font-bold mb-4">Subscribe to Updates</h3>
             <div className="flex">
@@ -121,6 +121,19 @@ export const Footer = () => {
             <h3 className="text-lg font-bold mb-4">Legal</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link, i) => (
+                <li key={i}>
+                  <Link href={link.href} className="text-gray-400 hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold mb-4">Account</h3>
+            <ul className="space-y-2">
+              {footerLinks.account.map((link, i) => (
                 <li key={i}>
                   <Link href={link.href} className="text-gray-400 hover:text-white">
                     {link.label}
