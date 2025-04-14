@@ -6,8 +6,6 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 
 // Markets Pages
-import Forex from "@/pages/markets/forex";
-import StockIndices from "@/pages/markets/stock-indices";
 import Commodities from "@/pages/markets/commodities";
 import Events from "@/pages/markets/events";
 import MarketData from "@/pages/markets/market-data";
@@ -51,8 +49,6 @@ function Router() {
       <Route path="/" component={Home} />
       
       {/* Markets Routes */}
-      <Route path="/markets/forex" component={Forex} />
-      <Route path="/markets/stock-indices" component={StockIndices} />
       <Route path="/markets/commodities" component={Commodities} />
       <Route path="/markets/events" component={Events} />
       <Route path="/markets/market-data" component={MarketData} />

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Check, ArrowRight } from "lucide-react";
 
-export default function Cryptocurrencies() {
+export default function Commodities() {
   const cryptocurrencies = [
     {
       name: "Bitcoin (BTC)",
