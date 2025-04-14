@@ -74,38 +74,38 @@ export default function KnockOuts() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Forex</h3>
-              <p className="mb-4">Trade Knock-Outs on major currency pairs with controlled risk.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Bitcoin</h3>
+              <p className="mb-4">Trade Knock-Outs on Bitcoin with controlled risk and leverage.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/forex">View Forex Markets</Link>
+                <Link href="/markets/commodities">View Bitcoin Markets</Link>
               </Button>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Stock Indices</h3>
-              <p className="mb-4">Trade Knock-Outs on major US stock indices with leverage.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Ethereum</h3>
+              <p className="mb-4">Trade Knock-Outs on Ethereum with smart contract exposure.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/stock-indices">View Indices Markets</Link>
+                <Link href="/markets/commodities">View Ethereum Markets</Link>
               </Button>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Commodities</h3>
-              <p className="mb-4">Trade Knock-Outs on gold and oil with defined risk parameters.</p>
+              <h3 className="text-xl font-bold mb-2 text-[#0033a0]">Altcoins</h3>
+              <p className="mb-4">Trade Knock-Outs on Solana, Cardano, and other altcoins with defined risk parameters.</p>
               <Button 
                 asChild
                 variant="outline" 
                 className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
               >
-                <Link href="/markets/commodities">View Commodities Markets</Link>
+                <Link href="/markets/commodities">View Cryptocurrency Markets</Link>
               </Button>
             </div>
           </div>
