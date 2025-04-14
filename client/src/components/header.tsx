@@ -55,9 +55,12 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             <div className="flex items-center mr-2">
-              <Link href="/account/login" className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
+              <a href="/account/login" onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/account/login";
+              }} className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
                 Login
-              </Link>
+              </a>
             </div>
             <Button
               asChild
@@ -70,10 +73,12 @@ export const Header = () => {
               </a>
             </Button>
             <Button
-              asChild
               className="bg-[#ff5900] hover:bg-opacity-90 text-white"
+              onClick={() => {
+                window.location.href = "/account/register";
+              }}
             >
-              <Link href="/account/register">Open Account</Link>
+              Open Account
             </Button>
           </div>
 
@@ -118,12 +123,16 @@ export const Header = () => {
             ))}
 
             <div className="flex flex-col space-y-3 mt-6">
-              <Link 
+              <a 
                 href="/account/login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = "/account/login";
+                }}
                 className="text-[#0033a0] hover:text-[#ff5900] font-medium text-center py-2"
               >
                 Login to your account
-              </Link>
+              </a>
               <Button
                 asChild
                 variant="outline"
@@ -135,10 +144,12 @@ export const Header = () => {
                 </a>
               </Button>
               <Button
-                asChild
                 className="bg-[#ff5900] hover:bg-opacity-90 text-white w-full"
+                onClick={() => {
+                  window.location.href = "/account/register";
+                }}
               >
-                <Link href="/account/register">Open Account</Link>
+                Open Account
               </Button>
             </div>
           </div>
