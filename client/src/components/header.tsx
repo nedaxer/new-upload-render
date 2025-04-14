@@ -59,10 +59,10 @@ export const Header = () => {
               variant="outline"
               className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
             >
-              <Link href="#" className="flex items-center">
+              <a href="/manifest.json" download className="flex items-center">
                 <Download className="mr-2 h-4 w-4" />
                 Download App
-              </Link>
+              </a>
             </Button>
             <Button
               asChild
@@ -118,10 +118,10 @@ export const Header = () => {
                 variant="outline"
                 className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white w-full"
               >
-                <Link href="#" className="flex items-center justify-center">
+                <a href="/manifest.json" download className="flex items-center justify-center">
                   <Download className="mr-2 h-4 w-4" />
                   Download App
-                </Link>
+                </a>
               </Button>
               <Button
                 asChild

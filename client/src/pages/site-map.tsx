@@ -19,7 +19,7 @@ export default function SiteMap() {
       items: [
         { label: "Open Account", href: "#" },
         { label: "Login", href: "#" },
-        { label: "Demo Account", href: "#" },
+        { label: "Download App", href: "#" },
       ],
     },
   ];

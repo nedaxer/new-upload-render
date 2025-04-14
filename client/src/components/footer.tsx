@@ -79,10 +79,10 @@ export const Footer = () => {
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-gray-900 w-full"
                 >
-                  <Link href="#" className="flex items-center justify-center">
+                  <a href="/manifest.json" download className="flex items-center justify-center">
                     <Download className="mr-2 h-4 w-4" />
                     Download App
-                  </Link>
+                  </a>
                 </Button>
               </li>
             </ul>
