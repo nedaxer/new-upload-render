@@ -43,6 +43,11 @@ import Risk from "@/pages/legal/risk";
 import CFTC from "@/pages/legal/cftc";
 import SiteMap from "@/pages/site-map";
 
+// Account Pages
+import Login from "@/pages/account/login";
+import Register from "@/pages/account/register";
+import ForgotPassword from "@/pages/account/forgot-password";
+
 function Router() {
   return (
     <Switch>
@@ -85,6 +90,11 @@ function Router() {
       <Route path="/legal/risk" component={Risk} />
       <Route path="/legal/cftc" component={CFTC} />
       <Route path="/site-map" component={SiteMap} />
+      
+      {/* Account Routes */}
+      <Route path="/account/login" component={Login} />
+      <Route path="/account/register" component={Register} />
+      <Route path="/account/forgot-password" component={ForgotPassword} />
       
       {/* 404 Route */}
       <Route component={NotFound} />

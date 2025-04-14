@@ -54,12 +54,17 @@ export const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
+            <div className="flex items-center mr-2">
+              <Link href="/account/login" className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
+                Login
+              </Link>
+            </div>
             <Button
               asChild
               variant="outline"
               className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
             >
-              <a href="/manifest.json" download className="flex items-center">
+              <a href="https://play.google.com/store/apps/details?id=com.nadex.touch" target="_blank" rel="noopener noreferrer" className="flex items-center">
                 <Download className="mr-2 h-4 w-4" />
                 Download App
               </a>
@@ -68,7 +73,7 @@ export const Header = () => {
               asChild
               className="bg-[#ff5900] hover:bg-opacity-90 text-white"
             >
-              <Link href="#">Open Account</Link>
+              <Link href="/account/register">Open Account</Link>
             </Button>
           </div>
 
