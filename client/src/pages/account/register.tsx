@@ -320,7 +320,7 @@ export default function Register() {
               <div className="mt-6 pt-4 border-t border-blue-400">
                 <div className="bg-white/10 p-4 rounded-md backdrop-blur-sm">
                   <p className="text-sm italic mb-2">
-                    "Nadex provides exceptional trading tools and resources that have helped me improve my trading strategy."
+                    "Nedaxer provides exceptional trading tools and resources that have helped me improve my trading strategy."
                   </p>
                   <p className="text-xs font-medium">— Michael R., Member since 2022</p>
                 </div>
