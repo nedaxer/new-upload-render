@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { EyeIcon, EyeOffIcon, InfoIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -78,177 +79,260 @@ export default function Register() {
     <PageLayout
       title="Create Account"
       subtitle="Join Nadex cryptocurrency trading platform"
-      bgColor="#f8f9fa"
+      bgColor="linear-gradient(135deg, #f0f4f9 0%, #e6f0fb 100%)"
     >
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name<span className="text-red-500">*</span></Label>
-              <Input
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="John"
-                className="w-full"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name<span className="text-red-500">*</span></Label>
-              <Input
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Doe"
-                className="w-full"
-                required
-              />
-            </div>
+      <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-blue-50">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
+            <UserIcon className="h-8 w-8 text-[#0033a0]" />
           </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">Create Your Account</h2>
+          <p className="text-gray-500">Join thousands of traders on the Nadex platform</p>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email<span className="text-red-500">*</span></Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="your.email@example.com"
-              className="w-full"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password<span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Create a password"
-                  className="w-full pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOffIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-gray-700 font-medium">First Name<span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="John"
+                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-gray-700 font-medium">Last Name<span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Doe"
+                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password<span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm your password"
-                  className="w-full pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOffIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
-                </button>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email Address<span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MailIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="your.email@example.com"
+                    className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-gray-700 font-medium">Password<span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <LockIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Create a password"
+                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOffIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirm Password<span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <LockIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Confirm your password"
+                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOffIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-md flex items-start shadow-sm">
+                <InfoIcon className="h-5 w-5 text-[#0033a0] mt-0.5 mr-3 flex-shrink-0" />
+                <div className="text-sm text-gray-700">
+                  <p className="font-semibold text-[#0033a0] mb-2">Password Requirements:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>At least 8 characters long</li>
+                    <li>Include at least one uppercase letter</li>
+                    <li>Include at least one number</li>
+                    <li>Include at least one special character</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="space-y-4 bg-gray-50 p-4 rounded-md">
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="acceptTerms" 
+                    name="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, acceptTerms: checked as boolean }))
+                    }
+                    className="mt-1 text-[#0033a0] border-gray-300"
+                  />
+                  <label
+                    htmlFor="acceptTerms"
+                    className="text-sm leading-tight text-gray-700"
+                  >
+                    I have read and agree to the{" "}
+                    <Link href="/legal/terms" className="text-[#0033a0] hover:text-[#ff5900] font-medium">
+                      Terms & Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/legal/privacy" className="text-[#0033a0] hover:text-[#ff5900] font-medium">
+                      Privacy Policy
+                    </Link>
+                    <span className="text-red-500">*</span>
+                  </label>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="receiveUpdates" 
+                    name="receiveUpdates"
+                    checked={formData.receiveUpdates}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, receiveUpdates: checked as boolean }))
+                    }
+                    className="mt-1 text-[#0033a0] border-gray-300"
+                  />
+                  <label
+                    htmlFor="receiveUpdates"
+                    className="text-sm leading-tight text-gray-700"
+                  >
+                    I would like to receive updates on cryptocurrency market news, trading opportunities, and platform enhancements (optional)
+                  </label>
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-[#0033a0] hover:bg-[#002680] text-white py-2.5 font-medium rounded-md transition-all duration-200 shadow-sm"
+              >
+                Create Account
+              </Button>
+            </form>
           </div>
 
-          <div className="p-4 bg-blue-50 rounded-md flex items-start">
-            <InfoIcon className="h-5 w-5 text-[#0033a0] mt-0.5 mr-2 flex-shrink-0" />
-            <div className="text-sm text-gray-600">
-              <p className="font-medium text-[#0033a0] mb-1">Password Requirements:</p>
-              <ul className="list-disc ml-5 space-y-1">
-                <li>At least 8 characters long</li>
-                <li>Include at least one uppercase letter</li>
-                <li>Include at least one number</li>
-                <li>Include at least one special character</li>
+          <div className="lg:col-span-2">
+            <div className="h-full flex flex-col bg-gradient-to-br from-[#0033a0] to-[#001a60] text-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-bold mb-4">Why Join Nadex?</h3>
+              
+              <ul className="space-y-4 mb-auto">
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Trade cryptocurrencies with limited risk</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Advanced trading tools for all skill levels</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Free educational resources and webinars</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Secure platform with multi-layer protection</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>24/7 customer support</span>
+                </li>
               </ul>
+
+              <div className="mt-6 pt-4 border-t border-blue-400">
+                <div className="bg-white/10 p-4 rounded-md backdrop-blur-sm">
+                  <p className="text-sm italic mb-2">
+                    "Nadex provides exceptional trading tools and resources that have helped me improve my trading strategy."
+                  </p>
+                  <p className="text-xs font-medium">— Michael R., Member since 2022</p>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <div className="flex items-start space-x-2">
-              <Checkbox 
-                id="acceptTerms" 
-                name="acceptTerms"
-                checked={formData.acceptTerms}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, acceptTerms: checked as boolean }))
-                }
-                className="mt-1"
-              />
-              <label
-                htmlFor="acceptTerms"
-                className="text-sm leading-tight"
-              >
-                I have read and agree to the{" "}
-                <Link href="/legal/terms" className="text-[#0033a0] hover:text-[#ff5900]">
-                  Terms & Conditions
-                </Link>{" "}
-                and{" "}
-                <Link href="/legal/privacy" className="text-[#0033a0] hover:text-[#ff5900]">
-                  Privacy Policy
-                </Link>
-                <span className="text-red-500">*</span>
-              </label>
-            </div>
+        <Separator className="my-8" />
 
-            <div className="flex items-start space-x-2">
-              <Checkbox 
-                id="receiveUpdates" 
-                name="receiveUpdates"
-                checked={formData.receiveUpdates}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, receiveUpdates: checked as boolean }))
-                }
-                className="mt-1"
-              />
-              <label
-                htmlFor="receiveUpdates"
-                className="text-sm leading-tight"
-              >
-                I would like to receive updates on cryptocurrency market news, trading opportunities, and platform enhancements (optional)
-              </label>
-            </div>
-          </div>
-
-          <Button 
-            type="submit" 
-            className="w-full bg-[#0033a0] hover:bg-[#002680]"
-          >
-            Create Account
-          </Button>
-        </form>
-
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
+        <div className="text-center">
+          <p className="text-gray-600">
             Already have an account?{" "}
             <Link href="/account/login" className="text-[#0033a0] hover:text-[#ff5900] font-semibold">
               Sign In
