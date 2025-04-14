@@ -3,10 +3,8 @@ export const navItems = [
   {
     title: "Markets",
     items: [
-      { label: "Forex", href: "/markets/forex" },
-      { label: "Stock Indices", href: "/markets/stock-indices" },
-      { label: "Commodities", href: "/markets/commodities" },
-      { label: "Events", href: "/markets/events" },
+      { label: "Cryptocurrencies", href: "/markets/commodities" },
+      { label: "Crypto Events", href: "/markets/events" },
       { label: "Market Data", href: "/markets/market-data" },
     ],
   },
@@ -188,10 +186,8 @@ export const learningResources = [
 // Footer links
 export const footerLinks = {
   markets: [
-    { label: "Forex", href: "/markets/forex" },
-    { label: "Stock Indices", href: "/markets/stock-indices" },
-    { label: "Commodities", href: "/markets/commodities" },
-    { label: "Events", href: "/markets/events" },
+    { label: "Cryptocurrencies", href: "/markets/commodities" },
+    { label: "Crypto Events", href: "/markets/events" },
     { label: "Market Data", href: "/markets/market-data" },
   ],
   products: [

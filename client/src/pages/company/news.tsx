@@ -7,67 +7,67 @@ export default function News() {
   const newsItems = [
     {
       id: 1,
-      title: "Nadex Introduces New Mobile Trading Features",
+      title: "Nadex Introduces Cryptocurrency Trading Features",
       date: "April 2, 2025",
-      excerpt: "Nadex has released a major update to its mobile trading app, introducing advanced charting capabilities, customizable alerts, and an enhanced user interface.",
+      excerpt: "Nadex has released a major update to its trading platform, introducing advanced crypto charting capabilities, real-time blockchain data, and enhanced trading tools for digital assets.",
       category: "Product Update",
-      image: "https://images.unsplash.com/photo-1579226905180-636b76d96082?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1639322537133-5fcead339c5f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 2,
-      title: "Nadex Adds New Market Data Indicators",
+      title: "Nadex Adds New Cryptocurrency Technical Indicators",
       date: "March 15, 2025",
-      excerpt: "Traders now have access to additional technical indicators and market analysis tools on the Nadex platform, enhancing their ability to make informed trading decisions.",
+      excerpt: "Traders now have access to specialized indicators for cryptocurrencies, including Realized Price, MVRV, Funding Rates, and other on-chain metrics to make informed trading decisions.",
       category: "Platform Enhancement",
-      image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1629339942248-45d4b10f4bb5?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 3,
-      title: "Nadex Reports Record Trading Volume in Q1 2025",
+      title: "Nadex Reports Record Crypto Trading Volume in Q1 2025",
       date: "March 10, 2025",
-      excerpt: "Nadex has reported record trading volumes for the first quarter of 2025, with significant growth across all product categories, particularly in forex and stock index markets.",
+      excerpt: "Nadex has reported record trading volumes for the first quarter of 2025, with significant growth in cryptocurrency products, particularly in Bitcoin and Ethereum markets.",
       category: "Company News",
-      image: "https://images.unsplash.com/photo-1535320903710-d993d3d77d29?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1639815188546-c43c240e8335?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 4,
-      title: "Nadex Expands Educational Webinar Series",
+      title: "Nadex Launches Crypto Trading Academy",
       date: "February 28, 2025",
-      excerpt: "Nadex has expanded its educational offerings with a new series of webinars covering advanced trading strategies, risk management techniques, and market analysis.",
+      excerpt: "Nadex has expanded its educational offerings with a dedicated Cryptocurrency Trading Academy covering blockchain fundamentals, technical analysis for digital assets, and risk management.",
       category: "Education",
-      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 5,
-      title: "Nadex Enhances Security Features",
+      title: "Nadex Enhances Crypto Security Features",
       date: "February 15, 2025",
-      excerpt: "New security enhancements have been implemented across the Nadex platform, including improved two-factor authentication and advanced fraud detection systems.",
+      excerpt: "New security enhancements have been implemented for cryptocurrency trading on Nadex, including advanced verification systems and real-time monitoring for enhanced trader protection.",
       category: "Security Update",
-      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1640340434855-6084b1f4901c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 6,
-      title: "Nadex to Host Annual Trading Summit",
+      title: "Nadex to Host Annual Crypto Trading Summit",
       date: "January 25, 2025",
-      excerpt: "Nadex has announced dates for its annual Trading Summit, bringing together traders, industry experts, and Nadex staff for educational sessions and networking opportunities.",
+      excerpt: "Nadex has announced dates for its annual Cryptocurrency Trading Summit, bringing together digital asset traders, blockchain experts, and industry leaders for educational sessions.",
       category: "Event",
-      image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
   ];
 
   const pressReleases = [
     {
-      title: "Nadex Announces Strategic Partnership with Market Data Provider",
+      title: "Nadex Announces Strategic Partnership with Blockchain Data Provider",
       date: "March 20, 2025",
       link: "#",
     },
     {
-      title: "Nadex Receives Industry Award for Trading Innovation",
+      title: "Nadex Receives Industry Award for Crypto Trading Innovation",
       date: "February 5, 2025",
       link: "#",
     },
     {
-      title: "Nadex Appoints New Chief Technology Officer",
+      title: "Nadex Appoints New Head of Cryptocurrency Markets",
       date: "January 12, 2025",
       link: "#",
     },
@@ -88,13 +88,13 @@ export default function News() {
 
   return (
     <PageLayout 
-      title="News & Updates" 
-      subtitle="The latest news, events, and announcements from Nadex"
+      title="Crypto News & Updates" 
+      subtitle="The latest cryptocurrency news, events, and announcements from Nadex"
       bgColor="#0033a0"
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Latest News</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Latest Crypto News</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {/* Featured News Item */}
@@ -163,13 +163,13 @@ export default function News() {
               asChild
               className="bg-[#0033a0] hover:bg-opacity-90 text-white font-semibold px-6 py-2"
             >
-              <Link href="#">View All News</Link>
+              <Link href="#">View All Crypto News</Link>
             </Button>
           </div>
         </div>
         
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Press Releases</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Crypto Press Releases</h2>
           
           <div className="space-y-4 mb-8">
             {pressReleases.map((release, i) => (
@@ -199,60 +199,60 @@ export default function News() {
               href="#" 
               className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
             >
-              View All Press Releases <ArrowRight className="ml-1 h-4 w-4" />
+              View All Crypto Press Releases <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
         </div>
         
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Media Resources</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Cryptocurrency Resources</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center mb-4">
                 <Newspaper className="text-[#0033a0] h-8 w-8 mr-3" />
-                <h3 className="text-xl font-bold text-[#0033a0]">Press Kit</h3>
+                <h3 className="text-xl font-bold text-[#0033a0]">Crypto Market Reports</h3>
               </div>
               <p className="text-gray-700 mb-4">
-                Download official Nadex logos, executive headshots, platform screenshots, and other media resources.
+                Download weekly and monthly cryptocurrency market reports, trend analysis, and blockchain data insights.
               </p>
               <Link 
                 href="#" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
               >
-                Download Press Kit <ArrowRight className="ml-1 h-4 w-4" />
+                Download Market Reports <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center mb-4">
                 <Award className="text-[#0033a0] h-8 w-8 mr-3" />
-                <h3 className="text-xl font-bold text-[#0033a0]">Company Facts</h3>
+                <h3 className="text-xl font-bold text-[#0033a0]">Crypto Trading Guides</h3>
               </div>
               <p className="text-gray-700 mb-4">
-                Key information about Nadex, including our history, leadership, regulatory status, and product offerings.
+                Comprehensive guides to trading cryptocurrencies with limited risk products, technical analysis, and strategy development.
               </p>
               <Link 
                 href="#" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
               >
-                View Company Facts <ArrowRight className="ml-1 h-4 w-4" />
+                View Trading Guides <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center mb-4">
                 <FileText className="text-[#0033a0] h-8 w-8 mr-3" />
-                <h3 className="text-xl font-bold text-[#0033a0]">White Papers</h3>
+                <h3 className="text-xl font-bold text-[#0033a0]">Blockchain Research</h3>
               </div>
               <p className="text-gray-700 mb-4">
-                In-depth research and analysis on derivatives markets, trading strategies, and industry trends.
+                In-depth research and analysis on blockchain technology, cryptocurrency markets, and emerging digital asset trends.
               </p>
               <Link 
                 href="#" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
               >
-                Browse White Papers <ArrowRight className="ml-1 h-4 w-4" />
+                Browse Research Papers <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function News() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#f5f5f5] p-6 rounded-lg">
               <h3 className="text-xl font-bold mb-3 text-[#0033a0]">Press Inquiries</h3>
-              <p className="mb-4">For media inquiries, interview requests, and press materials:</p>
+              <p className="mb-4">For crypto media inquiries, interview requests, and press materials:</p>
               <ul className="space-y-2">
                 <li><span className="font-semibold">Contact:</span> {mediaContacts.press.name}</li>
                 <li><span className="font-semibold">Email:</span> {mediaContacts.press.email}</li>
@@ -274,7 +274,7 @@ export default function News() {
             
             <div className="bg-[#f5f5f5] p-6 rounded-lg">
               <h3 className="text-xl font-bold mb-3 text-[#0033a0]">General Inquiries</h3>
-              <p className="mb-4">For general questions about Nadex:</p>
+              <p className="mb-4">For general questions about Nadex cryptocurrency trading:</p>
               <ul className="space-y-2">
                 <li><span className="font-semibold">Contact:</span> {mediaContacts.generalInquiries.name}</li>
                 <li><span className="font-semibold">Email:</span> {mediaContacts.generalInquiries.email}</li>
@@ -285,8 +285,8 @@ export default function News() {
         </div>
 
         <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Stay Updated with Nadex</h2>
-          <p className="mb-6">Subscribe to our newsletter to receive the latest news, market updates, and educational content.</p>
+          <h2 className="text-2xl font-bold mb-4">Stay Updated with Crypto Market Insights</h2>
+          <p className="mb-6">Subscribe to our newsletter to receive the latest cryptocurrency news, market analysis, and trading opportunities.</p>
           <div className="max-w-md mx-auto">
             <div className="flex flex-col sm:flex-row gap-3">
               <input 
