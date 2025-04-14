@@ -55,10 +55,7 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             <div className="flex items-center mr-2">
-              <a href="/account/login" onClick={(e) => {
-                e.preventDefault();
-                window.location.href = "/account/login";
-              }} className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
+              <a href="/#/account/login" className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
                 Login
               </a>
             </div>
