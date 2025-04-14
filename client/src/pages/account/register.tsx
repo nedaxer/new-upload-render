@@ -66,7 +66,7 @@ export default function Register() {
     // Success - would normally register with backend
     toast({
       title: "Account created successfully",
-      description: "Welcome to Nadex cryptocurrency trading platform.",
+      description: "Welcome to Nedaxer cryptocurrency trading platform.",
     });
     
     // Redirect to login page
@@ -78,7 +78,7 @@ export default function Register() {
   return (
     <PageLayout
       title="Create Account"
-      subtitle="Join Nadex cryptocurrency trading platform"
+      subtitle="Join Nedaxer cryptocurrency trading platform"
       bgColor="linear-gradient(135deg, #f0f4f9 0%, #e6f0fb 100%)"
     >
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-blue-50">
@@ -87,7 +87,7 @@ export default function Register() {
             <UserIcon className="h-8 w-8 text-[#0033a0]" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Create Your Account</h2>
-          <p className="text-gray-500">Join thousands of traders on the Nadex platform</p>
+          <p className="text-gray-500">Join thousands of traders on the Nedaxer platform</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -282,7 +282,7 @@ export default function Register() {
 
           <div className="lg:col-span-2">
             <div className="h-full flex flex-col bg-gradient-to-br from-[#0033a0] to-[#001a60] text-white p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-bold mb-4">Why Join Nadex?</h3>
+              <h3 className="text-xl font-bold mb-4">Why Join Nedaxer?</h3>
               
               <ul className="space-y-4 mb-auto">
                 <li className="flex items-start">

@@ -23,7 +23,7 @@ export default function Login() {
     if (email && password) {
       toast({
         title: "Logged in successfully",
-        description: "Welcome back to Nadex cryptocurrency trading platform.",
+        description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
     } else {
       toast({
@@ -37,7 +37,7 @@ export default function Login() {
   return (
     <PageLayout
       title="Account Login"
-      subtitle="Access your Nadex cryptocurrency trading account"
+      subtitle="Access your Nedaxer cryptocurrency trading account"
       bgColor="linear-gradient(135deg, #f0f4f9 0%, #e6f0fb 100%)"
     >
       <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-blue-50">
@@ -175,7 +175,7 @@ export default function Login() {
           </p>
           <div className="flex justify-center space-x-4">
             <a
-              href="https://apps.apple.com/us/app/nadex"
+              href="https://apps.apple.com/us/app/nedaxer"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
@@ -186,7 +186,7 @@ export default function Login() {
               iOS App
             </a>
             <a
-              href="https://play.google.com/store/apps/details?id=com.nadex.touch"
+              href="https://play.google.com/store/apps/details?id=com.nedaxer.touch"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
