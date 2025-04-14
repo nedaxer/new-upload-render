@@ -71,7 +71,7 @@ export default function Webinars() {
     {
       id: 102,
       title: "Call Spreads: Trading Market Direction",
-      description: "How to use Nadex Call Spreads to trade market direction with limited risk and defined profit potential.",
+      description: "How to use Nedaxer Call Spreads to trade market direction with limited risk and defined profit potential.",
       presenter: "Jennifer Lee, Product Specialist",
       date: "March 8, 2025",
       duration: "50 min",
@@ -81,7 +81,7 @@ export default function Webinars() {
     {
       id: 103,
       title: "Risk Management for Retail Traders",
-      description: "Essential risk management principles and practices for successful trading on Nadex.",
+      description: "Essential risk management principles and practices for successful trading on Nedaxer.",
       presenter: "David Thompson, Chief Market Analyst",
       date: "March 1, 2025",
       duration: "55 min",
@@ -90,8 +90,8 @@ export default function Webinars() {
     },
     {
       id: 104,
-      title: "Trading Forex on Nadex",
-      description: "Strategies and techniques for trading major and minor currency pairs using Nadex products.",
+      title: "Trading Forex on Nedaxer",
+      description: "Strategies and techniques for trading major and minor currency pairs using Nedaxer products.",
       presenter: "Emily Chen, Forex Specialist",
       date: "February 22, 2025",
       duration: "60 min",
@@ -103,19 +103,19 @@ export default function Webinars() {
   const webinarSeries = [
     {
       title: "Binary Options Mastery",
-      description: "A comprehensive 4-part series covering all aspects of binary options trading on Nadex.",
+      description: "A comprehensive 4-part series covering all aspects of binary options trading on Nedaxer.",
       episodes: 4,
       level: "Beginner to Intermediate",
     },
     {
       title: "Technical Analysis Fundamentals",
-      description: "Learn the essential technical analysis tools and techniques for effective trading on Nadex.",
+      description: "Learn the essential technical analysis tools and techniques for effective trading on Nedaxer.",
       episodes: 6,
       level: "All Levels",
     },
     {
       title: "Advanced Trading Strategies",
-      description: "Explore sophisticated trading approaches across all Nadex products and markets.",
+      description: "Explore sophisticated trading approaches across all Nedaxer products and markets.",
       episodes: 5,
       level: "Intermediate to Advanced",
     },
@@ -124,7 +124,7 @@ export default function Webinars() {
   return (
     <PageLayout 
       title="Webinars" 
-      subtitle="Live and recorded educational sessions hosted by Nadex market experts"
+      subtitle="Live and recorded educational sessions hosted by Nedaxer market experts"
       bgColor="#0033a0"
     >
       <div className="max-w-4xl mx-auto">
@@ -346,7 +346,7 @@ export default function Webinars() {
             <div className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
               <h3 className="text-lg font-bold mb-2 text-[#0033a0]">Are the webinars free?</h3>
               <p className="text-gray-700">
-                Yes, all Nadex webinars are free to attend for both members and non-members. However, some advanced webinar series may be exclusive to Nadex account holders.
+                Yes, all Nedaxer webinars are free to attend for both members and non-members. However, some advanced webinar series may be exclusive to Nedaxer account holders.
               </p>
             </div>
             

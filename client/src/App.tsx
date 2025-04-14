@@ -30,6 +30,10 @@ const useHashLocation = (): [string, (to: string) => void] => {
 import Commodities from "@/pages/markets/commodities";
 import Events from "@/pages/markets/events";
 import MarketData from "@/pages/markets/market-data";
+import Bitcoin from "@/pages/markets/bitcoin";
+import Ethereum from "@/pages/markets/ethereum";
+import Altcoins from "@/pages/markets/altcoins";
+import CryptoEvents from "@/pages/markets/crypto-events";
 
 // Products Pages
 import BinaryOptions from "@/pages/products/binary-options";
@@ -78,6 +82,10 @@ function Router() {
       <Route path="/markets/commodities" component={Commodities} />
       <Route path="/markets/events" component={Events} />
       <Route path="/markets/market-data" component={MarketData} />
+      <Route path="/markets/bitcoin" component={Bitcoin} />
+      <Route path="/markets/ethereum" component={Ethereum} />
+      <Route path="/markets/altcoins" component={Altcoins} />
+      <Route path="/markets/crypto-events" component={CryptoEvents} />
       
       {/* Products Routes */}
       <Route path="/products/binary-options" component={BinaryOptions} />
