@@ -70,12 +70,10 @@ export const Header = () => {
               </a>
             </Button>
             <Button
+              asChild
               className="bg-[#ff5900] hover:bg-opacity-90 text-white"
-              onClick={() => {
-                window.location.href = "/account/register";
-              }}
             >
-              Open Account
+              <a href="/#/account/register">Open Account</a>
             </Button>
           </div>
 
@@ -121,11 +119,7 @@ export const Header = () => {
 
             <div className="flex flex-col space-y-3 mt-6">
               <a 
-                href="/account/login"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = "/account/login";
-                }}
+                href="/#/account/login"
                 className="text-[#0033a0] hover:text-[#ff5900] font-medium text-center py-2"
               >
                 Login to your account
@@ -141,12 +135,10 @@ export const Header = () => {
                 </a>
               </Button>
               <Button
+                asChild
                 className="bg-[#ff5900] hover:bg-opacity-90 text-white w-full"
-                onClick={() => {
-                  window.location.href = "/account/register";
-                }}
               >
-                Open Account
+                <a href="/#/account/register">Open Account</a>
               </Button>
             </div>
           </div>

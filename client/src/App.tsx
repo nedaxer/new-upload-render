@@ -7,22 +7,23 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 
 // Use a hash-based location strategy for better compatibility with server
-const hashStrategy = () => {
-  const [hash, setHash] = React.useState(window.location.hash.replace('#', '') || '/');
+const useHashLocation = (): [string, (to: string) => void] => {
+  const [loc, setLoc] = React.useState(window.location.hash.slice(1) || "/");
 
   React.useEffect(() => {
-    const handleHashChange = () => {
-      const newHash = window.location.hash.replace('#', '') || '/';
-      setHash(newHash);
+    const handler = () => {
+      setLoc(window.location.hash.slice(1) || "/");
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
   }, []);
 
-  return [hash, (to: string) => {
+  const navigate = React.useCallback((to: string) => {
     window.location.hash = to;
-  }];
+  }, []);
+
+  return [loc, navigate];
 };
 
 // Markets Pages
@@ -125,7 +126,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <WouterRouter hook={hashStrategy}>
+      <WouterRouter hook={useHashLocation}>
         <Router />
       </WouterRouter>
       <Toaster />
