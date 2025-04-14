@@ -1,7 +1,8 @@
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Check, ArrowRight, Smartphone, Tablet, BarChart3, Zap } from "lucide-react";
+import { Check, ArrowRight, Smartphone, Tablet, BarChart3, Zap, Download } from "lucide-react";
+import { FaApple, FaGooglePlay } from "react-icons/fa";
 
 export default function MobileApp() {
   const appFeatures = [
@@ -50,9 +51,10 @@ export default function MobileApp() {
 
   return (
     <PageLayout 
-      title="Mobile Trading App" 
-      subtitle="Trade anywhere, anytime with our powerful mobile application"
+      title="Cryptocurrency Mobile Trading App" 
+      subtitle="Trade anywhere, anytime with our powerful mobile cryptocurrency application"
       bgColor="#0033a0"
+      bgImage="https://images.unsplash.com/photo-1613843873331-6bf40a3b0ff3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-12">
@@ -60,13 +62,13 @@ export default function MobileApp() {
           
           <div className="mb-8">
             <p className="mb-4">
-              The Nadex mobile app gives you the freedom to trade on the go, with the same powerful 
+              The Nedaxer mobile app gives you the freedom to trade cryptocurrencies on the go, with the same powerful 
               features and limited-risk products available on our web platform. Never miss a trading 
               opportunity, even when you're away from your desk.
             </p>
             <p className="mb-6">
               Our intuitive mobile interface is designed for touch controls while maintaining the 
-              advanced functionality serious traders demand.
+              advanced functionality serious crypto traders demand.
             </p>
           </div>
           
@@ -83,12 +85,63 @@ export default function MobileApp() {
           </div>
         </div>
         
-        {/* App Screenshot Placeholder */}
+        {/* App Screenshots and Download Section */}
         <div className="mb-12">
-          <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center">
-            <p className="text-gray-600">Mobile app interface visualization would be displayed here</p>
+          <div className="relative bg-gradient-to-r from-[#001a4d] to-[#0033a0] p-8 rounded-lg text-white overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              <img 
+                src="https://images.unsplash.com/photo-1642104704074-907c0698cbd9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80" 
+                alt="Cryptocurrency trading app background"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            
+            <div className="relative z-10 md:flex items-center justify-between">
+              <div className="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                <h2 className="text-3xl font-bold mb-4">Download The Nedaxer Mobile App</h2>
+                <p className="mb-6">Experience cryptocurrency trading on the go with our secure and feature-rich mobile application. Available for iOS and Android devices.</p>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <a 
+                    href="https://apps.apple.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-black text-white rounded-lg px-6 py-3 flex items-center justify-center hover:bg-opacity-80 transition-all"
+                  >
+                    <FaApple className="text-2xl mr-3" />
+                    <div className="text-left">
+                      <div className="text-xs">Download on the</div>
+                      <div className="text-xl font-semibold">App Store</div>
+                    </div>
+                  </a>
+                  
+                  <a 
+                    href="https://play.google.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-black text-white rounded-lg px-6 py-3 flex items-center justify-center hover:bg-opacity-80 transition-all"
+                  >
+                    <FaGooglePlay className="text-2xl mr-3" />
+                    <div className="text-left">
+                      <div className="text-xs">GET IT ON</div>
+                      <div className="text-xl font-semibold">Google Play</div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+              
+              <div className="md:w-1/2 flex justify-center">
+                <div className="relative h-80 w-60 bg-black rounded-3xl border-4 border-gray-800 shadow-2xl overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=800&q=80" 
+                    alt="Nedaxer mobile app interface"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2 text-center">Nadex mobile app on smartphone and tablet devices</p>
+          <p className="text-sm text-gray-500 mt-2 text-center">Nedaxer mobile app on smartphone and tablet devices</p>
         </div>
         
         <div className="mb-12">
@@ -100,11 +153,11 @@ export default function MobileApp() {
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <Check className="text-[#ff5900] mt-1 mr-2 h-5 w-5 flex-shrink-0" />
-                  <span>Trade all Nadex products: Binary Options, Call Spreads, Touch Brackets, and Knock-Outs</span>
+                  <span>Trade all Nedaxer crypto products: Binary Options, Call Spreads, Touch Brackets, and Knock-Outs</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="text-[#ff5900] mt-1 mr-2 h-5 w-5 flex-shrink-0" />
-                  <span>Access to all available markets including forex, stock indices, commodities, and events</span>
+                  <span>Access to all available cryptocurrency markets including Bitcoin, Ethereum, altcoins, and blockchain events</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="text-[#ff5900] mt-1 mr-2 h-5 w-5 flex-shrink-0" />
@@ -176,9 +229,9 @@ export default function MobileApp() {
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow text-center">
               <div className="text-3xl font-bold text-[#0033a0] mb-4">1</div>
               <h3 className="text-lg font-bold mb-2">Create Account</h3>
-              <p className="text-gray-700 mb-4">Sign up for a Nadex account online or through the mobile app.</p>
+              <p className="text-gray-700 mb-4">Sign up for a Nedaxer account online or through the mobile app.</p>
               <Link 
-                href="#" 
+                href="/account/register" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
               >
                 Open Account <ArrowRight className="ml-1 h-4 w-4" />
@@ -188,27 +241,31 @@ export default function MobileApp() {
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow text-center">
               <div className="text-3xl font-bold text-[#0033a0] mb-4">2</div>
               <h3 className="text-lg font-bold mb-2">Download App</h3>
-              <p className="text-gray-700 mb-4">Get the app from the App Store or Google Play Store.</p>
+              <p className="text-gray-700 mb-4">Get the app directly from the App Store or Google Play Store.</p>
               <div className="flex flex-col items-center space-y-2">
-                <Link 
-                  href="#" 
+                <a 
+                  href="https://apps.apple.com" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
                 >
-                  Download for iOS <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
-                <Link 
-                  href="#" 
+                  <FaApple className="mr-2" /> Download for iOS <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
+                <a 
+                  href="https://play.google.com" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
                 >
-                  Download for Android <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                  <FaGooglePlay className="mr-2" /> Download for Android <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
               </div>
             </div>
             
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow text-center">
               <div className="text-3xl font-bold text-[#0033a0] mb-4">3</div>
               <h3 className="text-lg font-bold mb-2">Log In & Trade</h3>
-              <p className="text-gray-700 mb-4">Sign in to the app and start trading on the go.</p>
+              <p className="text-gray-700 mb-4">Sign in to the app and start trading cryptocurrencies on the go.</p>
               <Link 
                 href="/learn/getting-started" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
@@ -219,22 +276,45 @@ export default function MobileApp() {
           </div>
         </div>
 
-        <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Download our Mobile App Today</h2>
-          <p className="mb-6">Trade anywhere, anytime with our powerful mobile trading platform.</p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button
-              asChild
-              className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
-            >
-              <Link href="#">Download for iOS</Link>
-            </Button>
-            <Button
-              asChild
-              className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
-            >
-              <Link href="#">Download for Android</Link>
-            </Button>
+        <div className="bg-gradient-to-r from-[#001a4d] to-[#0033a0] text-white rounded-lg p-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <img 
+              src="https://images.unsplash.com/photo-1631603090989-93f9ef6f9d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80" 
+              alt="Cryptocurrency trading background"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="relative z-10">
+            <h2 className="text-2xl font-bold mb-4">Download The Nedaxer Crypto App Today</h2>
+            <p className="mb-6">Trade cryptocurrencies anywhere, anytime with our powerful blockchain-enabled mobile trading platform.</p>
+            
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+              <a 
+                href="https://apps.apple.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-black text-white rounded-lg px-6 py-3 flex items-center justify-center hover:bg-opacity-80 transition-all"
+              >
+                <FaApple className="text-2xl mr-3" />
+                <div className="text-left">
+                  <div className="text-xs">Download on the</div>
+                  <div className="text-xl font-semibold">App Store</div>
+                </div>
+              </a>
+              
+              <a 
+                href="https://play.google.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-black text-white rounded-lg px-6 py-3 flex items-center justify-center hover:bg-opacity-80 transition-all"
+              >
+                <FaGooglePlay className="text-2xl mr-3" />
+                <div className="text-left">
+                  <div className="text-xs">GET IT ON</div>
+                  <div className="text-xl font-semibold">Google Play</div>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
