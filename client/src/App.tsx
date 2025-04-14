@@ -5,10 +5,92 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 
+// Markets Pages
+import Forex from "@/pages/markets/forex";
+import StockIndices from "@/pages/markets/stock-indices";
+import Commodities from "@/pages/markets/commodities";
+import Events from "@/pages/markets/events";
+import MarketData from "@/pages/markets/market-data";
+
+// Products Pages
+import BinaryOptions from "@/pages/products/binary-options";
+import CallSpreads from "@/pages/products/call-spreads";
+import TouchBrackets from "@/pages/products/touch-brackets";
+import KnockOuts from "@/pages/products/knock-outs";
+import Pricing from "@/pages/products/pricing";
+
+// Platform Pages
+import WebPlatform from "@/pages/platform/web-platform";
+import MobileApp from "@/pages/platform/mobile-app";
+import Funding from "@/pages/platform/funding";
+import Security from "@/pages/platform/security";
+
+// Company Pages
+import About from "@/pages/company/about";
+import Regulations from "@/pages/company/regulations";
+import News from "@/pages/company/news";
+import Careers from "@/pages/company/careers";
+import Contact from "@/pages/company/contact";
+
+// Learn Pages
+import GettingStarted from "@/pages/learn/getting-started";
+import TradingStrategies from "@/pages/learn/trading-strategies";
+import Webinars from "@/pages/learn/webinars";
+import TradingGuides from "@/pages/learn/trading-guides";
+
+// Legal Pages
+import Terms from "@/pages/legal/terms";
+import Privacy from "@/pages/legal/privacy";
+import Risk from "@/pages/legal/risk";
+import CFTC from "@/pages/legal/cftc";
+import SiteMap from "@/pages/site-map";
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      
+      {/* Markets Routes */}
+      <Route path="/markets/forex" component={Forex} />
+      <Route path="/markets/stock-indices" component={StockIndices} />
+      <Route path="/markets/commodities" component={Commodities} />
+      <Route path="/markets/events" component={Events} />
+      <Route path="/markets/market-data" component={MarketData} />
+      
+      {/* Products Routes */}
+      <Route path="/products/binary-options" component={BinaryOptions} />
+      <Route path="/products/call-spreads" component={CallSpreads} />
+      <Route path="/products/touch-brackets" component={TouchBrackets} />
+      <Route path="/products/knock-outs" component={KnockOuts} />
+      <Route path="/products/pricing" component={Pricing} />
+      
+      {/* Platform Routes */}
+      <Route path="/platform/web-platform" component={WebPlatform} />
+      <Route path="/platform/mobile-app" component={MobileApp} />
+      <Route path="/platform/funding" component={Funding} />
+      <Route path="/platform/security" component={Security} />
+      
+      {/* Company Routes */}
+      <Route path="/company/about" component={About} />
+      <Route path="/company/regulations" component={Regulations} />
+      <Route path="/company/news" component={News} />
+      <Route path="/company/careers" component={Careers} />
+      <Route path="/company/contact" component={Contact} />
+      
+      {/* Learn Routes */}
+      <Route path="/learn/getting-started" component={GettingStarted} />
+      <Route path="/learn/trading-strategies" component={TradingStrategies} />
+      <Route path="/learn/webinars" component={Webinars} />
+      <Route path="/learn/trading-guides" component={TradingGuides} />
+      
+      {/* Legal Routes */}
+      <Route path="/legal/terms" component={Terms} />
+      <Route path="/legal/privacy" component={Privacy} />
+      <Route path="/legal/risk" component={Risk} />
+      <Route path="/legal/cftc" component={CFTC} />
+      <Route path="/site-map" component={SiteMap} />
+      
+      {/* 404 Route */}
       <Route component={NotFound} />
     </Switch>
   );
