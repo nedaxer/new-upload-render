@@ -1,112 +1,138 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { navItems } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu, ChevronDown, X } from "lucide-react";
+import { navItems } from "@/lib/constants";
+import { ChevronDown, Menu, X, Download } from "lucide-react";
+import { Logo } from "./logo";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+  const toggleDropdown = (title: string) => {
+    setActiveDropdown(activeDropdown === title ? null : title);
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4">
-        {/* Top Header with Logo and Buttons */}
-        <div className="flex justify-between items-center py-4">
-          <div>
-            {/* Logo */}
-            <Link href="/" className="block">
-              <div className="text-[#0033a0] font-bold text-2xl">NADEX</div>
-            </Link>
-          </div>
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <Logo />
 
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Auth Links */}
-            <Link href="#" className="text-[#0033a0] hover:text-[#ff5900] font-semibold">
-              Log In
-            </Link>
-            <Button className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-5 py-2 rounded-md">
-              Open Account
-            </Button>
-          </div>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <div key={item.title} className="relative group">
+                <button
+                  className="flex items-center space-x-1 text-gray-700 hover:text-[#0033a0] font-medium"
+                  onClick={() => toggleDropdown(item.title)}
+                >
+                  <span>{item.title}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
 
-          {/* Mobile Menu Trigger */}
-          <button
-            onClick={toggleMobileMenu}
-            className="md:hidden text-[#0033a0] focus:outline-none"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
-        </div>
-
-        {/* Main Navigation */}
-        <nav className="hidden md:block py-2">
-          <ul className="flex">
-            {navItems.map((item, index) => (
-              <li key={index} className="relative mr-6 group">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="text-[#333333] hover:text-[#0033a0] font-medium flex items-center">
-                      {item.title} <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white rounded-md p-2 border border-gray-200 mt-1 min-w-[200px]">
-                    {item.items.map((subItem, subIndex) => (
-                      <DropdownMenuItem key={subIndex} asChild>
+                {/* Dropdown menu */}
+                {activeDropdown === item.title && (
+                  <div className="absolute z-10 left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                    <div className="py-1">
+                      {item.items.map((subItem) => (
                         <Link
+                          key={subItem.label}
                           href={subItem.href}
-                          className="block py-2 px-4 hover:bg-[#f5f5f5] hover:text-[#0033a0] rounded"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           {subItem.label}
                         </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </li>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
-          </ul>
-        </nav>
+          </nav>
 
-        {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4">
-            <div className="flex flex-col space-y-3 border-y border-gray-200 py-4 mb-4">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href="#"
-                  className="text-[#333333] hover:text-[#0033a0] py-2 font-medium flex justify-between items-center"
-                >
-                  {item.title} <ChevronDown className="h-4 w-4" />
-                </Link>
-              ))}
-            </div>
-
-            <div className="flex flex-col space-y-3">
-              <Link href="#" className="text-[#0033a0] hover:text-[#ff5900] font-semibold">
-                Log In
+          {/* CTA Buttons */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <Button
+              asChild
+              variant="outline"
+              className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
+            >
+              <Link href="#" className="flex items-center">
+                <Download className="mr-2 h-4 w-4" />
+                Download App
               </Link>
-              <Button className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-5 py-3 rounded-md w-full">
-                Open Account
+            </Button>
+            <Button
+              asChild
+              className="bg-[#ff5900] hover:bg-opacity-90 text-white"
+            >
+              <Link href="#">Open Account</Link>
+            </Button>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="lg:hidden text-gray-700 hover:text-[#0033a0]"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile navigation */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden px-4 pb-4">
+          <div className="border-t border-gray-200 pt-4">
+            {navItems.map((item) => (
+              <div key={item.title} className="mb-4">
+                <button
+                  className="flex items-center justify-between w-full text-left text-gray-700 hover:text-[#0033a0] font-medium"
+                  onClick={() => toggleDropdown(item.title)}
+                >
+                  <span>{item.title}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+
+                {activeDropdown === item.title && (
+                  <div className="mt-2 ml-4 space-y-2">
+                    {item.items.map((subItem) => (
+                      <Link
+                        key={subItem.label}
+                        href={subItem.href}
+                        className="block text-sm text-gray-700 hover:text-[#0033a0]"
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="flex flex-col space-y-3 mt-6">
+              <Button
+                asChild
+                variant="outline"
+                className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white w-full"
+              >
+                <Link href="#" className="flex items-center justify-center">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download App
+                </Link>
+              </Button>
+              <Button
+                asChild
+                className="bg-[#ff5900] hover:bg-opacity-90 text-white w-full"
+              >
+                <Link href="#">Open Account</Link>
               </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };
