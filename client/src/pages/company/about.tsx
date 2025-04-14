@@ -31,50 +31,51 @@ export default function About() {
     {
       year: "2004",
       title: "Company Founded",
-      description: "Nadex was founded as HedgeStreet, pioneering the concept of limited-risk derivatives for retail traders.",
+      description: "Nedaxer was founded as CryptoEdge Exchange, pioneering the concept of limited-risk derivatives for cryptocurrency traders.",
     },
     {
       year: "2007",
-      title: "Acquisition by IG Group",
-      description: "HedgeStreet was acquired by IG Group Holdings plc, a global leader in online trading.",
+      title: "Acquisition by Digital Assets Group",
+      description: "CryptoEdge was acquired by Digital Assets Group, a global leader in blockchain technology and cryptocurrency trading.",
     },
     {
       year: "2009",
-      title: "Relaunch as Nadex",
-      description: "The company was relaunched as the North American Derivatives Exchange (Nadex), with an enhanced trading platform.",
+      title: "Relaunch as Nedaxer",
+      description: "The company was relaunched as the New Era Derivatives Exchange for Cryptocurrencies (Nedaxer), with an enhanced digital asset trading platform.",
     },
     {
       year: "2011",
-      title: "Introduction of Binary Options",
-      description: "Nadex introduced binary options trading on a regulated US exchange for the first time.",
+      title: "Introduction of Crypto Binary Options",
+      description: "Nedaxer introduced cryptocurrency binary options trading on a regulated US exchange for the first time.",
     },
     {
       year: "2014",
-      title: "Launch of Mobile Trading",
-      description: "The Nadex mobile app was launched, allowing members to trade on the go.",
+      title: "Launch of Crypto Mobile Trading",
+      description: "The Nedaxer mobile app was launched, allowing members to trade cryptocurrencies on the go with advanced blockchain analytics.",
     },
     {
       year: "2016",
-      title: "Introduction of Touch Brackets",
-      description: "Nadex introduced Touch Brackets, providing traders with new limited-risk trading opportunities.",
+      title: "Introduction of Touch Brackets for Crypto",
+      description: "Nedaxer introduced Touch Brackets for cryptocurrency markets, providing traders with new limited-risk trading opportunities.",
     },
     {
       year: "2020",
-      title: "Platform Expansion",
-      description: "Major platform upgrades and expansion of available markets and trading instruments.",
+      title: "Crypto Platform Expansion",
+      description: "Major platform upgrades and expansion of available cryptocurrency markets and blockchain-based trading instruments.",
     },
     {
       year: "2023",
-      title: "Continued Innovation",
-      description: "Introduction of new trading products and enhanced trading platform features.",
+      title: "Continued Crypto Innovation",
+      description: "Introduction of new cryptocurrency trading products and enhanced blockchain integration features.",
     },
   ];
 
   return (
     <PageLayout 
-      title="About Nadex" 
-      subtitle="A regulated US exchange offering limited-risk derivative products"
+      title="About Nedaxer" 
+      subtitle="A regulated US exchange offering limited-risk cryptocurrency trading products"
       bgColor="#0033a0"
+      bgImage="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-12">
@@ -83,23 +84,27 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <p className="mb-4">
-                The North American Derivatives Exchange (Nadex) is a regulated US exchange offering 
-                retail traders innovative ways to participate in the financial markets with limited risk.
+                The New Era Derivatives Exchange for Cryptocurrencies (Nedaxer) is a regulated US exchange 
+                offering crypto traders innovative ways to participate in the digital asset markets with limited risk.
               </p>
               <p className="mb-4">
-                Based in Chicago, Nadex operates under the regulatory oversight of the Commodity Futures 
-                Trading Commission (CFTC), ensuring a fair, transparent, and secure trading environment.
+                Based in San Francisco, Nedaxer operates under the regulatory oversight of the Commodity Futures 
+                Trading Commission (CFTC), ensuring a fair, transparent, and secure cryptocurrency trading environment.
               </p>
               <p>
                 We specialize in short-term, limited-risk derivative products including binary options, 
-                call spreads, and knock-outs on a range of global markets including forex, stock indices, 
-                commodities, and economic events.
+                call spreads, and knock-outs on a range of cryptocurrency markets including Bitcoin, Ethereum, 
+                altcoins, and blockchain-related events.
               </p>
             </div>
             
-            {/* Company Image Placeholder */}
-            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-              <p className="text-gray-600">Nadex headquarters image would be displayed here</p>
+            {/* Company Image */}
+            <div className="rounded-lg h-64 overflow-hidden shadow-xl">
+              <img 
+                src="https://images.unsplash.com/photo-1555529771-7888783a18d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&h=700&q=80" 
+                alt="Nedaxer Headquarters in San Francisco" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -109,8 +114,8 @@ export default function About() {
           
           <div className="bg-[#f5f5f5] p-8 rounded-lg text-center mb-8">
             <p className="text-xl italic mb-6">
-              "To provide retail traders access to the financial markets through innovative, limited-risk 
-              derivative products on a secure, regulated exchange."
+              "To provide retail traders secure access to cryptocurrency markets through innovative, limited-risk 
+              derivative products on a regulated exchange with cutting-edge blockchain analytics."
             </p>
             <div className="flex justify-center space-x-4">
               <div className="h-1 w-12 bg-[#0033a0]"></div>
@@ -168,19 +173,53 @@ export default function About() {
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Leadership Team</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Leadership team placeholders */}
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-[#f5f5f5] p-6 rounded-lg text-center">
-                <div className="bg-gray-300 h-48 w-48 mx-auto rounded-full mb-4 flex items-center justify-center">
-                  <p className="text-gray-600">Photo</p>
-                </div>
-                <h3 className="text-xl font-bold mb-1 text-[#0033a0]">Executive Name</h3>
-                <p className="text-[#ff5900] font-medium mb-3">Position Title</p>
-                <p className="text-gray-700 text-sm">
-                  Brief biography about the executive's experience and background would appear here.
-                </p>
+            <div className="bg-[#f5f5f5] p-6 rounded-lg text-center hover:shadow-md transition-shadow">
+              <div className="h-48 w-48 mx-auto rounded-full mb-4 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" 
+                  alt="Dr. Michael Chen" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
+              <h3 className="text-xl font-bold mb-1 text-[#0033a0]">Dr. Michael Chen</h3>
+              <p className="text-[#ff5900] font-medium mb-3">CEO & Founder</p>
+              <p className="text-gray-700 text-sm">
+                Former MIT professor of Blockchain Economics with 15+ years of experience in cryptocurrency trading systems. 
+                Pioneer in developing risk-mitigation algorithms for digital asset trading. Ph.D. in Computer Science from Stanford University.
+              </p>
+            </div>
+            
+            <div className="bg-[#f5f5f5] p-6 rounded-lg text-center hover:shadow-md transition-shadow">
+              <div className="h-48 w-48 mx-auto rounded-full mb-4 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" 
+                  alt="Sarah Johnson" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-1 text-[#0033a0]">Sarah Johnson</h3>
+              <p className="text-[#ff5900] font-medium mb-3">CTO & Head of Blockchain Research</p>
+              <p className="text-gray-700 text-sm">
+                Former lead developer at Ethereum Foundation and cryptocurrency exchange architect. Holds 7 patents in blockchain security systems.
+                Masters in Cryptography from UC Berkeley and contributor to multiple industry-standard security protocols.
+              </p>
+            </div>
+            
+            <div className="bg-[#f5f5f5] p-6 rounded-lg text-center hover:shadow-md transition-shadow">
+              <div className="h-48 w-48 mx-auto rounded-full mb-4 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" 
+                  alt="Marcus Williams" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-xl font-bold mb-1 text-[#0033a0]">Marcus Williams</h3>
+              <p className="text-[#ff5900] font-medium mb-3">Chief Regulatory Officer</p>
+              <p className="text-gray-700 text-sm">
+                Former Senior Advisor at the CFTC with expertise in cryptocurrency regulation. 20+ years experience in financial compliance and regulatory frameworks for digital assets.
+                JD from Harvard Law School and author of "Regulatory Frameworks for Digital Assets Trading".
+              </p>
+            </div>
           </div>
           
           <div className="mt-6 text-center">
@@ -188,21 +227,21 @@ export default function About() {
               href="/company/careers" 
               className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
             >
-              View career opportunities at Nadex <ArrowRight className="ml-1 h-4 w-4" />
+              View career opportunities at Nedaxer <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
         </div>
         
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Why Choose Nadex</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Why Choose Nedaxer</h2>
           
           <div className="space-y-4">
             <div className="flex items-start">
               <CheckCircle className="text-[#ff5900] mt-1 mr-3 h-6 w-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Regulated US Exchange</h3>
+                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Regulated US Crypto Exchange</h3>
                 <p className="text-gray-700">
-                  Trade with confidence on a CFTC-regulated exchange with member funds held in segregated US bank accounts.
+                  Trade with confidence on a CFTC-regulated cryptocurrency exchange with member funds held in segregated US bank accounts.
                 </p>
               </div>
             </div>
@@ -212,7 +251,7 @@ export default function About() {
               <div>
                 <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Limited Risk by Design</h3>
                 <p className="text-gray-700">
-                  All our products feature built-in risk parameters, so you always know your maximum potential loss before you trade.
+                  All our crypto trading products feature built-in risk parameters, so you always know your maximum potential loss before you trade.
                 </p>
               </div>
             </div>
@@ -220,9 +259,9 @@ export default function About() {
             <div className="flex items-start">
               <CheckCircle className="text-[#ff5900] mt-1 mr-3 h-6 w-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Innovative Products</h3>
+                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Innovative Blockchain Products</h3>
                 <p className="text-gray-700">
-                  Our unique product offerings provide traders with opportunities not available on other platforms.
+                  Our unique cryptocurrency product offerings provide traders with opportunities not available on other digital asset platforms.
                 </p>
               </div>
             </div>
@@ -230,9 +269,9 @@ export default function About() {
             <div className="flex items-start">
               <CheckCircle className="text-[#ff5900] mt-1 mr-3 h-6 w-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Educational Resources</h3>
+                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Crypto Educational Resources</h3>
                 <p className="text-gray-700">
-                  Comprehensive learning materials, webinars, and tutorials to help traders of all experience levels.
+                  Comprehensive cryptocurrency learning materials, webinars, and tutorials to help traders of all experience levels navigate digital asset markets.
                 </p>
               </div>
             </div>
@@ -240,9 +279,9 @@ export default function About() {
             <div className="flex items-start">
               <CheckCircle className="text-[#ff5900] mt-1 mr-3 h-6 w-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Advanced Trading Platform</h3>
+                <h3 className="text-lg font-bold mb-1 text-[#0033a0]">Advanced Crypto Trading Platform</h3>
                 <p className="text-gray-700">
-                  Professional-grade charting and analysis tools, available on web and mobile platforms.
+                  Professional-grade blockchain analytics, charting and analysis tools for cryptocurrency markets, available on web and mobile platforms.
                 </p>
               </div>
             </div>
@@ -250,8 +289,8 @@ export default function About() {
         </div>
 
         <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Join the Nadex Community</h2>
-          <p className="mb-6">Experience trading on a regulated US exchange with limited risk products.</p>
+          <h2 className="text-2xl font-bold mb-4">Join the Nedaxer Community</h2>
+          <p className="mb-6">Experience cryptocurrency trading on a regulated US exchange with limited risk products.</p>
           <Button
             asChild
             className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
