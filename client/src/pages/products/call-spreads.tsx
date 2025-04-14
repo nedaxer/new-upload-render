@@ -9,6 +9,7 @@ export default function CallSpreads() {
       title="Crypto Call Spreads" 
       subtitle="Limited risk alternatives to traditional cryptocurrency options with built-in floor and ceiling levels"
       bgColor="#0033a0"
+      bgImage="https://images.unsplash.com/photo-1639815188549-c291ad9a86fc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
       <div className="max-w-4xl mx-auto">
         {/* Main explanation with image */}

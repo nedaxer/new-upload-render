@@ -123,9 +123,10 @@ export default function Webinars() {
 
   return (
     <PageLayout 
-      title="Webinars" 
+      title="Crypto Webinars" 
       subtitle="Live and recorded educational sessions hosted by Nedaxer market experts"
       bgColor="#0033a0"
+      bgImage="https://images.unsplash.com/photo-1642104704074-907c0698cbd9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-12">
