@@ -41,7 +41,7 @@ export const navItems = [
   {
     title: "Company",
     items: [
-      { label: "About Nadex", href: "/company/about" },
+      { label: "About Nedaxer", href: "/company/about" },
       { label: "Regulations", href: "/company/regulations" },
       { label: "News", href: "/company/news" },
       { label: "Careers", href: "/company/careers" },
@@ -59,7 +59,7 @@ export const heroSlides = [
     image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80",
     alt: "Trading markets",
     primaryButton: { label: "Open Account", href: "#" },
-    secondaryButton: { label: "Try Demo", href: "#" },
+    secondaryButton: { label: "Download App", href: "#" },
   },
   {
     id: 2,
@@ -208,7 +208,7 @@ export const footerLinks = {
     { label: "Security", href: "/platform/security" },
   ],
   company: [
-    { label: "About Nadex", href: "/company/about" },
+    { label: "About Nedaxer", href: "/company/about" },
     { label: "Regulations", href: "/company/regulations" },
     { label: "News", href: "/company/news" },
     { label: "Careers", href: "/company/careers" },

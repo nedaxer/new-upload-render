@@ -27,13 +27,13 @@ export default function SiteMap() {
   return (
     <PageLayout 
       title="Site Map" 
-      subtitle="A complete guide to all pages on the Nadex website"
+      subtitle="A complete guide to all pages on the Nedaxer website"
       bgColor="#0033a0"
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-4">
           <p className="mb-8">
-            Use this site map to navigate to any page on the Nadex website. For specific questions or assistance, 
+            Use this site map to navigate to any page on the Nedaxer website. For specific questions or assistance, 
             please visit our <Link href="/company/contact" className="text-[#0033a0] hover:text-[#ff5900] font-semibold">Contact</Link> page.
           </p>
           
@@ -107,7 +107,7 @@ export default function SiteMap() {
             </Link>
             
             <Link href="/company/about" className="bg-[#f5f5f5] hover:bg-[#e6eef9] p-4 rounded-lg text-center transition-colors">
-              <span className="font-semibold text-[#0033a0]">About Nadex</span>
+              <span className="font-semibold text-[#0033a0]">About Nedaxer</span>
             </Link>
             
             <Link href="/company/contact" className="bg-[#f5f5f5] hover:bg-[#e6eef9] p-4 rounded-lg text-center transition-colors">

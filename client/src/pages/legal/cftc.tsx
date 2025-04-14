@@ -18,8 +18,8 @@ export default function CFTC() {
               <div>
                 <p className="mb-4">
                   In accordance with CFTC Rule 4.41, the following disclaimer applies to all hypothetical performance 
-                  results that may be displayed or discussed on the Nadex website, mobile applications, trading platforms, 
-                  educational materials, webinars, and any other content provided by Nadex.
+                  results that may be displayed or discussed on the Nedaxer website, mobile applications, trading platforms, 
+                  educational materials, webinars, and any other content provided by Nedaxer.
                 </p>
                 <p className="mb-0">
                   This disclosure is provided to ensure transparency regarding the limitations of hypothetical 
@@ -102,10 +102,10 @@ export default function CFTC() {
           </div>
           
           <div className="mb-10">
-            <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Nadex's Approach to Presenting Performance Information</h2>
+            <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Nedaxer's Approach to Presenting Performance Information</h2>
             
             <p className="mb-6">
-              At Nadex, we strive to provide educational content and trading information that is accurate, balanced, 
+              At Nedaxer, we strive to provide educational content and trading information that is accurate, balanced, 
               and compliant with regulatory requirements. Our approach includes:
             </p>
             
