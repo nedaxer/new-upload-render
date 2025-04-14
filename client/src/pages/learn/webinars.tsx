@@ -8,7 +8,7 @@ export default function Webinars() {
     {
       id: 1,
       title: "Introduction to Binary Options Trading",
-      description: "A comprehensive overview of binary options and how to trade them effectively on Nadex.",
+      description: "A comprehensive overview of binary options and how to trade them effectively on Nedaxer.",
       presenter: "John Smith, Senior Market Analyst",
       date: "April 20, 2025",
       time: "2:00 PM ET",
@@ -17,8 +17,8 @@ export default function Webinars() {
     },
     {
       id: 2,
-      title: "Technical Analysis for Nadex Traders",
-      description: "Learn how to apply technical analysis to identify high-probability trading opportunities on Nadex.",
+      title: "Technical Analysis for Nedaxer Traders",
+      description: "Learn how to apply technical analysis to identify high-probability trading opportunities on Nedaxer.",
       presenter: "Sarah Johnson, Trading Education Specialist",
       date: "April 27, 2025",
       time: "2:00 PM ET",
@@ -28,7 +28,7 @@ export default function Webinars() {
     {
       id: 3,
       title: "Trading Economic Data Releases",
-      description: "Strategies for trading major economic announcements using Nadex binary options and call spreads.",
+      description: "Strategies for trading major economic announcements using Nedaxer binary options and call spreads.",
       presenter: "Michael Williams, Market Strategist",
       date: "May 4, 2025",
       time: "2:00 PM ET",
@@ -40,8 +40,28 @@ export default function Webinars() {
   const recordedWebinars = [
     {
       id: 101,
+      title: "Cryptocurrency Trading Fundamentals",
+      description: "Learn the essential knowledge and strategies for successful cryptocurrency trading on Nedaxer platform.",
+      presenter: "Alex Chen, Crypto Market Specialist",
+      date: "March 22, 2025",
+      duration: "60 min",
+      tags: ["Beginner", "Cryptocurrency"],
+      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+    },
+    {
+      id: 102,
+      title: "Bitcoin Trading Strategies",
+      description: "Advanced strategies for trading Bitcoin using Nedaxer's limited-risk products and technical analysis.",
+      presenter: "Maya Johnson, Bitcoin Analyst",
+      date: "March 18, 2025",
+      duration: "55 min",
+      tags: ["Intermediate", "Bitcoin", "Cryptocurrency"],
+      image: "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+    },
+    {
+      id: 103,
       title: "Mastering Knock-Outs: Advanced Strategies",
-      description: "Advanced trading techniques using Nadex Knock-Outs for directional trading with built-in risk management.",
+      description: "Advanced trading techniques using Nedaxer Knock-Outs for directional trading with built-in risk management.",
       presenter: "Robert Davis, Senior Trading Educator",
       date: "March 15, 2025",
       duration: "45 min",
