@@ -7,67 +7,67 @@ export default function News() {
   const newsItems = [
     {
       id: 1,
-      title: "Nadex Introduces Cryptocurrency Trading Features",
+      title: "Nedaxer Introduces Cryptocurrency Trading Features",
       date: "April 2, 2025",
-      excerpt: "Nadex has released a major update to its trading platform, introducing advanced crypto charting capabilities, real-time blockchain data, and enhanced trading tools for digital assets.",
+      excerpt: "Nedaxer has released a major update to its trading platform, introducing advanced crypto charting capabilities, real-time blockchain data, and enhanced trading tools for digital assets.",
       category: "Product Update",
-      image: "https://images.unsplash.com/photo-1639322537133-5fcead339c5f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 2,
-      title: "Nadex Adds New Cryptocurrency Technical Indicators",
+      title: "Nedaxer Adds New Cryptocurrency Technical Indicators",
       date: "March 15, 2025",
       excerpt: "Traders now have access to specialized indicators for cryptocurrencies, including Realized Price, MVRV, Funding Rates, and other on-chain metrics to make informed trading decisions.",
       category: "Platform Enhancement",
-      image: "https://images.unsplash.com/photo-1629339942248-45d4b10f4bb5?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1605792657660-596af9009e82?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 3,
-      title: "Nadex Reports Record Crypto Trading Volume in Q1 2025",
+      title: "Nedaxer Reports Record Crypto Trading Volume in Q1 2025",
       date: "March 10, 2025",
-      excerpt: "Nadex has reported record trading volumes for the first quarter of 2025, with significant growth in cryptocurrency products, particularly in Bitcoin and Ethereum markets.",
+      excerpt: "Nedaxer has reported record trading volumes for the first quarter of 2025, with significant growth in cryptocurrency products, particularly in Bitcoin and Ethereum markets.",
       category: "Company News",
-      image: "https://images.unsplash.com/photo-1639815188546-c43c240e8335?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 4,
-      title: "Nadex Launches Crypto Trading Academy",
+      title: "Nedaxer Launches Crypto Trading Academy",
       date: "February 28, 2025",
-      excerpt: "Nadex has expanded its educational offerings with a dedicated Cryptocurrency Trading Academy covering blockchain fundamentals, technical analysis for digital assets, and risk management.",
+      excerpt: "Nedaxer has expanded its educational offerings with a dedicated Cryptocurrency Trading Academy covering blockchain fundamentals, technical analysis for digital assets, and risk management.",
       category: "Education",
-      image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1639322537133-5fcead339c5f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 5,
-      title: "Nadex Enhances Crypto Security Features",
+      title: "Nedaxer Enhances Crypto Security Features",
       date: "February 15, 2025",
-      excerpt: "New security enhancements have been implemented for cryptocurrency trading on Nadex, including advanced verification systems and real-time monitoring for enhanced trader protection.",
+      excerpt: "New security enhancements have been implemented for cryptocurrency trading on Nedaxer, including advanced verification systems and real-time monitoring for enhanced trader protection.",
       category: "Security Update",
-      image: "https://images.unsplash.com/photo-1640340434855-6084b1f4901c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
     {
       id: 6,
-      title: "Nadex to Host Annual Crypto Trading Summit",
+      title: "Nedaxer to Host Annual Crypto Trading Summit",
       date: "January 25, 2025",
-      excerpt: "Nadex has announced dates for its annual Cryptocurrency Trading Summit, bringing together digital asset traders, blockchain experts, and industry leaders for educational sessions.",
+      excerpt: "Nedaxer has announced dates for its annual Cryptocurrency Trading Summit, bringing together digital asset traders, blockchain experts, and industry leaders for educational sessions.",
       category: "Event",
-      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     },
   ];
 
   const pressReleases = [
     {
-      title: "Nadex Announces Strategic Partnership with Blockchain Data Provider",
+      title: "Nedaxer Announces Strategic Partnership with Blockchain Data Provider",
       date: "March 20, 2025",
       link: "#",
     },
     {
-      title: "Nadex Receives Industry Award for Crypto Trading Innovation",
+      title: "Nedaxer Receives Industry Award for Crypto Trading Innovation",
       date: "February 5, 2025",
       link: "#",
     },
     {
-      title: "Nadex Appoints New Head of Cryptocurrency Markets",
+      title: "Nedaxer Appoints New Head of Cryptocurrency Markets",
       date: "January 12, 2025",
       link: "#",
     },
@@ -76,12 +76,12 @@ export default function News() {
   const mediaContacts = {
     press: {
       name: "Media Relations Team",
-      email: "press@nadex.com",
+      email: "press@nedaxer.com",
       phone: "+1 (888) 555-6666",
     },
     generalInquiries: {
       name: "Customer Support",
-      email: "support@nadex.com",
+      email: "support@nedaxer.com",
       phone: "+1 (888) 555-7777",
     },
   };
@@ -89,7 +89,7 @@ export default function News() {
   return (
     <PageLayout 
       title="Crypto News & Updates" 
-      subtitle="The latest cryptocurrency news, events, and announcements from Nadex"
+      subtitle="The latest cryptocurrency news, events, and announcements from Nedaxer"
       bgColor="#0033a0"
     >
       <div className="max-w-4xl mx-auto">
@@ -274,7 +274,7 @@ export default function News() {
             
             <div className="bg-[#f5f5f5] p-6 rounded-lg">
               <h3 className="text-xl font-bold mb-3 text-[#0033a0]">General Inquiries</h3>
-              <p className="mb-4">For general questions about Nadex cryptocurrency trading:</p>
+              <p className="mb-4">For general questions about Nedaxer cryptocurrency trading:</p>
               <ul className="space-y-2">
                 <li><span className="font-semibold">Contact:</span> {mediaContacts.generalInquiries.name}</li>
                 <li><span className="font-semibold">Email:</span> {mediaContacts.generalInquiries.email}</li>
