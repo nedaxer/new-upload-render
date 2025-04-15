@@ -7,22 +7,22 @@ export default function Regulations() {
   const regulatoryFramework = [
     {
       title: "CFTC Regulation",
-      description: "The Commodity Futures Trading Commission (CFTC) is the primary regulator of derivatives markets in the United States, overseeing exchanges like Nadex to ensure market integrity and customer protection.",
+      description: "The Commodity Futures Trading Commission (CFTC) is the primary regulator of derivatives markets in the United States, overseeing exchanges like Nedaxer to ensure market integrity and customer protection.",
       icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Designated Contract Market (DCM)",
-      description: "Nadex is registered as a Designated Contract Market (DCM), which allows us to offer regulated derivative products to retail traders in the United States.",
+      description: "Nedaxer is registered as a Designated Contract Market (DCM), which allows us to offer regulated derivative products to retail traders in the United States.",
       icon: <FileText className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Anti-Money Laundering (AML)",
-      description: "Nadex implements robust AML procedures including identity verification, transaction monitoring, and suspicious activity reporting to prevent financial crimes.",
+      description: "Nedaxer implements robust AML procedures including identity verification, transaction monitoring, and suspicious activity reporting to prevent financial crimes.",
       icon: <Scale className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Segregated Funds",
-      description: "Member funds are held in segregated accounts at top-tier US banks, separate from Nadex's operating funds, providing an additional layer of protection.",
+      description: "Member funds are held in segregated accounts at top-tier US banks, separate from Nedaxer's operating funds, providing an additional layer of protection.",
       icon: <DollarSign className="h-10 w-10 text-[#0033a0]" />,
     },
   ];
@@ -30,27 +30,27 @@ export default function Regulations() {
   const complianceDocuments = [
     {
       title: "Exchange Rules",
-      description: "The comprehensive rulebook governing all trading activities, member conduct, and dispute resolution on Nadex.",
+      description: "The comprehensive rulebook governing all trading activities, member conduct, and dispute resolution on Nedaxer.",
       link: "#",
     },
     {
       title: "Risk Disclosure Statement",
-      description: "Important information about the risks associated with trading derivative products on Nadex.",
+      description: "Important information about the risks associated with trading derivative products on Nedaxer.",
       link: "#",
     },
     {
       title: "Membership Agreement",
-      description: "The legal agreement between Nadex and its members outlining rights, responsibilities, and terms of service.",
+      description: "The legal agreement between Nedaxer and its members outlining rights, responsibilities, and terms of service.",
       link: "#",
     },
     {
       title: "Privacy Policy",
-      description: "Details on how Nadex collects, uses, and protects your personal information.",
+      description: "Details on how Nedaxer collects, uses, and protects your personal information.",
       link: "#",
     },
     {
       title: "AML Policy Statement",
-      description: "Nadex's policies and procedures for preventing money laundering and terrorist financing.",
+      description: "Nedaxer's policies and procedures for preventing money laundering and terrorist financing.",
       link: "#",
     },
   ];
@@ -67,12 +67,12 @@ export default function Regulations() {
           
           <div className="mb-8">
             <p className="mb-4">
-              Nadex operates under the regulatory oversight of the U.S. Commodity Futures Trading Commission (CFTC), 
+              Nedaxer operates under the regulatory oversight of the U.S. Commodity Futures Trading Commission (CFTC), 
               which ensures our exchange maintains the highest standards of market integrity, transparency, and 
               customer protection.
             </p>
             <p className="mb-4">
-              As a regulated exchange, Nadex must comply with strict financial requirements, reporting obligations, 
+              As a regulated exchange, Nedaxer must comply with strict financial requirements, reporting obligations, 
               and operating procedures designed to protect market participants and maintain a fair trading environment.
             </p>
           </div>
@@ -96,16 +96,16 @@ export default function Regulations() {
           <div className="bg-[#f5f5f5] p-6 rounded-lg mb-8">
             <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Segregated Funds</h3>
             <p className="mb-4">
-              One of the most important customer protections at Nadex is the segregation of member funds. 
+              One of the most important customer protections at Nedaxer is the segregation of member funds. 
               This means your money is held in dedicated accounts at top-tier US banks, completely separate 
-              from Nadex's operating funds.
+              from Nedaxer's operating funds.
             </p>
             <p className="mb-4">
               This segregation provides a critical layer of protection, ensuring your funds are used only 
               for your trading activities and are not exposed to the business risks of the exchange.
             </p>
             <p>
-              Nadex maintains detailed records of all member funds and undergoes regular audits to ensure 
+              Nedaxer maintains detailed records of all member funds and undergoes regular audits to ensure 
               compliance with regulatory requirements for fund segregation.
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function Regulations() {
           <div className="bg-[#f5f5f5] p-6 rounded-lg">
             <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Limited Risk Products</h3>
             <p className="mb-4">
-              All products offered on Nadex are designed with limited risk characteristics. This means:
+              All products offered on Nedaxer are designed with limited risk characteristics. This means:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-4">
               <li>Your maximum possible loss is known before you enter a trade</li>
@@ -123,7 +123,7 @@ export default function Regulations() {
             </ul>
             <p>
               This built-in risk limitation is a fundamental customer protection that distinguishes 
-              Nadex from many other trading venues.
+              Nedaxer from many other trading venues.
             </p>
           </div>
         </div>
