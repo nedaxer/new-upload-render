@@ -386,10 +386,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API route for user registration
   app.post('/api/auth/register', async (req, res) => {
     try {
+      console.log('Registration attempt with data:', {
+        ...req.body,
+        password: req.body.password ? '********' : undefined // Don't log passwords
+      });
+      
       // Validate input with zod schema
       const result = insertUserSchema.safeParse(req.body);
       
       if (!result.success) {
+        console.log('Registration validation failed:', result.error.format());
         return res.status(400).json({ 
           success: false, 
           message: "Invalid registration data", 
@@ -402,6 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(username);
       if (existingUsername) {
+        console.log(`Registration failed: Username ${username} already exists`);
         return res.status(409).json({ 
           success: false, 
           message: "Username already exists" 
@@ -411,11 +418,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if email already exists
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
+        console.log(`Registration failed: Email ${email} already exists`);
         return res.status(409).json({ 
           success: false, 
           message: "Email already exists" 
         });
       }
+      
+      console.log('Creating new user account...');
       
       // Create new user (unverified)
       const newUser = await storage.createUser({
@@ -426,15 +436,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName
       });
       
+      console.log(`User created with ID: ${newUser.id}`);
+      
       // Generate verification code
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
       
       await storage.setVerificationCode(newUser.id, verificationCode, expiresAt);
+      console.log(`Verification code set for user ${newUser.id}`);
       
-      // Send verification email
-      await sendVerificationEmail(email, verificationCode, firstName);
+      // Send verification email with better error handling
+      let emailSent = false;
+      try {
+        await sendVerificationEmail(email, verificationCode, firstName);
+        emailSent = true;
+        console.log(`Verification email successfully sent to ${email}`);
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+        
+        // In development mode, just log the verification code for testing
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`DEVELOPMENT MODE: Verification code for ${email} is: ${verificationCode}`);
+          emailSent = true; // Consider it sent in development
+        }
+      }
       
+      // In production, report email sending failure
+      if (!emailSent && process.env.NODE_ENV !== 'development') {
+        return res.status(500).json({
+          success: false,
+          message: "Account created but verification email could not be sent. Please contact support.",
+          user: {
+            id: newUser.id
+          }
+        });
+      }
+      
+      // Success - respond with user details for the verification page
       return res.status(201).json({
         success: true,
         message: "User registered successfully. Please check your email for verification code.",
@@ -444,11 +482,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: newUser.email
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Check for specific database errors
+      const errorMessage = error?.message || "Internal server error";
+      const isPgError = errorMessage.includes('duplicate key') || errorMessage.includes('violates unique constraint');
+      
+      if (isPgError && errorMessage.includes('email')) {
+        return res.status(409).json({ 
+          success: false, 
+          message: "Email already exists" 
+        });
+      } else if (isPgError && errorMessage.includes('username')) {
+        return res.status(409).json({ 
+          success: false, 
+          message: "Username already exists" 
+        });
+      }
+      
       return res.status(500).json({ 
         success: false, 
-        message: "Internal server error" 
+        message: "Internal server error during registration. Please try again." 
       });
     }
   });
