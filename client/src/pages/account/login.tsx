@@ -90,28 +90,7 @@ export default function Login() {
     }
   };
 
-  // For development, create a test user
-  const createTestUser = async () => {
-    try {
-      const response = await fetch('/api/setup-test-user');
-      const data = await response.json();
-      if (data.success) {
-        toast({
-          title: "Test User Created",
-          description: "Username: testuser, Password: password123",
-        });
-        // Auto-fill the form with test user credentials
-        setUsername('testuser');
-        setPassword('password123');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create test user",
-        variant: "destructive",
-      });
-    }
-  };
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -182,7 +161,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="remember" 
@@ -198,15 +177,6 @@ export default function Login() {
                   Remember me
                 </label>
               </div>
-              
-              <button
-                type="button"
-                onClick={createTestUser}
-                className="text-sm text-[#0033a0] hover:text-[#ff5900] font-medium"
-                disabled={isLoading}
-              >
-                Create Test User
-              </button>
             </div>
 
             <Button 
