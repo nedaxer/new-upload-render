@@ -55,19 +55,19 @@ export default function Commodities() {
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4 text-[#0033a0]">Trade Cryptocurrencies on Nadex</h2>
+          <h2 className="text-2xl font-bold mb-4 text-[#0033a0]">Trade Cryptocurrencies on Nedaxer</h2>
           <p className="mb-4">
             Cryptocurrency trading gives you access to the world's most exciting digital asset markets. 
-            On Nadex, you can trade major cryptocurrencies with binary options, call spreads, and knock-outs - all with limited risk.
+            On Nedaxer, you can trade major cryptocurrencies with binary options, call spreads, and knock-outs - all with limited risk.
           </p>
           <p className="mb-6">
             Crypto markets offer unique trading opportunities with their 24/7 availability, high volatility, 
-            and emerging use cases across finance, technology, and beyond - all with defined risk parameters on Nadex.
+            and emerging use cases across finance, technology, and beyond - all with defined risk parameters on Nedaxer.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-[#f5f5f5] p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3 text-[#0033a0]">Benefits of Trading Crypto on Nadex</h3>
+              <h3 className="text-xl font-bold mb-3 text-[#0033a0]">Benefits of Trading Crypto on Nedaxer</h3>
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <Check className="text-[#ff5900] mt-1 mr-2 h-5 w-5 flex-shrink-0" />

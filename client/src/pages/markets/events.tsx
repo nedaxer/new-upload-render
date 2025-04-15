@@ -59,10 +59,10 @@ export default function Events() {
     >
       <div className="max-w-4xl mx-auto">
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4 text-[#0033a0]">Trade Crypto Events on Nadex</h2>
+          <h2 className="text-2xl font-bold mb-4 text-[#0033a0]">Trade Crypto Events on Nedaxer</h2>
           <p className="mb-4">
             Crypto event markets let you trade on the outcomes of important protocol upgrades, regulatory decisions, and network milestones. 
-            On Nadex, you can position yourself before high-impact crypto events with binary options, 
+            On Nedaxer, you can position yourself before high-impact crypto events with binary options, 
             providing a unique way to trade digital asset developments with strictly limited risk.
           </p>
           <p className="mb-6">

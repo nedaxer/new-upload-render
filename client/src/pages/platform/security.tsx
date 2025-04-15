@@ -7,12 +7,12 @@ export default function Security() {
   const securityFeatures = [
     {
       title: "Regulated US Exchange",
-      description: "Nadex is regulated by the US Commodity Futures Trading Commission (CFTC), ensuring compliance with strict financial standards.",
+      description: "Nedaxer is regulated by the US Commodity Futures Trading Commission (CFTC), ensuring compliance with strict financial standards.",
       icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Segregated Funds",
-      description: "Your funds are held in segregated bank accounts, separate from Nadex's operating funds, for added protection.",
+      description: "Your funds are held in segregated bank accounts, separate from Nedaxer's operating funds, for added protection.",
       icon: <Database className="h-10 w-10 text-[#0033a0]" />,
     },
     {
@@ -47,7 +47,7 @@ export default function Security() {
     },
     {
       title: "Be Alert for Phishing Attempts",
-      description: "Nadex will never ask for your password via email or phone. Always log in directly through our official website or app.",
+      description: "Nedaxer will never ask for your password via email or phone. Always log in directly through our official website or app.",
     },
     {
       title: "Monitor Your Account Activity",
@@ -66,7 +66,7 @@ export default function Security() {
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Our Security Commitment</h2>
           
           <p className="mb-6">
-            At Nadex, we take the security of your account and personal information seriously. 
+            At Nedaxer, we take the security of your account and personal information seriously. 
             As a regulated US exchange, we implement rigorous security measures to protect your 
             data and funds while providing a safe trading environment.
           </p>
@@ -90,7 +90,7 @@ export default function Security() {
           <div className="bg-[#f5f5f5] p-6 rounded-lg mb-8">
             <h3 className="text-xl font-bold mb-4 text-[#0033a0]">CFTC Regulation</h3>
             <p className="mb-4">
-              Nadex is regulated by the US Commodity Futures Trading Commission (CFTC), which 
+              Nedaxer is regulated by the US Commodity Futures Trading Commission (CFTC), which 
               oversees the US derivatives markets, including futures, options, and swaps. 
               This regulation requires us to:
             </p>
