@@ -116,11 +116,19 @@ export default function Register() {
         localStorage.setItem('unverifiedUserId', data.user.id.toString());
       }
       
-      // Redirect to verification page
-      setTimeout(() => {
+      // Show the success message for a moment before redirecting
+      toast({
+        title: "Registration successful",
+        description: "Please check your email for a verification code.",
+      });
+      
+      // Set a flag to prevent multiple redirects
+      const redirectionTimer = setTimeout(() => {
         // Using hash-based navigation for proper routing
-        window.location.href = `/#/account/verify?userId=${data.user.id}`;
-      }, 1500);
+        if (data.user && data.user.id) {
+          window.location.href = `/#/account/verify?userId=${data.user.id}`;
+        }
+      }, 2000);
       
     } catch (error) {
       console.error('Registration error:', error);
