@@ -1,34 +1,101 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // This would typically connect to your authentication backend
-    // For now, just show a success toast
-    if (email && password) {
+  // Use TanStack Query for login mutation
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      return apiRequest('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+    },
+    onSuccess: (data) => {
+      // Save user data to localStorage if needed
+      if (rememberMe && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+      
+      // Show success message
       toast({
         title: "Logged in successfully",
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
-    } else {
+      
+      // Redirect to home page
+      setLocation('/');
+    },
+    onError: (error: any) => {
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error.status === 401) {
+        errorMessage = "Invalid username or password. Please try again.";
+      } else if (error.status === 400) {
+        errorMessage = "Please check your credentials and try again.";
+      }
+      
       toast({
         title: "Login failed",
-        description: "Please enter both email and password.",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if username and password are provided
+    if (!username || !password) {
+      toast({
+        title: "Login failed",
+        description: "Please enter both username and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Submit login request
+    loginMutation.mutate({ username, password });
+  };
+
+  // For development, create a test user
+  const createTestUser = async () => {
+    try {
+      const response = await fetch('/api/setup-test-user');
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "Test User Created",
+          description: "Username: testuser, Password: password123",
+        });
+        // Auto-fill the form with test user credentials
+        setUsername('testuser');
+        setPassword('password123');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create test user",
         variant: "destructive",
       });
     }
@@ -51,19 +118,20 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+            <Label htmlFor="username" className="text-gray-700 font-medium">Username</Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MailIcon className="h-5 w-5 text-gray-400" />
+                <UserIcon className="h-5 w-5 text-gray-400" />
               </div>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
                 className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
                 required
+                disabled={loginMutation.isPending}
               />
             </div>
           </div>
@@ -87,11 +155,13 @@ export default function Login() {
                 placeholder="Enter your password"
                 className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
                 required
+                disabled={loginMutation.isPending}
               />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={loginMutation.isPending}
               >
                 {showPassword ? (
                   <EyeOffIcon className="h-5 w-5" />
@@ -109,6 +179,7 @@ export default function Login() {
                 checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                 className="text-[#0033a0] border-gray-300"
+                disabled={loginMutation.isPending}
               />
               <label
                 htmlFor="remember"
@@ -117,13 +188,32 @@ export default function Login() {
                 Remember me
               </label>
             </div>
+            
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                type="button"
+                onClick={createTestUser}
+                className="text-sm text-[#0033a0] hover:text-[#ff5900] font-medium"
+                disabled={loginMutation.isPending}
+              >
+                Create Test User
+              </button>
+            )}
           </div>
 
           <Button 
             type="submit" 
             className="w-full bg-[#0033a0] hover:bg-[#002680] text-white py-2.5 font-medium rounded-md transition-all duration-200 shadow-sm"
+            disabled={loginMutation.isPending}
           >
-            Sign In
+            {loginMutation.isPending ? (
+              <>
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
 
@@ -140,6 +230,7 @@ export default function Login() {
           <button 
             type="button"
             className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+            disabled={loginMutation.isPending}
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -152,6 +243,7 @@ export default function Login() {
           <button 
             type="button"
             className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+            disabled={loginMutation.isPending}
           >
             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.605-3.369-1.343-3.369-1.343-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.934.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.137 18.163 20 14.418 20 10c0-5.523-4.477-10-10-10z" clipRule="evenodd"></path>

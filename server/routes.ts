@@ -1,10 +1,118 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { insertUserSchema } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
+
+  // API route for user authentication
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      // Validate input with zod
+      const loginSchema = z.object({
+        username: z.string().min(3),
+        password: z.string().min(6)
+      });
+
+      const result = loginSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid credentials format", 
+          errors: result.error.format() 
+        });
+      }
+      
+      const { username, password } = result.data;
+
+      // Check if user exists
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user) {
+        return res.status(401).json({ 
+          success: false, 
+          message: "Invalid username or password" 
+        });
+      }
+      
+      // Simple password check (in a real app, you'd use bcrypt)
+      if (user.password !== password) {
+        return res.status(401).json({ 
+          success: false, 
+          message: "Invalid username or password" 
+        });
+      }
+      
+      // User authenticated successfully
+      return res.status(200).json({
+        success: true,
+        message: "Authentication successful",
+        user: {
+          id: user.id,
+          username: user.username
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
+  });
+  
+  // API route for user registration
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      // Validate input with zod schema
+      const result = insertUserSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid registration data", 
+          errors: result.error.format() 
+        });
+      }
+      
+      const { username, password } = result.data;
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(username);
+      
+      if (existingUser) {
+        return res.status(409).json({ 
+          success: false, 
+          message: "Username already exists" 
+        });
+      }
+      
+      // Create new user
+      const newUser = await storage.createUser({
+        username,
+        password  // In a real app, you should hash this password
+      });
+      
+      return res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        user: {
+          id: newUser.id,
+          username: newUser.username
+        }
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
+  });
 
   // Route to handle account login page
   app.get('/account/login', (req, res) => {
@@ -21,81 +129,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/#/account/forgot-password');
   });
 
-  // Add a test route that serves a static HTML page without React
-  app.get('/test-static', (req, res) => {
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Static Test Page</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          h1 {
-            color: #0033a0;
-          }
-          .counter {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-          }
-          button {
-            background: #ff5900;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          }
-          .count {
-            font-size: 24px;
-            font-weight: bold;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Nedaxer Static Test Page</h1>
-        <p>This is a static test page that doesn't use React.</p>
+  // Simple helper route for development - creates a test user
+  if (process.env.NODE_ENV === 'development') {
+    app.get('/api/setup-test-user', async (req, res) => {
+      try {
+        const testUser = {
+          username: 'testuser',
+          password: 'password123'
+        };
         
-        <div class="counter">
-          <button id="decrease">Decrease</button>
-          <span class="count" id="count">0</span>
-          <button id="increase">Increase</button>
-        </div>
+        // Check if testuser already exists
+        const existingUser = await storage.getUserByUsername(testUser.username);
         
-        <p>If you can see this page and the counter works, the server is functioning correctly.</p>
-        
-        <script>
-          // Vanilla JavaScript counter
-          let count = 0;
-          const countDisplay = document.getElementById('count');
-          
-          document.getElementById('decrease').addEventListener('click', () => {
-            count--;
-            countDisplay.textContent = count;
-          });
-          
-          document.getElementById('increase').addEventListener('click', () => {
-            count++;
-            countDisplay.textContent = count;
-          });
-        </script>
-      </body>
-      </html>
-    `);
-  });
-
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+        if (!existingUser) {
+          await storage.createUser(testUser);
+          res.json({ success: true, message: 'Test user created' });
+        } else {
+          res.json({ success: true, message: 'Test user already exists' });
+        }
+      } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to create test user' });
+      }
+    });
+  }
 
   const httpServer = createServer(app);
 
