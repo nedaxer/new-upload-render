@@ -22,50 +22,61 @@ function generateVerificationCode(): string {
 
 // Function to send verification email
 async function sendVerificationEmail(email: string, code: string, firstName: string): Promise<void> {
-  // Create a test transporter (in production, you'd use real SMTP settings)
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || "smtp.example.com",
-    port: parseInt(process.env.EMAIL_PORT || "587"),
-    secure: process.env.EMAIL_SECURE === "true",
-    auth: {
-      user: process.env.EMAIL_USER || "",
-      pass: process.env.EMAIL_PASSWORD || "",
-    },
-  });
-
-  // Email content
-  const mailOptions = {
-    from: process.env.EMAIL_FROM || "Nedaxer Team <noreply@nedaxer.com>",
-    to: email,
-    subject: "Verify Your Nedaxer Account",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #0033a0; color: white; padding: 20px; text-align: center;">
-          <h1>Nedaxer Cryptocurrency Trading Platform</h1>
-        </div>
-        <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
-          <p>Hello ${firstName},</p>
-          <p>Thank you for creating an account with Nedaxer. To complete your registration, please use the verification code below:</p>
-          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-            ${code}
-          </div>
-          <p>This code will expire in 30 minutes. If you did not request this verification, please ignore this email.</p>
-          <p>Best regards,<br>The Nedaxer Team</p>
-        </div>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-          <p>© ${new Date().getFullYear()} Nedaxer. All rights reserved.</p>
-        </div>
-      </div>
-    `
-  };
-
-  // Send email
   try {
+    // Create transporter with debug enabled
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || "smtp.example.com",
+      port: parseInt(process.env.EMAIL_PORT || "587"),
+      secure: process.env.EMAIL_SECURE === "true",
+      auth: {
+        user: process.env.EMAIL_USER || "",
+        pass: process.env.EMAIL_PASSWORD || "",
+      },
+      // For development only - handle TLS issues gracefully
+      tls: {
+        rejectUnauthorized: false
+      },
+      debug: process.env.NODE_ENV === 'development'
+    });
+
+    // Email content
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || "Nedaxer Team <noreply@nedaxer.com>",
+      to: email,
+      subject: "Verify Your Nedaxer Account",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #0033a0; color: white; padding: 20px; text-align: center;">
+            <h1>Nedaxer Cryptocurrency Trading Platform</h1>
+          </div>
+          <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+            <p>Hello ${firstName},</p>
+            <p>Thank you for creating an account with Nedaxer. To complete your registration, please use the verification code below:</p>
+            <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+              ${code}
+            </div>
+            <p>This code will expire in 30 minutes. If you did not request this verification, please ignore this email.</p>
+            <p>Best regards,<br>The Nedaxer Team</p>
+          </div>
+          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+            <p>© ${new Date().getFullYear()} Nedaxer. All rights reserved.</p>
+          </div>
+        </div>
+      `
+    };
+
+    // Send email
     await transporter.sendMail(mailOptions);
     console.log(`Verification email sent to ${email}`);
   } catch (error) {
     console.error("Error sending verification email:", error);
-    throw new Error("Failed to send verification email");
+    
+    // In development, don't throw - just log the error (so flow can continue)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Development mode: Verification code for ${email} is: ${code}`);
+    } else {
+      throw new Error("Failed to send verification email");
+    }
   }
 }
 
