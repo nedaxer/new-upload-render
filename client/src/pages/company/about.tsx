@@ -98,13 +98,28 @@ export default function About() {
               </p>
             </div>
             
-            {/* Company Image */}
-            <div className="rounded-lg h-64 overflow-hidden shadow-xl">
+            {/* Company Image - Skyscraper with Nedaxer logo */}
+            <div className="rounded-lg h-80 overflow-hidden shadow-xl relative">
+              {/* Modern skyscraper image */}
               <img 
-                src="https://images.unsplash.com/photo-1555529771-7888783a18d3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&h=700&q=80" 
+                src="https://images.unsplash.com/photo-1486325212027-8081e485255e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&h=700&q=80" 
                 alt="Nedaxer Headquarters in San Francisco" 
                 className="w-full h-full object-cover"
               />
+              
+              {/* Overlay with Nedaxer branding */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                {/* Translucent dark overlay for better text visibility */}
+                <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                
+                {/* Nedaxer logo on the building */}
+                <div className="z-10 bg-[#0033a0] text-white px-10 py-6 rounded-md shadow-lg transform -rotate-3">
+                  <h3 className="text-4xl font-bold tracking-wider">NEDAXER</h3>
+                </div>
+                
+                {/* Illuminated windows effect */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0033a0] opacity-10"></div>
+              </div>
             </div>
           </div>
         </div>
