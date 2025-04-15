@@ -74,23 +74,23 @@ export default function MarketData() {
 
   const marketResources = [
     {
-      title: "Forex Market Data",
-      description: "Access currency pair data and analysis for major, minor, and exotic FX markets.",
-      link: "/markets/forex"
+      title: "Bitcoin Market Data",
+      description: "Access Bitcoin price data, trading volumes, order book depth, and on-chain analytics.",
+      link: "/markets/bitcoin"
     },
     {
-      title: "Stock Indices Data",
-      description: "US and global stock index data, including S&P 500, Dow Jones, NASDAQ, and more.",
-      link: "/markets/stock-indices"
+      title: "Ethereum Market Data",
+      description: "Comprehensive Ethereum data including gas fees, smart contract activity, and price analysis.",
+      link: "/markets/ethereum"
     },
     {
-      title: "Commodities Data",
-      description: "Price data for gold, silver, oil, and natural gas markets with technical analysis.",
-      link: "/markets/commodities"
+      title: "Altcoins Market Data",
+      description: "Market data for alternative cryptocurrencies including Solana, Cardano, Ripple, and more.",
+      link: "/markets/altcoins"
     },
     {
-      title: "Economic Events Calendar",
-      description: "Comprehensive schedule of economic releases with market impact ratings.",
+      title: "Crypto Events Calendar",
+      description: "Comprehensive schedule of protocol upgrades, halvings, and significant crypto events.",
       link: "/markets/events"
     }
   ];
