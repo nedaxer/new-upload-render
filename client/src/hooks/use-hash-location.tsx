@@ -2,9 +2,10 @@
 // https://github.com/molefrog/wouter#customizing-the-location-hook
 
 import { useState, useEffect, useCallback } from "react";
+import type { BaseLocationHook } from "wouter";
 
 // Hash-based location hook for wouter
-export const useHashLocation = () => {
+export const useHashLocation: BaseLocationHook = () => {
   // Initialize with the current hash location (sans the # part)
   const [loc, setLoc] = useState(() => 
     window.location.hash.replace("#", "") || "/"
@@ -19,6 +20,9 @@ export const useHashLocation = () => {
     };
 
     window.addEventListener("hashchange", handleHashchange);
+    // Initialize the path on first load
+    handleHashchange();
+    
     return () => window.removeEventListener("hashchange", handleHashchange);
   }, []);
 

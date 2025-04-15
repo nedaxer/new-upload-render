@@ -21,13 +21,28 @@ export default function Login() {
   // Use TanStack Query for login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      return apiRequest('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(credentials),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw {
+            status: response.status,
+            message: errorData.message || 'An error occurred'
+          };
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       // Save user data to localStorage if needed
@@ -47,9 +62,9 @@ export default function Login() {
     onError: (error: any) => {
       let errorMessage = "An unexpected error occurred. Please try again.";
       
-      if (error.status === 401) {
+      if (error?.status === 401) {
         errorMessage = "Invalid username or password. Please try again.";
-      } else if (error.status === 400) {
+      } else if (error?.status === 400) {
         errorMessage = "Please check your credentials and try again.";
       }
       
