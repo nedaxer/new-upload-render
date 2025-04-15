@@ -10,8 +10,8 @@ export default function Contact() {
       description: "Questions about our platform, our products, or how to get started?",
       icon: <HelpCircle className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "info@cryptotrading.com",
-        phone: "+1 (888) 555-7777",
+        email: "info@example.com",
+        phone: "Contact via email or form",
       },
     },
     {
@@ -19,8 +19,8 @@ export default function Contact() {
       description: "Account-related questions, technical issues, or trading assistance.",
       icon: <MessageSquare className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "support@cryptotrading.com",
-        phone: "+1 (888) 555-8888",
+        email: "support@example.com",
+        phone: "Contact via email or form",
       },
     },
     {
@@ -28,8 +28,8 @@ export default function Contact() {
       description: "Questions about KYC, account security, or regulatory matters.",
       icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "security@cryptotrading.com",
-        phone: "+1 (888) 555-9999",
+        email: "security@example.com",
+        phone: "Contact via email or form",
       },
     },
     {
@@ -37,8 +37,8 @@ export default function Contact() {
       description: "Help with chart analysis, indicators, or trading strategies.",
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "analysis@cryptotrading.com",
-        phone: "+1 (888) 555-6666",
+        email: "analysis@example.com",
+        phone: "Contact via email or form",
       },
     },
   ];
@@ -52,8 +52,8 @@ export default function Contact() {
         "San Francisco, CA 94105",
         "USA",
       ],
-      phone: "+1 (888) 555-7777",
-      email: "info@cryptotrading.com",
+      phone: "Contact via email or form",
+      email: "info@example.com",
       hours: "Monday - Friday: 8:00 AM - 5:00 PM PT",
     },
     {
@@ -63,8 +63,8 @@ export default function Contact() {
         "#20-01 Tower 2",
         "Singapore 048616",
       ],
-      phone: "+65 6123 4567",
-      email: "asia@cryptotrading.com",
+      phone: "Contact via email or form",
+      email: "asia@example.com",
       hours: "Monday - Friday: 9:00 AM - 6:00 PM SGT",
     },
   ];
@@ -295,9 +295,13 @@ export default function Contact() {
               </div>
             ))}
             
-            {/* Map Placeholder */}
-            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-              <p className="text-gray-600">Map would be displayed here</p>
+            {/* Map Image */}
+            <div className="rounded-lg h-64 overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07b?q=80&w=1000&auto=format&fit=crop" 
+                alt="Office location map" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
