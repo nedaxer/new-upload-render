@@ -1,16 +1,16 @@
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Phone, Mail, MapPin, Clock, HelpCircle, MessageSquare } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap } from "lucide-react";
 
 export default function Contact() {
   const contactOptions = [
     {
       title: "General Inquiries",
-      description: "Questions about Nadex, our products, or how to get started?",
+      description: "Questions about our platform, our products, or how to get started?",
       icon: <HelpCircle className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "info@nadex.com",
+        email: "info@cryptotrading.com",
         phone: "+1 (888) 555-7777",
       },
     },
@@ -19,31 +19,60 @@ export default function Contact() {
       description: "Account-related questions, technical issues, or trading assistance.",
       icon: <MessageSquare className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "support@nadex.com",
+        email: "support@cryptotrading.com",
         phone: "+1 (888) 555-8888",
+      },
+    },
+    {
+      title: "Security & Compliance",
+      description: "Questions about KYC, account security, or regulatory matters.",
+      icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
+      contact: {
+        email: "security@cryptotrading.com",
+        phone: "+1 (888) 555-9999",
+      },
+    },
+    {
+      title: "Technical Analysis Team",
+      description: "Help with chart analysis, indicators, or trading strategies.",
+      icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
+      contact: {
+        email: "analysis@cryptotrading.com",
+        phone: "+1 (888) 555-6666",
       },
     },
   ];
 
   const officeLocations = [
     {
-      name: "Chicago Headquarters",
+      name: "San Francisco Headquarters",
       address: [
-        "200 W Jackson Blvd",
-        "Suite 1400",
-        "Chicago, IL 60606",
+        "100 Market Street",
+        "Suite 800",
+        "San Francisco, CA 94105",
         "USA",
       ],
       phone: "+1 (888) 555-7777",
-      email: "info@nadex.com",
-      hours: "Monday - Friday: 8:00 AM - 5:00 PM CT",
+      email: "info@cryptotrading.com",
+      hours: "Monday - Friday: 8:00 AM - 5:00 PM PT",
+    },
+    {
+      name: "Singapore Office",
+      address: [
+        "1 Raffles Place",
+        "#20-01 Tower 2",
+        "Singapore 048616",
+      ],
+      phone: "+65 6123 4567",
+      email: "asia@cryptotrading.com",
+      hours: "Monday - Friday: 9:00 AM - 6:00 PM SGT",
     },
   ];
 
   const supportHours = [
     {
       day: "Monday - Friday",
-      hours: "8:00 AM - 8:00 PM ET",
+      hours: "24 Hours (Live Support)",
     },
     {
       day: "Saturday",
@@ -51,7 +80,7 @@ export default function Contact() {
     },
     {
       day: "Sunday",
-      hours: "Closed",
+      hours: "9:00 AM - 5:00 PM ET",
     },
   ];
 
@@ -62,22 +91,26 @@ export default function Contact() {
     },
     {
       question: "What are the minimum deposit requirements?",
-      answer: "The minimum initial deposit to open a Nadex account is $250. After your account is open, there is no minimum for subsequent deposits.",
+      answer: "The minimum initial deposit to open an account is $100. After your account is open, there is no minimum for subsequent deposits. We accept deposits via bank transfer, credit/debit cards, and several cryptocurrencies.",
     },
     {
-      question: "How long does account approval take?",
-      answer: "Most accounts are approved within 1-2 business days after all required documents are submitted. You'll receive an email notification once your account is approved and ready for funding.",
+      question: "How long does account verification take?",
+      answer: "Basic account verification is instant, allowing you to start trading with limited functionality. Full verification typically takes 24-48 hours after all required documents are submitted. You'll receive an email notification once your account is fully verified.",
     },
     {
       question: "How do I reset my password?",
       answer: "To reset your password, click the 'Forgot Password' link on the login page. You'll receive an email with instructions to create a new password. For security purposes, password reset links expire after 24 hours.",
+    },
+    {
+      question: "Are my digital assets secure on your platform?",
+      answer: "We implement industry-leading security measures including cold storage for 95% of assets, two-factor authentication, address whitelisting, and regular security audits. Additionally, we maintain an insurance fund to protect against potential security breaches.",
     },
   ];
 
   return (
     <PageLayout 
       title="Contact Us" 
-      subtitle="Get in touch with the Nadex team for any questions or assistance"
+      subtitle="Get in touch with our team for any questions or assistance"
       bgColor="#0033a0"
     >
       <div className="max-w-4xl mx-auto">
@@ -161,20 +194,39 @@ export default function Contact() {
                 />
               </div>
               
-              <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <select 
-                  id="subject" 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
-                >
-                  <option value="">Select a subject</option>
-                  <option value="account">Account Inquiry</option>
-                  <option value="trading">Trading Question</option>
-                  <option value="funding">Funding Inquiry</option>
-                  <option value="technical">Technical Support</option>
-                  <option value="feedback">Feedback</option>
-                  <option value="other">Other</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <select 
+                    id="subject" 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
+                  >
+                    <option value="">Select a subject</option>
+                    <option value="account">Account Inquiry</option>
+                    <option value="trading">Trading Question</option>
+                    <option value="funding">Funding Inquiry</option>
+                    <option value="technical">Technical Support</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="cryptocurrency" className="block text-sm font-medium text-gray-700 mb-1">Cryptocurrency of Interest</label>
+                  <select 
+                    id="cryptocurrency" 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
+                  >
+                    <option value="">Select a cryptocurrency</option>
+                    <option value="bitcoin">Bitcoin (BTC)</option>
+                    <option value="ethereum">Ethereum (ETH)</option>
+                    <option value="solana">Solana (SOL)</option>
+                    <option value="cardano">Cardano (ADA)</option>
+                    <option value="ripple">XRP (XRP)</option>
+                    <option value="avalanche">Avalanche (AVAX)</option>
+                    <option value="polkadot">Polkadot (DOT)</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
               
               <div>
@@ -304,8 +356,8 @@ export default function Contact() {
         </div>
 
         <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to Trade with Nadex?</h2>
-          <p className="mb-6">Open an account today and experience limited-risk trading on a regulated US exchange.</p>
+          <h2 className="text-2xl font-bold mb-4">Ready to Start Crypto Trading?</h2>
+          <p className="mb-6">Open an account today and experience our advanced trading platform with powerful charting tools.</p>
           <Button
             asChild
             className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
