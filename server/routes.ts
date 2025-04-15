@@ -23,7 +23,9 @@ function generateVerificationCode(): string {
 // Function to send verification email
 async function sendVerificationEmail(email: string, code: string, firstName: string): Promise<void> {
   try {
-    // Create transporter with debug enabled
+    console.log(`Attempting to send verification email to ${email} using ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
+    
+    // Create transporter with more robust configuration
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || "smtp.example.com",
       port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -32,11 +34,17 @@ async function sendVerificationEmail(email: string, code: string, firstName: str
         user: process.env.EMAIL_USER || "",
         pass: process.env.EMAIL_PASSWORD || "",
       },
-      // For development only - handle TLS issues gracefully
+      // Use appropriate TLS options based on environment
       tls: {
-        rejectUnauthorized: false
+        // Only disable certificate verification in development
+        rejectUnauthorized: process.env.NODE_ENV !== 'development',
+        // Commonly needed settings for various SMTP servers
+        minVersion: 'TLSv1.2',
+        ciphers: 'HIGH:MEDIUM:!aNULL:!MD5:!RC4'
       },
-      debug: process.env.NODE_ENV === 'development'
+      // Enable logging in development mode
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
     });
 
     // Email content with enhanced design
@@ -124,7 +132,9 @@ async function sendVerificationEmail(email: string, code: string, firstName: str
 // Function to send welcome email after verification
 async function sendWelcomeEmail(email: string, firstName: string): Promise<void> {
   try {
-    // Create transporter with debug enabled
+    console.log(`Attempting to send welcome email to ${email} using ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
+    
+    // Create transporter with more robust configuration
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || "smtp.example.com",
       port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -133,11 +143,17 @@ async function sendWelcomeEmail(email: string, firstName: string): Promise<void>
         user: process.env.EMAIL_USER || "",
         pass: process.env.EMAIL_PASSWORD || "",
       },
-      // For development only - handle TLS issues gracefully
+      // Use appropriate TLS options based on environment
       tls: {
-        rejectUnauthorized: false
+        // Only disable certificate verification in development
+        rejectUnauthorized: process.env.NODE_ENV !== 'development',
+        // Commonly needed settings for various SMTP servers
+        minVersion: 'TLSv1.2',
+        ciphers: 'HIGH:MEDIUM:!aNULL:!MD5:!RC4'
       },
-      debug: process.env.NODE_ENV === 'development'
+      // Enable logging in development mode
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
     });
 
     // Email content with beautiful design
