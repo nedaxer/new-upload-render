@@ -2,6 +2,8 @@ import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { CheckCircle, ArrowRight, Building, Users, GraduationCap, Shield } from "lucide-react";
+import skyscraperImage from "@assets/img.jpeg";
+import logoImage from "@assets/generated-icon.png";
 
 export default function About() {
   const companyValues = [
@@ -100,25 +102,27 @@ export default function About() {
             
             {/* Company Image - Skyscraper with Nedaxer logo */}
             <div className="rounded-lg h-80 overflow-hidden shadow-xl relative">
-              {/* Modern skyscraper image */}
+              {/* Skyscraper image from user upload */}
               <img 
-                src="https://images.unsplash.com/photo-1486325212027-8081e485255e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&h=700&q=80" 
-                alt="Nedaxer Headquarters in San Francisco" 
+                src={skyscraperImage} 
+                alt="Nedaxer Headquarters" 
                 className="w-full h-full object-cover"
               />
               
               {/* Overlay with Nedaxer branding */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 {/* Translucent dark overlay for better text visibility */}
-                <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
                 
                 {/* Nedaxer logo on the building */}
-                <div className="z-10 bg-[#0033a0] text-white px-10 py-6 rounded-md shadow-lg transform -rotate-3">
-                  <h3 className="text-4xl font-bold tracking-wider">NEDAXER</h3>
+                <div className="z-10 flex flex-col items-center justify-center p-4 bg-white bg-opacity-90 rounded-xl shadow-lg">
+                  <img 
+                    src={logoImage} 
+                    alt="Nedaxer Logo" 
+                    className="h-16 mb-2"
+                  />
+                  <h3 className="text-3xl font-bold text-[#0033a0]">NEDAXER</h3>
                 </div>
-                
-                {/* Illuminated windows effect */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0033a0] opacity-10"></div>
               </div>
             </div>
           </div>
