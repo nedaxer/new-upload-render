@@ -18,53 +18,64 @@ export default function VerifyAccount() {
 
   // On component mount, check URL for userId parameter
   useEffect(() => {
-    // Extract userId from the URL hash
-    const extractUserIdFromHash = () => {
-      const hashParts = window.location.hash.split('?');
-      if (hashParts.length > 1) {
-        const params = new URLSearchParams(hashParts[1]);
-        const userIdParam = params.get('userId');
-        if (userIdParam) {
-          return parseInt(userIdParam, 10);
+    const extractUserIdFromUrl = () => {
+      // First try to extract from hash part of URL (/#/account/verify?userId=X)
+      const hashString = window.location.hash;
+      if (hashString) {
+        // Get the part after the ? if it exists
+        const queryPart = hashString.split('?')[1];
+        if (queryPart) {
+          const params = new URLSearchParams(queryPart);
+          const userIdParam = params.get('userId');
+          if (userIdParam) {
+            console.log("Found userId in hash:", userIdParam);
+            return parseInt(userIdParam, 10);
+          }
         }
       }
-      return null;
-    };
 
-    // Extract userId from the URL search params (for non-hash navigation)
-    const extractUserIdFromSearch = () => {
+      // If not in hash, try regular query params (/account/verify?userId=X)
       const params = new URLSearchParams(window.location.search);
       const userIdParam = params.get('userId');
       if (userIdParam) {
+        console.log("Found userId in search params:", userIdParam);
         return parseInt(userIdParam, 10);
       }
+      
       return null;
     };
 
-    // Try to get userId from hash first, then from search params, then from localStorage
-    const userIdFromHash = extractUserIdFromHash();
-    const userIdFromSearch = extractUserIdFromSearch();
+    // Attempt to get the userId from multiple possible sources
+    const urlUserId = extractUserIdFromUrl();
     const storedUserId = localStorage.getItem('unverifiedUserId');
     
-    if (userIdFromHash) {
-      console.log("Found userId in hash:", userIdFromHash);
-      setUserId(userIdFromHash);
-    } else if (userIdFromSearch) {
-      console.log("Found userId in search params:", userIdFromSearch);
-      setUserId(userIdFromSearch);
-    } else if (storedUserId) {
+    if (urlUserId) {
+      // Always prefer URL parameter if available
+      setUserId(urlUserId);
+      // Also save to localStorage for persistence
+      localStorage.setItem('unverifiedUserId', urlUserId.toString());
+      return;
+    } 
+    
+    if (storedUserId) {
       console.log("Found userId in localStorage:", storedUserId);
       setUserId(parseInt(storedUserId, 10));
-    } else {
-      console.log("No userId found in URL or localStorage");
-      // No userId available, redirect to login
-      toast({
-        title: "Verification error",
-        description: "Unable to find your account information. Please login again.",
-        variant: "destructive",
-      });
-      setLocation('/account/login');
+      return;
     }
+    
+    // Display clear message and redirect if no userId found
+    console.log("No userId found in URL or localStorage");
+    toast({
+      title: "Verification information missing",
+      description: "We couldn't find your account information. Please try registering again.",
+      variant: "destructive",
+    });
+    
+    // Redirect after a short delay
+    setTimeout(() => {
+      setLocation('/account/login');
+    }, 2000);
+    
   }, [setLocation, toast]);
 
   const handleVerify = async (e: React.FormEvent) => {

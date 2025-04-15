@@ -129,17 +129,46 @@ export default function Register() {
         localStorage.setItem('unverifiedUserId', data.user.id.toString());
       }
       
-      // Direct navigation instead of timeout to avoid issues
-      window.location.href = `/#/account/verify?userId=${data.user.id}`;
-      
-      // If the above navigation doesn't work, try a fallback after a delay
-      setTimeout(() => {
-        const currentUrl = window.location.href;
-        if (!currentUrl.includes('verify')) {
-          console.log("Fallback redirection to verification page");
-          window.location.replace(`/#/account/verify?userId=${data.user.id}`);
-        }
-      }, 2000);
+      // Use a more reliable method to force navigation
+      try {
+        // Create a temporary page with loading indicator that will redirect
+        document.body.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; font-family: Arial, sans-serif; background-color: #f5f7fa;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); max-width: 500px; width: 90%;">
+              <h2 style="color: #0033a0; margin-bottom: 15px;">Account Created Successfully!</h2>
+              <p style="margin-bottom: 20px; color: #4b5563;">Redirecting to verification page...</p>
+              <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #0033a0; border-radius: 50%; margin: 0 auto 20px; animation: spin 1s linear infinite;"></div>
+              <p style="font-size: 14px; color: #6b7280;">If you are not redirected automatically, <a href="/#/account/verify?userId=${data.user.id}" style="color: #0033a0; text-decoration: underline; font-weight: bold;">click here</a>.</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </div>
+        `;
+        
+        // Force navigation to verification page after a short delay
+        setTimeout(() => {
+          window.location.href = `/#/account/verify?userId=${data.user.id}`;
+        }, 1000);
+        
+        // If that doesn't work, try additional methods
+        setTimeout(() => {
+          if (!window.location.href.includes('verify')) {
+            window.location.replace(`/#/account/verify?userId=${data.user.id}`);
+          }
+        }, 2000);
+        
+        // Last resort
+        setTimeout(() => {
+          if (!window.location.href.includes('verify')) {
+            window.location.assign(`/#/account/verify?userId=${data.user.id}`);
+          }
+        }, 3000);
+      } catch (navError) {
+        console.error("Navigation error:", navError);
+        alert("Please go to the verification page to complete your registration.");
+        window.location.href = `/#/account/verify?userId=${data.user.id}`;
+      }
       
     } catch (error) {
       console.error('Registration error:', error);
