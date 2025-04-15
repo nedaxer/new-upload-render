@@ -18,24 +18,52 @@ export default function VerifyAccount() {
 
   // On component mount, check URL for userId parameter
   useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.split('?')[1]);
-    const userIdParam = params.get('userId');
-    if (userIdParam) {
-      setUserId(parseInt(userIdParam, 10));
-    } else {
-      // If no userId in URL, check localStorage for it
-      const storedUserId = localStorage.getItem('unverifiedUserId');
-      if (storedUserId) {
-        setUserId(parseInt(storedUserId, 10));
-      } else {
-        // No userId available, redirect to login
-        toast({
-          title: "Verification error",
-          description: "Unable to find your account information. Please login again.",
-          variant: "destructive",
-        });
-        setLocation('/account/login');
+    // Extract userId from the URL hash
+    const extractUserIdFromHash = () => {
+      const hashParts = window.location.hash.split('?');
+      if (hashParts.length > 1) {
+        const params = new URLSearchParams(hashParts[1]);
+        const userIdParam = params.get('userId');
+        if (userIdParam) {
+          return parseInt(userIdParam, 10);
+        }
       }
+      return null;
+    };
+
+    // Extract userId from the URL search params (for non-hash navigation)
+    const extractUserIdFromSearch = () => {
+      const params = new URLSearchParams(window.location.search);
+      const userIdParam = params.get('userId');
+      if (userIdParam) {
+        return parseInt(userIdParam, 10);
+      }
+      return null;
+    };
+
+    // Try to get userId from hash first, then from search params, then from localStorage
+    const userIdFromHash = extractUserIdFromHash();
+    const userIdFromSearch = extractUserIdFromSearch();
+    const storedUserId = localStorage.getItem('unverifiedUserId');
+    
+    if (userIdFromHash) {
+      console.log("Found userId in hash:", userIdFromHash);
+      setUserId(userIdFromHash);
+    } else if (userIdFromSearch) {
+      console.log("Found userId in search params:", userIdFromSearch);
+      setUserId(userIdFromSearch);
+    } else if (storedUserId) {
+      console.log("Found userId in localStorage:", storedUserId);
+      setUserId(parseInt(storedUserId, 10));
+    } else {
+      console.log("No userId found in URL or localStorage");
+      // No userId available, redirect to login
+      toast({
+        title: "Verification error",
+        description: "Unable to find your account information. Please login again.",
+        variant: "destructive",
+      });
+      setLocation('/account/login');
     }
   }, [setLocation, toast]);
 

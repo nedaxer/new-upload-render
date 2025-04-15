@@ -118,7 +118,8 @@ export default function Register() {
       
       // Redirect to verification page
       setTimeout(() => {
-        setLocation(`/account/verify?userId=${data.user.id}`);
+        // Using hash-based navigation for proper routing
+        window.location.href = `/#/account/verify?userId=${data.user.id}`;
       }, 1500);
       
     } catch (error) {

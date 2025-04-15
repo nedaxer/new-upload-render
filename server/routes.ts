@@ -469,7 +469,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Route to handle account verification page
   app.get('/account/verify', (req, res) => {
-    res.redirect('/#/account/verify');
+    // Preserve query parameters for userId
+    const userId = req.query.userId;
+    if (userId) {
+      res.redirect(`/#/account/verify?userId=${userId}`);
+    } else {
+      res.redirect('/#/account/verify');
+    }
   });
   
   // Route to handle forgot password page
