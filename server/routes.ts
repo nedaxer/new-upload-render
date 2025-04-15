@@ -617,11 +617,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.setVerificationCode(userId, verificationCode, expiresAt);
       
       // Send verification email
-      await sendVerificationEmail(user.email, verificationCode, user.firstName);
+      let emailSent = false;
+      try {
+        await sendVerificationEmail(user.email, verificationCode, user.firstName);
+        emailSent = true;
+        console.log(`Verification email successfully resent to ${user.email}`);
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+        
+        // In development mode, just log the verification code for testing
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`DEVELOPMENT MODE: Verification code for ${user.email} is: ${verificationCode}`);
+          emailSent = true; // Consider it sent in development
+        }
+      }
       
+      // In production, report email sending failure
+      if (!emailSent && process.env.NODE_ENV !== 'development') {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send verification email. Please try again or contact support."
+        });
+      }
+      
+      // Success - respond with verification code in development mode
       return res.status(200).json({
         success: true,
-        message: "Verification code resent successfully"
+        message: "Verification code resent successfully",
+        // Only include verification code in development mode
+        ...(process.env.NODE_ENV === 'development' && { verificationCode })
       });
     } catch (error) {
       console.error('Resend verification error:', error);

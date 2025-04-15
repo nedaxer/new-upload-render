@@ -191,10 +191,19 @@ export default function VerifyAccount() {
         return;
       }
 
-      toast({
-        title: "Code resent",
-        description: "A new verification code has been sent to your email.",
-      });
+      // Check if server returned a verification code (development mode)
+      if (data.verificationCode) {
+        setDevCode(data.verificationCode);
+        toast({
+          title: "Development Mode",
+          description: "New verification code is now displayed on screen.",
+        });
+      } else {
+        toast({
+          title: "Code resent",
+          description: "A new verification code has been sent to your email.",
+        });
+      }
 
     } catch (error) {
       console.error('Resend error:', error);
@@ -255,6 +264,46 @@ export default function VerifyAccount() {
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Verify Your Account</h2>
           <p className="text-gray-500">Please enter the 6-digit code sent to your email</p>
         </div>
+        
+        {/* Display the verification code in development mode */}
+        {devCode && (
+          <Alert className="mb-6 bg-amber-50 border-amber-200">
+            <InfoIcon className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800 font-semibold">Development Mode</AlertTitle>
+            <AlertDescription className="mt-2">
+              <div className="text-amber-700">
+                <p className="mb-2">Since email services are not configured, your verification code is shown here:</p>
+                <div className="bg-white border-2 border-dashed border-amber-300 rounded-md p-3 font-mono text-center text-xl font-bold tracking-widest text-amber-600">
+                  {devCode}
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setVerificationCode(devCode || "")}
+                    className="text-sm py-1 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-md transition-colors duration-200"
+                  >
+                    Auto-fill code
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerificationCode(devCode || "");
+                      if (userId && devCode) {
+                        handleVerify({ preventDefault: () => {} } as React.FormEvent);
+                      }
+                    }}
+                    className="text-sm py-1 px-3 bg-green-100 hover:bg-green-200 text-green-800 rounded-md transition-colors duration-200"
+                  >
+                    Auto-verify
+                  </button>
+                </div>
+                <p className="mt-3 text-xs text-amber-600">
+                  In production, this code would be sent to your email address.
+                </p>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleVerify} className="space-y-6">
           <div className="space-y-2">
