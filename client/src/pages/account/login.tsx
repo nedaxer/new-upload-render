@@ -59,7 +59,9 @@ export default function Login() {
           });
           
           // Redirect to verification page - using hash location for the router
-          setLocation(`/account/verify?userId=${data.userId}`);
+          setTimeout(() => {
+            setLocation(`/account/verify?userId=${data.userId}`);
+          }, 100);
           return;
         }
         
@@ -92,8 +94,10 @@ export default function Login() {
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
       
-      // Redirect to home page
-      setLocation('/');
+      // Redirect to home page with delay to prevent reload
+      setTimeout(() => {
+        setLocation('/');
+      }, 100);
       
     } catch (error) {
       console.error('Login error:', error);

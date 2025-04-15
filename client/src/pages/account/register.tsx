@@ -164,7 +164,11 @@ export default function Register() {
       
       // Use setLocation from wouter to navigate - much safer than directly manipulating the DOM
       console.log("Redirecting to verification page with userId:", data.user.id);
-      setLocation(`/account/verify?userId=${data.user.id}`);
+      
+      // Use the proper URL format to prevent page reloads
+      setTimeout(() => {
+        setLocation(`/account/verify?userId=${data.user.id}`);
+      }, 100);
       
     } catch (error) {
       console.error('Registration error:', error);
@@ -451,7 +455,7 @@ export default function Register() {
           </p>
           <p className="text-gray-500 text-sm mt-2">
             Having trouble with registration?{" "}
-            <Link href="/#/account/verify" className="text-[#0033a0] hover:text-[#ff5900]">
+            <Link href="/account/verify" className="text-[#0033a0] hover:text-[#ff5900]">
               Go directly to verification
             </Link>
             {" "}if you've already registered.
