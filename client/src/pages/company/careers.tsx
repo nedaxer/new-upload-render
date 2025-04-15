@@ -3,6 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Briefcase, Users, Heart, Brain, Coffee, ArrowRight } from "lucide-react";
 
+// Import team photos
+import teamMainPhoto from "@assets/team_photos/team_main.png";
+import teamPhoto1 from "@assets/team_photos/team_1.png";
+import teamPhoto2 from "@assets/team_photos/team_2.png";
+import teamPhoto3 from "@assets/team_photos/team_3.png";
+import teamPhoto4 from "@assets/team_photos/team_4.png";
+import teamPhoto5 from "@assets/team_photos/team_5.png";
+import teamPhoto6 from "@assets/team_photos/team_6.png";
+
 export default function Careers() {
   const coreValues = [
     {
