@@ -122,11 +122,11 @@ export default function Security() {
             <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Segregated Funds</h3>
             <p className="mb-4">
               Your funds are held in segregated bank accounts with top-tier US banks, separate 
-              from Nadex's operating funds. This ensures that your money is protected and used 
+              from Nedaxer's operating funds. This ensures that your money is protected and used 
               only for your trading activities.
             </p>
             <p>
-              Nadex maintains detailed records of all member funds and undergoes regular audits 
+              Nedaxer maintains detailed records of all member funds and undergoes regular audits 
               to ensure compliance with regulatory requirements for fund segregation and protection.
             </p>
           </div>

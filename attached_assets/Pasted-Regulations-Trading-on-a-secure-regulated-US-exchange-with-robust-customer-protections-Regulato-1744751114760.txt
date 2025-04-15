@@ -1,0 +1,68 @@
+Regulations
+Trading on a secure, regulated US exchange with robust customer protections
+
+Regulatory Oversight
+Nadex operates under the regulatory oversight of the U.S. Commodity Futures Trading Commission (CFTC), which ensures our exchange maintains the highest standards of market integrity, transparency, and customer protection.
+
+As a regulated exchange, Nadex must comply with strict financial requirements, reporting obligations, and operating procedures designed to protect market participants and maintain a fair trading environment.
+
+CFTC Regulation
+The Commodity Futures Trading Commission (CFTC) is the primary regulator of derivatives markets in the United States, overseeing exchanges like Nadex to ensure market integrity and customer protection.
+
+Designated Contract Market (DCM)
+Nadex is registered as a Designated Contract Market (DCM), which allows us to offer regulated derivative products to retail traders in the United States.
+
+Anti-Money Laundering (AML)
+Nadex implements robust AML procedures including identity verification, transaction monitoring, and suspicious activity reporting to prevent financial crimes.
+
+Segregated Funds
+Member funds are held in segregated accounts at top-tier US banks, separate from Nadex's operating funds, providing an additional layer of protection.
+
+Customer Protection
+Segregated Funds
+One of the most important customer protections at Nadex is the segregation of member funds. This means your money is held in dedicated accounts at top-tier US banks, completely separate from Nadex's operating funds.
+
+This segregation provides a critical layer of protection, ensuring your funds are used only for your trading activities and are not exposed to the business risks of the exchange.
+
+Nadex maintains detailed records of all member funds and undergoes regular audits to ensure compliance with regulatory requirements for fund segregation.
+
+Limited Risk Products
+All products offered on Nadex are designed with limited risk characteristics. This means:
+
+Your maximum possible loss is known before you enter a trade
+You can never lose more than the capital you commit to each trade
+There are no margin calls
+Your risk is limited to your initial cost or collateral
+This built-in risk limitation is a fundamental customer protection that distinguishes Nadex from many other trading venues.
+
+Compliance Documents
+The following documents outline Nadex's regulatory framework, operating procedures, and policies to ensure compliance with applicable laws and regulations:
+
+Exchange Rules
+The comprehensive rulebook governing all trading activities, member conduct, and dispute resolution on Nadex.
+
+View Document
+Risk Disclosure Statement
+Important information about the risks associated with trading derivative products on Nadex.
+
+View Document
+Membership Agreement
+The legal agreement between Nadex and its members outlining rights, responsibilities, and terms of service.
+
+View Document
+Privacy Policy
+Details on how Nadex collects, uses, and protects your personal information.
+
+View Document
+AML Policy Statement
+Nadex's policies and procedures for preventing money laundering and terrorist financing.
+
+View Document
+Regulatory Notices
+CFTC Rule 4.41 - Hypothetical Performance Disclaimer
+HYPOTHETICAL PERFORMANCE RESULTS HAVE MANY INHERENT LIMITATIONS, SOME OF WHICH ARE DESCRIBED BELOW. NO REPRESENTATION IS BEING MADE THAT ANY ACCOUNT WILL OR IS LIKELY TO ACHIEVE PROFITS OR LOSSES SIMILAR TO THOSE SHOWN. IN FACT, THERE ARE FREQUENTLY SHARP DIFFERENCES BETWEEN HYPOTHETICAL PERFORMANCE RESULTS AND THE ACTUAL RESULTS SUBSEQUENTLY ACHIEVED BY ANY PARTICULAR TRADING PROGRAM.
+
+Risk Disclosure
+Trading on Nadex involves financial risk and may not be appropriate for all investors. The value of your investments can go down as well as up, and you may lose some or all of your investment. Past performance is not indicative of future results.
+
+View Full Risk Disclosure
