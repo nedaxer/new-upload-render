@@ -10,7 +10,7 @@ export default function Contact() {
       description: "Questions about our platform, our products, or how to get started?",
       icon: <HelpCircle className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "info@example.com",
+        email: "info@cryptotrading.com",
         phone: "Contact via email or form",
       },
     },
@@ -19,7 +19,7 @@ export default function Contact() {
       description: "Account-related questions, technical issues, or trading assistance.",
       icon: <MessageSquare className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "support@example.com",
+        email: "support@cryptotrading.com",
         phone: "Contact via email or form",
       },
     },
@@ -28,7 +28,7 @@ export default function Contact() {
       description: "Questions about KYC, account security, or regulatory matters.",
       icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "security@example.com",
+        email: "security@cryptotrading.com",
         phone: "Contact via email or form",
       },
     },
@@ -37,7 +37,7 @@ export default function Contact() {
       description: "Help with chart analysis, indicators, or trading strategies.",
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
       contact: {
-        email: "analysis@example.com",
+        email: "analysis@cryptotrading.com",
         phone: "Contact via email or form",
       },
     },
@@ -53,7 +53,7 @@ export default function Contact() {
         "USA",
       ],
       phone: "Contact via email or form",
-      email: "info@example.com",
+      email: "info@cryptotrading.com",
       hours: "Monday - Friday: 8:00 AM - 5:00 PM PT",
     },
     {
@@ -64,7 +64,7 @@ export default function Contact() {
         "Singapore 048616",
       ],
       phone: "Contact via email or form",
-      email: "asia@example.com",
+      email: "asia@cryptotrading.com",
       hours: "Monday - Friday: 9:00 AM - 6:00 PM SGT",
     },
   ];
@@ -295,13 +295,9 @@ export default function Contact() {
               </div>
             ))}
             
-            {/* Map Image */}
-            <div className="rounded-lg h-64 overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07b?q=80&w=1000&auto=format&fit=crop" 
-                alt="Office location map" 
-                className="w-full h-full object-cover"
-              />
+            {/* Map Placeholder */}
+            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
+              <p className="text-gray-600">Map would be displayed here</p>
             </div>
           </div>
         </div>
