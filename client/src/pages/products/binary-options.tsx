@@ -165,7 +165,7 @@ export default function BinaryOptions() {
             
             <div className="mt-6 text-center">
               <Link 
-                href="/learn/getting-started" 
+                href="/learn/binary-options" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
               >
                 Learn more about trading binary options <ArrowRight className="ml-1 h-4 w-4" />
@@ -230,7 +230,7 @@ export default function BinaryOptions() {
             variant="outline"
             className="ml-4 bg-transparent border border-white hover:bg-white hover:bg-opacity-20 text-white font-semibold px-8 py-3"
           >
-            <Link href="/learn/getting-started">Learn More</Link>
+            <Link href="/learn/binary-options">Learn More</Link>
           </Button>
         </div>
       </div>

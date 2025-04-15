@@ -177,7 +177,7 @@ export default function KnockOuts() {
             variant="outline"
             className="ml-4 bg-transparent border border-white hover:bg-white hover:bg-opacity-20 text-white font-semibold px-8 py-3"
           >
-            <Link href="/learn/getting-started">Learn More</Link>
+            <Link href="/learn/knock-outs">Learn More</Link>
           </Button>
         </div>
       </div>
