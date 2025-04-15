@@ -122,11 +122,22 @@ export default function Register() {
         description: "Please check your email for a verification code.",
       });
       
-      // Set a flag to prevent multiple redirects
-      const redirectionTimer = setTimeout(() => {
-        // Using hash-based navigation for proper routing
-        if (data.user && data.user.id) {
-          window.location.href = `/#/account/verify?userId=${data.user.id}`;
+      console.log("Registration successful, redirecting to verification page with userId:", data.user.id);
+      
+      // Store data for verification page
+      if (data.user && data.user.id) {
+        localStorage.setItem('unverifiedUserId', data.user.id.toString());
+      }
+      
+      // Direct navigation instead of timeout to avoid issues
+      window.location.href = `/#/account/verify?userId=${data.user.id}`;
+      
+      // If the above navigation doesn't work, try a fallback after a delay
+      setTimeout(() => {
+        const currentUrl = window.location.href;
+        if (!currentUrl.includes('verify')) {
+          console.log("Fallback redirection to verification page");
+          window.location.replace(`/#/account/verify?userId=${data.user.id}`);
         }
       }, 2000);
       

@@ -39,29 +39,70 @@ async function sendVerificationEmail(email: string, code: string, firstName: str
       debug: process.env.NODE_ENV === 'development'
     });
 
-    // Email content
+    // Email content with enhanced design
     const mailOptions = {
       from: process.env.EMAIL_FROM || "Nedaxer Team <noreply@nedaxer.com>",
       to: email,
       subject: "Verify Your Nedaxer Account",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background-color: #0033a0; color: white; padding: 20px; text-align: center;">
-            <h1>Nedaxer Cryptocurrency Trading Platform</h1>
-          </div>
-          <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
-            <p>Hello ${firstName},</p>
-            <p>Thank you for creating an account with Nedaxer. To complete your registration, please use the verification code below:</p>
-            <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-              ${code}
-            </div>
-            <p>This code will expire in 30 minutes. If you did not request this verification, please ignore this email.</p>
-            <p>Best regards,<br>The Nedaxer Team</p>
-          </div>
-          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-            <p>© ${new Date().getFullYear()} Nedaxer. All rights reserved.</p>
-          </div>
-        </div>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verify Your Nedaxer Account</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb; color: #333;">
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 20px; margin-bottom: 20px;">
+            <tr>
+              <td>
+                <!-- Header -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td align="center" style="background: linear-gradient(135deg, #0033a0 0%, #001a60 100%); padding: 30px 0;">
+                      <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Nedaxer</h1>
+                      <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 16px;">Cryptocurrency Trading Platform</p>
+                    </td>
+                  </tr>
+                </table>
+                
+                <!-- Content -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 30px 40px;">
+                  <tr>
+                    <td>
+                      <h2 style="color: #0033a0; margin-top: 0; margin-bottom: 20px; font-size: 22px;">Email Verification</h2>
+                      <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px; font-size: 16px;">Hello ${firstName},</p>
+                      <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px; font-size: 16px;">Thank you for joining Nedaxer! To complete your registration and access your new account, please use the verification code below:</p>
+                      
+                      <div style="background: linear-gradient(to right, #f0f4ff, #e6f0fb); border-radius: 8px; padding: 25px; text-align: center; margin: 30px 0;">
+                        <div style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #0033a0;">${code}</div>
+                        <p style="color: #4b5563; margin-top: 15px; font-size: 14px;">This code will expire in 30 minutes</p>
+                      </div>
+                      
+                      <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px; font-size: 16px;">If you did not create an account with Nedaxer, please disregard this email.</p>
+                      
+                      <div style="border-top: 1px solid #e5e7eb; margin: 30px 0; padding-top: 30px;">
+                        <p style="color: #4b5563; line-height: 1.6; margin-bottom: 5px; font-size: 16px;">Thank you,</p>
+                        <p style="color: #0033a0; font-weight: 600; margin-top: 0; font-size: 16px;">The Nedaxer Team</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                
+                <!-- Footer -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td align="center" style="background-color: #f0f4ff; padding: 20px 0;">
+                      <p style="color: #6b7280; margin: 0 0 10px 0; font-size: 14px;">© ${new Date().getFullYear()} Nedaxer. All rights reserved.</p>
+                      <p style="color: #6b7280; margin: 0; font-size: 12px;">This is an automated message, please do not reply.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `
     };
 
@@ -76,6 +117,125 @@ async function sendVerificationEmail(email: string, code: string, firstName: str
       console.log(`Development mode: Verification code for ${email} is: ${code}`);
     } else {
       throw new Error("Failed to send verification email");
+    }
+  }
+}
+
+// Function to send welcome email after verification
+async function sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+  try {
+    // Create transporter with debug enabled
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || "smtp.example.com",
+      port: parseInt(process.env.EMAIL_PORT || "587"),
+      secure: process.env.EMAIL_SECURE === "true",
+      auth: {
+        user: process.env.EMAIL_USER || "",
+        pass: process.env.EMAIL_PASSWORD || "",
+      },
+      // For development only - handle TLS issues gracefully
+      tls: {
+        rejectUnauthorized: false
+      },
+      debug: process.env.NODE_ENV === 'development'
+    });
+
+    // Email content with beautiful design
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || "Nedaxer Team <noreply@nedaxer.com>",
+      to: email,
+      subject: "Welcome to Nedaxer - Your Account is Now Active!",
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Welcome to Nedaxer</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9fafb; color: #333;">
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 20px; margin-bottom: 20px;">
+            <tr>
+              <td>
+                <!-- Header with Celebration Style -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td align="center" style="background: linear-gradient(135deg, #0033a0 0%, #001a60 100%); padding: 40px 0;">
+                      <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700;">Welcome to Nedaxer!</h1>
+                      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">Your journey to smarter crypto trading begins now</p>
+                    </td>
+                  </tr>
+                </table>
+                
+                <!-- Main Content -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 40px;">
+                  <tr>
+                    <td>
+                      <h2 style="color: #0033a0; margin-top: 0; margin-bottom: 20px; font-size: 24px;">Hi ${firstName},</h2>
+                      <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px; font-size: 16px;">Congratulations! Your Nedaxer account has been successfully verified and is now active. We're thrilled to have you join our community of cryptocurrency traders.</p>
+                      
+                      <div style="background-color: #f0f7ff; border-left: 4px solid #0033a0; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                        <h3 style="color: #0033a0; margin-top: 0; margin-bottom: 10px; font-size: 18px;">What's Next?</h3>
+                        <ul style="color: #4b5563; padding-left: 20px; margin-bottom: 0;">
+                          <li style="margin-bottom: 10px;">Complete your profile to personalize your trading experience</li>
+                          <li style="margin-bottom: 10px;">Explore our trading tutorials and educational resources</li>
+                          <li style="margin-bottom: 10px;">Connect your preferred payment method</li>
+                          <li style="margin-bottom: 0;">Make your first trade with confidence</li>
+                        </ul>
+                      </div>
+                      
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0;">
+                        <tr>
+                          <td align="center">
+                            <a href="https://nedaxer.com/getting-started" style="background-color: #0033a0; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">Get Started Now</a>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <p style="color: #4b5563; line-height: 1.6; margin-bottom: 25px; font-size: 16px;">If you need any assistance or have questions, our support team is available 24/7 to help you. Simply reply to this email or contact us through our support portal.</p>
+                      
+                      <div style="border-top: 1px solid #e5e7eb; margin: 30px 0; padding-top: 30px;">
+                        <p style="color: #4b5563; line-height: 1.6; margin-bottom: 5px; font-size: 16px;">Happy trading,</p>
+                        <p style="color: #0033a0; font-weight: 600; margin-top: 0; font-size: 16px;">The Nedaxer Team</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+                
+                <!-- Footer with Social Links -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0f4ff; padding: 30px;">
+                  <tr>
+                    <td align="center">
+                      <p style="color: #6b7280; margin: 0 0 15px 0; font-size: 14px;">Follow us for market updates and trading tips</p>
+                      <div style="margin-bottom: 20px;">
+                        <!-- Social media icons would go here -->
+                        <a href="#" style="display: inline-block; margin: 0 10px; color: #0033a0; text-decoration: none;">Twitter</a>
+                        <a href="#" style="display: inline-block; margin: 0 10px; color: #0033a0; text-decoration: none;">LinkedIn</a>
+                        <a href="#" style="display: inline-block; margin: 0 10px; color: #0033a0; text-decoration: none;">Instagram</a>
+                      </div>
+                      <p style="color: #6b7280; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} Nedaxer. All rights reserved.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log(`Welcome email sent to ${email}`);
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    
+    // In development, don't throw - just log the error (so flow can continue)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Development mode: Would have sent welcome email to ${email}`);
+    } else {
+      throw new Error("Failed to send welcome email");
     }
   }
 }
@@ -325,6 +485,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Mark user as verified
       await storage.markUserAsVerified(userId);
+      
+      // Get user details for the welcome email
+      const user = await storage.getUser(userId);
+      
+      // Send welcome email if user exists
+      if (user) {
+        try {
+          await sendWelcomeEmail(user.email, user.firstName);
+        } catch (emailError) {
+          // Log error but don't fail the verification process
+          console.error('Error sending welcome email:', emailError);
+        }
+      }
       
       // Set session
       req.session.userId = userId;
