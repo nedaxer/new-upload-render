@@ -99,14 +99,12 @@ export default function About() {
               </p>
             </div>
             
-            {/* Company Image - Skyscraper with Nedaxer logo */}
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src={companyPhoto} 
-                alt="Nedaxer Headquarters at sunset" 
-                className="w-full object-contain"
-              />
-            </div>
+            {/* Company Image */}
+            <img 
+              src={companyPhoto} 
+              alt="Nedaxer Headquarters at sunset" 
+              className="w-full"
+            />
           </div>
         </div>
         
