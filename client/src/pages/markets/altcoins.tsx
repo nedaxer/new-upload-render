@@ -2,6 +2,7 @@ import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowRight, Check, Layers, Clock, ChartBar, Shield } from "lucide-react";
+import { CryptoChart, solanaData } from "@/components/crypto-chart";
 
 export default function AltcoinMarkets() {
   const altcoins = [
@@ -172,6 +173,30 @@ export default function AltcoinMarkets() {
           </div>
         </div>
         
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Featured Altcoin Chart: Solana (SOL)</h2>
+          
+          <div className="mb-8">
+            <div className="rounded-lg overflow-hidden">
+              <CryptoChart data={solanaData} coinSymbol="SOL" coinName="Solana" />
+              <div className="bg-white p-4 border border-gray-200 rounded-b-lg">
+                <p className="text-sm text-gray-500 mb-4">
+                  Historical price data shown for informational purposes only. Past performance is not indicative of future results.
+                </p>
+                <div className="flex justify-end">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
+                  >
+                    <Link href="/markets/market-data">View Detailed Charts</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Altcoin Trading Products</h2>
           
