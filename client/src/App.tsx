@@ -1,12 +1,11 @@
-import React from "react";
+import React from 'react';
+import TestPage from '@/pages/test';
 
-function App() {
+// Simplified App component for testing
+export default function App() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Nedaxer - Simplified Test App</h1>
-      <p>This is a basic test to verify React is working properly.</p>
+    <div>
+      <TestPage />
     </div>
   );
 }
-
-export default App;
