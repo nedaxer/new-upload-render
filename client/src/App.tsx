@@ -54,6 +54,7 @@ import Terms from '@/pages/legal/terms';
 import Login from '@/pages/account/login';
 import Register from '@/pages/account/register';
 import ForgotPassword from '@/pages/account/forgot-password';
+import VerifyAccount from '@/pages/account/verify';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -137,6 +138,7 @@ export default function App() {
         <Route path="/account/login" component={Login} />
         <Route path="/account/register" component={Register} />
         <Route path="/account/forgot-password" component={ForgotPassword} />
+        <Route path="/account/verify" component={VerifyAccount} />
         
         {/* Other Routes */}
         <Route path="/site-map" component={SiteMap} />

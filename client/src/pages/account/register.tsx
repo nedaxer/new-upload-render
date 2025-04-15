@@ -32,7 +32,9 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -63,16 +65,72 @@ export default function Register() {
       return;
     }
     
-    // Success - would normally register with backend
-    toast({
-      title: "Account created successfully",
-      description: "Welcome to Nedaxer cryptocurrency trading platform.",
-    });
+    // Set loading state
+    setIsLoading(true);
     
-    // Redirect to login page
-    setTimeout(() => {
-      setLocation("/account/login");
-    }, 1500);
+    try {
+      // Register with backend
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.email.split('@')[0] + Math.floor(Math.random() * 1000), // Generate a username from email
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Handle error
+        let errorMessage = "An unexpected error occurred. Please try again.";
+        
+        if (response.status === 409) {
+          errorMessage = data.message || "This email is already registered.";
+        } else if (response.status === 400) {
+          errorMessage = "Please check your information and try again.";
+        }
+        
+        toast({
+          title: "Registration failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Success - account created but needs verification
+      toast({
+        title: "Account created successfully",
+        description: "Please check your email for a verification code.",
+      });
+      
+      // Store the userId for the verification page
+      if (data.user && data.user.id) {
+        localStorage.setItem('unverifiedUserId', data.user.id.toString());
+      }
+      
+      // Redirect to verification page
+      setTimeout(() => {
+        setLocation(`/account/verify?userId=${data.user.id}`);
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

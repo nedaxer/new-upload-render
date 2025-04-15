@@ -139,4 +139,4 @@ export class PostgresStorage implements IStorage {
 }
 
 // Use PostgresStorage since we now have a PostgreSQL database
-export const storage = new MemStorage();
+export const storage = new PostgresStorage();
