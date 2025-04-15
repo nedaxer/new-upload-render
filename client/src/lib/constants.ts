@@ -74,8 +74,8 @@ export const heroSlides = [
     description: "Access digital asset markets from our mobile app with the same powerful features",
     image: "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80",
     alt: "Mobile crypto trading",
-    primaryButton: { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nadex.touch" },
-    secondaryButton: { label: "iOS App", href: "https://apps.apple.com/us/app/nadex" },
+    primaryButton: { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nedaxer.touch" },
+    secondaryButton: { label: "iOS App", href: "https://apps.apple.com/us/app/nedaxer" },
   },
 ];
 
@@ -223,6 +223,6 @@ export const footerLinks = {
     { label: "Login", href: "/account/login" },
     { label: "Register", href: "/account/register" },
     { label: "Forgot Password", href: "/account/forgot-password" },
-    { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nadex.touch" },
+    { label: "Download App", href: "https://play.google.com/store/apps/details?id=com.nedaxer.touch" },
   ],
 };
