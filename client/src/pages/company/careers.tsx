@@ -4,13 +4,13 @@ import { Link } from "wouter";
 import { Briefcase, Users, Heart, Brain, Coffee, ArrowRight } from "lucide-react";
 
 // Import team photos
-import teamMainPhoto from "@assets/team_photos/team_main.png";
-import teamPhoto1 from "@assets/team_photos/team_1.png";
-import teamPhoto2 from "@assets/team_photos/team_2.png";
-import teamPhoto3 from "@assets/team_photos/team_3.png";
-import teamPhoto4 from "@assets/team_photos/team_4.png";
-import teamPhoto5 from "@assets/team_photos/team_5.png";
-import teamPhoto6 from "@assets/team_photos/team_6.png";
+import teamMainPhoto from "/team_photos/team_main.png";
+import teamPhoto1 from "/team_photos/team_1.png";
+import teamPhoto2 from "/team_photos/team_2.png";
+import teamPhoto3 from "/team_photos/team_3.png";
+import teamPhoto4 from "/team_photos/team_4.png";
+import teamPhoto5 from "/team_photos/team_5.png";
+import teamPhoto6 from "/team_photos/team_6.png";
 
 export default function Careers() {
   const coreValues = [
@@ -110,7 +110,7 @@ export default function Careers() {
 
   return (
     <PageLayout 
-      title="Careers at Nadex" 
+      title="Careers at Nedaxer" 
       subtitle="Join our team and help shape the future of derivatives trading"
       bgColor="#0033a0"
     >
@@ -121,7 +121,7 @@ export default function Careers() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <p className="mb-4">
-                At Nadex, we're building innovative trading solutions that empower retail traders to access the financial markets with limited risk. 
+                At Nedaxer, we're building innovative trading solutions that empower retail traders to access the financial markets with limited risk. 
                 Our team combines expertise in financial markets, technology, and customer service to deliver a world-class trading experience.
               </p>
               <p className="mb-4">
@@ -137,9 +137,13 @@ export default function Careers() {
               </Button>
             </div>
             
-            {/* Team Image Placeholder */}
-            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-              <p className="text-gray-600">Team photo would be displayed here</p>
+            {/* Team Image */}
+            <div className="rounded-lg overflow-hidden h-64">
+              <img 
+                src={teamMainPhoto} 
+                alt="Nedaxer Team" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
@@ -217,15 +221,28 @@ export default function Careers() {
         </div>
         
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Life at Nadex</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Life at Nedaxer</h2>
           
-          {/* Image Gallery Placeholder */}
+          {/* Team Photo Gallery */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
-                <p className="text-gray-600">Team photo {item}</p>
-              </div>
-            ))}
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto1} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto2} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto3} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto4} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto5} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
+            <div className="rounded-lg overflow-hidden h-48">
+              <img src={teamPhoto6} alt="Nedaxer Team" className="w-full h-full object-cover" />
+            </div>
           </div>
           
           <div className="bg-[#f5f5f5] p-6 rounded-lg">
@@ -234,20 +251,20 @@ export default function Careers() {
             <div className="space-y-6">
               <div className="border-l-4 border-[#0033a0] pl-4">
                 <p className="italic mb-2">
-                  "Working at Nadex has been an incredible journey. The company truly values innovation and 
+                  "Working at Nedaxer has been an incredible journey. The company truly values innovation and 
                   encourages us to bring new ideas to the table. I've grown professionally while being part 
                   of a team that's changing how retail traders access the financial markets."
                 </p>
-                <div className="font-semibold">- Software Engineer, 3 years at Nadex</div>
+                <div className="font-semibold">- Software Engineer, 3 years at Nedaxer</div>
               </div>
               
               <div className="border-l-4 border-[#0033a0] pl-4">
                 <p className="italic mb-2">
-                  "The collaborative culture at Nadex sets it apart from other places I've worked. 
+                  "The collaborative culture at Nedaxer sets it apart from other places I've worked. 
                   There's a real sense of teamwork across departments, and leadership is accessible 
                   and supportive. The work-life balance and benefits are excellent too!"
                 </p>
-                <div className="font-semibold">- Product Manager, 2 years at Nadex</div>
+                <div className="font-semibold">- Product Manager, 2 years at Nedaxer</div>
               </div>
             </div>
           </div>
@@ -316,7 +333,7 @@ export default function Careers() {
 
         <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Ready to Join Our Team?</h2>
-          <p className="mb-6">Explore our current openings and take the next step in your career with Nadex.</p>
+          <p className="mb-6">Explore our current openings and take the next step in your career with Nedaxer.</p>
           <Button
             asChild
             className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
@@ -328,7 +345,7 @@ export default function Careers() {
               href="/company/contact" 
               className="text-white hover:text-[#ff5900] font-semibold flex items-center justify-center"
             >
-              Questions about careers at Nadex? Contact Us <ArrowRight className="ml-1 h-4 w-4" />
+              Questions about careers at Nedaxer? Contact Us <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
         </div>
