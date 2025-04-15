@@ -46,7 +46,24 @@ export default function Login() {
       const data = await response.json();
       
       if (!response.ok) {
-        // Handle error
+        // Check if account needs verification
+        if (response.status === 403 && data.needsVerification) {
+          // Store the userId for verification
+          if (data.userId) {
+            localStorage.setItem('unverifiedUserId', data.userId.toString());
+          }
+          
+          toast({
+            title: "Account not verified",
+            description: "Your account needs verification. Please check your email for a verification code.",
+          });
+          
+          // Redirect to verification page
+          setLocation(`/account/verify?userId=${data.userId}`);
+          return;
+        }
+        
+        // Handle other errors
         let errorMessage = "An unexpected error occurred. Please try again.";
         
         if (response.status === 401) {
