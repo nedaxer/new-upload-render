@@ -63,7 +63,7 @@ export default function MarketData() {
     {
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
       title: "Market News",
-      description: "Get the latest market news and analysis from our expert team, covering all markets available on the Nadex platform."
+      description: "Get the latest market news and analysis from our expert team, covering all markets available on the Nedaxer platform."
     },
     {
       icon: <Download className="h-10 w-10 text-[#0033a0]" />,
@@ -97,7 +97,7 @@ export default function MarketData() {
 
   return (
     <PageLayout 
-      title="Market Data" 
+      title="Comprehensive Market Data Resources" 
       subtitle="Access real-time and historical price data, charts, news, and analysis"
       bgImage="https://images.unsplash.com/photo-1640340434855-6084b1f4901c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
