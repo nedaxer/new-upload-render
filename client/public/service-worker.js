@@ -1,135 +1,135 @@
-// Cache name with version - update this version number to force cache refresh
-const CACHE_NAME = 'nedaxer-app-v2';
-const TIMESTAMP = new Date().toISOString(); // Add timestamp for cache-busting
+// Service worker for Nedaxer PWA
 
-// Files to cache
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
-];
+const CACHE_NAME = 'nedaxer-cache-v1';
 
-// Function to add query string for cache busting
+// Add cache bust parameter to URLs to prevent caching issues
 function addCacheBuster(url) {
-  // Don't add cache busting to URLs with query parameters or non-GET requests
-  const isCachableURL = url.includes('/api/') === false; // Don't cache API requests
-  const hasNoQuery = url.indexOf('?') === -1;
-  if (isCachableURL && hasNoQuery && (url.endsWith('.js') || url.endsWith('.css') || url.endsWith('.html'))) {
-    return `${url}?v=${CACHE_NAME}`;
-  }
-  return url;
+  const cacheBuster = `cache-bust=${Date.now()}`;
+  const hasParams = url.includes('?');
+  return `${url}${hasParams ? '&' : '?'}${cacheBuster}`;
 }
 
-// Install event - cache assets and force update
+// Assets to cache immediately on service worker install
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/logo.png',
+  '/manifest.json'
+];
+
+// Install event - precache key assets
 self.addEventListener('install', event => {
-  // Skip waiting - force the service worker to become active 
-  // even if another service worker already controls the page
-  self.skipWaiting();
+  console.log('[ServiceWorker] Installing...');
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[ServiceWorker] Opened cache:', CACHE_NAME);
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[ServiceWorker] Pre-caching assets');
+      return cache.addAll(PRECACHE_ASSETS);
+    })
   );
+
+  // Activate immediately
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches and take control immediately
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+  console.log('[ServiceWorker] Activating...');
   
-  // Claim clients - take control of all pages immediately
-  event.waitUntil(clients.claim());
-  
-  // Delete old caches
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            console.log('[ServiceWorker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
+        cacheNames.filter(cacheName => {
+          return cacheName !== CACHE_NAME;
+        }).map(cacheName => {
+          console.log('[ServiceWorker] Removing old cache:', cacheName);
+          return caches.delete(cacheName);
         })
       );
     })
   );
+
+  // Take control of all clients immediately
+  return self.clients.claim();
 });
 
-// Check for updates function to be called from client
-self.addEventListener('message', event => {
-  if (event.data === 'CHECK_UPDATES') {
-    console.log('[ServiceWorker] Checking for updates...');
-    // Force clients to reload if they need a refresh
-    self.clients.matchAll().then(clients => {
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'RELOAD_PAGE',
-          timestamp: TIMESTAMP
-        });
-      });
-    });
-  }
-});
-
-// Network first then cache strategy for HTML/JS/CSS files
-// Cache first for images and static assets
+// Fetch event - serve from cache or network
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  // Skip cross-origin requests and non-GET requests
+  if (!event.request.url.startsWith(self.location.origin) || 
+      event.request.method !== 'GET') {
+    return;
+  }
   
-  // For HTML, JS, and CSS files, use network first strategy
-  if (event.request.method === 'GET' && 
-      (url.pathname.endsWith('.html') || 
-       url.pathname.endsWith('.js') || 
-       url.pathname.endsWith('.css') ||
-       url.pathname === '/')) {
+  // For API requests, always go to network first
+  if (event.request.url.includes('/api/')) {
+    // Always add cache buster to API requests
+    const bustUrl = addCacheBuster(event.request.url);
+    const bustRequest = new Request(bustUrl, {
+      method: event.request.method,
+      headers: event.request.headers,
+      mode: event.request.mode,
+      credentials: event.request.credentials,
+      redirect: event.request.redirect
+    });
+    
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Clone the response to store in cache
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          // If network fails, try the cache
-          return caches.match(event.request);
-        })
+      fetch(bustRequest).catch(error => {
+        console.log('[ServiceWorker] API fetch failed, serving offline page');
+        return caches.match('/');
+      })
     );
-  } 
-  // For other files, try cache first then network
-  else {
+    return;
+  }
+
+  // For page navigations, use a network-first strategy
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match(event.request)
-        .then(response => {
-          if (response) {
-            return response;
-          }
-          
-          // Clone the request - fetch() uses up the request once consumed
-          const fetchRequest = event.request.clone();
-          
-          return fetch(fetchRequest)
-            .then(response => {
-              // Don't cache non-successful responses or non-GET methods
-              if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
-              }
-              
-              // Clone the response to store in cache
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-              
-              return response;
-            });
-        })
+      fetch(event.request).catch(error => {
+        console.log('[ServiceWorker] Navigation fetch failed, serving from cache');
+        return caches.match(event.request) || caches.match('/');
+      })
     );
+    return;
+  }
+  
+  // For all other requests, use a cache-first strategy
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      if (response) {
+        console.log('[ServiceWorker] Serving from cache:', event.request.url);
+        return response;
+      }
+      
+      console.log('[ServiceWorker] Fetching from network:', event.request.url);
+      return fetch(event.request).then(networkResponse => {
+        // Don't cache responses that aren't successful
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
+        }
+        
+        // Cache the new response
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        
+        return networkResponse;
+      });
+    })
+  );
+});
+
+// Handle messages sent to the service worker
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    console.log('[ServiceWorker] Clearing cache by request');
+    caches.delete(CACHE_NAME).then(() => {
+      console.log('[ServiceWorker] Cache cleared successfully');
+    });
   }
 });
