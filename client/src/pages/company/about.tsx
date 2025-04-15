@@ -100,12 +100,11 @@ export default function About() {
             </div>
             
             {/* Company Image - Skyscraper with Nedaxer logo */}
-            <div className="rounded-lg h-96 overflow-hidden shadow-xl border-2 border-[#0033a0]">
-              {/* Skyscraper image with pre-applied Nedaxer branding at sunset */}
+            <div className="rounded-lg overflow-hidden shadow-lg">
               <img 
                 src={companyPhoto} 
                 alt="Nedaxer Headquarters at sunset" 
-                className="w-full h-full object-cover"
+                className="w-full object-contain"
               />
             </div>
           </div>
