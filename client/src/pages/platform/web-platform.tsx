@@ -2,6 +2,7 @@ import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Check, LineChart, BarChart, PieChart, ArrowRight } from "lucide-react";
+import { CryptoChart, bitcoinData } from "@/components/crypto-chart";
 
 export default function WebPlatform() {
   const platformFeatures = [
@@ -73,7 +74,7 @@ export default function WebPlatform() {
           
           <div className="mb-8">
             <p className="mb-4">
-              The Nadex web platform gives you everything you need to trade our unique limited-risk products. 
+              The Web Trading Platform gives you everything you need to trade our unique limited-risk products. 
               Built with advanced technology, it provides professional-grade charting, intuitive order management, 
               and comprehensive market data—all accessible from your browser with no downloads required.
             </p>
@@ -99,11 +100,20 @@ export default function WebPlatform() {
           <div className="bg-gray-200 h-72 rounded-lg flex items-center justify-center">
             <p className="text-gray-600">Trading platform interface visualization would be displayed here</p>
           </div>
-          <p className="text-sm text-gray-500 mt-2 text-center">Nadex trading platform with advanced charting and order management</p>
+          <p className="text-sm text-gray-500 mt-2 text-center">Web Trading Platform with advanced charting and order management</p>
         </div>
         
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Platform Features</h2>
+          
+          <div className="mb-8">
+            <CryptoChart 
+              data={bitcoinData} 
+              coinSymbol="BTC" 
+              coinName="Bitcoin" 
+              className="mb-8"
+            />
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {tradingTools.map((tool, i) => (
@@ -129,7 +139,7 @@ export default function WebPlatform() {
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow text-center">
               <div className="text-3xl font-bold text-[#0033a0] mb-4">1</div>
               <h3 className="text-lg font-bold mb-2">Create Account</h3>
-              <p className="text-gray-700 mb-4">Sign up for a free Nadex account to access all platform features.</p>
+              <p className="text-gray-700 mb-4">Sign up for a free account to access all platform features.</p>
               <Link 
                 href="#" 
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center justify-center"
