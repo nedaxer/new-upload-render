@@ -151,11 +151,19 @@ export default function Register() {
         localStorage.setItem('unverifiedUserId', data.user.id.toString());
       }
       
-      // Use React's built-in navigation instead of direct DOM manipulation
-      // This is much safer and won't cause page refreshes
-      console.log("Redirecting to verification page with userId:", data.user.id);
+      // Store verification code for development mode
+      if (data.verificationCode) {
+        localStorage.setItem('devVerificationCode', data.verificationCode);
+      }
       
-      // Use the setLocation from wouter to navigate
+      // Show success message
+      toast({
+        title: "Registration successful",
+        description: "You'll now be redirected to the verification page.",
+      });
+      
+      // Use setLocation from wouter to navigate - much safer than directly manipulating the DOM
+      console.log("Redirecting to verification page with userId:", data.user.id);
       setLocation(`/account/verify?userId=${data.user.id}`);
       
     } catch (error) {

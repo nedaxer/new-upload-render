@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircleIcon, LockIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircleIcon, LockIcon, Loader2Icon, RefreshCwIcon, InfoIcon } from "lucide-react";
 
 export default function VerifyAccount() {
   const [, setLocation] = useLocation();
@@ -15,8 +16,9 @@ export default function VerifyAccount() {
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [verificationSuccess, setVerificationSuccess] = useState(false);
+  const [devCode, setDevCode] = useState<string | null>(null);
 
-  // On component mount, check URL for userId parameter
+  // On component mount, check URL for userId parameter and get development verification code if available
   useEffect(() => {
     const extractUserIdFromUrl = () => {
       // First try to extract from hash part of URL (/#/account/verify?userId=X)
@@ -54,28 +56,37 @@ export default function VerifyAccount() {
       setUserId(urlUserId);
       // Also save to localStorage for persistence
       localStorage.setItem('unverifiedUserId', urlUserId.toString());
-      return;
-    } 
-    
-    if (storedUserId) {
+    } else if (storedUserId) {
       console.log("Found userId in localStorage:", storedUserId);
       setUserId(parseInt(storedUserId, 10));
+    } else {
+      // Display clear message and redirect if no userId found
+      console.log("No userId found in URL or localStorage");
+      toast({
+        title: "Verification information missing",
+        description: "We couldn't find your account information. Please try registering again.",
+        variant: "destructive",
+      });
+      
+      // Redirect after a short delay
+      setTimeout(() => {
+        setLocation('/account/login');
+      }, 2000);
       return;
     }
     
-    // Display clear message and redirect if no userId found
-    console.log("No userId found in URL or localStorage");
-    toast({
-      title: "Verification information missing",
-      description: "We couldn't find your account information. Please try registering again.",
-      variant: "destructive",
-    });
-    
-    // Redirect after a short delay
-    setTimeout(() => {
-      setLocation('/account/login');
-    }, 2000);
-    
+    // Check for development verification code in localStorage (added during registration)
+    const devVerificationCode = localStorage.getItem('devVerificationCode');
+    if (devVerificationCode) {
+      console.log("Development mode: Found verification code:", devVerificationCode);
+      setDevCode(devVerificationCode);
+      
+      // Show a toast to make it obvious to the user
+      toast({
+        title: "Development Mode",
+        description: "A verification code is available for testing",
+      });
+    }
   }, [setLocation, toast]);
 
   const handleVerify = async (e: React.FormEvent) => {

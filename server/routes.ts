@@ -473,6 +473,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Success - respond with user details for the verification page
+      // In development mode, also include the verification code in the response
+      // so the frontend can display it (since emails aren't actually sent)
       return res.status(201).json({
         success: true,
         message: "User registered successfully. Please check your email for verification code.",
@@ -480,7 +482,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: newUser.id,
           username: newUser.username,
           email: newUser.email
-        }
+        },
+        // Only include verification code in development mode
+        ...(process.env.NODE_ENV === 'development' && { verificationCode })
       });
     } catch (error: any) {
       console.error('Registration error:', error);
