@@ -66,19 +66,19 @@ IN NO EVENT WILL NEDAXER, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS,
     {
       id: "indemnification",
       title: "Indemnification",
-      content: `You agree to defend, indemnify, and hold harmless Nadex, its affiliates, licensors, and service providers, and its and their respective officers, directors, employees, contractors, agents, licensors, suppliers, successors, and assigns from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the Services.`
+      content: `You agree to defend, indemnify, and hold harmless Nedaxer, its affiliates, licensors, and service providers, and its and their respective officers, directors, employees, contractors, agents, licensors, suppliers, successors, and assigns from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the Services.`
     },
     {
       id: "modifications",
       title: "Modifications to the Terms",
-      content: `Nadex reserves the right to modify these Terms at any time. Changes will be effective immediately upon posting the updated Terms on our website. Your continued use of the Services after any changes to the Terms constitutes your acceptance of the revised Terms.
+      content: `Nedaxer reserves the right to modify these Terms at any time. Changes will be effective immediately upon posting the updated Terms on our website. Your continued use of the Services after any changes to the Terms constitutes your acceptance of the revised Terms.
 
 It is your responsibility to review these Terms periodically to stay informed of updates. If you do not agree with the revised Terms, you must stop using the Services.`
     },
     {
       id: "termination",
       title: "Termination",
-      content: `Nadex may terminate or suspend your access to all or part of the Services, with or without notice, for any conduct that Nadex, in its sole discretion, believes violates these Terms or is harmful to other users of the Services, Nadex, or third parties, or for any other reason.
+      content: `Nedaxer may terminate or suspend your access to all or part of the Services, with or without notice, for any conduct that Nedaxer, in its sole discretion, believes violates these Terms or is harmful to other users of the Services, Nedaxer, or third parties, or for any other reason.
 
 Upon termination, your right to use the Services will immediately cease, and you must cease all use of the Services. Any provision of these Terms that by their nature should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity, and limitations of liability.`
     },
@@ -87,26 +87,26 @@ Upon termination, your right to use the Services will immediately cease, and you
       title: "Governing Law and Dispute Resolution",
       content: `These Terms and any disputes arising out of or related to these Terms or the Services shall be governed by and construed in accordance with the laws of the State of Illinois, without regard to its conflict of law principles.
 
-Any legal suit, action, or proceeding arising out of, or related to, these Terms or the Services shall be instituted exclusively in the federal courts of the United States or the courts of the State of Illinois, in each case located in Chicago, Illinois, although Nadex retains the right to bring any suit, action, or proceeding against you for breach of these Terms in your country of residence or any other relevant jurisdiction.`
+Any legal suit, action, or proceeding arising out of, or related to, these Terms or the Services shall be instituted exclusively in the federal courts of the United States or the courts of the State of Illinois, in each case located in Chicago, Illinois, although Nedaxer retains the right to bring any suit, action, or proceeding against you for breach of these Terms in your country of residence or any other relevant jurisdiction.`
     },
     {
       id: "miscellaneous",
       title: "Miscellaneous",
-      content: `These Terms, including any legal notices and disclaimers contained on our website, constitute the entire agreement between you and Nadex regarding your use of the Services and supersede all prior and contemporaneous agreements, proposals, or representations, written or oral, concerning the subject matter.
+      content: `These Terms, including any legal notices and disclaimers contained on our website, constitute the entire agreement between you and Nedaxer regarding your use of the Services and supersede all prior and contemporaneous agreements, proposals, or representations, written or oral, concerning the subject matter.
 
 If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that the remaining provisions will remain in full force and effect.
 
-No waiver by Nadex of any term or condition set out in these Terms shall be deemed a further or continuing waiver of such term or condition or a waiver of any other term or condition, and any failure of Nadex to assert a right or provision under these Terms shall not constitute a waiver of such right or provision.`
+No waiver by Nedaxer of any term or condition set out in these Terms shall be deemed a further or continuing waiver of such term or condition or a waiver of any other term or condition, and any failure of Nedaxer to assert a right or provision under these Terms shall not constitute a waiver of such right or provision.`
     },
     {
       id: "contact",
       title: "Contact Information",
       content: `If you have any questions about these Terms, please contact us at:
 
-Nadex
+Nedaxer
 200 W Jackson Blvd, Suite 1400
 Chicago, IL 60606
-Email: compliance@nadex.com
+Email: compliance@nedaxer.com
 Phone: +1 (888) 555-7777`
     },
   ];
@@ -126,7 +126,7 @@ Phone: +1 (888) 555-7777`
           
           <div className="bg-[#f5f5f5] p-6 rounded-lg mb-8">
             <p className="mb-4">
-              These Terms and Conditions govern your access to and use of Nadex's website, mobile applications, 
+              These Terms and Conditions govern your access to and use of Nedaxer's website, mobile applications, 
               and trading platforms. By using our services, you agree to be bound by these terms.
             </p>
             
