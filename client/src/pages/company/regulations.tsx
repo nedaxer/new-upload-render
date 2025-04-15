@@ -132,7 +132,7 @@ export default function Regulations() {
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Compliance Documents</h2>
           
           <p className="mb-6">
-            The following documents outline Nadex's regulatory framework, operating procedures, 
+            The following documents outline Nedaxer's regulatory framework, operating procedures, 
             and policies to ensure compliance with applicable laws and regulations:
           </p>
           
@@ -176,7 +176,7 @@ export default function Regulations() {
               <div>
                 <h3 className="text-lg font-bold mb-1 text-gray-800">Risk Disclosure</h3>
                 <p className="text-gray-700 mb-2">
-                  Trading on Nadex involves financial risk and may not be appropriate for all investors. 
+                  Trading on Nedaxer involves financial risk and may not be appropriate for all investors. 
                   The value of your investments can go down as well as up, and you may lose some or all of your investment. 
                   Past performance is not indicative of future results.
                 </p>

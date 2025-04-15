@@ -8,28 +8,28 @@ export default function Terms() {
     {
       id: "introduction",
       title: "Introduction",
-      content: `These Terms and Conditions (the "Terms") govern your access to and use of Nadex's website, mobile applications, and trading platforms (collectively, the "Services"). By accessing or using the Services, you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Services.
+      content: `These Terms and Conditions (the "Terms") govern your access to and use of Nedaxer's website, mobile applications, and trading platforms (collectively, the "Services"). By accessing or using the Services, you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Services.
 
-Nadex is a regulated exchange under the oversight of the U.S. Commodity Futures Trading Commission (CFTC). All trading activities conducted through our platforms are subject to applicable regulations and exchange rules.`
+Nedaxer is a regulated exchange under the oversight of the U.S. Commodity Futures Trading Commission (CFTC). All trading activities conducted through our platforms are subject to applicable regulations and exchange rules.`
     },
     {
       id: "eligibility",
       title: "Eligibility",
       content: `To be eligible to use our Services, you must be at least 18 years old and reside in a jurisdiction where access to and use of our Services is legal. By accessing or using our Services, you represent and warrant that you meet these eligibility requirements.
 
-Certain aspects of our Services may not be available to persons located in certain jurisdictions due to regulatory restrictions. Nadex reserves the right to limit access to its Services based on geographic location or other criteria at its sole discretion.`
+Certain aspects of our Services may not be available to persons located in certain jurisdictions due to regulatory restrictions. Nedaxer reserves the right to limit access to its Services based on geographic location or other criteria at its sole discretion.`
     },
     {
       id: "account",
       title: "Account Registration and Security",
       content: `To use certain features of our Services, you must register for an account. When registering, you agree to provide accurate, current, and complete information about yourself. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.
 
-You agree to immediately notify Nadex of any unauthorized use of your account or any other breach of security. Nadex will not be liable for any losses or damages arising from your failure to comply with this section.`
+You agree to immediately notify Nedaxer of any unauthorized use of your account or any other breach of security. Nedaxer will not be liable for any losses or damages arising from your failure to comply with this section.`
     },
     {
       id: "trading",
       title: "Trading Terms",
-      content: `All trades conducted on Nadex platforms are governed by the Nadex Exchange Rules, which are incorporated into these Terms by reference. You agree to abide by these rules when trading on Nadex.
+      content: `All trades conducted on Nedaxer platforms are governed by the Nedaxer Exchange Rules, which are incorporated into these Terms by reference. You agree to abide by these rules when trading on Nedaxer.
 
 You acknowledge that trading derivative products involves significant risk of loss and is not suitable for all investors. You should carefully consider whether trading is appropriate for you in light of your financial circumstances, objectives, experience, and risk tolerance.
 
@@ -38,7 +38,7 @@ All deposit and withdrawal transactions are subject to the terms outlined in our
     {
       id: "intellectual",
       title: "Intellectual Property",
-      content: `All content, features, and functionality available through our Services, including but not limited to text, graphics, logos, icons, images, audio clips, data compilations, and software, are the exclusive property of Nadex or its licensors and are protected by United States and international copyright, trademark, patent, and other intellectual property or proprietary rights laws.
+      content: `All content, features, and functionality available through our Services, including but not limited to text, graphics, logos, icons, images, audio clips, data compilations, and software, are the exclusive property of Nedaxer or its licensors and are protected by United States and international copyright, trademark, patent, and other intellectual property or proprietary rights laws.
 
 You are granted a limited, non-exclusive, non-transferable, and revocable license to access and use our Services for their intended purposes. You may not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on our Services without our express prior written consent.`
     },
@@ -46,7 +46,7 @@ You are granted a limited, non-exclusive, non-transferable, and revocable licens
       id: "prohibited",
       title: "Prohibited Activities",
       content: `You agree not to engage in any of the following prohibited activities:
-- Violating any applicable laws, regulations, or the Nadex Exchange Rules
+- Violating any applicable laws, regulations, or the Nedaxer Exchange Rules
 - Impersonating another person or entity
 - Attempting to gain unauthorized access to any portion of the Services or any other systems or networks connected to the Services
 - Using any automated means, including bots, spiders, or scrapers, to access or collect data from our Services
@@ -54,14 +54,14 @@ You are granted a limited, non-exclusive, non-transferable, and revocable licens
 - Uploading viruses, malware, or other malicious code
 - Interfering with or disrupting the integrity or performance of the Services
 
-Nadex reserves the right to terminate your access to the Services for any violation of these prohibited activities.`
+Nedaxer reserves the right to terminate your access to the Services for any violation of these prohibited activities.`
     },
     {
       id: "disclaimer",
       title: "Disclaimers and Limitation of Liability",
-      content: `THE SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, NADEX DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+      content: `THE SERVICES ARE PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, NEDAXER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
-IN NO EVENT WILL NADEX, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, UNDER ANY LEGAL THEORY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE, OR INABILITY TO USE, THE SERVICES, INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.`
+IN NO EVENT WILL NEDAXER, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, UNDER ANY LEGAL THEORY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE, OR INABILITY TO USE, THE SERVICES, INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.`
     },
     {
       id: "indemnification",
