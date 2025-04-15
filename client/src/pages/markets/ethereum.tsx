@@ -2,6 +2,7 @@ import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowRight, Check, TrendingUp, Clock, DollarSign, Zap } from "lucide-react";
+import { CryptoChart, ethereumData } from "@/components/crypto-chart";
 
 export default function EthereumMarkets() {
   const features = [
@@ -195,12 +196,9 @@ export default function EthereumMarkets() {
             </div>
           </div>
           
-          <div className="bg-white shadow-md border border-gray-200 rounded-lg overflow-hidden">
-            <div className="p-6">
-              <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Ethereum Price Chart</h3>
-              <div className="bg-gray-100 h-80 rounded-lg flex items-center justify-center mb-4">
-                <p className="text-gray-500">Ethereum price chart visualization would be displayed here</p>
-              </div>
+          <div className="rounded-lg overflow-hidden">
+            <CryptoChart data={ethereumData} coinSymbol="ETH" coinName="Ethereum" />
+            <div className="bg-white p-4 border border-gray-200 rounded-b-lg">
               <p className="text-sm text-gray-500 mb-4">
                 Historical price data shown for informational purposes only. Past performance is not indicative of future results.
               </p>
@@ -210,7 +208,7 @@ export default function EthereumMarkets() {
                   variant="outline"
                   className="border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
                 >
-                  <Link href="#">View Detailed Charts</Link>
+                  <Link href="/markets/market-data">View Detailed Charts</Link>
                 </Button>
               </div>
             </div>
