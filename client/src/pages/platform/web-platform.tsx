@@ -95,25 +95,18 @@ export default function WebPlatform() {
           </div>
         </div>
         
-        {/* Platform Screenshot Placeholder */}
+        {/* Platform Trading Chart */}
         <div className="mb-12">
-          <div className="bg-gray-200 h-72 rounded-lg flex items-center justify-center">
-            <p className="text-gray-600">Trading platform interface visualization would be displayed here</p>
-          </div>
+          <CryptoChart 
+            data={bitcoinData} 
+            coinSymbol="BTC" 
+            coinName="Bitcoin" 
+          />
           <p className="text-sm text-gray-500 mt-2 text-center">Web Trading Platform with advanced charting and order management</p>
         </div>
         
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Platform Features</h2>
-          
-          <div className="mb-8">
-            <CryptoChart 
-              data={bitcoinData} 
-              coinSymbol="BTC" 
-              coinName="Bitcoin" 
-              className="mb-8"
-            />
-          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {tradingTools.map((tool, i) => (
