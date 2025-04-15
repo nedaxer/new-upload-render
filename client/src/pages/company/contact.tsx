@@ -294,11 +294,6 @@ export default function Contact() {
                 </div>
               </div>
             ))}
-            
-            {/* Map Placeholder */}
-            <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-              <p className="text-gray-600">Map would be displayed here</p>
-            </div>
           </div>
         </div>
         
