@@ -76,7 +76,8 @@ export default function Register() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.email.split('@')[0] + Math.floor(Math.random() * 1000), // Generate a username from email
+          // Generate a more unique username by using email + timestamp + random number
+          username: formData.email.split('@')[0] + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000),
           email: formData.email,
           password: formData.password,
           firstName: formData.firstName,
@@ -89,11 +90,21 @@ export default function Register() {
       if (!response.ok) {
         // Handle error
         let errorMessage = "An unexpected error occurred. Please try again.";
+        let errorDetail = "";
         
         if (response.status === 409) {
-          errorMessage = data.message || "This email is already registered.";
+          if (data.message === "Email already exists") {
+            errorMessage = "This email is already registered.";
+            errorDetail = "Please use a different email address or try to log in.";
+          } else if (data.message === "Username already exists") {
+            errorMessage = "This username is already taken.";
+            errorDetail = "Please try a different username.";
+          } else {
+            errorMessage = data.message || "This account already exists.";
+          }
         } else if (response.status === 400) {
           errorMessage = "Please check your information and try again.";
+          errorDetail = "Make sure all required fields are filled correctly.";
         }
         
         toast({
@@ -101,6 +112,17 @@ export default function Register() {
           description: errorMessage,
           variant: "destructive",
         });
+        
+        // Show additional detail if available
+        if (errorDetail) {
+          setTimeout(() => {
+            toast({
+              title: "What to do next",
+              description: errorDetail,
+            });
+          }, 1000);
+        }
+        
         setIsLoading(false);
         return;
       }
