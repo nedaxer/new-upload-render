@@ -23,9 +23,13 @@ export default function VerifyAccount() {
     const extractUserIdFromUrl = () => {
       // First try to extract from hash part of URL (/#/account/verify?userId=X)
       const hashString = window.location.hash;
+      console.log("Current hash string:", hashString);
+      
       if (hashString) {
         // Get the part after the ? if it exists
-        const queryPart = hashString.split('?')[1];
+        const hashPath = hashString.replace(/^#/, ''); // Remove the leading # if present
+        const queryPart = hashPath.split('?')[1];
+        
         if (queryPart) {
           const params = new URLSearchParams(queryPart);
           const userIdParam = params.get('userId');
@@ -70,6 +74,7 @@ export default function VerifyAccount() {
       
       // Redirect after a short delay
       setTimeout(() => {
+        // Use hash-based location to avoid page reload
         setLocation('/account/login');
       }, 2000);
       return;

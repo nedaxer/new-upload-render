@@ -58,7 +58,7 @@ export default function Login() {
             description: "Your account needs verification. Please check your email for a verification code.",
           });
           
-          // Redirect to verification page
+          // Redirect to verification page - using hash location for the router
           setLocation(`/account/verify?userId=${data.userId}`);
           return;
         }
