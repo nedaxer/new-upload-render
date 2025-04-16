@@ -61,8 +61,8 @@ export default function TradingGuides() {
     },
     {
       id: 104,
-      title: "Nadex Platform Tutorial",
-      description: "A step-by-step guide to navigating and using the Nadex trading platform.",
+      title: "Nedaxer Platform Tutorial",
+      description: "A step-by-step guide to navigating and using the Nedaxer trading platform.",
       category: "Platform",
       readTime: "20 min",
     },
