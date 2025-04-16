@@ -1,29 +1,62 @@
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Check, ArrowRight, Smartphone, Tablet, BarChart3, Zap, Download } from "lucide-react";
+import { Download, Smartphone, Tablet, BarChart3, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, ArrowRight } from "lucide-react";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
+import { Link } from "wouter";
 
 export default function MobileApp() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    try {
+      await deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      }
+      setDeferredPrompt(null);
+    } catch (err) {
+      console.error('Installation failed:', err);
+    }
+  };
+
   const appFeatures = [
     {
       title: "Trade On The Go",
-      description: "Place trades, monitor positions, and manage your account from anywhere with our powerful mobile app.",
+      description: "Place trades, monitor positions, and manage your account from anywhere.",
       icon: <Smartphone className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Full Platform Features",
-      description: "Access all the same markets, products, and trading tools available on our web platform.",
+      description: "Access all markets, products, and trading tools available on our web platform.",
       icon: <Tablet className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Advanced Charting",
-      description: "Analyze markets with professional charting tools, indicators, and drawing features optimized for touch.",
+      description: "Analyze markets with professional charting tools and indicators.",
       icon: <BarChart3 className="h-10 w-10 text-[#0033a0]" />,
     },
     {
       title: "Real-Time Alerts",
-      description: "Stay updated with push notifications for price alerts, trade executions, and account activity.",
+      description: "Stay updated with notifications for price alerts and trade executions.",
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
     },
   ];
@@ -51,40 +84,41 @@ export default function MobileApp() {
 
   return (
     <PageLayout 
-      title="Cryptocurrency Mobile Trading App" 
-      subtitle="Trade anywhere, anytime with our powerful mobile cryptocurrency application"
+      title="Nedaxer Trading App" 
+      subtitle="Trade cryptocurrencies anywhere, anytime with our powerful trading application"
       bgColor="#0033a0"
-      bgImage="https://images.unsplash.com/photo-1613843873331-6bf40a3b0ff3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&h=500&q=80"
     >
       <div className="max-w-4xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Mobile Trading Power</h2>
-          
-          <div className="mb-8">
-            <p className="mb-4">
-              The Nedaxer mobile app gives you the freedom to trade cryptocurrencies on the go, with the same powerful 
-              features and limited-risk products available on our web platform. Never miss a trading 
-              opportunity, even when you're away from your desk.
+        <div className="text-center mb-12">
+          <Button
+            onClick={handleInstall}
+            className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3 text-lg"
+            disabled={!deferredPrompt}
+          >
+            <Download className="mr-2 h-5 w-5" />
+            Install Nedaxer App
+          </Button>
+          {!deferredPrompt && (
+            <p className="mt-2 text-sm text-gray-600">
+              If you've already installed the app or your browser doesn't support installation,
+              you can access it through your device's home screen.
             </p>
-            <p className="mb-6">
-              Our intuitive mobile interface is designed for touch controls while maintaining the 
-              advanced functionality serious crypto traders demand.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {appFeatures.map((feature, i) => (
-              <div key={i} className="flex items-start p-6 bg-[#f5f5f5] rounded-lg">
-                <div className="mr-4">{feature.icon}</div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2 text-[#0033a0]">{feature.title}</h3>
-                  <p className="text-gray-700">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
-        
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {appFeatures.map((feature, i) => (
+            <div key={i} className="flex items-start p-6 bg-white rounded-lg shadow-md">
+              <div className="mr-4">{feature.icon}</div>
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-[#0033a0]">{feature.title}</h3>
+                <p className="text-gray-700">{feature.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+
         {/* App Screenshots and Download Section */}
         <div className="mb-12">
           <div className="relative bg-gradient-to-r from-[#001a4d] to-[#0033a0] p-8 rounded-lg text-white overflow-hidden">
@@ -144,6 +178,7 @@ export default function MobileApp() {
           <p className="text-sm text-gray-500 mt-2 text-center">Nedaxer mobile app on smartphone and tablet devices</p>
         </div>
         
+
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">App Features</h2>
           
@@ -275,7 +310,7 @@ export default function MobileApp() {
             </div>
           </div>
         </div>
-
+        
         <div className="bg-gradient-to-r from-[#001a4d] to-[#0033a0] text-white rounded-lg p-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <img 
