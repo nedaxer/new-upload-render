@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
@@ -15,7 +16,6 @@ export const CTASection = () => {
                 Open an account today and get access to our full range of products, markets, and educational resources.
               </p>
               <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex">
-                {/*Removed Open Account Button*/}
                 <Button
                   asChild
                   variant="outline"
