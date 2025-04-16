@@ -40,8 +40,8 @@ export default function TradingGuides() {
   const beginnerGuides = [
     {
       id: 101,
-      title: "Introduction to Nadex",
-      description: "An overview of Nadex, its products, and how our exchange works.",
+      title: "Introduction to Web Trading Platform",
+      description: "An overview of Web Trading Platform, its products, and how our exchange works.",
       category: "Getting Started",
       readTime: "10 min",
     },
