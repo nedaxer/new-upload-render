@@ -90,7 +90,7 @@ export const tradeOptions = [
       "Short-term expiries from 5 minutes to 1 day",
       "Trade Bitcoin, Ethereum, and other cryptocurrencies",
     ],
-    learnMoreLink: "#",
+    learnMoreLink: "/products/binary-options",
   },
   {
     title: "Call Spreads",
@@ -101,7 +101,7 @@ export const tradeOptions = [
       "Intraday, daily, and weekly expirations",
       "Perfect for volatile crypto market conditions",
     ],
-    learnMoreLink: "#",
+    learnMoreLink: "/products/call-spreads",
   },
   {
     title: "Knock-Outs",
@@ -112,7 +112,7 @@ export const tradeOptions = [
       "Trade with leverage on popular cryptocurrencies",
       "Trade crypto 24/7 in global digital asset markets",
     ],
-    learnMoreLink: "#",
+    learnMoreLink: "/products/knock-outs",
   },
 ];
 
