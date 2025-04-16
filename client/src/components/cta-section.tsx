@@ -15,12 +15,7 @@ export const CTASection = () => {
                 Open an account today and get access to our full range of products, markets, and educational resources.
               </p>
               <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex">
-                <Button
-                  asChild
-                  className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-6 py-3 rounded-md w-full md:w-auto"
-                >
-                  <Link href="/account/register">Open Account</Link>
-                </Button>
+                {/*Removed Open Account Button*/}
                 <Button
                   asChild
                   variant="outline"
