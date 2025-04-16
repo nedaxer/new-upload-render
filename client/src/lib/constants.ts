@@ -122,25 +122,25 @@ export const marketFeatures = [
     title: "Bitcoin",
     icon: "currency-bitcoin",
     description: "Trade the original cryptocurrency and largest digital asset by market capitalization.",
-    link: { label: "View Bitcoin Markets", href: "#" },
+    link: { label: "View Bitcoin Markets", href: "/markets/commodities" },
   },
   {
     title: "Ethereum",
     icon: "currency-ethereum",
     description: "Trade the second-largest cryptocurrency powering thousands of decentralized applications.",
-    link: { label: "View Ethereum Markets", href: "#" },
+    link: { label: "View Ethereum Markets", href: "/markets/commodities" },
   },
   {
     title: "Altcoins",
     icon: "coins",
     description: "Trade alternative cryptocurrencies including Solana, Cardano, Ripple, and more.",
-    link: { label: "View Altcoin Markets", href: "#" },
+    link: { label: "View Altcoin Markets", href: "/markets/commodities" },
   },
   {
     title: "Crypto Events",
     icon: "calendar-event",
     description: "Trade cryptocurrency events like protocol upgrades, halvings, and regulatory announcements.",
-    link: { label: "View Crypto Events", href: "#" },
+    link: { label: "View Crypto Events", href: "/markets/events" },
   },
 ];
 
