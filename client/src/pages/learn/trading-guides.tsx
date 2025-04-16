@@ -8,29 +8,32 @@ export default function TradingGuides() {
     {
       id: 1,
       title: "The Complete Guide to Binary Options Trading",
-      description: "A comprehensive introduction to binary options trading on Nadex, covering basic concepts, strategies, and risk management.",
+      description: "A comprehensive introduction to binary options trading on Web Trading Platform, covering basic concepts, strategies, and risk management.",
       category: "Product Guides",
       level: "Beginner",
       readTime: "20 min",
       image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      link: "/learn/guide/binary-options-guide",
     },
     {
       id: 2,
-      title: "Technical Analysis Fundamentals for Nadex Traders",
-      description: "Learn how to apply technical analysis to identify trading opportunities across all Nadex products.",
+      title: "Technical Analysis Fundamentals for Web Trading Platform Traders",
+      description: "Learn how to apply technical analysis to identify trading opportunities across all Web Trading Platform products.",
       category: "Technical Analysis",
       level: "Intermediate",
       readTime: "25 min",
       image: "https://images.unsplash.com/photo-1535320903710-d993d3d77d29?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      link: "/learn/guide/technical-analysis-fundamentals",
     },
     {
       id: 3,
-      title: "Trading Forex with Limited Risk on Nadex",
+      title: "Trading Forex with Limited Risk on Web Trading Platform",
       description: "Strategies and techniques for trading major and minor currency pairs with binary options and call spreads.",
       category: "Market Guides",
       level: "Intermediate",
       readTime: "15 min",
       image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
+      link: "/learn/guide/forex-trading",
     },
   ];
 
@@ -188,7 +191,7 @@ export default function TradingGuides() {
                       <span>{guide.readTime}</span>
                     </div>
                     <Link 
-                      href="#" 
+                      href={guide.link} 
                       className="text-[#0033a0] hover:text-[#ff5900] text-sm font-semibold flex items-center"
                     >
                       Read Guide <ArrowRight className="ml-1 h-4 w-4" />
