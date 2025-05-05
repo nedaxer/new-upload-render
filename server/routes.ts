@@ -218,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`User created with ID: ${newUser.id}`);
       
-      // Generate verification code
+      // Generate verification code (we'll use this both for direct verification and as part of the URL)
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
       
@@ -228,9 +228,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send verification email with better error handling
       let emailSent = false;
       try {
-        await sendVerificationEmail(email, verificationCode, firstName);
+        // Create a verification URL for the user to click
+        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${newUser.id}&code=${verificationCode}`;
+        
+        // Send verification email with the clickable link
+        await sendVerificationEmail(email, verificationCode, firstName, verificationUrl);
         emailSent = true;
-        console.log(`Verification email successfully sent to ${email}`);
+        console.log(`Verification email with clickable link successfully sent to ${email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
@@ -396,12 +400,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.setVerificationCode(userId, verificationCode, expiresAt);
       
-      // Send verification email
+      // Send verification email with clickable link
       let emailSent = false;
       try {
-        await sendVerificationEmail(user.email, verificationCode, user.firstName);
+        // Create a verification URL for the user to click
+        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${userId}&code=${verificationCode}`;
+        
+        // Send verification email with the clickable link
+        await sendVerificationEmail(user.email, verificationCode, user.firstName, verificationUrl);
         emailSent = true;
-        console.log(`Verification email successfully resent to ${user.email}`);
+        console.log(`Verification email with clickable link successfully resent to ${user.email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
@@ -505,13 +513,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Route to handle account verification page
   app.get('/account/verify', (req, res) => {
-    // Preserve query parameters for userId
+    // Preserve query parameters for userId and code
     const userId = req.query.userId;
-    if (userId) {
-      res.redirect(`/#/account/verify?userId=${userId}`);
-    } else {
-      res.redirect('/#/account/verify');
+    const code = req.query.code;
+    
+    // Build the redirect URL with all parameters
+    let redirectUrl = '/#/account/verify';
+    
+    if (userId || code) {
+      redirectUrl += '?';
+      
+      if (userId) {
+        redirectUrl += `userId=${userId}`;
+      }
+      
+      if (userId && code) {
+        redirectUrl += '&';
+      }
+      
+      if (code) {
+        redirectUrl += `code=${code}`;
+      }
     }
+    
+    res.redirect(redirectUrl);
   });
   
   // Route to handle forgot password page

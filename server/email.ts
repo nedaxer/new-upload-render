@@ -86,10 +86,12 @@ export const sendEmail = async (
 export const sendVerificationEmail = async (
   email: string, 
   verificationCode: string, 
-  firstName: string
+  firstName: string,
+  verificationUrl?: string
 ): Promise<void> => {
-  // In a production app, this would be a proper URL with the token
-  const verificationLink = `${process.env.APP_URL || 'http://localhost:5000'}/verify?code=${verificationCode}&email=${encodeURIComponent(email)}`;
+  // Use the provided verificationUrl if available, otherwise generate one
+  const verificationLink = verificationUrl || 
+    `${process.env.APP_URL || 'http://localhost:5000'}/verify?code=${verificationCode}&email=${encodeURIComponent(email)}`;
   
   return sendEmail(
     email,

@@ -18,82 +18,6 @@ export default function VerifyAccount() {
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
 
-  // On component mount, check URL for userId parameter and get development verification code if available
-  useEffect(() => {
-    const extractUserIdFromUrl = () => {
-      // First try to extract from hash part of URL (/#/account/verify?userId=X)
-      const hashString = window.location.hash;
-      console.log("Current hash string:", hashString);
-      
-      if (hashString) {
-        // Get the part after the ? if it exists
-        const hashPath = hashString.replace(/^#/, ''); // Remove the leading # if present
-        const queryPart = hashPath.split('?')[1];
-        
-        if (queryPart) {
-          const params = new URLSearchParams(queryPart);
-          const userIdParam = params.get('userId');
-          if (userIdParam) {
-            console.log("Found userId in hash:", userIdParam);
-            return parseInt(userIdParam, 10);
-          }
-        }
-      }
-
-      // If not in hash, try regular query params (/account/verify?userId=X)
-      const params = new URLSearchParams(window.location.search);
-      const userIdParam = params.get('userId');
-      if (userIdParam) {
-        console.log("Found userId in search params:", userIdParam);
-        return parseInt(userIdParam, 10);
-      }
-      
-      return null;
-    };
-
-    // Attempt to get the userId from multiple possible sources
-    const urlUserId = extractUserIdFromUrl();
-    const storedUserId = localStorage.getItem('unverifiedUserId');
-    
-    if (urlUserId) {
-      // Always prefer URL parameter if available
-      setUserId(urlUserId);
-      // Also save to localStorage for persistence
-      localStorage.setItem('unverifiedUserId', urlUserId.toString());
-    } else if (storedUserId) {
-      console.log("Found userId in localStorage:", storedUserId);
-      setUserId(parseInt(storedUserId, 10));
-    } else {
-      // Display clear message and redirect if no userId found
-      console.log("No userId found in URL or localStorage");
-      toast({
-        title: "Verification information missing",
-        description: "We couldn't find your account information. Please try registering again.",
-        variant: "destructive",
-      });
-      
-      // Redirect after a short delay
-      setTimeout(() => {
-        // Use hash-based location to avoid page reload
-        setLocation('/account/login');
-      }, 2000);
-      return;
-    }
-    
-    // Check for development verification code in localStorage (added during registration)
-    const devVerificationCode = localStorage.getItem('devVerificationCode');
-    if (devVerificationCode) {
-      console.log("Development mode: Found verification code:", devVerificationCode);
-      setDevCode(devVerificationCode);
-      
-      // Show a toast to make it obvious to the user
-      toast({
-        title: "Development Mode",
-        description: "A verification code is available for testing",
-      });
-    }
-  }, [setLocation, toast]);
-
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -146,6 +70,7 @@ export default function VerifyAccount() {
 
       // Clear the stored unverified user ID
       localStorage.removeItem('unverifiedUserId');
+      localStorage.removeItem('devVerificationCode');
 
       // Redirect to home after a short delay
       setTimeout(() => {
@@ -163,6 +88,112 @@ export default function VerifyAccount() {
       setIsLoading(false);
     }
   };
+
+  // On component mount, check URL for userId parameter and verification code
+  useEffect(() => {
+    const extractParamsFromUrl = () => {
+      const params: { userId?: number; code?: string } = {};
+      
+      // First try to extract from hash part of URL (/#/account/verify?userId=X&code=Y)
+      const hashString = window.location.hash;
+      console.log("Current hash string:", hashString);
+      
+      if (hashString) {
+        // Get the part after the ? if it exists
+        const hashPath = hashString.replace(/^#/, ''); // Remove the leading # if present
+        const queryPart = hashPath.split('?')[1];
+        
+        if (queryPart) {
+          const urlParams = new URLSearchParams(queryPart);
+          const userIdParam = urlParams.get('userId');
+          const codeParam = urlParams.get('code');
+          
+          if (userIdParam) {
+            console.log("Found userId in hash:", userIdParam);
+            params.userId = parseInt(userIdParam, 10);
+          }
+          
+          if (codeParam) {
+            console.log("Found verification code in hash:", codeParam);
+            params.code = codeParam;
+          }
+        }
+      }
+
+      // If not in hash, try regular query params (/account/verify?userId=X&code=Y)
+      const urlParams = new URLSearchParams(window.location.search);
+      const userIdParam = urlParams.get('userId');
+      const codeParam = urlParams.get('code');
+      
+      if (userIdParam && !params.userId) {
+        console.log("Found userId in search params:", userIdParam);
+        params.userId = parseInt(userIdParam, 10);
+      }
+      
+      if (codeParam && !params.code) {
+        console.log("Found verification code in search params:", codeParam);
+        params.code = codeParam;
+      }
+      
+      return params;
+    };
+
+    // Attempt to get the userId and code from URL or localStorage
+    const urlParams = extractParamsFromUrl();
+    const storedUserId = localStorage.getItem('unverifiedUserId');
+    
+    // Handle userId
+    if (urlParams.userId) {
+      // Always prefer URL parameter if available
+      setUserId(urlParams.userId);
+      // Also save to localStorage for persistence
+      localStorage.setItem('unverifiedUserId', urlParams.userId.toString());
+    } else if (storedUserId) {
+      console.log("Found userId in localStorage:", storedUserId);
+      setUserId(parseInt(storedUserId, 10));
+    } else {
+      // Display clear message and redirect if no userId found
+      console.log("No userId found in URL or localStorage");
+      toast({
+        title: "Verification information missing",
+        description: "We couldn't find your account information. Please try registering again.",
+        variant: "destructive",
+      });
+      
+      // Redirect after a short delay
+      setTimeout(() => {
+        setLocation('/account/login');
+      }, 2000);
+      return;
+    }
+    
+    // Handle verification code
+    if (urlParams.code) {
+      // If code is in URL, set it and auto-verify
+      setVerificationCode(urlParams.code);
+      
+      // We need to defer the auto-verification to ensure userId is set
+      setTimeout(() => {
+        console.log("Auto-verifying with code from URL");
+        if (urlParams.userId) {
+          handleVerify({ preventDefault: () => {} } as React.FormEvent);
+        }
+      }, 500);
+    } else {
+      // Check for development verification code in localStorage (added during registration)
+      const devVerificationCode = localStorage.getItem('devVerificationCode');
+      if (devVerificationCode) {
+        console.log("Development mode: Found verification code in localStorage:", devVerificationCode);
+        setDevCode(devVerificationCode);
+        
+        // Show a toast to make it obvious to the user
+        toast({
+          title: "Development Mode",
+          description: "A verification code is available for testing",
+        });
+      }
+    }
+  }, [setLocation, toast, handleVerify]);
 
   const handleResendCode = async () => {
     if (!userId) {
