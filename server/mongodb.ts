@@ -1,19 +1,19 @@
-import { connect, connection } from 'mongoose';
+import mongoose from 'mongoose';
 import { MongoClient } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nedaxerus:4vEQeJUIs0Q1FYxb@nedaxer.eyejj2k.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
 
 // Connection for Mongoose ODM
 export async function connectToDatabase() {
-  if (connection.readyState >= 1) {
-    return connection;
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose.connection;
   }
 
   try {
     console.log('Connecting to MongoDB...');
-    await connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI);
     console.log('MongoDB connection established successfully');
-    return connection;
+    return mongoose.connection;
   } catch (error) {
     console.error('MongoDB connection error:', error);
     throw error;

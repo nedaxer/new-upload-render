@@ -1,7 +1,9 @@
-import { Schema, model, Document, models } from 'mongoose';
+import mongoose from 'mongoose';
+const { Schema, model, Document, Types } = mongoose;
 
 // Interface representing the User document
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   username: string;
   email: string;
   password: string;
@@ -68,4 +70,4 @@ const userSchema = new Schema<IUser>(
 );
 
 // Export the User model (ensuring it's only defined once)
-export const User = models.User || model<IUser>('User', userSchema);
+export const User = mongoose.models.User || model<IUser>('User', userSchema);

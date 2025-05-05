@@ -18,6 +18,7 @@ export default function VerifyAccount() {
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
 
+  // Handle form submission
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -58,6 +59,7 @@ export default function VerifyAccount() {
           description: data.message || "Failed to verify your account. Please check the code and try again.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -65,7 +67,7 @@ export default function VerifyAccount() {
       setVerificationSuccess(true);
       toast({
         title: "Account verified",
-        description: "Your account has been successfully verified. You can now access your account.",
+        description: "Your account has been successfully verified.",
       });
 
       // Clear the stored unverified user ID
@@ -89,112 +91,7 @@ export default function VerifyAccount() {
     }
   };
 
-  // On component mount, check URL for userId parameter and verification code
-  useEffect(() => {
-    const extractParamsFromUrl = () => {
-      const params: { userId?: number; code?: string } = {};
-      
-      // First try to extract from hash part of URL (/#/account/verify?userId=X&code=Y)
-      const hashString = window.location.hash;
-      console.log("Current hash string:", hashString);
-      
-      if (hashString) {
-        // Get the part after the ? if it exists
-        const hashPath = hashString.replace(/^#/, ''); // Remove the leading # if present
-        const queryPart = hashPath.split('?')[1];
-        
-        if (queryPart) {
-          const urlParams = new URLSearchParams(queryPart);
-          const userIdParam = urlParams.get('userId');
-          const codeParam = urlParams.get('code');
-          
-          if (userIdParam) {
-            console.log("Found userId in hash:", userIdParam);
-            params.userId = parseInt(userIdParam, 10);
-          }
-          
-          if (codeParam) {
-            console.log("Found verification code in hash:", codeParam);
-            params.code = codeParam;
-          }
-        }
-      }
-
-      // If not in hash, try regular query params (/account/verify?userId=X&code=Y)
-      const urlParams = new URLSearchParams(window.location.search);
-      const userIdParam = urlParams.get('userId');
-      const codeParam = urlParams.get('code');
-      
-      if (userIdParam && !params.userId) {
-        console.log("Found userId in search params:", userIdParam);
-        params.userId = parseInt(userIdParam, 10);
-      }
-      
-      if (codeParam && !params.code) {
-        console.log("Found verification code in search params:", codeParam);
-        params.code = codeParam;
-      }
-      
-      return params;
-    };
-
-    // Attempt to get the userId and code from URL or localStorage
-    const urlParams = extractParamsFromUrl();
-    const storedUserId = localStorage.getItem('unverifiedUserId');
-    
-    // Handle userId
-    if (urlParams.userId) {
-      // Always prefer URL parameter if available
-      setUserId(urlParams.userId);
-      // Also save to localStorage for persistence
-      localStorage.setItem('unverifiedUserId', urlParams.userId.toString());
-    } else if (storedUserId) {
-      console.log("Found userId in localStorage:", storedUserId);
-      setUserId(parseInt(storedUserId, 10));
-    } else {
-      // Display clear message and redirect if no userId found
-      console.log("No userId found in URL or localStorage");
-      toast({
-        title: "Verification information missing",
-        description: "We couldn't find your account information. Please try registering again.",
-        variant: "destructive",
-      });
-      
-      // Redirect after a short delay
-      setTimeout(() => {
-        setLocation('/account/login');
-      }, 2000);
-      return;
-    }
-    
-    // Handle verification code
-    if (urlParams.code) {
-      // If code is in URL, set it and auto-verify
-      setVerificationCode(urlParams.code);
-      
-      // We need to defer the auto-verification to ensure userId is set
-      setTimeout(() => {
-        console.log("Auto-verifying with code from URL");
-        if (urlParams.userId) {
-          handleVerify({ preventDefault: () => {} } as React.FormEvent);
-        }
-      }, 500);
-    } else {
-      // Check for development verification code in localStorage (added during registration)
-      const devVerificationCode = localStorage.getItem('devVerificationCode');
-      if (devVerificationCode) {
-        console.log("Development mode: Found verification code in localStorage:", devVerificationCode);
-        setDevCode(devVerificationCode);
-        
-        // Show a toast to make it obvious to the user
-        toast({
-          title: "Development Mode",
-          description: "A verification code is available for testing",
-        });
-      }
-    }
-  }, [setLocation, toast, handleVerify]);
-
+  // Request a new verification code
   const handleResendCode = async () => {
     if (!userId) {
       toast({
@@ -224,6 +121,7 @@ export default function VerifyAccount() {
           description: data.message || "Failed to resend verification code. Please try again.",
           variant: "destructive",
         });
+        setResendLoading(false);
         return;
       }
 
@@ -253,6 +151,56 @@ export default function VerifyAccount() {
     }
   };
 
+  // Load user ID and verification code on component mount
+  useEffect(() => {
+    // Function to extract parameters from URL or hash
+    function getParamsFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParts = window.location.hash.split('?');
+      const hashParams = hashParts.length > 1 ? new URLSearchParams(hashParts[1]) : new URLSearchParams();
+      
+      // Get userId and code from either source
+      const userIdFromUrl = urlParams.get('userId') || hashParams.get('userId');
+      const codeFromUrl = urlParams.get('code') || hashParams.get('code');
+      
+      return { userIdFromUrl, codeFromUrl };
+    }
+    
+    const { userIdFromUrl, codeFromUrl } = getParamsFromUrl();
+    const storedUserId = localStorage.getItem('unverifiedUserId');
+    
+    // Set userId - prefer URL param over stored value
+    if (userIdFromUrl) {
+      const parsedId = parseInt(userIdFromUrl, 10);
+      setUserId(parsedId);
+      localStorage.setItem('unverifiedUserId', userIdFromUrl);
+    } else if (storedUserId) {
+      setUserId(parseInt(storedUserId, 10));
+    } else {
+      // No userId found - show error and redirect
+      toast({
+        title: "Verification information missing",
+        description: "We couldn't find your account information. Please try registering again.",
+        variant: "destructive",
+      });
+      
+      setTimeout(() => setLocation('/account/login'), 2000);
+      return;
+    }
+    
+    // Handle verification code if present in URL
+    if (codeFromUrl) {
+      setVerificationCode(codeFromUrl);
+    } else {
+      // Check for dev code in localStorage
+      const devVerificationCode = localStorage.getItem('devVerificationCode');
+      if (devVerificationCode) {
+        setDevCode(devVerificationCode);
+      }
+    }
+  }, [setLocation, toast]);
+  
+  // Show success state if verification was successful
   if (verificationSuccess) {
     return (
       <PageLayout
@@ -286,6 +234,7 @@ export default function VerifyAccount() {
     );
   }
 
+  // Main verification form
   return (
     <PageLayout
       title="Verify Your Account"
@@ -301,7 +250,7 @@ export default function VerifyAccount() {
           <p className="text-gray-500">Please enter the 6-digit code sent to your email</p>
         </div>
         
-        {/* Display the verification code in development mode */}
+        {/* Development mode verification code display */}
         {devCode && (
           <Alert className="mb-6 bg-amber-50 border-amber-200">
             <InfoIcon className="h-4 w-4 text-amber-600" />
@@ -312,27 +261,13 @@ export default function VerifyAccount() {
                 <div className="bg-white border-2 border-dashed border-amber-300 rounded-md p-3 font-mono text-center text-xl font-bold tracking-widest text-amber-600">
                   {devCode}
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode(devCode || "")}
-                    className="text-sm py-1 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-md transition-colors duration-200"
-                  >
-                    Auto-fill code
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVerificationCode(devCode || "");
-                      if (userId && devCode) {
-                        handleVerify({ preventDefault: () => {} } as React.FormEvent);
-                      }
-                    }}
-                    className="text-sm py-1 px-3 bg-green-100 hover:bg-green-200 text-green-800 rounded-md transition-colors duration-200"
-                  >
-                    Auto-verify
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setVerificationCode(devCode || "")}
+                  className="mt-2 w-full py-1 px-3 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-md transition-colors duration-200"
+                >
+                  Auto-fill code
+                </button>
                 <p className="mt-3 text-xs text-amber-600">
                   In production, this code would be sent to your email address.
                 </p>

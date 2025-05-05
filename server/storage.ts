@@ -138,6 +138,6 @@ export class PostgresStorage implements IStorage {
   }
 }
 
-// Temporarily using MemStorage to avoid PostgreSQL connection issues
-// Switch back to PostgresStorage once database connection issues are resolved
+// Using MemStorage for now
+// Will implement MongoDB storage in a separate step
 export const storage = new MemStorage();
