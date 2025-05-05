@@ -171,8 +171,15 @@ export default function Register() {
       // Use setLocation from wouter to navigate - much safer than directly manipulating the DOM
       console.log("Redirecting to verification page with userId:", data.user.id);
       
-      // Use the proper URL format to prevent page reloads
+      // Navigate to verification page
       setTimeout(() => {
+        // Using hash-based routing via the setLocation hook
+        console.log(`Redirecting to /account/verify?userId=${data.user.id}`);
+        
+        // Use direct window.location for debugging
+        window.location.hash = `/account/verify?userId=${data.user.id}`;
+        
+        // Also use wouter's navigation to be sure
         setLocation(`/account/verify?userId=${data.user.id}`);
       }, 100);
       

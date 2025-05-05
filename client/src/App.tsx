@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Route, Switch, Router } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
-import { CookieConsent } from '@/components/cookie-consent';
-import { AppInstallPrompt } from '@/components/app-install-prompt';
 
 // Pages
 import Home from '@/pages/home';
@@ -150,12 +148,6 @@ export default function App() {
           <Route component={NotFound} />
         </Switch>
       </Router>
-      
-      {/* Cookie Consent Banner */}
-      <CookieConsent />
-      
-      {/* PWA Install Prompt */}
-      <AppInstallPrompt />
     </>
   );
 }

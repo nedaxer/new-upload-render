@@ -228,8 +228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send verification email with better error handling
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click
-        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${newUser.id}&code=${verificationCode}`;
+        // Create a verification URL for the user to click (with hash for client-side routing)
+        const baseUrl = process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000';
+        const verificationUrl = `${baseUrl}/#/account/verify?userId=${newUser.id}&code=${verificationCode}`;
         
         // Send verification email with the clickable link
         await sendVerificationEmail(email, verificationCode, firstName, verificationUrl);
@@ -403,8 +404,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send verification email with clickable link
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click
-        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${userId}&code=${verificationCode}`;
+        // Create a verification URL for the user to click (with hash for client-side routing)
+        const baseUrl = process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000';
+        const verificationUrl = `${baseUrl}/#/account/verify?userId=${userId}&code=${verificationCode}`;
         
         // Send verification email with the clickable link
         await sendVerificationEmail(user.email, verificationCode, user.firstName, verificationUrl);

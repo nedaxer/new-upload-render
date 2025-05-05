@@ -156,13 +156,29 @@ export default function VerifyAccount() {
     // Function to extract parameters from URL or hash
     function getParamsFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
-      const hashParts = window.location.hash.split('?');
-      const hashParams = hashParts.length > 1 ? new URLSearchParams(hashParts[1]) : new URLSearchParams();
       
-      // Get userId and code from either source
+      // Handle hash-based routing parameters
+      // Format could be: #/account/verify?userId=123&code=456
+      let hashParams = new URLSearchParams();
+      const hashValue = window.location.hash;
+      
+      if (hashValue) {
+        console.log("Raw hash value:", hashValue);
+        // First remove the '#' and any path part
+        const hashPath = hashValue.replace(/^#\/?/, '');
+        // Check if there's a query part after the path
+        const pathAndQuery = hashPath.split('?');
+        if (pathAndQuery.length > 1) {
+          hashParams = new URLSearchParams(pathAndQuery[1]);
+          console.log("Extracted hash params:", Object.fromEntries(hashParams.entries()));
+        }
+      }
+      
+      // Get userId and code from either source (URL params or hash params)
       const userIdFromUrl = urlParams.get('userId') || hashParams.get('userId');
       const codeFromUrl = urlParams.get('code') || hashParams.get('code');
       
+      console.log("Extracted parameters - userId:", userIdFromUrl, "code:", codeFromUrl);
       return { userIdFromUrl, codeFromUrl };
     }
     
@@ -174,10 +190,14 @@ export default function VerifyAccount() {
       const parsedId = parseInt(userIdFromUrl, 10);
       setUserId(parsedId);
       localStorage.setItem('unverifiedUserId', userIdFromUrl);
+      console.log("Using userId from URL params:", parsedId);
     } else if (storedUserId) {
-      setUserId(parseInt(storedUserId, 10));
+      const parsedStoredId = parseInt(storedUserId, 10);
+      setUserId(parsedStoredId);
+      console.log("Using userId from localStorage:", parsedStoredId);
     } else {
       // No userId found - show error and redirect
+      console.log("No userId found in URL or localStorage");
       toast({
         title: "Verification information missing",
         description: "We couldn't find your account information. Please try registering again.",
