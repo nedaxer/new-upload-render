@@ -65,9 +65,8 @@ export const sendEmail = async (
       html: htmlContent,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
-    return info;
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
   } catch (error) {
     console.error('Error sending email:', error);
     
@@ -76,7 +75,9 @@ export const sendEmail = async (
       console.log(`Development mode: Email would have been sent to ${to} with template ${templateName}`);
       console.log('Replacements:', replacements);
     } else {
-      throw new Error(`Failed to send email: ${error.message}`);
+      // Convert to a proper Error object to access message
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to send email: ${errorMessage}`);
     }
   }
 };
