@@ -69,21 +69,27 @@ export default function Register() {
     setIsLoading(true);
     
     try {
-      // Register with backend
+      console.log('Attempting registration...');
+      
+      const registrationData = {
+        username: formData.email.split('@')[0] + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000),
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      };
+      
+      console.log('Registration payload:', { ...registrationData, password: '***' });
+      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          // Generate a more unique username by using email + timestamp + random number
-          username: formData.email.split('@')[0] + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000),
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-        }),
+        body: JSON.stringify(registrationData),
       });
+
+      console.log('Registration response status:', response.status);
       
       const data = await response.json();
       
@@ -172,9 +178,16 @@ export default function Register() {
       
     } catch (error) {
       console.error('Registration error:', error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Registration failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
