@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Route, Switch, Router } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
-import { AuthProvider } from './lib/auth';
-import { ProtectedRoute } from './components/protected-route';
+import { AuthProvider } from './hooks/use-auth';
+import { WebSocketProvider } from './hooks/use-websocket';
+import { WebSocketManager } from './components/websocket-manager';
+import { ProtectedRoute } from './lib/protected-route';
 
 // Pages
 import Home from '@/pages/home';
@@ -53,8 +55,11 @@ import Risk from '@/pages/legal/risk';
 import Terms from '@/pages/legal/terms';
 
 // Account Pages
+import Login from '@/pages/account/login';
+import Register from '@/pages/account/register';
+import ForgotPassword from '@/pages/account/forgot-password';
 import VerifyAccount from '@/pages/account/verify';
-import Auth from './pages/auth';
+import AuthPage from '@/pages/auth-page';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -87,10 +92,13 @@ export default function App() {
 
   return (
     <>
-      {/* Wrap entire app with AuthProvider */}
+      {/* Wrap entire app with AuthProvider and WebSocketProvider */}
       <AuthProvider>
-        <Router hook={useHashLocation}>
-          <Switch>
+        <WebSocketProvider>
+          {/* Component to handle WebSocket connection */}
+          <WebSocketManager />
+          <Router hook={useHashLocation}>
+            <Switch>
             {/* Protected main route */}
             <ProtectedRoute path="/" component={Home} />
             
@@ -139,7 +147,10 @@ export default function App() {
             <Route path="/legal/terms" component={Terms} />
             
             {/* Account Routes - Public */}
-            <Route path="/auth" component={Auth} />
+            <Route path="/auth" component={AuthPage} />
+            <Route path="/account/login" component={Login} />
+            <Route path="/account/register" component={Register} />
+            <Route path="/account/forgot-password" component={ForgotPassword} />
             <Route path="/account/verify" component={VerifyAccount} />
             
             {/* Other Routes */}
@@ -148,7 +159,8 @@ export default function App() {
             {/* 404 Route */}
             <Route component={NotFound} />
           </Switch>
-        </Router>
+          </Router>
+        </WebSocketProvider>
       </AuthProvider>
     </>
   );
