@@ -1,10 +1,13 @@
 import * as bip39 from 'bip39';
 import HDKey from 'hdkey';
 import Wallet from 'ethereumjs-wallet';
-import { ec as EC } from 'elliptic';
+import elliptic from 'elliptic';
 import { createHash } from 'crypto';
 import { Wallet as WalletModel } from '../models/Wallet';
 import { connectToDatabase } from '../mongodb';
+
+// Initialize elliptic curve
+const EC = elliptic.ec;
 
 // The BNB derivation path uses secp256k1
 const ec = new EC('secp256k1');

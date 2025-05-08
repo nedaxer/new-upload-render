@@ -7,11 +7,15 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
+import { WebSocketServer } from 'ws';
+import apiRoutes from './routes/api';
+import { initializeWebSocketServer } from './services/websocketService';
 
-// Extend express-session types to include userId
+// Extend express-session types to include userId and isAdmin
 declare module "express-session" {
   interface SessionData {
     userId: number;
+    isAdmin?: boolean;
   }
 }
 
@@ -574,7 +578,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Register API routes for the crypto trading platform
+  app.use('/api/crypto', apiRoutes);
+
+  // Create HTTP server
   const httpServer = createServer(app);
+  
+  // Initialize WebSocket server
+  initializeWebSocketServer(httpServer);
+  
+  console.log('Crypto trading API and WebSocket server initialized');
 
   return httpServer;
 }
