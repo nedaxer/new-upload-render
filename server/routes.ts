@@ -21,7 +21,7 @@ declare module "express-session" {
 
 // Function to generate a random verification code
 function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 // Authentication middleware to check if user is logged in
@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const verifySchema = z.object({
         userId: z.number(),
-        code: z.string().length(6)
+        code: z.string().length(4)
       });
       
       const result = verifySchema.safeParse(req.body);

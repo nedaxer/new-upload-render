@@ -78,10 +78,10 @@ export default function VerifyAccount() {
       return;
     }
     
-    if (!verificationCode || verificationCode.length !== 6) {
+    if (!verificationCode || verificationCode.length !== 4) {
       toast({
         title: "Invalid code",
-        description: "Please enter the 6-digit verification code sent to your email.",
+        description: "Please enter the 4-digit verification code sent to your email.",
         variant: "destructive",
       });
       return;
@@ -226,7 +226,7 @@ export default function VerifyAccount() {
                 ? "Your account has been successfully verified. You can now log in." 
                 : verificationStatus === 'error' 
                   ? error || "Please check your code and try again." 
-                  : "Enter the 6-digit code sent to your email address"}
+                  : "Enter the 4-digit code sent to your email address"}
             </p>
           </div>
 
@@ -238,11 +238,11 @@ export default function VerifyAccount() {
                   id="verificationCode"
                   type="text"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').substring(0, 6))}
-                  placeholder="Enter 6-digit code"
-                  pattern="[0-9]{6}"
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').substring(0, 4))}
+                  placeholder="Enter 4-digit code"
+                  pattern="[0-9]{4}"
                   className="text-center text-lg tracking-wider font-medium bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
-                  maxLength={6}
+                  maxLength={4}
                   required
                   disabled={isLoading || verificationStatus === 'success'}
                 />
