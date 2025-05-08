@@ -164,12 +164,15 @@ export default function VerifyAccount() {
       
       if (hashValue) {
         console.log("Raw hash value:", hashValue);
-        // First remove the '#' and any path part
-        const hashPath = hashValue.replace(/^#\/?/, '');
+        // First remove the '#' symbol
+        const hashContent = hashValue.substring(1);
         // Check if there's a query part after the path
-        const pathAndQuery = hashPath.split('?');
-        if (pathAndQuery.length > 1) {
-          hashParams = new URLSearchParams(pathAndQuery[1]);
+        const questionMarkIndex = hashContent.indexOf('?');
+        
+        if (questionMarkIndex !== -1) {
+          // Extract the query string
+          const queryString = hashContent.substring(questionMarkIndex + 1);
+          hashParams = new URLSearchParams(queryString);
           console.log("Extracted hash params:", Object.fromEntries(hashParams.entries()));
         }
       }
