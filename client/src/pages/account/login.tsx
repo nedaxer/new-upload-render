@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -6,112 +6,63 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2 } from "lucide-react";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
+  const { user, loginMutation } = useAuth();
+  
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check if username and password are provided
     if (!username || !password) {
-      toast({
-        title: "Login failed",
-        description: "Please enter both username and password.",
-        variant: "destructive",
-      });
       return;
     }
     
-    // Set loading state
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // Check if account needs verification
-        if (response.status === 403 && data.needsVerification) {
-          // Store the userId for verification
-          if (data.userId) {
-            localStorage.setItem('unverifiedUserId', data.userId.toString());
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: () => {
+          // Save username to localStorage if rememberMe is checked
+          if (rememberMe) {
+            localStorage.setItem('rememberedUsername', username);
+          } else {
+            localStorage.removeItem('rememberedUsername');
           }
           
-          toast({
-            title: "Account not verified",
-            description: "Your account needs verification. Please check your email for a verification code.",
-          });
-          
-          // Redirect to verification page - using hash location for the router
+          // Redirect to home page
           setTimeout(() => {
-            setLocation(`/account/verify?userId=${data.userId}`);
+            setLocation('/');
           }, 100);
-          return;
+        },
+        onError: (error: any) => {
+          // Check if account needs verification
+          if (error.message?.includes("not verified") || error.message?.includes("verification")) {
+            const userId = error.userId;
+            if (userId) {
+              // Redirect to verification page
+              setTimeout(() => {
+                setLocation(`/account/verify?userId=${userId}`);
+              }, 100);
+            }
+          }
         }
-        
-        // Handle other errors
-        let errorMessage = "An unexpected error occurred. Please try again.";
-        
-        if (response.status === 401) {
-          errorMessage = "Invalid username or password. Please try again.";
-        } else if (response.status === 400) {
-          errorMessage = "Please check your credentials and try again.";
-        }
-        
-        toast({
-          title: "Login failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        return;
       }
-      
-      // Handle success
-      // Save user data to localStorage if needed
-      if (rememberMe && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-      
-      // Show success message
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome back to Nedaxer cryptocurrency trading platform.",
-      });
-      
-      // Redirect to home page with delay to prevent reload
-      setTimeout(() => {
-        setLocation('/');
-      }, 100);
-      
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login failed",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
-
-
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -141,7 +92,7 @@ export default function Login() {
                   placeholder="Enter your username"
                   className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
                   required
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
               </div>
             </div>
@@ -165,13 +116,13 @@ export default function Login() {
                   placeholder="Enter your password"
                   className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
                   required
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 >
                   {showPassword ? (
                     <EyeOffIcon className="h-5 w-5" />
@@ -189,7 +140,7 @@ export default function Login() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                   className="text-[#0033a0] border-gray-300"
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
                 <label
                   htmlFor="remember"
@@ -203,11 +154,11 @@ export default function Login() {
             <Button 
               type="submit" 
               className="w-full bg-[#0033a0] hover:bg-[#002680] text-white py-2.5 font-medium rounded-md transition-all duration-200 shadow-sm"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
-              {isLoading ? (
+              {loginMutation.isPending ? (
                 <>
-                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -229,7 +180,7 @@ export default function Login() {
             <button 
               type="button"
               className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -242,7 +193,7 @@ export default function Login() {
             <button 
               type="button"
               className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.605-3.369-1.343-3.369-1.343-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.934.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.137 18.163 20 14.418 20 10c0-5.523-4.477-10-10-10z" clipRule="evenodd"></path>
