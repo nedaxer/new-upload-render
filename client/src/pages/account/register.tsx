@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
@@ -6,15 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function Register() {
   const [, setLocation] = useLocation();
+  const { user, registerMutation } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    username: "",
     password: "",
     confirmPassword: "",
     acceptTerms: false,
@@ -24,6 +27,13 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -31,8 +41,6 @@ export default function Register() {
       [name]: type === "checkbox" ? checked : value
     }));
   };
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,59 +73,44 @@ export default function Register() {
       return;
     }
     
-    // Set loading state
-    setIsLoading(true);
+    // Create registration data object
+    const registrationData = {
+      username: formData.username || formData.email.split('@')[0] + Date.now().toString().slice(-4),
+      email: formData.email,
+      password: formData.password,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+    };
     
-    try {
-      console.log('Attempting registration...');
-      
-      const registrationData = {
-        username: formData.email.split('@')[0] + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000),
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-      };
-      
-      console.log('Registration payload:', { ...registrationData, password: '***' });
-      
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      });
-
-      console.log('Registration response status:', response.status);
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // Handle error
-        let errorMessage = "An unexpected error occurred. Please try again.";
-        let errorDetail = "";
-        
-        if (response.status === 409) {
-          if (data.message === "Email already exists") {
-            errorMessage = "This email is already registered.";
-            errorDetail = "Please use a different email address or try to log in.";
-          } else if (data.message === "Username already exists") {
-            errorMessage = "This username is already taken.";
-            errorDetail = "Please try a different username.";
-          } else {
-            errorMessage = data.message || "This account already exists.";
-          }
-        } else if (response.status === 400) {
-          errorMessage = "Please check your information and try again.";
-          errorDetail = "Make sure all required fields are filled correctly.";
+    // Use our register mutation from the auth hook
+    registerMutation.mutate(registrationData, {
+      onSuccess: (userData) => {
+        // Store the userId for verification page
+        if (userData && userData.id) {
+          localStorage.setItem('unverifiedUserId', userData.id.toString());
         }
         
-        toast({
-          title: "Registration failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        // Store verification code for development mode if available
+        if ('verificationCode' in userData) {
+          localStorage.setItem('devVerificationCode', userData.verificationCode as string);
+        }
+        
+        // Navigate to verification page
+        setTimeout(() => {
+          setLocation(`/account/verify?userId=${userData.id}`);
+        }, 100);
+      },
+      onError: (error: any) => {
+        console.error('Registration error:', error);
+        
+        // Extract more detailed error message if available
+        let errorDetail = "";
+        
+        if (error.message?.includes("Email already exists")) {
+          errorDetail = "Please use a different email address or try to log in.";
+        } else if (error.message?.includes("Username already exists")) {
+          errorDetail = "Please try a different username.";
+        }
         
         // Show additional detail if available
         if (errorDetail) {
@@ -128,78 +121,8 @@ export default function Register() {
             });
           }, 1000);
         }
-        
-        setIsLoading(false);
-        return;
       }
-      
-      // Success - account created but needs verification
-      toast({
-        title: "Account created successfully",
-        description: "Please check your email for a verification code.",
-      });
-      
-      // Store the userId for the verification page
-      if (data.user && data.user.id) {
-        localStorage.setItem('unverifiedUserId', data.user.id.toString());
-      }
-      
-      // Show the success message for a moment before redirecting
-      toast({
-        title: "Registration successful",
-        description: "Please check your email for a verification code.",
-      });
-      
-      console.log("Registration successful, redirecting to verification page with userId:", data.user.id);
-      
-      // Store data for verification page
-      if (data.user && data.user.id) {
-        localStorage.setItem('unverifiedUserId', data.user.id.toString());
-      }
-      
-      // Store verification code for development mode
-      if (data.verificationCode) {
-        localStorage.setItem('devVerificationCode', data.verificationCode);
-      }
-      
-      // Show success message
-      toast({
-        title: "Registration successful",
-        description: "You'll now be redirected to the verification page.",
-      });
-      
-      // Use setLocation from wouter to navigate - much safer than directly manipulating the DOM
-      console.log("Redirecting to verification page with userId:", data.user.id);
-      
-      // Navigate to verification page
-      setTimeout(() => {
-        // Using hash-based routing via the setLocation hook
-        console.log(`Redirecting to /account/verify?userId=${data.user.id}`);
-        
-        // Use direct window.location for debugging
-        window.location.hash = `/account/verify?userId=${data.user.id}`;
-        
-        // Also use wouter's navigation to be sure
-        setLocation(`/account/verify?userId=${data.user.id}`);
-      }, 100);
-      
-    } catch (error) {
-      console.error('Registration error:', error);
-      let errorMessage = "An unexpected error occurred. Please try again.";
-      
-      if (error instanceof Error) {
-        console.error('Error details:', error.message);
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Registration failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -401,9 +324,9 @@ export default function Register() {
               <Button 
                 type="submit" 
                 className="w-full bg-[#0033a0] hover:bg-[#002680] text-white py-2.5 font-medium rounded-md transition-all duration-200 shadow-sm"
-                disabled={isLoading}
+                disabled={registerMutation.isPending}
               >
-                {isLoading ? (
+                {registerMutation.isPending ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                     Creating Account...
