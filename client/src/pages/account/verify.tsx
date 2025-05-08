@@ -20,7 +20,7 @@ export default function VerifyAccount() {
   const [verificationCode, setVerificationCode] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [verificationStatus, setVerificationStatus] = useState<string>('idle');
   const [error, setError] = useState<string | null>(null);
   
   // Process query parameters on component mount
