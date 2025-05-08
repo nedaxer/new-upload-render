@@ -91,8 +91,10 @@ addNoCacheHeaders();
 const root = document.getElementById('root');
 if (root) {
   ReactDOM.createRoot(root).render(
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 }

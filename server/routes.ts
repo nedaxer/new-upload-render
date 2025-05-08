@@ -523,6 +523,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.query.userId;
     const code = req.query.code;
     
+    console.log('Verification redirect requested with params:', { userId, code });
+    
     // Build the redirect URL with all parameters
     let redirectUrl = '/#/account/verify';
     
@@ -541,6 +543,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         redirectUrl += `code=${code}`;
       }
     }
+    
+    console.log('Redirecting to:', redirectUrl);
     
     res.redirect(redirectUrl);
   });
