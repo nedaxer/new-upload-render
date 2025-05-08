@@ -176,14 +176,12 @@ export default function Register() {
         // Using hash-based routing via the setLocation hook
         console.log(`Redirecting to /account/verify?userId=${data.user.id}`);
         
-        // Use direct window.location for hash-based routing
+        // Use direct window.location for debugging
         window.location.hash = `/account/verify?userId=${data.user.id}`;
         
-        // Also use wouter's navigation for programmatic routing
+        // Also use wouter's navigation to be sure
         setLocation(`/account/verify?userId=${data.user.id}`);
-        
-        console.log('Navigation methods triggered. Current URL:', window.location.href);
-      }, 500);
+      }, 100);
       
     } catch (error) {
       console.error('Registration error:', error);

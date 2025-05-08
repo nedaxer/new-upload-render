@@ -162,25 +162,15 @@ export default function VerifyAccount() {
       let hashParams = new URLSearchParams();
       const hashValue = window.location.hash;
       
-      console.log("Current URL:", window.location.href);
-      console.log("Current hash:", hashValue);
-      
       if (hashValue) {
         console.log("Raw hash value:", hashValue);
         // First remove the '#' and any path part
         const hashPath = hashValue.replace(/^#\/?/, '');
-        console.log("Cleaned hash path:", hashPath);
-        
         // Check if there's a query part after the path
         const pathAndQuery = hashPath.split('?');
-        console.log("Path and query parts:", pathAndQuery);
-        
         if (pathAndQuery.length > 1) {
           hashParams = new URLSearchParams(pathAndQuery[1]);
           console.log("Extracted hash params:", Object.fromEntries(hashParams.entries()));
-        } else {
-          // If we have a path like /account/verify without a query string, check for userId in localStorage
-          console.log("No query parameters in hash URL, will check localStorage");
         }
       }
       
@@ -198,25 +188,14 @@ export default function VerifyAccount() {
     // Set userId - prefer URL param over stored value
     if (userIdFromUrl) {
       const parsedId = parseInt(userIdFromUrl, 10);
-      if (!isNaN(parsedId)) {
-        setUserId(parsedId);
-        localStorage.setItem('unverifiedUserId', userIdFromUrl);
-        console.log("Using userId from URL params:", parsedId);
-      } else {
-        console.error("Invalid userId in URL, not a number:", userIdFromUrl);
-      }
+      setUserId(parsedId);
+      localStorage.setItem('unverifiedUserId', userIdFromUrl);
+      console.log("Using userId from URL params:", parsedId);
     } else if (storedUserId) {
       const parsedStoredId = parseInt(storedUserId, 10);
-      if (!isNaN(parsedStoredId)) {
-        setUserId(parsedStoredId);
-        console.log("Using userId from localStorage:", parsedStoredId);
-      } else {
-        console.error("Invalid userId in localStorage, not a number:", storedUserId);
-      }
-    }
-    
-    // After trying both sources, check if we have a valid userId
-    if (!userId && !userIdFromUrl && !storedUserId) {
+      setUserId(parsedStoredId);
+      console.log("Using userId from localStorage:", parsedStoredId);
+    } else {
       // No userId found - show error and redirect
       console.log("No userId found in URL or localStorage");
       toast({
@@ -225,7 +204,7 @@ export default function VerifyAccount() {
         variant: "destructive",
       });
       
-      setTimeout(() => setLocation('/account/register'), 3000);
+      setTimeout(() => setLocation('/account/login'), 2000);
       return;
     }
     

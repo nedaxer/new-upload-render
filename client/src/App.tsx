@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Route, Switch, Router } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
-import { AuthProvider } from './hooks/use-auth';
-import { WebSocketProvider } from './hooks/use-websocket';
-import { WebSocketManager } from './components/websocket-manager';
-import { ProtectedRoute } from './lib/protected-route';
 
 // Pages
 import Home from '@/pages/home';
@@ -59,7 +55,6 @@ import Login from '@/pages/account/login';
 import Register from '@/pages/account/register';
 import ForgotPassword from '@/pages/account/forgot-password';
 import VerifyAccount from '@/pages/account/verify';
-import AuthPage from '@/pages/auth-page';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -92,76 +87,67 @@ export default function App() {
 
   return (
     <>
-      {/* Wrap entire app with AuthProvider and WebSocketProvider */}
-      <AuthProvider>
-        <WebSocketProvider>
-          {/* Component to handle WebSocket connection */}
-          <WebSocketManager />
-          <Router hook={useHashLocation}>
-            <Switch>
-            {/* Protected main route */}
-            <ProtectedRoute path="/" component={Home} />
-            
-            {/* Company Routes */}
-            <Route path="/company/about" component={About} />
-            <Route path="/company/careers" component={Careers} />
-            <Route path="/company/contact" component={Contact} />
-            <Route path="/company/news" component={News} />
-            <Route path="/company/regulations" component={Regulations} />
-            
-            {/* Products Routes */}
-            <Route path="/products/binary-options" component={BinaryOptions} />
-            <Route path="/products/call-spreads" component={CallSpreads} />
-            <Route path="/products/knock-outs" component={KnockOuts} />
-            <Route path="/products/pricing" component={Pricing} />
-            <Route path="/products/touch-brackets" component={TouchBrackets} />
-            
-            {/* Markets Routes */}
-            <Route path="/markets/altcoins" component={AltcoinMarkets} />
-            <Route path="/markets/bitcoin" component={BitcoinMarkets} />
-            <Route path="/markets/commodities" component={Commodities} />
-            <Route path="/markets/crypto-events" component={CryptoEvents} />
-            <Route path="/markets/ethereum" component={EthereumMarkets} />
-            <Route path="/markets/events" component={Events} />
-            <Route path="/markets/market-data" component={MarketData} />
-            
-            {/* Platform Routes */}
-            <Route path="/platform/funding" component={Funding} />
-            <Route path="/platform/mobile-app" component={MobileApp} />
-            <Route path="/platform/security" component={Security} />
-            <Route path="/platform/web-platform" component={WebPlatform} />
-            
-            {/* Learn Routes */}
-            <Route path="/learn/binary-options" component={BinaryOptionsLearn} />
-            <Route path="/learn/call-spreads" component={CallSpreadsLearn} />
-            <Route path="/learn/getting-started" component={GettingStarted} />
-            <Route path="/learn/knock-outs" component={KnockOutsLearn} />
-            <Route path="/learn/trading-guides" component={TradingGuides} />
-            <Route path="/learn/trading-strategies" component={TradingStrategies} />
-            <Route path="/learn/webinars" component={Webinars} />
-            
-            {/* Legal Routes */}
-            <Route path="/legal/cftc" component={CFTC} />
-            <Route path="/legal/privacy" component={Privacy} />
-            <Route path="/legal/risk" component={Risk} />
-            <Route path="/legal/terms" component={Terms} />
-            
-            {/* Account Routes - Public */}
-            <Route path="/auth" component={AuthPage} />
-            <Route path="/account/login" component={Login} />
-            <Route path="/account/register" component={Register} />
-            <Route path="/account/forgot-password" component={ForgotPassword} />
-            <Route path="/account/verify" component={VerifyAccount} />
-            
-            {/* Other Routes */}
-            <Route path="/site-map" component={SiteMap} />
-            
-            {/* 404 Route */}
-            <Route component={NotFound} />
-          </Switch>
-          </Router>
-        </WebSocketProvider>
-      </AuthProvider>
+      <Router hook={useHashLocation}>
+        <Switch>
+          <Route path="/" component={Home} />
+          
+          {/* Company Routes */}
+          <Route path="/company/about" component={About} />
+          <Route path="/company/careers" component={Careers} />
+          <Route path="/company/contact" component={Contact} />
+          <Route path="/company/news" component={News} />
+          <Route path="/company/regulations" component={Regulations} />
+          
+          {/* Products Routes */}
+          <Route path="/products/binary-options" component={BinaryOptions} />
+          <Route path="/products/call-spreads" component={CallSpreads} />
+          <Route path="/products/knock-outs" component={KnockOuts} />
+          <Route path="/products/pricing" component={Pricing} />
+          <Route path="/products/touch-brackets" component={TouchBrackets} />
+          
+          {/* Markets Routes */}
+          <Route path="/markets/altcoins" component={AltcoinMarkets} />
+          <Route path="/markets/bitcoin" component={BitcoinMarkets} />
+          <Route path="/markets/commodities" component={Commodities} />
+          <Route path="/markets/crypto-events" component={CryptoEvents} />
+          <Route path="/markets/ethereum" component={EthereumMarkets} />
+          <Route path="/markets/events" component={Events} />
+          <Route path="/markets/market-data" component={MarketData} />
+          
+          {/* Platform Routes */}
+          <Route path="/platform/funding" component={Funding} />
+          <Route path="/platform/mobile-app" component={MobileApp} />
+          <Route path="/platform/security" component={Security} />
+          <Route path="/platform/web-platform" component={WebPlatform} />
+          
+          {/* Learn Routes */}
+          <Route path="/learn/binary-options" component={BinaryOptionsLearn} />
+          <Route path="/learn/call-spreads" component={CallSpreadsLearn} />
+          <Route path="/learn/getting-started" component={GettingStarted} />
+          <Route path="/learn/knock-outs" component={KnockOutsLearn} />
+          <Route path="/learn/trading-guides" component={TradingGuides} />
+          <Route path="/learn/trading-strategies" component={TradingStrategies} />
+          <Route path="/learn/webinars" component={Webinars} />
+          
+          {/* Legal Routes */}
+          <Route path="/legal/cftc" component={CFTC} />
+          <Route path="/legal/privacy" component={Privacy} />
+          <Route path="/legal/risk" component={Risk} />
+          <Route path="/legal/terms" component={Terms} />
+          
+          {/* Account Routes */}
+          <Route path="/account/login" component={Login} />
+          <Route path="/account/register" component={Register} />
+          <Route path="/account/forgot-password" component={ForgotPassword} />
+          <Route path="/account/verify" component={VerifyAccount} />
+          
+          {/* Other Routes */}
+          <Route path="/site-map" component={SiteMap} />
+          
+          {/* 404 Route */}
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
     </>
   );
 }
