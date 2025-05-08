@@ -103,7 +103,7 @@ export default function App() {
       <AuthProvider>
         <Router hook={useHashLocation}>
           <Switch>
-            <ProtectedRoute path="/" component={Home} />
+            <Route path="/" component={Home} />
             
             {/* Company Routes */}
             <Route path="/company/about" component={About} />
@@ -128,11 +128,11 @@ export default function App() {
             <Route path="/markets/events" component={Events} />
             <Route path="/markets/market-data" component={MarketData} />
             
-            {/* Platform Routes */}
-            <Route path="/platform/funding" component={Funding} />
-            <Route path="/platform/mobile-app" component={MobileApp} />
-            <Route path="/platform/security" component={Security} />
-            <Route path="/platform/web-platform" component={WebPlatform} />
+            {/* Platform Routes (Protected) */}
+            <ProtectedRoute path="/platform/funding" component={Funding} />
+            <ProtectedRoute path="/platform/mobile-app" component={MobileApp} />
+            <ProtectedRoute path="/platform/security" component={Security} />
+            <ProtectedRoute path="/platform/web-platform" component={WebPlatform} />
             
             {/* Learn Routes */}
             <Route path="/learn/binary-options" component={BinaryOptionsLearn} />
