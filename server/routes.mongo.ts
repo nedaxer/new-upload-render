@@ -396,16 +396,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
       
-      // Send verification email with clickable link
+      // Send verification email with code
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click
-        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${userId}&code=${verificationCode}`;
-        
-        // Send verification email with the clickable link
-        await sendVerificationEmail(user.email, verificationCode, user.firstName, verificationUrl);
+        // Send verification email with code
+        await sendVerificationEmail(user.email, verificationCode, user.firstName);
         emailSent = true;
-        console.log(`Verification email with clickable link successfully resent to ${user.email}`);
+        console.log(`Verification email with code successfully resent to ${user.email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
