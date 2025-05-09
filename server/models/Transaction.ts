@@ -1,10 +1,9 @@
-import mongoose from 'mongoose';
-const { Schema, model, Document, Types } = mongoose;
+import mongoose, { Document } from 'mongoose';
+const { Schema, model } = mongoose;
 
 // Interface representing a Transaction document
 export interface ITransaction extends Document {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   currencyId: string;
   type: string; // 'buy', 'sell', 'deposit', 'withdrawal', 'staking', 'unstaking', 'credit'
   status: string; // 'pending', 'completed', 'failed'

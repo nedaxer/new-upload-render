@@ -1,9 +1,8 @@
-import mongoose from 'mongoose';
-const { Schema, model, Document, Types } = mongoose;
+import mongoose, { Document } from 'mongoose';
+const { Schema, model } = mongoose;
 
 // Interface representing a Currency document
 export interface ICurrency extends Document {
-  _id: Types.ObjectId;
   symbol: string;
   name: string;
   isActive: boolean;

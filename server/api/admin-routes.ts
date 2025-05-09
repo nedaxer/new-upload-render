@@ -1,6 +1,10 @@
 import { Router, Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { User } from "../models/User";
+import { Currency } from "../models/Currency";
+import { UserBalance } from "../models/UserBalance";
+import { Transaction } from "../models/Transaction";
+import { StakingRate } from "../models/StakingRate";
 
 const router = Router();
 
@@ -97,48 +101,41 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
 // Get recent transactions for admin dashboard
 router.get("/recent-transactions", requireAdmin, async (req: Request, res: Response) => {
   try {
-    // Get latest 10 transactions with user information
-    const recentTransactions = await db
-      .select({
-        id: transactions.id,
-        userId: transactions.userId,
-        type: transactions.type,
-        status: transactions.status,
-        amount: transactions.amount,
-        price: transactions.price, 
-        createdAt: transactions.createdAt,
-        currencyId: transactions.currencyId,
-        user: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email
-        },
-        currency: {
-          symbol: currencies.symbol
-        }
-      })
-      .from(transactions)
-      .innerJoin(users, eq(transactions.userId, users.id))
-      .innerJoin(currencies, eq(transactions.currencyId, currencies.id))
-      .orderBy(desc(transactions.createdAt))
-      .limit(10);
+    // Import models
+    const { Transaction } = require('../models/Transaction');
+    const { Currency } = require('../models/Currency');
     
-    // Calculate USD value and prepare response
-    const formattedTransactions = recentTransactions.map(tx => ({
-      id: tx.id,
-      userId: tx.userId,
+    // Get latest 10 transactions with user information
+    const recentTransactions = await Transaction.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email'
+      });
+      
+    // Get all currencies for mapping
+    const currencies = await Currency.find({}, { symbol: 1, _id: 1 });
+    const currencyMap = currencies.reduce((map: Record<string, string>, curr: any) => {
+      map[curr._id.toString()] = curr.symbol;
+      return map;
+    }, {});
+    
+    // Format transactions for response
+    const formattedTransactions = recentTransactions.map((tx: any) => ({
+      id: tx._id.toString(),
+      userId: tx.userId._id.toString(),
       type: tx.type,
       status: tx.status,
       amount: tx.amount,
-      currency: tx.currency.symbol,
+      currency: currencyMap[tx.currencyId] || tx.currencyId,  // Use symbol if available
       value: tx.amount * tx.price,  // USD value
       createdAt: tx.createdAt,
       user: {
-        id: tx.user.id,
-        firstName: tx.user.firstName,
-        lastName: tx.user.lastName,
-        email: tx.user.email
+        id: tx.userId._id.toString(),
+        firstName: tx.userId.firstName,
+        lastName: tx.userId.lastName,
+        email: tx.userId.email
       }
     }));
     
@@ -162,13 +159,9 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
     }
     
     // Check if user exists
-    const userExists = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
+    const userExists = await User.findById(userId);
     
-    if (userExists.length === 0) {
+    if (!userExists) {
       return res.status(404).json({ 
         success: false, 
         message: "User not found" 
@@ -176,13 +169,9 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
     }
     
     // Check if currency exists
-    const currencyExists = await db
-      .select({ id: currencies.id })
-      .from(currencies)
-      .where(eq(currencies.id, currencyId))
-      .limit(1);
+    const currencyExists = await Currency.findById(currencyId);
     
-    if (currencyExists.length === 0) {
+    if (!currencyExists) {
       return res.status(404).json({ 
         success: false, 
         message: "Currency not found" 
@@ -190,52 +179,38 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
     }
     
     // Check if user already has a balance for this currency
-    const existingBalance = await db
-      .select()
-      .from(userBalances)
-      .where(
-        and(
-          eq(userBalances.userId, userId),
-          eq(userBalances.currencyId, currencyId)
-        )
-      )
-      .limit(1);
+    const existingBalance = await UserBalance.findOne({
+      userId: userId,
+      currencyId: currencyId
+    });
     
-    if (existingBalance.length > 0) {
+    if (existingBalance) {
       // Update existing balance
-      await db
-        .update(userBalances)
-        .set({ 
-          amount: existingBalance[0].amount + amount,
-          updatedAt: new Date()
-        })
-        .where(eq(userBalances.id, existingBalance[0].id));
+      existingBalance.amount += parseFloat(amount.toString());
+      existingBalance.updatedAt = new Date();
+      await existingBalance.save();
     } else {
       // Create new balance
-      await db
-        .insert(userBalances)
-        .values({
-          userId,
-          currencyId,
-          amount,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
+      await UserBalance.create({
+        userId,
+        currencyId,
+        amount,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
     }
     
     // Create a transaction record for the credit
-    await db
-      .insert(transactions)
-      .values({
-        userId,
-        currencyId,
-        type: "credit",
-        status: "completed",
-        amount,
-        price: 1, // For USD, price is 1:1
-        fee: 0,
-        createdAt: new Date()
-      });
+    await Transaction.create({
+      userId,
+      currencyId,
+      type: "credit",
+      status: "completed",
+      amount,
+      price: 1, // For USD, price is 1:1
+      fee: 0,
+      createdAt: new Date()
+    });
     
     res.json({ 
       success: true, 
@@ -277,23 +252,15 @@ router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) 
     }
     
     // Check if staking rate already exists for this currency
-    const existingRate = await db
-      .select()
-      .from(stakingRates)
-      .where(eq(stakingRates.currencyId, currencyId))
-      .limit(1);
+    const existingRate = await StakingRate.findOne({ currencyId });
     
-    if (existingRate.length > 0) {
+    if (existingRate) {
       // Update existing rate
-      await db
-        .update(stakingRates)
-        .set({ 
-          rate, 
-          minAmount, 
-          isActive,
-          updatedAt: new Date()
-        })
-        .where(eq(stakingRates.id, existingRate[0].id));
+      existingRate.rate = parseFloat(rate.toString());
+      existingRate.minAmount = parseFloat(minAmount.toString());
+      existingRate.isActive = isActive;
+      existingRate.updatedAt = new Date();
+      await existingRate.save();
       
       res.json({ 
         success: true, 
@@ -301,16 +268,14 @@ router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) 
       });
     } else {
       // Create new staking rate
-      await db
-        .insert(stakingRates)
-        .values({
-          currencyId,
-          rate,
-          minAmount,
-          isActive,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
+      await StakingRate.create({
+        currencyId,
+        rate,
+        minAmount,
+        isActive,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
       
       res.json({ 
         success: true, 
