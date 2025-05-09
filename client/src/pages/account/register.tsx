@@ -473,13 +473,6 @@ export default function Register() {
               Sign In
             </Link>
           </p>
-          <p className="text-gray-500 text-sm mt-2">
-            Having trouble with registration?{" "}
-            <Link href="/account/verify" className="text-[#0033a0] hover:text-[#ff5900]">
-              Go directly to verification
-            </Link>
-            {" "}if you've already registered.
-          </p>
         </div>
       </div>
     </PageLayout>
