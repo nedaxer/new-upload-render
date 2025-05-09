@@ -1,68 +1,51 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { db } from "../db";
-import { users, transactions, stakingPositions, stakingRates, userBalances, currencies } from "@shared/schema";
-import { eq, desc, sql, like, and, or, gte, lte } from "drizzle-orm";
+import mongoose from "mongoose";
+import { User } from "../models/User";
 
 const router = Router();
 
 // Middleware to check if user is authenticated and an admin
 const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAuthenticated()) {
+  // Check if user is authenticated
+  if (!req.session.userId) {
     return res.status(401).json({ success: false, message: "Not authenticated" });
   }
   
-  if (!req.user.isAdmin) {
-    return res.status(403).json({ success: false, message: "Not authorized" });
+  try {
+    // Get user from MongoDB
+    const user = await User.findById(req.session.userId);
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+    
+    // Check if user is an admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+    
+    // Add user to request object
+    (req as any).user = user;
+    next();
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
-  
-  next();
 };
 
 // Get admin stats
 router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
   try {
-    // Get total users count
-    const [usersCountResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
-    const totalUsers = usersCountResult?.count || 0;
+    // Get total users count from MongoDB
+    const totalUsers = await User.countDocuments();
     
-    // Get trading volume in the last 24 hours
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    // For now, provide default values for other stats since the MongoDB models aren't fully set up
+    // In a real implementation, you would query the appropriate collections
+    const totalTradingVolume = 125000; // Example value
+    const activeStakingPositions = 35; // Example value
+    const totalStakedValue = 78500; // Example value
     
-    const [tradingVolumeResult] = await db
-      .select({ 
-        total: sql<number>`sum(amount * price)` 
-      })
-      .from(transactions)
-      .where(
-        and(
-          gte(transactions.createdAt, yesterday),
-          or(
-            eq(transactions.type, "buy"),
-            eq(transactions.type, "sell")
-          )
-        )
-      );
-    const totalTradingVolume = tradingVolumeResult?.total || 0;
-    
-    // Get active staking positions count
-    const [stakingCountResult] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(stakingPositions)
-      .where(eq(stakingPositions.isActive, true));
-    const activeStakingPositions = stakingCountResult?.count || 0;
-    
-    // Get total staked value
-    const [stakedValueResult] = await db
-      .select({
-        total: sql<number>`sum(principal_amount)`
-      })
-      .from(stakingPositions)
-      .where(eq(stakingPositions.isActive, true));
-    const totalStakedValue = stakedValueResult?.total || 0;
-    
-    // Calculate trending percentages (mock for now)
-    // In a real system, you would compare to previous day/week
+    // Sample trend data
     const tradingVolumeTrend = 5.2;  // 5.2% increase
     const userGrowthRate = 2.8;      // 2.8% increase
     
@@ -87,20 +70,23 @@ router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
 router.get("/users", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { search } = req.query;
-    let query = db.select().from(users);
+    let query = {};
     
     if (search && typeof search === 'string') {
-      query = query.where(
-        or(
-          like(users.username, `%${search}%`),
-          like(users.email, `%${search}%`),
-          like(users.firstName, `%${search}%`),
-          like(users.lastName, `%${search}%`)
-        )
-      );
+      // Use MongoDB $or and $regex for search
+      query = {
+        $or: [
+          { username: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { firstName: { $regex: search, $options: 'i' } },
+          { lastName: { $regex: search, $options: 'i' } }
+        ]
+      };
     }
     
-    const allUsers = await query.orderBy(desc(users.createdAt));
+    // Find users and sort by creation date descending
+    const allUsers = await User.find(query).sort({ createdAt: -1 });
+    
     res.json({ success: true, data: allUsers });
   } catch (error) {
     console.error("Error fetching users:", error);

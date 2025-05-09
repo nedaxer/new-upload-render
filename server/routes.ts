@@ -586,6 +586,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/staking', stakingRouter);
   app.use('/api/admin', adminRouter);
 
+  // Register admin API routes
+  app.use('/api/admin', adminRoutes);
+  
   const httpServer = createServer(app);
 
   // Setup WebSocket server for real-time updates
