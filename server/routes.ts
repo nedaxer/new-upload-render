@@ -7,21 +7,17 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
-import { WebSocketServer } from 'ws';
-import apiRoutes from './routes/api';
-import { initializeWebSocketServer } from './services/websocketService';
 
-// Extend express-session types to include userId and isAdmin
+// Extend express-session types to include userId
 declare module "express-session" {
   interface SessionData {
     userId: number;
-    isAdmin?: boolean;
   }
 }
 
 // Function to generate a random verification code
 function generateVerificationCode(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Authentication middleware to check if user is logged in
@@ -86,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // API route for user authentication
-  app.post('/api/login', async (req, res) => {
+  app.post('/api/auth/login', async (req, res) => {
     try {
       // Validate input with zod
       const loginSchema = z.object({
@@ -168,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for user registration
-  app.post('/api/register', async (req, res) => {
+  app.post('/api/auth/register', async (req, res) => {
     try {
       console.log('Registration attempt with data:', {
         ...req.body,
@@ -306,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const verifySchema = z.object({
         userId: z.number(),
-        code: z.string().length(4)
+        code: z.string().length(6)
       });
       
       const result = verifySchema.safeParse(req.body);
@@ -451,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for getting current user (if logged in)
-  app.get('/api/user', requireAuth, async (req, res) => {
+  app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId as number);
@@ -489,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for logging out
-  app.post('/api/logout', (req, res) => {
+  app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error('Error destroying session:', err);
@@ -578,16 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Register API routes for the crypto trading platform
-  app.use('/api/crypto', apiRoutes);
-
-  // Create HTTP server
   const httpServer = createServer(app);
-  
-  // Initialize WebSocket server
-  initializeWebSocketServer(httpServer);
-  
-  console.log('Crypto trading API and WebSocket server initialized');
 
   return httpServer;
 }

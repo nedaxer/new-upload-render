@@ -5,25 +5,6 @@ import App from './App';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 
-// Add a timestamp to query strings for cache-busting
-function addCacheBustParam(url: string): string {
-  const timestamp = new Date().getTime();
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}_=${timestamp}`;
-}
-
-// Intercept fetch requests to add cache-busting
-const originalFetch = window.fetch;
-window.fetch = function(input, init) {
-  if (typeof input === 'string') {
-    // Add cache-busting parameter to GET requests
-    if (!init || init.method === undefined || init.method === 'GET') {
-      return originalFetch(addCacheBustParam(input), init);
-    }
-  }
-  return originalFetch(input, init);
-};
-
 // Service Worker Registration for reliable updates
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
@@ -57,13 +38,12 @@ function registerServiceWorker() {
           }
         });
         
-        // Check for updates more frequently in development
-        const updateInterval = process.env.NODE_ENV === 'development' ? 15000 : 60000;
+        // Check for updates periodically
         setInterval(() => {
           if (navigator.serviceWorker.controller) {
             navigator.serviceWorker.controller.postMessage('CHECK_UPDATES');
           }
-        }, updateInterval);
+        }, 60000); // Check every minute
         
       } catch (error) {
         console.error('ServiceWorker registration failed:', error);
@@ -85,50 +65,34 @@ function registerServiceWorker() {
 // Initialize the service worker
 registerServiceWorker();
 
-// Configure queryClient for better caching behavior
-queryClient.setDefaultOptions({
-  queries: {
-    refetchOnWindowFocus: true,
-    staleTime: process.env.NODE_ENV === 'development' ? 0 : 5 * 60 * 1000, // 0 in dev, 5min in prod
-    retry: process.env.NODE_ENV === 'development' ? 0 : 1,
-    retryDelay: 1000,
-  },
-});
-
-// Handle initial URL hash navigation
-const ensureHashPrefixOnLoad = () => {
-  if (window.location.hash === '' && window.location.pathname !== '/') {
-    const pathToConvert = window.location.pathname;
-    window.history.replaceState(null, '', `/#${pathToConvert}`);
-  }
-};
-
-// Make sure hash routing works properly on initial page load
-ensureHashPrefixOnLoad();
-
-// Ensure our WebSocket connections are properly closed when page unloads
-window.addEventListener('beforeunload', () => {
-  // Close any WebSocket connections cleanly
-  const allWebSockets = Array.from(document.querySelectorAll('*'))
-    .filter(el => el.constructor.name === 'WebSocket');
+// Add no-cache headers for development environments
+function addNoCacheHeaders() {
+  // Create a meta tag to prevent caching in the browser
+  const meta = document.createElement('meta');
+  meta.httpEquiv = 'Cache-Control';
+  meta.content = 'no-cache, no-store, must-revalidate';
+  document.head.appendChild(meta);
   
-  allWebSockets.forEach(ws => {
-    try {
-      (ws as any).close();
-    } catch (e) {
-      console.error('Error closing WebSocket:', e);
-    }
-  });
-});
+  const pragma = document.createElement('meta');
+  pragma.httpEquiv = 'Pragma';
+  pragma.content = 'no-cache';
+  document.head.appendChild(pragma);
+  
+  const expires = document.createElement('meta');
+  expires.httpEquiv = 'Expires';
+  expires.content = '0';
+  document.head.appendChild(expires);
+}
+
+// Setup no-cache headers
+addNoCacheHeaders();
 
 // Render the application with QueryClientProvider
 const root = document.getElementById('root');
 if (root) {
   ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   );
 }
