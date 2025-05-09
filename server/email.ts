@@ -86,19 +86,14 @@ export const sendEmail = async (
 export const sendVerificationEmail = async (
   email: string, 
   verificationCode: string, 
-  firstName: string,
-  verificationUrl?: string
+  firstName: string
 ): Promise<void> => {
-  // Use the provided verificationUrl if available, otherwise generate one
-  const verificationLink = verificationUrl || 
-    `${process.env.APP_URL || 'http://localhost:5000'}/verify?code=${verificationCode}&email=${encodeURIComponent(email)}`;
-  
   return sendEmail(
     email,
     'Verify Your Account - Nedaxer',
     'verification.html',
     {
-      verification_link: verificationLink,
+      verification_code: verificationCode,
       first_name: firstName
     }
   );

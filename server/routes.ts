@@ -228,14 +228,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send verification email with better error handling
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click (with hash for client-side routing)
-        const baseUrl = process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000';
-        const verificationUrl = `${baseUrl}/#/account/verify?userId=${newUser.id}&code=${verificationCode}`;
-        
-        // Send verification email with the clickable link
-        await sendVerificationEmail(email, verificationCode, firstName, verificationUrl);
+        // Send verification email with the code
+        await sendVerificationEmail(email, verificationCode, firstName);
         emailSent = true;
-        console.log(`Verification email with clickable link successfully sent to ${email}`);
+        console.log(`Verification email with code successfully sent to ${email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
@@ -401,17 +397,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.setVerificationCode(userId, verificationCode, expiresAt);
       
-      // Send verification email with clickable link
+      // Send verification email with code
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click (with hash for client-side routing)
-        const baseUrl = process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000';
-        const verificationUrl = `${baseUrl}/#/account/verify?userId=${userId}&code=${verificationCode}`;
-        
-        // Send verification email with the clickable link
-        await sendVerificationEmail(user.email, verificationCode, user.firstName, verificationUrl);
+        // Send verification email with code
+        await sendVerificationEmail(user.email, verificationCode, user.firstName);
         emailSent = true;
-        console.log(`Verification email with clickable link successfully resent to ${user.email}`);
+        console.log(`Verification email with code successfully resent to ${user.email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
