@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 
 // Correctly determine the WebSocket URL based on the current protocol and host
 export function getWebSocketUrl(): string {
+  // Always use the same host and port as the current page
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const host = window.location.host;
+  
+  console.log(`Creating WebSocket connection to: ${protocol}//${host}/ws`);
   return `${protocol}//${host}/ws`;
 }
 

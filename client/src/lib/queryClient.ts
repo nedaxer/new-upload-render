@@ -15,8 +15,8 @@ type QueryFnOptions = {
 
 // Default query function with error handling
 export const getQueryFn = (options: QueryFnOptions = {}) => {
-  return async ({ queryKey }: { queryKey: (string | number)[] }) => {
-    const [path] = queryKey;
+  return async (context: { queryKey: readonly (string | number)[] }) => {
+    const [path] = context.queryKey;
     
     // Ensure path is a string
     const endpoint = typeof path === 'string' ? path : String(path);

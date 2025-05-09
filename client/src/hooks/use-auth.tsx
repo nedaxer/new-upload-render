@@ -15,6 +15,7 @@ type AuthContextType = {
   loginMutation: UseMutationResult<User, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   registerMutation: UseMutationResult<User, Error, RegisterData>;
+  refetch: () => Promise<any>;
 };
 
 type LoginData = {
@@ -38,9 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     error,
     isLoading,
+    refetch
   } = useQuery<User | null, Error>({
     queryKey: ["/api/auth/me"],
     queryFn: getQueryFn({ on401: "returnNull" }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   const loginMutation = useMutation<User, Error, LoginData>({
@@ -115,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Include refetch in the context value
   return (
     <AuthContext.Provider
       value={{
@@ -124,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
+        refetch, // Add refetch function to context
       }}
     >
       {children}
