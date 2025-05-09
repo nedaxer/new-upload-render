@@ -61,12 +61,13 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware with MongoDB
-  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nedaxer';
+  // Use the existing Mongoose connection instead of creating a new one
+  const mongoose = (await import('mongoose')).default;
   
   app.use(
     session({
       store: MongoStore.create({
-        mongoUrl: MONGODB_URI,
+        client: mongoose.connection.getClient(),
         collectionName: 'sessions',
         ttl: 30 * 24 * 60 * 60 // 30 days
       }),
@@ -126,7 +127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const verificationCode = generateVerificationCode();
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
         
-        await mongoStorage.setVerificationCode(user._id.toString(), verificationCode, expiresAt);
+        const userId = user._id ? user._id.toString() : '';
+        await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
         
         // Send a new verification email
         await sendVerificationEmail(user.email, verificationCode, user.firstName);
@@ -135,19 +137,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: false,
           message: "Account not verified",
           needsVerification: true,
-          userId: user._id.toString()
+          userId: userId
         });
       }
       
       // Set session
-      req.session.userId = user._id.toString();
+      const userId = user._id ? user._id.toString() : '';
+      req.session.userId = userId;
       
       // User authenticated successfully
       return res.status(200).json({
         success: true,
         message: "Authentication successful",
         user: {
-          id: user._id.toString(),
+          id: userId,
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -216,14 +219,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName
       });
       
-      console.log(`User created with ID: ${newUser._id.toString()}`);
+      const userId = newUser._id ? newUser._id.toString() : '';
+      console.log(`User created with ID: ${userId}`);
       
       // Generate verification code (we'll use this both for direct verification and as part of the URL)
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
       
-      await mongoStorage.setVerificationCode(newUser._id.toString(), verificationCode, expiresAt);
-      console.log(`Verification code set for user ${newUser._id.toString()}`);
+      await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
+      console.log(`Verification code set for user ${userId}`);
       
       // Send verification email with better error handling
       let emailSent = false;

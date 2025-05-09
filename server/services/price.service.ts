@@ -1,41 +1,21 @@
 import axios from 'axios';
-import { db } from '../db';
-import { marketPrices, currencies } from '@shared/schema';
-import { eq } from 'drizzle-orm';
-
-// API keys for price providers
-const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY || '';
-const BINANCE_API_KEY = process.env.BINANCE_API_KEY || '';
-
-// Set up caching
-const priceCache: Record<string, { price: number; timestamp: number }> = {};
-const CACHE_DURATION = 60000; // 1 minute in milliseconds
+import { Currency } from '../models/Currency';
+import { MarketPrice } from '../models/MarketPrice';
 
 /**
  * Fetch price from CoinGecko API
  */
 async function fetchPriceFromCoinGecko(symbol: string): Promise<number> {
   try {
-    const formattedSymbol = symbol.toLowerCase();
-    const apiUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${formattedSymbol}&vs_currencies=usd`;
-    
-    const headers: Record<string, string> = {
-      'Accept': 'application/json',
-    };
-    
-    // Add API key if available
-    if (COINGECKO_API_KEY) {
-      headers['x-cg-api-key'] = COINGECKO_API_KEY;
+    const response = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${symbol.toLowerCase()}&vs_currencies=usd`
+    );
+
+    if (response.data && response.data[symbol.toLowerCase()]?.usd) {
+      return response.data[symbol.toLowerCase()].usd;
     }
     
-    const response = await axios.get(apiUrl, { headers });
-    
-    if (response.data && response.data[formattedSymbol] && response.data[formattedSymbol].usd) {
-      return response.data[formattedSymbol].usd;
-    }
-    
-    throw new Error('Price not found in response');
-    
+    throw new Error('Price not available');
   } catch (error) {
     console.error(`Error fetching price from CoinGecko for ${symbol}:`, error);
     throw error;
@@ -47,17 +27,17 @@ async function fetchPriceFromCoinGecko(symbol: string): Promise<number> {
  */
 async function fetchPriceFromBinance(symbol: string): Promise<number> {
   try {
-    const formattedSymbol = symbol.toUpperCase() + 'USDT';
-    const apiUrl = `https://api.binance.com/api/v3/ticker/price?symbol=${formattedSymbol}`;
+    // Skip USD as it's always 1
+    if (symbol === 'USD') return 1;
     
-    const response = await axios.get(apiUrl);
-    
+    const pair = symbol === 'USDT' ? 'USDTUSD' : `${symbol}USDT`;
+    const response = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${pair}`);
+
     if (response.data && response.data.price) {
       return parseFloat(response.data.price);
     }
     
-    throw new Error('Price not found in response');
-    
+    throw new Error('Price not available');
   } catch (error) {
     console.error(`Error fetching price from Binance for ${symbol}:`, error);
     throw error;
@@ -68,46 +48,31 @@ async function fetchPriceFromBinance(symbol: string): Promise<number> {
  * Fetch prices from multiple sources with fallback
  */
 export async function fetchPriceFromExternalAPI(symbol: string): Promise<number> {
-  // Check the cache first
-  const cacheKey = symbol.toLowerCase();
-  const cached = priceCache[cacheKey];
+  // For USD, just return 1
+  if (symbol === 'USD') return 1;
   
-  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-    return cached.price;
-  }
-  
-  // If it's USD, the price is always 1
-  if (symbol.toUpperCase() === 'USD') {
-    return 1;
-  }
-  
-  // Try different sources with fallback
   try {
-    // Try Binance first
-    const price = await fetchPriceFromBinance(symbol);
-    
-    // Update cache
-    priceCache[cacheKey] = {
-      price,
-      timestamp: Date.now()
-    };
-    
-    return price;
+    // Try Binance first as it has higher rate limits
+    return await fetchPriceFromBinance(symbol);
   } catch (error) {
     try {
-      // Fall back to CoinGecko
-      const price = await fetchPriceFromCoinGecko(symbol);
+      // Fallback to CoinGecko
+      return await fetchPriceFromCoinGecko(symbol);
+    } catch (error2) {
+      // For development use mock prices when APIs fail
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Using mock price for ${symbol} as external APIs failed`);
+        const mockPrices: Record<string, number> = {
+          BTC: 50000,
+          ETH: 3000,
+          BNB: 500,
+          USDT: 1
+        };
+        
+        return mockPrices[symbol] || 100;
+      }
       
-      // Update cache
-      priceCache[cacheKey] = {
-        price,
-        timestamp: Date.now()
-      };
-      
-      return price;
-    } catch (secondError) {
-      console.error(`All price fetching methods failed for ${symbol}`);
-      throw new Error(`Unable to fetch price for ${symbol}`);
+      throw new Error(`Failed to fetch price for ${symbol} from all sources`);
     }
   }
 }
@@ -117,37 +82,34 @@ export async function fetchPriceFromExternalAPI(symbol: string): Promise<number>
  */
 export async function updateAllPrices(): Promise<void> {
   try {
-    // Get all active currencies except USD
-    const allCurrencies = await db
-      .select()
-      .from(currencies)
-      .where(eq(currencies.isActive, true));
+    // Get all active currencies
+    const currencies = await Currency.find({ isActive: true });
     
-    for (const currency of allCurrencies) {
+    for (const currency of currencies) {
       try {
-        // Skip USD as its price is always 1
-        if (currency.symbol.toUpperCase() === 'USD') {
+        // Skip USD as it's always 1
+        if (currency.symbol === 'USD') {
           continue;
         }
         
         const price = await fetchPriceFromExternalAPI(currency.symbol);
         
-        // Store in database
-        await db
-          .insert(marketPrices)
-          .values({
-            currencyId: currency.id,
-            price,
-            timestamp: new Date(),
-            source: 'API_SCHEDULED'
-          });
+        // Save price to database
+        const marketPrice = new MarketPrice({
+          currencyId: currency._id,
+          price,
+          timestamp: new Date(),
+          source: 'API'
+        });
         
+        await marketPrice.save();
+        console.log(`Updated price for ${currency.symbol}: $${price}`);
       } catch (error) {
-        console.error(`Failed to update price for ${currency.symbol}:`, error);
+        console.error(`Error updating price for ${currency.symbol}:`, error);
       }
     }
   } catch (error) {
-    console.error('Error in updateAllPrices:', error);
+    console.error('Error updating prices:', error);
   }
 }
 
@@ -155,19 +117,13 @@ export async function updateAllPrices(): Promise<void> {
  * Start a background job to periodically update prices
  */
 export function startPriceUpdateJob(intervalMinutes: number = 5): NodeJS.Timer {
-  const intervalMs = intervalMinutes * 60 * 1000;
+  console.log(`Starting price update job to run every ${intervalMinutes} minutes`);
   
   // Update prices immediately
-  updateAllPrices().catch(error => {
-    console.error('Initial price update failed:', error);
-  });
+  updateAllPrices();
   
-  // Set up interval for updates
-  return setInterval(() => {
-    updateAllPrices().catch(error => {
-      console.error('Scheduled price update failed:', error);
-    });
-  }, intervalMs);
+  // Then start the interval
+  return setInterval(updateAllPrices, intervalMinutes * 60 * 1000);
 }
 
 /**
@@ -175,65 +131,55 @@ export function startPriceUpdateJob(intervalMinutes: number = 5): NodeJS.Timer {
  */
 export async function getLatestPrice(currencySymbol: string): Promise<number> {
   try {
-    // If it's USD, return 1
-    if (currencySymbol.toUpperCase() === 'USD') {
-      return 1;
-    }
+    // For USD, always return 1
+    if (currencySymbol === 'USD') return 1;
     
-    // Check the cache first
-    const cacheKey = currencySymbol.toLowerCase();
-    const cached = priceCache[cacheKey];
+    // Find the currency
+    const currency = await Currency.findOne({ symbol: currencySymbol.toUpperCase() });
     
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      return cached.price;
-    }
-    
-    // Get the currency ID
-    const currency = await db
-      .select()
-      .from(currencies)
-      .where(eq(currencies.symbol, currencySymbol.toUpperCase()))
-      .limit(1);
-    
-    if (currency.length === 0) {
+    if (!currency) {
       throw new Error(`Currency ${currencySymbol} not found`);
     }
     
-    // Check for existing price in the database
-    const latestPrice = await db
-      .select()
-      .from(marketPrices)
-      .where(eq(marketPrices.currencyId, currency[0].id))
-      .orderBy({ timestamp: 'desc' })
-      .limit(1);
+    // Get the latest price from the database
+    const latestPrice = await MarketPrice.findOne({ 
+      currencyId: currency._id 
+    }).sort({ timestamp: -1 });
     
-    if (latestPrice.length > 0) {
-      // Update cache
-      priceCache[cacheKey] = {
-        price: latestPrice[0].price,
-        timestamp: Date.now()
-      };
-      
-      return latestPrice[0].price;
+    if (latestPrice) {
+      return latestPrice.price;
     }
     
-    // Fetch from external API if not in database
+    // If no price in database, fetch from external API
     const price = await fetchPriceFromExternalAPI(currencySymbol);
     
-    // Store in database
-    await db
-      .insert(marketPrices)
-      .values({
-        currencyId: currency[0].id,
-        price,
-        timestamp: new Date(),
-        source: 'API_ON_DEMAND'
-      });
+    // Save to database
+    const marketPrice = new MarketPrice({
+      currencyId: currency._id,
+      price,
+      timestamp: new Date(),
+      source: 'API'
+    });
+    
+    await marketPrice.save();
     
     return price;
-    
   } catch (error) {
     console.error(`Error getting latest price for ${currencySymbol}:`, error);
+    
+    // For development, return mock price if everything fails
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Using mock price for ${currencySymbol} as fallback`);
+      const mockPrices: Record<string, number> = {
+        BTC: 50000,
+        ETH: 3000,
+        BNB: 500,
+        USDT: 1
+      };
+      
+      return mockPrices[currencySymbol.toUpperCase()] || 100;
+    }
+    
     throw error;
   }
 }

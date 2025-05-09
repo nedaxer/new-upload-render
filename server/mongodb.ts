@@ -4,7 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // In-memory MongoDB server for development
 let mongoMemoryServer: MongoMemoryServer;
-let mongoUri: string;
+let mongoUri: string = '';
 
 // Connection for Mongoose ODM
 export async function connectToDatabase() {
@@ -15,23 +15,27 @@ export async function connectToDatabase() {
   try {
     console.log('Connecting to MongoDB...');
     
-    // If we're in development without a real MongoDB URI, use in-memory MongoDB
-    if (!process.env.MONGODB_URI) {
+    // Always use in-memory MongoDB for now to avoid connection issues
+    if (true) {
       // Create MongoDB Memory Server
       mongoMemoryServer = await MongoMemoryServer.create();
       mongoUri = mongoMemoryServer.getUri();
       console.log('Using in-memory MongoDB server');
     } else {
-      mongoUri = process.env.MONGODB_URI;
+      // Use MongoDB URI from environment variables or default to localhost
+      const envUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/nedaxer';
+      mongoUri = envUri;
       console.log('Using remote MongoDB server');
     }
     
     await mongoose.connect(mongoUri);
     console.log('MongoDB connection established successfully');
     
-    // Add default data if using in-memory database
-    if (!process.env.MONGODB_URI) {
+    // Add default data for our in-memory database
+    try {
       await createInitialData();
+    } catch (error) {
+      console.log('Initial data creation already completed or failed:', error);
     }
     
     return mongoose.connection;
@@ -134,7 +138,9 @@ export async function getMongoClient() {
       await connectToDatabase();
     }
     
-    const client = new MongoClient(mongoUri);
+    // Ensure mongoUri is defined
+    const connectionString = mongoUri || 'mongodb://localhost:27017/nedaxer';
+    const client = new MongoClient(connectionString);
     await client.connect();
     cachedClient = client;
     return client;

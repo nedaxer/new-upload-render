@@ -1,4 +1,4 @@
-import { connectToDatabase } from './mongodb';
+// MongoDB models and types
 import { User, IUser } from './models/User';
 import { InsertUser } from '@shared/schema';
 
@@ -15,13 +15,8 @@ export interface IMongoStorage {
 
 export class MongoStorage implements IMongoStorage {
   constructor() {
-    // Ensure database connection when storage is initialized
-    this.initializeConnection();
-  }
-
-  private async initializeConnection() {
-    await connectToDatabase();
-    console.log('MongoDB storage ready');
+    // No need to connect in constructor - app.ts already connects
+    console.log('MongoDB storage initialized');
   }
 
   async getUser(id: string): Promise<IUser | null> {

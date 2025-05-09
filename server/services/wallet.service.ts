@@ -1,252 +1,297 @@
-import * as bip39 from 'bip39';
 import * as bitcoin from 'bitcoinjs-lib';
-import { Wallet } from '@ethereumjs/wallet';
-import axios from 'axios';
-import crypto from 'crypto';
+import { BIP32Factory } from 'bip32';
+import { hdkey } from 'ethereumjs-wallet';
+import * as bip39 from 'bip39';
+import { UserWallet } from '../models/UserWallet';
+import { Currency } from '../models/Currency';
+import { UserBalance } from '../models/UserBalance';
+import { Transaction } from '../models/Transaction';
 
-// The seed phrase provided by the user
-const MNEMONIC = 'glad enroll fiscal silver theme draw velvet team coconut quarter grid fire';
+// The mnemonic should be securely stored in production
+// This is just for development purposes
+const DEFAULT_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
-// Derivation path constants
-const DERIVATION_PATHS = {
-  BTC: "m/44'/0'/0'/0/", // Bitcoin
-  ETH: "m/44'/60'/0'/0/", // Ethereum and ERC20 tokens like USDT
-  BNB: "m/44'/714'/0'/0/", // Binance Chain
+// HD wallet derivation paths
+const HD_PATHS = {
+  BTC: "m/84'/0'/0'/0", // BIP84 for native segwit
+  ETH: "m/44'/60'/0'/0", // BIP44 for Ethereum
+  BNB: "m/44'/714'/0'/0", // BIP44 for Binance Chain
 };
-
-// API keys for GetBlock
-const API_KEYS = {
-  BTC: process.env.GETBLOCK_BTC_API_KEY || '',
-  ETH: process.env.GETBLOCK_ETH_API_KEY || '',
-  BNB: process.env.GETBLOCK_BNB_API_KEY || '',
-  USDT: process.env.GETBLOCK_USDT_API_KEY || '',
-};
-
-// Endpoints for GetBlock APIs
-const GETBLOCK_ENDPOINTS = {
-  BTC: 'https://go.getblock.io/5e9da01c92674c35b9fb5c8d286273bd',
-  ETH: 'https://go.getblock.io/4b0644475d6b4701b1decfde61b18c56',
-  BNB: 'https://go.getblock.io/bf19ac9e403e48e89daaefaae7dadc19',
-  USDT: 'https://go.getblock.io/d07b3f6821ca46c788db6621fda66835', // ERC-20 token
-};
-
-// Encryption key for private keys (should be stored in environment variables)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-encryption-key-for-development';
-
-interface WalletDetails {
-  address: string;
-  privateKey: string;
-  hdPath: string;
-}
 
 class WalletService {
-  // Generate a Bitcoin wallet from seed phrase and derivation path index
-  generateBitcoinWallet(index: number): WalletDetails {
-    const seed = bip39.mnemonicToSeedSync(MNEMONIC);
-    const hdPath = `${DERIVATION_PATHS.BTC}${index}`;
+  private mnemonic: string = DEFAULT_MNEMONIC;
+  
+  /**
+   * Initialize the wallet service with a mnemonic (or use default)
+   */
+  constructor(mnemonic?: string) {
+    if (mnemonic) {
+      this.mnemonic = mnemonic;
+    }
+  }
+  
+  /**
+   * Generate a BTC wallet address for a user
+   */
+  async generateBTCAddress(userId: string, addressIndex: number): Promise<string> {
+    // Generate seed from mnemonic
+    const seed = await bip39.mnemonicToSeed(this.mnemonic);
+    
+    // Create HD wallet from seed using BIP32Factory
     const network = bitcoin.networks.bitcoin;
+    const bip32 = BIP32Factory({ 
+      versions: { private: network.bip32.private, public: network.bip32.public } 
+    });
+    const bip84 = bip32.fromSeed(seed, network);
     
-    // Get key pair from HDNode
-    const root = bitcoin.bip32.fromSeed(seed, network);
-    const child = root.derivePath(hdPath);
-    const keyPair = bitcoin.ECPair.fromPrivateKey(child.privateKey!);
+    // Derive the child key
+    const path = `${HD_PATHS.BTC}/${addressIndex}`;
+    const child = bip84.derivePath(path);
     
-    // Generate address
-    const { address } = bitcoin.payments.p2pkh({
-      pubkey: keyPair.publicKey,
-      network,
+    // Generate P2WPKH (native segwit) address
+    const { address } = bitcoin.payments.p2wpkh({
+      pubkey: child.publicKey,
+      network
     });
     
-    if (!address) {
-      throw new Error('Failed to generate Bitcoin address');
-    }
-    
-    return {
-      address,
-      privateKey: child.privateKey!.toString('hex'),
-      hdPath,
-    };
+    return address!;
   }
   
-  // Generate an Ethereum wallet from seed phrase and derivation path index
-  generateEthereumWallet(index: number): WalletDetails {
-    const seed = bip39.mnemonicToSeedSync(MNEMONIC);
-    const hdPath = `${DERIVATION_PATHS.ETH}${index}`;
+  /**
+   * Generate an ETH wallet address for a user
+   */
+  async generateETHAddress(userId: string, addressIndex: number): Promise<string> {
+    // Generate seed from mnemonic
+    const seed = await bip39.mnemonicToSeed(this.mnemonic);
     
     // Create HD wallet
-    const hdKey = Wallet.fromMasterSeed(Buffer.from(seed));
-    const childKey = hdKey.derivePath(hdPath);
+    const hdWallet = hdkey.fromMasterSeed(seed);
     
-    const address = childKey.getAddressString();
-    const privateKey = childKey.getPrivateKeyString().slice(2); // Remove '0x' prefix
+    // Derive the child key
+    const path = `${HD_PATHS.ETH}/${addressIndex}`;
+    const childWallet = hdWallet.derivePath(path).getWallet();
     
-    return {
-      address,
-      privateKey,
-      hdPath,
-    };
+    // Get address
+    return childWallet.getAddressString();
   }
   
-  // Generate a Binance Chain wallet from seed phrase and derivation path index
-  generateBinanceWallet(index: number): WalletDetails {
-    const seed = bip39.mnemonicToSeedSync(MNEMONIC);
-    const hdPath = `${DERIVATION_PATHS.BNB}${index}`;
-    
-    // Binance Chain uses the same derivation mechanism as Ethereum
-    const hdKey = Wallet.fromMasterSeed(Buffer.from(seed));
-    const childKey = hdKey.derivePath(hdPath);
-    
-    const address = childKey.getAddressString();
-    const privateKey = childKey.getPrivateKeyString().slice(2);
-    
-    return {
-      address,
-      privateKey,
-      hdPath,
-    };
+  /**
+   * Generate a BNB wallet address for a user (same format as ETH)
+   */
+  async generateBNBAddress(userId: string, addressIndex: number): Promise<string> {
+    // BNB uses the same address format as ETH
+    return this.generateETHAddress(userId, addressIndex);
   }
   
-  // Encrypt a private key before storing in the database
-  encryptPrivateKey(privateKey: string): string {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
-    
-    let encrypted = cipher.update(privateKey, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    
-    return `${iv.toString('hex')}:${encrypted}`;
+  /**
+   * Generate wallet address for a specific cryptocurrency
+   */
+  async generateAddress(userId: string, currencySymbol: string, addressIndex: number): Promise<string> {
+    switch (currencySymbol.toUpperCase()) {
+      case 'BTC':
+        return this.generateBTCAddress(userId, addressIndex);
+      case 'ETH':
+        return this.generateETHAddress(userId, addressIndex);
+      case 'BNB':
+        return this.generateBNBAddress(userId, addressIndex);
+      default:
+        throw new Error(`Unsupported currency: ${currencySymbol}`);
+    }
   }
   
-  // Decrypt a private key from the database
-  decryptPrivateKey(encryptedData: string): string {
-    const [ivHex, encrypted] = encryptedData.split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
-    
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    
-    return decrypted;
-  }
-  
-  // Check Bitcoin address balance using GetBlock API
-  async checkBitcoinBalance(address: string): Promise<number> {
+  /**
+   * Get the next address index to use for wallet generation
+   */
+  async getNextAddressIndex(currencySymbol: string): Promise<number> {
     try {
-      const response = await axios.post(
-        GETBLOCK_ENDPOINTS.BTC,
-        {
-          jsonrpc: '2.0',
-          method: 'getaddressbalance',
-          params: [address],
-          id: 'getbalance',
-        },
-        {
-          headers: {
-            'x-api-key': API_KEYS.BTC,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Find highest index used for this currency
+      const highestWallet = await UserWallet.findOne({})
+        .sort({ addressIndex: -1 })
+        .limit(1);
       
-      if (response.data.error) {
-        console.error('GetBlock BTC error:', response.data.error);
-        return 0;
-      }
-      
-      // Convert satoshis to BTC
-      return response.data.result.balance / 100000000;
+      return highestWallet ? highestWallet.addressIndex + 1 : 0;
     } catch (error) {
-      console.error('Error checking Bitcoin balance:', error);
+      console.error(`Error getting next address index for ${currencySymbol}:`, error);
       return 0;
     }
   }
   
-  // Check Ethereum or ERC20 token balance using GetBlock API
-  async checkEthereumBalance(address: string, isToken = false, tokenAddress?: string): Promise<number> {
+  /**
+   * Generate a wallet for a user and save it to the database
+   */
+  async createWalletForUser(userId: string, currencySymbol: string): Promise<any> {
     try {
-      const method = isToken ? 'eth_call' : 'eth_getBalance';
-      const params = isToken
-        ? [
-            {
-              to: tokenAddress,
-              data: `0x70a08231000000000000000000000000${address.slice(2)}`,
-            },
-            'latest',
-          ]
-        : [address, 'latest'];
+      // Get currency ID
+      const currency = await Currency.findOne({ symbol: currencySymbol.toUpperCase() });
       
-      const endpoint = isToken ? GETBLOCK_ENDPOINTS.USDT : GETBLOCK_ENDPOINTS.ETH;
-      const apiKey = isToken ? API_KEYS.USDT : API_KEYS.ETH;
-      
-      const response = await axios.post(
-        endpoint,
-        {
-          jsonrpc: '2.0',
-          method,
-          params,
-          id: 'getbalance',
-        },
-        {
-          headers: {
-            'x-api-key': apiKey,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      if (response.data.error) {
-        console.error(`GetBlock ${isToken ? 'Token' : 'ETH'} error:`, response.data.error);
-        return 0;
+      if (!currency) {
+        throw new Error(`Currency ${currencySymbol} not found`);
       }
       
-      // Convert wei to ETH or token units
-      const balance = parseInt(response.data.result, 16);
-      return balance / (isToken ? 1000000 : 1000000000000000000); // USDT has 6 decimals, ETH has 18
+      // Check if user already has a wallet for this currency
+      const existingWallet = await UserWallet.findOne({
+        userId,
+        currencyId: currency._id
+      });
+      
+      if (existingWallet) {
+        return existingWallet;
+      }
+      
+      // Get next address index
+      const addressIndex = await this.getNextAddressIndex(currencySymbol);
+      
+      // Generate address
+      const address = await this.generateAddress(userId, currencySymbol, addressIndex);
+      
+      // Create wallet record
+      const wallet = new UserWallet({
+        userId,
+        currencyId: currency._id,
+        address,
+        addressIndex,
+        createdAt: new Date()
+      });
+      
+      await wallet.save();
+      
+      // Create initial balance if it doesn't exist
+      const existingBalance = await UserBalance.findOne({
+        userId,
+        currencyId: currency._id
+      });
+      
+      if (!existingBalance) {
+        const balance = new UserBalance({
+          userId,
+          currencyId: currency._id,
+          amount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        
+        await balance.save();
+      }
+      
+      return wallet;
     } catch (error) {
-      console.error(`Error checking ${isToken ? 'Token' : 'ETH'} balance:`, error);
-      return 0;
+      console.error(`Error creating wallet for user ${userId}, currency ${currencySymbol}:`, error);
+      throw error;
     }
   }
   
-  // Check BNB balance using GetBlock API
-  async checkBinanceBalance(address: string): Promise<number> {
+  /**
+   * Generate wallets for all supported cryptocurrencies for a user
+   */
+  async createWalletsForUser(userId: string): Promise<any[]> {
     try {
-      const response = await axios.post(
-        GETBLOCK_ENDPOINTS.BNB,
-        {
-          jsonrpc: '2.0',
-          method: 'eth_getBalance', // BNB uses the same JSON-RPC method as Ethereum
-          params: [address, 'latest'],
-          id: 'getbalance',
-        },
-        {
-          headers: {
-            'x-api-key': API_KEYS.BNB,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Get all supported cryptocurrencies (exclude USD and stablecoins)
+      const currencies = await Currency.find({
+        symbol: { $in: ['BTC', 'ETH', 'BNB'] },
+        isActive: true
+      });
       
-      if (response.data.error) {
-        console.error('GetBlock BNB error:', response.data.error);
-        return 0;
+      const wallets = [];
+      
+      for (const currency of currencies) {
+        const wallet = await this.createWalletForUser(userId, currency.symbol);
+        wallets.push(wallet);
       }
       
-      // Convert wei to BNB
-      const balance = parseInt(response.data.result, 16);
-      return balance / 1000000000000000000; // BNB has 18 decimals
+      return wallets;
     } catch (error) {
-      console.error('Error checking BNB balance:', error);
-      return 0;
+      console.error(`Error creating wallets for user ${userId}:`, error);
+      throw error;
     }
   }
   
-  // Check USDT (ERC20) balance
-  async checkUSDTBalance(address: string): Promise<number> {
-    // USDT contract address on Ethereum mainnet
-    const usdtContractAddress = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    return this.checkEthereumBalance(address, true, usdtContractAddress);
+  /**
+   * Get all wallets for a user
+   */
+  async getUserWallets(userId: string): Promise<any[]> {
+    try {
+      // Get wallets with populated currency information
+      const wallets = await UserWallet.find({ userId })
+        .populate('currencyId')
+        .exec();
+      
+      return wallets.map(wallet => ({
+        ...wallet.toObject(),
+        currency: wallet.get('currencyId')
+      }));
+    } catch (error) {
+      console.error(`Error getting wallets for user ${userId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Process a deposit for a user
+   */
+  async processDeposit(address: string, amount: number, txHash: string): Promise<boolean> {
+    try {
+      // Find the wallet by address
+      const wallet = await UserWallet.findOne({ address });
+      
+      if (!wallet) {
+        console.error(`Wallet not found for address ${address}`);
+        return false;
+      }
+      
+      // Check if this transaction has already been processed
+      const existingTx = await Transaction.findOne({ txHash });
+      
+      if (existingTx) {
+        console.log(`Transaction ${txHash} already processed`);
+        return false;
+      }
+      
+      // Update user's balance
+      const userBalance = await UserBalance.findOne({
+        userId: wallet.userId,
+        currencyId: wallet.currencyId
+      });
+      
+      if (userBalance) {
+        userBalance.amount += amount;
+        userBalance.updatedAt = new Date();
+        await userBalance.save();
+      } else {
+        const newBalance = new UserBalance({
+          userId: wallet.userId,
+          currencyId: wallet.currencyId,
+          amount,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        
+        await newBalance.save();
+      }
+      
+      // Record transaction
+      const transaction = new Transaction({
+        userId: wallet.userId,
+        type: 'deposit',
+        sourceId: wallet.currencyId,
+        sourceAmount: amount,
+        targetId: wallet.currencyId,
+        targetAmount: amount,
+        fee: 0,
+        status: 'completed',
+        txHash,
+        createdAt: new Date()
+      });
+      
+      await transaction.save();
+      
+      console.log(`Processed deposit of ${amount} to address ${address}, tx: ${txHash}`);
+      return true;
+    } catch (error) {
+      console.error(`Error processing deposit to ${address}:`, error);
+      return false;
+    }
   }
 }
 
+// Export an instance of the wallet service
 export const walletService = new WalletService();
