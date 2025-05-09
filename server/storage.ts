@@ -47,6 +47,7 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       isVerified: false, 
+      isAdmin: false,
       verificationCode: null, 
       verificationCodeExpires: null,
       createdAt: now
