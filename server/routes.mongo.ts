@@ -127,8 +127,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is verified
       if (!user.isVerified) {
         // Generate a new verification code if the user is not verified
-        const verificationCode = generateVerificationCode();
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+        const verificationCode = authService.generateVerificationCode();
+        const expiresAt = authService.generateExpirationDate(30); // 30 minutes from now
         
         const userId = user._id ? user._id.toString() : '';
         await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
@@ -226,8 +226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`User created with ID: ${userId}`);
       
       // Generate verification code (we'll use this both for direct verification and as part of the URL)
-      const verificationCode = generateVerificationCode();
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      const verificationCode = authService.generateVerificationCode();
+      const expiresAt = authService.generateExpirationDate(30); // 30 minutes from now
       
       await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
       console.log(`Verification code set for user ${userId}`);
@@ -398,8 +398,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate new verification code
-      const verificationCode = generateVerificationCode();
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      const verificationCode = authService.generateVerificationCode();
+      const expiresAt = authService.generateExpirationDate(30); // 30 minutes from now
       
       await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
       

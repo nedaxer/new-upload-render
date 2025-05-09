@@ -8,6 +8,8 @@ export interface IUser extends Document {
   lastName: string;
   verificationCode?: string;
   verificationCodeExpires?: Date;
+  resetPasswordCode?: string;
+  resetPasswordCodeExpires?: Date;
   isVerified: boolean;
   isAdmin?: boolean;
   createdAt: Date;
@@ -47,6 +49,14 @@ const userSchema = new Schema(
       default: null,
     },
     verificationCodeExpires: {
+      type: Date,
+      default: null,
+    },
+    resetPasswordCode: {
+      type: String,
+      default: null,
+    },
+    resetPasswordCodeExpires: {
       type: Date,
       default: null,
     },

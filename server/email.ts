@@ -115,3 +115,19 @@ export const sendWelcomeEmail = async (
     }
   );
 };
+
+export const sendPasswordResetEmail = async (
+  email: string,
+  resetCode: string,
+  firstName: string
+): Promise<void> => {
+  return sendEmail(
+    email,
+    'Reset Your Password - Nedaxer',
+    'password-reset.html',
+    {
+      reset_code: resetCode,
+      first_name: firstName
+    }
+  );
+};

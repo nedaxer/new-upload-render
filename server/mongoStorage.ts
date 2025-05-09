@@ -11,6 +11,9 @@ export interface IMongoStorage {
   setVerificationCode(userId: string, code: string, expiresAt: Date): Promise<void>;
   verifyUser(userId: string, code: string): Promise<boolean>;
   markUserAsVerified(userId: string): Promise<void>;
+  setResetPasswordCode(userId: string, code: string, expiresAt: Date): Promise<void>;
+  verifyResetPasswordCode(userId: string, code: string): Promise<boolean>;
+  updatePassword(userId: string, newPassword: string): Promise<boolean>;
 }
 
 export class MongoStorage implements IMongoStorage {
@@ -108,6 +111,65 @@ export class MongoStorage implements IMongoStorage {
     } catch (error) {
       console.error('Error marking user as verified:', error);
       throw error;
+    }
+  }
+  
+  async getUserByEmail(email: string): Promise<IUser | null> {
+    try {
+      return await User.findOne({ email });
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      return null;
+    }
+  }
+  
+  async setResetPasswordCode(userId: string, code: string, expiresAt: Date): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        resetPasswordCode: code,
+        resetPasswordCodeExpires: expiresAt,
+      });
+    } catch (error) {
+      console.error('Error setting reset password code:', error);
+      throw error;
+    }
+  }
+  
+  async verifyResetPasswordCode(userId: string, code: string): Promise<boolean> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) return false;
+      
+      // Check if code is valid and not expired
+      if (user.resetPasswordCode !== code) return false;
+      if (user.resetPasswordCodeExpires && user.resetPasswordCodeExpires < new Date()) return false;
+      
+      return true;
+    } catch (error) {
+      console.error('Error verifying reset password code:', error);
+      return false;
+    }
+  }
+  
+  async updatePassword(userId: string, newPassword: string): Promise<boolean> {
+    try {
+      // Import auth service to hash the new password
+      const { authService } = await import('./services/auth.service');
+      
+      // Hash the new password
+      const hashedPassword = await authService.hashPassword(newPassword);
+      
+      // Update the user's password and clear the reset code
+      await User.findByIdAndUpdate(userId, {
+        password: hashedPassword,
+        resetPasswordCode: null,
+        resetPasswordCodeExpires: null,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      return false;
     }
   }
 }
