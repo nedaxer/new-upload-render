@@ -40,14 +40,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     isLoading,
     refetch
-  } = useQuery<User | null, Error>({
+  } = useQuery({
     queryKey: ["/api/auth/me"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: getQueryFn({ on401: "returnNull" }) as any, // Type casting to fix compatibility issue
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-  });
+  }) as { 
+    data: User | null; 
+    error: Error | null; 
+    isLoading: boolean; 
+    refetch: () => Promise<any>;
+  };
 
   const loginMutation = useMutation<User, Error, LoginData>({
     mutationFn: async (credentials: LoginData) => {
@@ -125,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
+        user: user as User | null,
         isLoading,
         error,
         loginMutation,

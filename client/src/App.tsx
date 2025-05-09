@@ -4,7 +4,8 @@ import { useHashLocation } from './hooks/use-hash-location';
 import { AuthProvider } from './hooks/use-auth';
 import { WebSocketProvider } from './hooks/use-websocket';
 import { ProtectedRoute } from './lib/protected-route';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 
 // Pages
 import Home from '@/pages/home';
@@ -71,16 +72,6 @@ function LoadingIndicator() {
     </div>
   );
 }
-
-// Create QueryClient instance outside of the component
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
