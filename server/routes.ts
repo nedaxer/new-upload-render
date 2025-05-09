@@ -7,6 +7,8 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
+import { WebSocketServer } from "ws";
+import adminRoutes from "./api/admin-routes";
 
 // Extend express-session types to include userId
 declare module "express-session" {

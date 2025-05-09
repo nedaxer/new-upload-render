@@ -6,23 +6,62 @@ import {
   CardHeader, 
   CardTitle, 
   CardDescription, 
-  CardContent 
+  CardContent,
+  CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight,
+  ArrowDownUp,
   CircleDollarSign,
+  CreditCard,
   DollarSign,
-  LayoutDashboard,
   Layers,
-  Users,
+  RefreshCcw,
   Settings,
-  CreditCard
+  TrendingUp,
+  Users
 } from "lucide-react";
 import { Link } from "wouter";
 
+// Dashboard statistics card component
+interface StatsCardProps {
+  title: string;
+  value: string;
+  description: string;
+  icon: React.ReactNode;
+  trend?: number;
+  loading?: boolean;
+}
+
+function StatsCard({ title, value, description, icon, trend, loading }: StatsCardProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
+        <div className="h-8 w-8 rounded-md bg-primary/10 p-1.5 text-primary">
+          {icon}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="h-7 w-24 animate-pulse rounded bg-gray-200"></div>
+        ) : (
+          <div className="text-2xl font-bold">{value}</div>
+        )}
+        <p className="text-xs text-gray-500">{description}</p>
+        {trend !== undefined && (
+          <div className={`mt-1 flex items-center text-xs ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {trend >= 0 ? "+" : ""}{trend}%
+            <TrendingUp className={`ml-1 h-3 w-3 ${trend >= 0 ? '' : 'rotate-180'}`} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminDashboard() {
-  // Statistics query
+  // Platform stats query
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/admin/stats"],
     queryFn: async () => {
@@ -30,35 +69,72 @@ export default function AdminDashboard() {
         const res = await apiRequest("GET", "/api/admin/stats");
         return res.json();
       } catch (error) {
-        // Return mock data for initial rendering
-        return {
-          success: true,
-          data: {
+        console.error("Error fetching admin stats:", error);
+        return { 
+          success: false, 
+          data: { 
             totalUsers: 0,
-            totalUsdDeposited: 0,
+            totalTradingVolume: 0,
+            activeStakingPositions: 0,
             totalStakedValue: 0,
-            totalTrades: 0
-          }
+            recentDeposits: [],
+            tradingVolumeTrend: 0,
+            userGrowthRate: 0
+          } 
         };
       }
     },
   });
 
-  // Format currency value
+  // Recent transactions query
+  const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
+    queryKey: ["/api/admin/recent-transactions"],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest("GET", "/api/admin/recent-transactions");
+        return res.json();
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        return { success: false, data: [] };
+      }
+    },
+  });
+  
+  // Format numbers for display
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
+  };
+  
+  // Format currency
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(value);
   };
-
+  
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  };
+  
   const stats = statsData?.data || {
     totalUsers: 0,
-    totalUsdDeposited: 0,
+    totalTradingVolume: 0,
+    activeStakingPositions: 0,
     totalStakedValue: 0,
-    totalTrades: 0
+    tradingVolumeTrend: 0,
+    userGrowthRate: 0
   };
-
+  
+  const transactions = transactionsData?.data || [];
+  
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Top navigation */}
@@ -86,137 +162,208 @@ export default function AdminDashboard() {
       
       <div className="container flex-1 py-8 px-4 md:px-6">
         <div className="grid gap-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-            <p className="text-gray-500">
-              Overview of platform statistics and management
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Platform Overview</h1>
+              <p className="text-gray-500">
+                Monitor and manage your cryptocurrency trading platform
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <RefreshCcw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
           </div>
           
-          {/* Stats cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  Total Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Registered accounts
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  Total Deposited
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalUsdDeposited)}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Deposited funds in USD
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  Total Staked
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalStakedValue)}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Staked assets in USD
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  Total Trades
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalTrades}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Completed trades
-                </div>
-              </CardContent>
-            </Card>
+          {/* Stats grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatsCard
+              title="Total Users"
+              value={formatNumber(stats.totalUsers)}
+              description="Total registered users"
+              icon={<Users className="h-full w-full" />}
+              trend={stats.userGrowthRate}
+              loading={statsLoading}
+            />
+            
+            <StatsCard
+              title="Trading Volume (24h)"
+              value={formatCurrency(stats.totalTradingVolume)}
+              description="Total value of trades in the last 24 hours"
+              icon={<ArrowDownUp className="h-full w-full" />}
+              trend={stats.tradingVolumeTrend}
+              loading={statsLoading}
+            />
+            
+            <StatsCard
+              title="Active Staking Positions"
+              value={formatNumber(stats.activeStakingPositions)}
+              description="Number of active staking positions"
+              icon={<Layers className="h-full w-full" />}
+              loading={statsLoading}
+            />
+            
+            <StatsCard
+              title="Total Staked Value"
+              value={formatCurrency(stats.totalStakedValue)}
+              description="Total value of staked assets"
+              icon={<CreditCard className="h-full w-full" />}
+              loading={statsLoading}
+            />
           </div>
+          
+          {/* Recent transactions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+              <CardDescription>
+                Latest trading and staking activities on the platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {transactionsLoading ? (
+                <div className="flex justify-center py-8">
+                  <RefreshCcw className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : transactions.length > 0 ? (
+                <div className="space-y-4">
+                  {transactions.map((transaction: any, index: number) => (
+                    <div 
+                      key={transaction.id} 
+                      className={`flex items-center justify-between p-4 ${
+                        index < transactions.length - 1 ? "border-b" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`rounded-full p-2 ${
+                          transaction.type === 'buy' ? "bg-green-100" : 
+                          transaction.type === 'sell' ? "bg-red-100" :
+                          transaction.type === 'deposit' ? "bg-blue-100" :
+                          transaction.type === 'staking' ? "bg-amber-100" : "bg-gray-100"
+                        }`}>
+                          {transaction.type === 'buy' && <TrendingUp className="h-4 w-4 text-green-600" />}
+                          {transaction.type === 'sell' && <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />}
+                          {transaction.type === 'deposit' && <CreditCard className="h-4 w-4 text-blue-600" />}
+                          {transaction.type === 'staking' && <Layers className="h-4 w-4 text-amber-600" />}
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium">
+                            {transaction.type === 'buy' && `Bought ${transaction.amount} ${transaction.currency}`}
+                            {transaction.type === 'sell' && `Sold ${transaction.amount} ${transaction.currency}`}
+                            {transaction.type === 'deposit' && `Deposited ${transaction.amount} ${transaction.currency}`}
+                            {transaction.type === 'staking' && `Staked ${transaction.amount} ${transaction.currency}`}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {transaction.user.firstName} {transaction.user.lastName} • {formatDate(transaction.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="font-bold">
+                          {transaction.type === 'buy' && "-"}
+                          {transaction.type === 'sell' && "+"}
+                          {formatCurrency(transaction.value)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {transaction.status === 'completed' ? "Completed" : 
+                           transaction.status === 'pending' ? "Pending" : 
+                           transaction.status === 'failed' ? "Failed" : transaction.status}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <ArrowDownUp className="h-10 w-10 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Transactions Found</h3>
+                  <p className="text-gray-500 mb-4 text-center">
+                    There are no recent transactions to display
+                  </p>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline">
+                Export Report
+              </Button>
+              <Link href="/admin/transactions">
+                <Button variant="link">
+                  View All Transactions →
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
           
           {/* Quick actions */}
-          <h2 className="text-xl font-bold mt-8 mb-4">Quick Actions</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <Users className="h-8 w-8 text-[#0033a0]" />
-                <CardTitle className="mt-4">Manage Users</CardTitle>
+                <CardTitle>User Management</CardTitle>
                 <CardDescription>
                   View and manage user accounts
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" asChild>
-                  <Link href="/admin/users">
+              <CardContent className="space-y-2">
+                <p className="text-sm text-gray-500">
+                  Add, edit, or suspend user accounts. Credit USD balances and view transaction history.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Link href="/admin/users" className="w-full">
+                  <Button className="w-full">
+                    <Users className="h-4 w-4 mr-2" />
                     Manage Users
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
+                  </Button>
+                </Link>
+              </CardFooter>
             </Card>
+            
             <Card>
               <CardHeader>
-                <DollarSign className="h-8 w-8 text-[#0033a0]" />
-                <CardTitle className="mt-4">Credit Balance</CardTitle>
+                <CardTitle>Staking Rates</CardTitle>
                 <CardDescription>
-                  Add funds to user accounts
+                  Configure cryptocurrency staking rates
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" asChild>
-                  <Link href="/admin/users">
-                    Credit Users
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+              <CardContent className="space-y-2">
+                <p className="text-sm text-gray-500">
+                  Set APY rates for different cryptocurrencies and minimum stake requirements.
+                </p>
               </CardContent>
+              <CardFooter>
+                <Link href="/admin/staking" className="w-full">
+                  <Button className="w-full">
+                    <Layers className="h-4 w-4 mr-2" />
+                    Manage Staking
+                  </Button>
+                </Link>
+              </CardFooter>
             </Card>
+            
             <Card>
               <CardHeader>
-                <Layers className="h-8 w-8 text-[#0033a0]" />
-                <CardTitle className="mt-4">Staking Rates</CardTitle>
+                <CardTitle>Financial Reports</CardTitle>
                 <CardDescription>
-                  Manage staking APY rates
+                  View financial statistics and reports
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button className="w-full" asChild>
-                  <Link href="/admin/staking">
-                    Manage Rates
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+              <CardContent className="space-y-2">
+                <p className="text-sm text-gray-500">
+                  Generate reports on trading volume, fees collected, and platform growth.
+                </p>
               </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CreditCard className="h-8 w-8 text-[#0033a0]" />
-                <CardTitle className="mt-4">Deposits</CardTitle>
-                <CardDescription>
-                  View deposit transactions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" disabled>
-                  View Deposits
-                  <ArrowRight className="ml-2 h-4 w-4" />
+              <CardFooter>
+                <Button className="w-full">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  View Reports
                 </Button>
-              </CardContent>
+              </CardFooter>
             </Card>
           </div>
         </div>

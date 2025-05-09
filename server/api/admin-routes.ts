@@ -1,355 +1,343 @@
-import { Request, Response, Router } from "express";
-import { z } from "zod";
+import { Router, Request, Response, NextFunction } from "express";
 import { db } from "../db";
-import { users, currencies, stakingRates } from "@shared/schema";
-import { eq, like } from "drizzle-orm";
-import { tradingService } from "../services/trading.service";
+import { users, transactions, stakingPositions, stakingRates, userBalances, currencies } from "@shared/schema";
+import { eq, desc, sql, like, and, or, gte, lte } from "drizzle-orm";
 
-const adminRouter = Router();
+const router = Router();
 
-// Middleware to check admin authentication
-const requireAdmin = async (req: Request, res: Response, next: Function) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ 
-      success: false, 
-      message: "Authentication required" 
-    });
+// Middleware to check if user is authenticated and an admin
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ success: false, message: "Not authenticated" });
   }
   
-  try {
-    // Check if user is admin
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, req.session.userId));
-    
-    if (!user || !user.isAdmin) {
-      return res.status(403).json({ 
-        success: false, 
-        message: "Admin privileges required" 
-      });
-    }
-    
-    next();
-  } catch (error) {
-    console.error("Error checking admin status:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+  if (!req.user.isAdmin) {
+    return res.status(403).json({ success: false, message: "Not authorized" });
   }
+  
+  next();
 };
 
-// Admin login route
-adminRouter.post("/login", async (req, res) => {
+// Get admin stats
+router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const loginSchema = z.object({
-      username: z.string(),
-      password: z.string()
-    });
+    // Get total users count
+    const [usersCountResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const totalUsers = usersCountResult?.count || 0;
     
-    const result = loginSchema.safeParse(req.body);
+    // Get trading volume in the last 24 hours
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid request format",
-        errors: result.error.format()
-      });
-    }
+    const [tradingVolumeResult] = await db
+      .select({ 
+        total: sql<number>`sum(amount * price)` 
+      })
+      .from(transactions)
+      .where(
+        and(
+          gte(transactions.createdAt, yesterday),
+          or(
+            eq(transactions.type, "buy"),
+            eq(transactions.type, "sell")
+          )
+        )
+      );
+    const totalTradingVolume = tradingVolumeResult?.total || 0;
     
-    const { username, password } = result.data;
+    // Get active staking positions count
+    const [stakingCountResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(stakingPositions)
+      .where(eq(stakingPositions.isActive, true));
+    const activeStakingPositions = stakingCountResult?.count || 0;
     
-    // Find the user
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, username));
+    // Get total staked value
+    const [stakedValueResult] = await db
+      .select({
+        total: sql<number>`sum(principal_amount)`
+      })
+      .from(stakingPositions)
+      .where(eq(stakingPositions.isActive, true));
+    const totalStakedValue = stakedValueResult?.total || 0;
     
-    if (!user || user.password !== password) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
+    // Calculate trending percentages (mock for now)
+    // In a real system, you would compare to previous day/week
+    const tradingVolumeTrend = 5.2;  // 5.2% increase
+    const userGrowthRate = 2.8;      // 2.8% increase
     
-    // Check if user is admin
-    if (!user.isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "Admin privileges required"
-      });
-    }
-    
-    // Set session
-    req.session.userId = user.id;
-    
-    return res.status(200).json({
+    res.json({
       success: true,
-      message: "Admin login successful",
       data: {
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        isAdmin: user.isAdmin
+        totalUsers,
+        totalTradingVolume,
+        activeStakingPositions,
+        totalStakedValue,
+        tradingVolumeTrend,
+        userGrowthRate
       }
     });
   } catch (error) {
-    console.error("Admin login error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+    console.error("Error fetching admin stats:", error);
+    res.status(500).json({ success: false, message: "Error fetching admin stats" });
   }
 });
 
-// Search users
-adminRouter.get("/users", requireAdmin, async (req, res) => {
+// Get all users with optional search
+router.get("/users", requireAdmin, async (req: Request, res: Response) => {
   try {
-    // Parse search query
-    const { search, limit = 50, offset = 0 } = req.query;
-    
+    const { search } = req.query;
     let query = db.select().from(users);
     
-    if (search) {
-      const searchTerm = `%${search}%`;
+    if (search && typeof search === 'string') {
       query = query.where(
-        like(users.username, searchTerm)
+        or(
+          like(users.username, `%${search}%`),
+          like(users.email, `%${search}%`),
+          like(users.firstName, `%${search}%`),
+          like(users.lastName, `%${search}%`)
+        )
       );
     }
     
-    const usersList = await query
-      .limit(parseInt(limit as string))
-      .offset(parseInt(offset as string));
-    
-    return res.status(200).json({
-      success: true,
-      data: usersList.map(user => ({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isVerified: user.isVerified,
-        isAdmin: user.isAdmin,
-        createdAt: user.createdAt
-      }))
-    });
+    const allUsers = await query.orderBy(desc(users.createdAt));
+    res.json({ success: true, data: allUsers });
   } catch (error) {
-    console.error("Error searching users:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, message: "Error fetching users" });
   }
 });
 
-// Get user details
-adminRouter.get("/users/:id", requireAdmin, async (req, res) => {
+// Get recent transactions for admin dashboard
+router.get("/recent-transactions", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.id);
-    
-    if (isNaN(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID"
-      });
-    }
-    
-    // Get user info
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId));
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-    
-    // Get user balances
-    const balances = await tradingService.getAllUserBalances(userId);
-    
-    // Get recent transactions
-    const transactions = await tradingService.getUserTransactionsDetailed(userId, 20);
-    
-    return res.status(200).json({
-      success: true,
-      data: {
+    // Get latest 10 transactions with user information
+    const recentTransactions = await db
+      .select({
+        id: transactions.id,
+        userId: transactions.userId,
+        type: transactions.type,
+        status: transactions.status,
+        amount: transactions.amount,
+        price: transactions.price, 
+        createdAt: transactions.createdAt,
+        currencyId: transactions.currencyId,
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          isVerified: user.isVerified,
-          isAdmin: user.isAdmin,
-          createdAt: user.createdAt
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email
         },
-        balances,
-        transactions
+        currency: {
+          symbol: currencies.symbol
+        }
+      })
+      .from(transactions)
+      .innerJoin(users, eq(transactions.userId, users.id))
+      .innerJoin(currencies, eq(transactions.currencyId, currencies.id))
+      .orderBy(desc(transactions.createdAt))
+      .limit(10);
+    
+    // Calculate USD value and prepare response
+    const formattedTransactions = recentTransactions.map(tx => ({
+      id: tx.id,
+      userId: tx.userId,
+      type: tx.type,
+      status: tx.status,
+      amount: tx.amount,
+      currency: tx.currency.symbol,
+      value: tx.amount * tx.price,  // USD value
+      createdAt: tx.createdAt,
+      user: {
+        id: tx.user.id,
+        firstName: tx.user.firstName,
+        lastName: tx.user.lastName,
+        email: tx.user.email
       }
-    });
+    }));
+    
+    res.json({ success: true, data: formattedTransactions });
   } catch (error) {
-    console.error("Error getting user details:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+    console.error("Error fetching recent transactions:", error);
+    res.status(500).json({ success: false, message: "Error fetching recent transactions" });
   }
 });
 
-// Credit user balance (admin function)
-adminRouter.post("/credit-balance", requireAdmin, async (req, res) => {
+// Credit user balance
+router.post("/credit-balance", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const creditSchema = z.object({
-      userId: z.number(),
-      currencyId: z.number(),
-      amount: z.number().positive()
-    });
+    const { userId, currencyId, amount } = req.body;
     
-    const result = creditSchema.safeParse(req.body);
-    
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid request format",
-        errors: result.error.format()
+    if (!userId || !currencyId || !amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid request parameters" 
       });
     }
     
-    const { userId, currencyId, amount } = result.data;
-    
-    // Verify user exists
-    const [user] = await db
-      .select()
+    // Check if user exists
+    const userExists = await db
+      .select({ id: users.id })
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.id, userId))
+      .limit(1);
     
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
+    if (userExists.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
       });
     }
     
-    // Verify currency exists
-    const [currency] = await db
-      .select()
+    // Check if currency exists
+    const currencyExists = await db
+      .select({ id: currencies.id })
       .from(currencies)
-      .where(eq(currencies.id, currencyId));
+      .where(eq(currencies.id, currencyId))
+      .limit(1);
     
-    if (!currency) {
-      return res.status(404).json({
-        success: false,
-        message: "Currency not found"
+    if (currencyExists.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Currency not found" 
       });
     }
     
-    // Credit user balance
-    const updatedBalance = await tradingService.updateUserBalance(userId, currencyId, amount);
+    // Check if user already has a balance for this currency
+    const existingBalance = await db
+      .select()
+      .from(userBalances)
+      .where(
+        and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, currencyId)
+        )
+      )
+      .limit(1);
     
-    return res.status(200).json({
-      success: true,
-      message: `Successfully credited ${amount} ${currency.symbol} to user ${user.username}`,
-      data: {
-        updatedBalance
-      }
+    if (existingBalance.length > 0) {
+      // Update existing balance
+      await db
+        .update(userBalances)
+        .set({ 
+          amount: existingBalance[0].amount + amount,
+          updatedAt: new Date()
+        })
+        .where(eq(userBalances.id, existingBalance[0].id));
+    } else {
+      // Create new balance
+      await db
+        .insert(userBalances)
+        .values({
+          userId,
+          currencyId,
+          amount,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+    }
+    
+    // Create a transaction record for the credit
+    await db
+      .insert(transactions)
+      .values({
+        userId,
+        currencyId,
+        type: "credit",
+        status: "completed",
+        amount,
+        price: 1, // For USD, price is 1:1
+        fee: 0,
+        createdAt: new Date()
+      });
+    
+    res.json({ 
+      success: true, 
+      message: "Balance credited successfully" 
     });
   } catch (error) {
     console.error("Error crediting balance:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
+    res.status(500).json({ 
+      success: false, 
+      message: "Error crediting balance" 
     });
   }
 });
 
-// Update staking rates
-adminRouter.post("/staking-rates", requireAdmin, async (req, res) => {
+// Update staking rate
+router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const rateSchema = z.object({
-      currencyId: z.number(),
-      rate: z.number().min(0).max(1), // 0 to 100%
-      minAmount: z.number().positive()
-    });
+    const { currencyId, rate, minAmount, isActive = true } = req.body;
     
-    const result = rateSchema.safeParse(req.body);
-    
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid request format",
-        errors: result.error.format()
+    if (!currencyId || rate === undefined || minAmount === undefined) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required fields" 
       });
     }
     
-    const { currencyId, rate, minAmount } = result.data;
-    
-    // Check if currency exists
-    const [currency] = await db
-      .select()
-      .from(currencies)
-      .where(eq(currencies.id, currencyId));
-    
-    if (!currency) {
-      return res.status(404).json({
-        success: false,
-        message: "Currency not found"
+    if (isNaN(rate) || rate < 0 || rate > 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Rate must be between 0 and 1" 
       });
     }
     
-    // Check if staking rate exists for this currency
-    const existingRates = await db
+    if (isNaN(minAmount) || minAmount <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Minimum amount must be greater than 0" 
+      });
+    }
+    
+    // Check if staking rate already exists for this currency
+    const existingRate = await db
       .select()
       .from(stakingRates)
-      .where(eq(stakingRates.currencyId, currencyId));
+      .where(eq(stakingRates.currencyId, currencyId))
+      .limit(1);
     
-    let updatedRate;
-    
-    if (existingRates.length > 0) {
+    if (existingRate.length > 0) {
       // Update existing rate
-      [updatedRate] = await db
+      await db
         .update(stakingRates)
-        .set({
-          rate,
-          minAmount,
+        .set({ 
+          rate, 
+          minAmount, 
+          isActive,
           updatedAt: new Date()
         })
-        .where(eq(stakingRates.currencyId, currencyId))
-        .returning();
+        .where(eq(stakingRates.id, existingRate[0].id));
+      
+      res.json({ 
+        success: true, 
+        message: "Staking rate updated successfully" 
+      });
     } else {
-      // Create new rate
-      [updatedRate] = await db
+      // Create new staking rate
+      await db
         .insert(stakingRates)
         .values({
           currencyId,
           rate,
           minAmount,
-          isActive: true,
+          isActive,
+          createdAt: new Date(),
           updatedAt: new Date()
-        })
-        .returning();
+        });
+      
+      res.json({ 
+        success: true, 
+        message: "Staking rate created successfully" 
+      });
     }
-    
-    return res.status(200).json({
-      success: true,
-      message: `Successfully updated staking rate for ${currency.symbol}`,
-      data: {
-        stakingRate: updatedRate
-      }
-    });
   } catch (error) {
     console.error("Error updating staking rate:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
+    res.status(500).json({ 
+      success: false, 
+      message: "Error updating staking rate" 
     });
   }
 });
 
-export default adminRouter;
+export default router;
