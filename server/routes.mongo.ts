@@ -5,7 +5,7 @@ import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import { sendVerificationEmail, sendWelcomeEmail } from "./email";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email";
 
 // Note: we need to redeclare this but it's okay since
 // the original declaration in routes.ts won't be included
@@ -499,6 +499,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Logged out successfully"
       });
     });
+  });
+  
+  // API route for requesting a password reset
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const schema = z.object({
+        email: z.string().email()
+      });
+      
+      const result = schema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid email", 
+          errors: result.error.format() 
+        });
+      }
+      
+      const { email } = result.data;
+      
+      // Find user by email
+      const user = await mongoStorage.getUserByEmail(email);
+      
+      // Don't reveal if user exists or not for security
+      if (!user) {
+        return res.status(200).json({
+          success: true,
+          message: "If an account with that email exists, a password reset link has been sent."
+        });
+      }
+      
+      // Generate reset code with authService
+      const resetCode = authService.generateVerificationCode();
+      const expiresAt = authService.generateExpirationDate(15); // 15 minutes
+      
+      // Save reset code to user
+      await mongoStorage.setResetPasswordCode(user._id.toString(), resetCode, expiresAt);
+      
+      // Send reset email
+      let emailSent = false;
+      try {
+        await sendPasswordResetEmail(email, resetCode, user.firstName);
+        emailSent = true;
+        console.log(`Password reset email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Error sending password reset email:', emailError);
+        
+        // In development mode, log the reset code
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`DEVELOPMENT MODE: Password reset code for ${email} is: ${resetCode}`);
+          emailSent = true; // Consider it sent in development
+        }
+      }
+      
+      // In production, report email sending failure
+      if (!emailSent && process.env.NODE_ENV !== 'development') {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send password reset email. Please try again later."
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: "If an account with that email exists, a password reset link has been sent.",
+        // Only include reset code in development mode
+        ...(process.env.NODE_ENV === 'development' && { resetCode, userId: user._id.toString() })
+      });
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
+  });
+  
+  // API route for verifying reset code and setting new password
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const schema = z.object({
+        userId: z.string(),
+        resetCode: z.string().length(6),
+        newPassword: z.string().min(8) // Minimum 8 characters
+      });
+      
+      const result = schema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid reset request data", 
+          errors: result.error.format() 
+        });
+      }
+      
+      const { userId, resetCode, newPassword } = result.data;
+      
+      // Verify the reset code
+      const isValid = await mongoStorage.verifyResetPasswordCode(userId, resetCode);
+      
+      if (!isValid) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or expired reset code"
+        });
+      }
+      
+      // Update the password
+      const updateSuccess = await mongoStorage.updatePassword(userId, newPassword);
+      
+      if (!updateSuccess) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to update password"
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: "Password updated successfully"
+      });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
   });
   
   // Simple helper route for development - creates a test user

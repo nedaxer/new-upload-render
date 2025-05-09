@@ -114,15 +114,6 @@ export class MongoStorage implements IMongoStorage {
     }
   }
   
-  async getUserByEmail(email: string): Promise<IUser | null> {
-    try {
-      return await User.findOne({ email });
-    } catch (error) {
-      console.error('Error fetching user by email:', error);
-      return null;
-    }
-  }
-  
   async setResetPasswordCode(userId: string, code: string, expiresAt: Date): Promise<void> {
     try {
       await User.findByIdAndUpdate(userId, {
