@@ -228,13 +228,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send verification email with better error handling
       let emailSent = false;
       try {
-        // Create a verification URL for the user to click
-        const verificationUrl = `${process.env.NODE_ENV === 'production' ? 'https://nedaxer.com' : 'http://localhost:5000'}/account/verify?userId=${newUser._id.toString()}&code=${verificationCode}`;
-        
-        // Send verification email with the clickable link
-        await sendVerificationEmail(email, verificationCode, firstName, verificationUrl);
+        // Send verification email with code
+        await sendVerificationEmail(email, verificationCode, firstName);
         emailSent = true;
-        console.log(`Verification email with clickable link successfully sent to ${email}`);
+        console.log(`Verification email with code successfully sent to ${email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         
