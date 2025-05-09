@@ -1,69 +1,113 @@
-// Service worker for Nedaxer PWA
+// Enhanced service worker for Nedaxer trading platform
+// Optimized for single-page applications with hash-based routing
 
-const CACHE_NAME = 'nedaxer-cache-v1';
-
-// Add cache bust parameter to URLs to prevent caching issues
-function addCacheBuster(url) {
-  const cacheBuster = `cache-bust=${Date.now()}`;
-  const hasParams = url.includes('?');
-  return `${url}${hasParams ? '&' : '?'}${cacheBuster}`;
-}
+// Cache version - change this when you update the service worker
+const CACHE_VERSION = 'v2';
+const STATIC_CACHE = `nedaxer-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `nedaxer-dynamic-${CACHE_VERSION}`;
 
 // Assets to cache immediately on service worker install
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/logo.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-152x152.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
 ];
+
+// Add cache-busting parameter to prevent stale content
+function addCacheBuster(url) {
+  const timestamp = Date.now();
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}_cb=${timestamp}`;
+}
+
+// Helper function for SPA navigation
+function isSPARoute(url) {
+  // Skip specific file extensions that are clearly not SPA routes
+  return !url.match(/\.(js|css|png|jpg|jpeg|gif|svg|json|woff|woff2|ttf|eot)$/i) &&
+         !url.match(/\/api\//i) &&
+         !url.match(/\/ws\//i);
+}
 
 // Install event - precache key assets
 self.addEventListener('install', event => {
-  console.log('[ServiceWorker] Installing...');
+  console.log('[ServiceWorker] Installing version', CACHE_VERSION);
+  
+  // Skip waiting to activate this service worker immediately
+  self.skipWaiting();
   
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[ServiceWorker] Pre-caching assets');
-      return cache.addAll(PRECACHE_ASSETS);
-    })
+    caches.open(STATIC_CACHE)
+      .then(cache => {
+        console.log('[ServiceWorker] Pre-caching assets');
+        // Add no-cache to ensure we get fresh copies
+        const cachePromises = PRECACHE_ASSETS.map(url => {
+          return fetch(new Request(url, { cache: 'no-cache' }))
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Failed to fetch ${url}`);
+              }
+              return cache.put(url, response);
+            })
+            .catch(error => {
+              console.error('[ServiceWorker] Error caching', url, error);
+            });
+        });
+        
+        return Promise.all(cachePromises);
+      })
   );
-
-  // Activate immediately
-  self.skipWaiting();
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {
-  console.log('[ServiceWorker] Activating...');
+  console.log('[ServiceWorker] Activating version', CACHE_VERSION);
   
+  // Delete old cache versions
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.filter(cacheName => {
-          return cacheName !== CACHE_NAME;
-        }).map(cacheName => {
-          console.log('[ServiceWorker] Removing old cache:', cacheName);
-          return caches.delete(cacheName);
-        })
-      );
-    })
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(cacheName => {
+              return cacheName.startsWith('nedaxer-') && 
+                    !cacheName.endsWith(CACHE_VERSION);
+            })
+            .map(cacheName => {
+              console.log('[ServiceWorker] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            })
+        );
+      })
+      .then(() => {
+        // Take control of all clients immediately
+        return self.clients.claim();
+      })
   );
-
-  // Take control of all clients immediately
-  return self.clients.claim();
 });
 
-// Fetch event - serve from cache or network
+// Fetch event - serve from cache or network with appropriate strategies
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests and non-GET requests
-  if (!event.request.url.startsWith(self.location.origin) || 
-      event.request.method !== 'GET') {
+  const url = new URL(event.request.url);
+  
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
     return;
   }
   
-  // For API requests, always go to network first
-  if (event.request.url.includes('/api/')) {
-    // Always add cache buster to API requests
+  // Skip cross-origin requests
+  if (!url.origin.match(self.location.origin)) {
+    return;
+  }
+  
+  // API endpoints - network only with cache buster
+  if (url.pathname.startsWith('/api/')) {
+    // Use a cache buster for API requests to prevent stale data
     const bustUrl = addCacheBuster(event.request.url);
     const bustRequest = new Request(bustUrl, {
       method: event.request.method,
@@ -73,63 +117,124 @@ self.addEventListener('fetch', event => {
       redirect: event.request.redirect
     });
     
-    event.respondWith(
-      fetch(bustRequest).catch(error => {
-        console.log('[ServiceWorker] API fetch failed, serving offline page');
-        return caches.match('/');
-      })
-    );
+    // We don't cache API responses, just pass through
     return;
   }
-
-  // For page navigations, use a network-first strategy
-  if (event.request.mode === 'navigate') {
+  
+  // WebSocket connections - pass through
+  if (url.pathname.startsWith('/ws')) {
+    return;
+  }
+  
+  // SPA navigation - always serve index.html for client-side routing
+  if (event.request.mode === 'navigate' || isSPARoute(url.pathname)) {
     event.respondWith(
-      fetch(event.request).catch(error => {
-        console.log('[ServiceWorker] Navigation fetch failed, serving from cache');
-        return caches.match(event.request) || caches.match('/');
-      })
+      // Try the network first
+      fetch(event.request)
+        .catch(() => {
+          // If network fails, serve from cache
+          return caches.match('/index.html');
+        })
     );
     return;
   }
   
-  // For all other requests, use a cache-first strategy
+  // Static assets (JS, CSS, images) - cache first, network fallback
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) {
-        console.log('[ServiceWorker] Serving from cache:', event.request.url);
-        return response;
-      }
-      
-      console.log('[ServiceWorker] Fetching from network:', event.request.url);
-      return fetch(event.request).then(networkResponse => {
-        // Don't cache responses that aren't successful
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
+    caches.match(event.request)
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          // Return the cached version
+          return cachedResponse;
         }
         
-        // Cache the new response
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache);
-        });
-        
-        return networkResponse;
-      });
-    })
+        // Not in cache, get from network
+        return fetch(event.request)
+          .then(networkResponse => {
+            // Don't cache problematic responses
+            if (!networkResponse || networkResponse.status !== 200) {
+              return networkResponse;
+            }
+            
+            // Clone the response before using it
+            const responseToCache = networkResponse.clone();
+            
+            // Cache the successful response for next time
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(error => {
+                console.error('[ServiceWorker] Error caching response:', error);
+              });
+            
+            return networkResponse;
+          });
+      })
   );
 });
 
-// Handle messages sent to the service worker
+// Handle messages from clients
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    console.log('[ServiceWorker] Clearing cache by request');
-    caches.delete(CACHE_NAME).then(() => {
-      console.log('[ServiceWorker] Cache cleared successfully');
-    });
+  if (event.data === 'CHECK_UPDATES') {
+    console.log('[ServiceWorker] Checking for updates');
+    
+    // Update index.html to ensure latest version
+    fetch('/index.html', { cache: 'no-store' })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch index.html');
+        }
+        
+        return caches.open(STATIC_CACHE)
+          .then(cache => {
+            return cache.put('/index.html', response);
+          });
+      })
+      .then(() => {
+        console.log('[ServiceWorker] Updated index.html in cache');
+        
+        // Notify clients that there might be updates
+        self.clients.matchAll()
+          .then(clients => {
+            clients.forEach(client => {
+              client.postMessage({
+                type: 'CONTENT_UPDATED',
+                timestamp: new Date().toISOString()
+              });
+            });
+          });
+      })
+      .catch(error => {
+        console.error('[ServiceWorker] Error checking for updates:', error);
+      });
+  }
+  
+  if (event.data === 'CLEAR_CACHE') {
+    console.log('[ServiceWorker] Clearing all caches');
+    
+    caches.keys()
+      .then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(name => name.startsWith('nedaxer-'))
+            .map(name => caches.delete(name))
+        );
+      })
+      .then(() => {
+        console.log('[ServiceWorker] All caches cleared');
+        
+        // Notify the client that requested the cache clear
+        if (event.source) {
+          event.source.postMessage({
+            type: 'CACHE_CLEARED',
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
   }
 });
