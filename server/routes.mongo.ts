@@ -16,9 +16,8 @@ declare module "express-session" {
 }
 
 // Function to generate a random verification code
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+// Import auth service at the top to access verification code generation
+import { authService } from './services/auth.service';
 
 // Authentication middleware to check if user is logged in
 const requireAuth = (req: Request, res: Response, next: NextFunction) => {
@@ -113,8 +112,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Simple password check (in a real app, you'd use bcrypt)
-      if (user.password !== password) {
+      // Import auth service
+      const { authService } = await import('./services/auth.service');
+      
+      // Verify password using bcrypt
+      const isPasswordValid = await authService.verifyPassword(password, user.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ 
           success: false, 
           message: "Invalid username or password" 

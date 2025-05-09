@@ -48,10 +48,16 @@ export class MongoStorage implements IMongoStorage {
 
   async createUser(userData: InsertUser): Promise<IUser> {
     try {
+      // Import auth service
+      const { authService } = await import('./services/auth.service');
+      
+      // Hash the password
+      const hashedPassword = await authService.hashPassword(userData.password);
+      
       const newUser = new User({
         username: userData.username,
         email: userData.email,
-        password: userData.password, // In a real app, you'd hash this
+        password: hashedPassword, // Store hashed password
         firstName: userData.firstName,
         lastName: userData.lastName,
         isVerified: false,
