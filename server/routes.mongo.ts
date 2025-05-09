@@ -61,7 +61,7 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware with MongoDB
-  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nedaxerus:4vEQeJUIs0Q1FYxb@nedaxer.eyejj2k.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+  const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nedaxer';
   
   app.use(
     session({
@@ -521,6 +521,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+  // Include admin routes from external file
+  const adminRouter = (await import('./api/admin-routes')).default;
+  app.use('/api/admin', adminRouter);
+  
+  // Include trading routes
+  const tradingRouter = (await import('./api/trading-routes.mongo')).default;
+  app.use('/api/trading', tradingRouter);
 
   const httpServer = createServer(app);
 

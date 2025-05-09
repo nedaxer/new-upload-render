@@ -1,7 +1,5 @@
-import mongoose, { Document } from 'mongoose';
-const { Schema, model } = mongoose;
+import mongoose, { Document, Schema, model } from 'mongoose';
 
-// Interface representing a UserBalance document
 export interface IUserBalance extends Document {
   userId: mongoose.Types.ObjectId;
   currencyId: string;
@@ -10,16 +8,16 @@ export interface IUserBalance extends Document {
   createdAt: Date;
 }
 
-// Create the schema
-const userBalanceSchema = new Schema<IUserBalance>(
+const userBalanceSchema = new Schema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
     currencyId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Currency',
       required: true,
     },
     amount: {
@@ -27,11 +25,11 @@ const userBalanceSchema = new Schema<IUserBalance>(
       required: true,
       default: 0,
     },
-    createdAt: {
+    updatedAt: {
       type: Date,
       default: Date.now,
     },
-    updatedAt: {
+    createdAt: {
       type: Date,
       default: Date.now,
     },
@@ -41,8 +39,8 @@ const userBalanceSchema = new Schema<IUserBalance>(
   }
 );
 
-// Compound index for userId and currencyId to ensure uniqueness
+// Create a compound index for querying by user and currency
 userBalanceSchema.index({ userId: 1, currencyId: 1 }, { unique: true });
 
-// Export the UserBalance model (ensuring it's only defined once)
+// Export the UserBalance model
 export const UserBalance = mongoose.models.UserBalance || model<IUserBalance>('UserBalance', userBalanceSchema);

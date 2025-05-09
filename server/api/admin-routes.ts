@@ -101,10 +101,6 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
 // Get recent transactions for admin dashboard
 router.get("/recent-transactions", requireAdmin, async (req: Request, res: Response) => {
   try {
-    // Import models
-    const { Transaction } = require('../models/Transaction');
-    const { Currency } = require('../models/Currency');
-    
     // Get latest 10 transactions with user information
     const recentTransactions = await Transaction.find()
       .sort({ createdAt: -1 })

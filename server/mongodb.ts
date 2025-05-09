@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nedaxerus:4vEQeJUIs0Q1FYxb@nedaxer.eyejj2k.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+// For testing in Replit environment, we'll use a local MongoDB
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/nedaxer';
 
 // Connection for Mongoose ODM
 export async function connectToDatabase() {

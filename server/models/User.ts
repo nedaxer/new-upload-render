@@ -1,9 +1,8 @@
-import mongoose from 'mongoose';
-const { Schema, model, Document, Types } = mongoose;
+import mongoose, { Document } from 'mongoose';
+const { Schema, model } = mongoose;
 
 // Interface representing the User document
 export interface IUser extends Document {
-  _id: Types.ObjectId;
   username: string;
   email: string;
   password: string;
@@ -12,6 +11,7 @@ export interface IUser extends Document {
   verificationCode?: string;
   verificationCodeExpires?: Date;
   isVerified: boolean;
+  isAdmin?: boolean;
   createdAt: Date;
 }
 
@@ -56,6 +56,10 @@ const userSchema = new Schema<IUser>(
       default: null,
     },
     isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isAdmin: {
       type: Boolean,
       default: false,
     },

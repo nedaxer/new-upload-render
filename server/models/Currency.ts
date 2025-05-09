@@ -1,7 +1,5 @@
-import mongoose, { Document } from 'mongoose';
-const { Schema, model } = mongoose;
+import mongoose, { Document, Schema, model } from 'mongoose';
 
-// Interface representing a Currency document
 export interface ICurrency extends Document {
   symbol: string;
   name: string;
@@ -9,15 +7,14 @@ export interface ICurrency extends Document {
   createdAt: Date;
 }
 
-// Create the schema
-const currencySchema = new Schema<ICurrency>(
+const currencySchema = new Schema(
   {
     symbol: {
       type: String,
       required: true,
       unique: true,
-      trim: true,
       uppercase: true,
+      trim: true,
     },
     name: {
       type: String,
@@ -38,5 +35,9 @@ const currencySchema = new Schema<ICurrency>(
   }
 );
 
-// Export the Currency model (ensuring it's only defined once)
+// Create an index for faster symbol lookups
+currencySchema.index({ symbol: 1 }, { unique: true });
+currencySchema.index({ isActive: 1 });
+
+// Export the Currency model
 export const Currency = mongoose.models.Currency || model<ICurrency>('Currency', currencySchema);
