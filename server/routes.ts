@@ -566,7 +566,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Import and register our trading platform API routes
+  import userRouter from './api/user-routes';
+  import tradingRouter from './api/trading-routes';
+  import walletRouter from './api/wallet-routes';
+  import stakingRouter from './api/staking-routes';
+  import adminRouter from './api/admin-routes';
+  import { startPriceUpdateJob } from './services/price.service';
+  import { startRewardsProcessingJob } from './services/staking.service';
+  import { depositService } from './services/deposit.service';
+  import { WebSocketServer } from 'ws';
+
+  // Register API routes
+  app.use('/api/user', userRouter);
+  app.use('/api/trading', tradingRouter);
+  app.use('/api/wallet', walletRouter);
+  app.use('/api/staking', stakingRouter);
+  app.use('/api/admin', adminRouter);
+
   const httpServer = createServer(app);
+
+  // Setup WebSocket server for real-time updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    // Send initial data
+    ws.send(JSON.stringify({ type: 'connection', message: 'Connected to trading platform' }));
+    
+    // Handle messages from clients
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received:', data);
+        
+        // Handle different message types
+        if (data.type === 'ping') {
+          ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+    
+    // Handle disconnection
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+  });
+
+  // Send price updates to all connected clients
+  const broadcastPrices = (prices) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) { // WebSocket.OPEN
+        client.send(JSON.stringify({ 
+          type: 'prices', 
+          data: prices, 
+          timestamp: Date.now() 
+        }));
+      }
+    });
+  };
+
+  // Start background jobs
+  // 1. Price update job (every 1 minute)
+  const priceUpdateInterval = startPriceUpdateJob(1);
+  
+  // 2. Staking rewards processing job (every 60 minutes)
+  const stakingRewardsInterval = startRewardsProcessingJob(60);
+  
+  // 3. Deposit check job (every 30 seconds)
+  const depositCheckInterval = depositService.startDepositCheckJob(30);
+
+  // Clean up intervals on server shutdown
+  process.on('SIGINT', () => {
+    clearInterval(priceUpdateInterval);
+    clearInterval(stakingRewardsInterval);
+    clearInterval(depositCheckInterval);
+    process.exit(0);
+  });
 
   return httpServer;
 }
