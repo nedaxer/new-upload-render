@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // API route for user authentication
-  app.post('/api/auth/login', async (req, res) => {
+  app.post('/api/login', async (req, res) => {
     try {
       // Validate input with zod
       const loginSchema = z.object({
@@ -168,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for user registration
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/register', async (req, res) => {
     try {
       console.log('Registration attempt with data:', {
         ...req.body,
@@ -451,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for getting current user (if logged in)
-  app.get('/api/auth/me', requireAuth, async (req, res) => {
+  app.get('/api/user', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId as number);
@@ -489,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for logging out
-  app.post('/api/auth/logout', (req, res) => {
+  app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error('Error destroying session:', err);
