@@ -50,11 +50,14 @@ export default function Login() {
         
         // Handle other errors
         let errorMessage = "An unexpected error occurred. Please try again.";
+        let errorDetail = "";
         
         if (response.status === 401) {
-          errorMessage = "Invalid username or password. Please try again.";
+          errorMessage = "Incorrect username or password";
+          errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
         } else if (response.status === 400) {
-          errorMessage = "Please check your credentials and try again.";
+          errorMessage = "Login information is incomplete";
+          errorDetail = "Please make sure you've entered both your username and password correctly.";
         }
         
         toast({
@@ -62,6 +65,16 @@ export default function Login() {
           description: errorMessage,
           variant: "destructive",
         });
+        
+        // Show additional guidance if available
+        if (errorDetail) {
+          setTimeout(() => {
+            toast({
+              title: "Help",
+              description: errorDetail,
+            });
+          }, 500);
+        }
         return;
       }
       

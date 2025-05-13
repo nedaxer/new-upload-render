@@ -131,6 +131,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = user._id ? user._id.toString() : '';
       req.session.userId = userId;
       
+      // Ensure session is saved
+      req.session.save((err) => {
+        if (err) {
+          console.error('Error saving session during login:', err);
+        } else {
+          console.log('Login session saved successfully for user:', userId);
+        }
+      });
+      
       // User authenticated successfully
       return res.status(200).json({
         success: true,
@@ -140,7 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
-          email: user.email
+          email: user.email,
+          isVerified: true,
+          isAdmin: user.isAdmin || false
         }
       });
     } catch (error) {
@@ -221,6 +232,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // This error doesn't need to block the registration process
       }
       
+      // Ensure a session is created and properly set
+      req.session.save((err) => {
+        if (err) {
+          console.error('Error saving session:', err);
+        } else {
+          console.log('Session saved successfully for user:', userId);
+        }
+      });
+      
       // Success - respond with user details
       return res.status(201).json({
         success: true,
@@ -231,7 +251,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
-          isVerified: true
+          isVerified: true,
+          isAdmin: newUser.isAdmin || false
         }
       });
     } catch (error: any) {

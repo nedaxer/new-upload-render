@@ -100,17 +100,18 @@ export default function Register() {
         
         if (response.status === 409) {
           if (data.message === "Email already exists") {
-            errorMessage = "This email is already registered.";
-            errorDetail = "Please use a different email address or try to log in.";
+            errorMessage = "This email address is already registered";
+            errorDetail = "You already have an account with this email. Please use the login page to access your account or use a different email address.";
           } else if (data.message === "Username already exists") {
-            errorMessage = "This username is already taken.";
-            errorDetail = "Please try a different username.";
+            errorMessage = "This username is already taken";
+            errorDetail = "Please choose a different username for your account.";
           } else {
-            errorMessage = data.message || "This account already exists.";
+            errorMessage = data.message || "Account already exists";
+            errorDetail = "It looks like you already have an account. Please try logging in instead.";
           }
         } else if (response.status === 400) {
-          errorMessage = "Please check your information and try again.";
-          errorDetail = "Make sure all required fields are filled correctly.";
+          errorMessage = "Registration information is incomplete";
+          errorDetail = "Please make sure all required fields are filled correctly. Check that your password meets all requirements.";
         }
         
         toast({
@@ -135,29 +136,16 @@ export default function Register() {
       
       // Success - account created and ready to use
       toast({
-        title: "Account created successfully",
-        description: "Your account is ready to use!",
+        title: "Welcome to Nedaxer!",
+        description: "Your account has been created successfully.",
       });
       
       console.log("Registration successful, user is now logged in");
       
-      // Show success message
-      toast({
-        title: "Registration successful",
-        description: "You'll now be redirected to the dashboard.",
-      });
-      
-      // Navigate to dashboard instead of verification page
-      setTimeout(() => {
-        // Use wouter's navigation
-        console.log('Redirecting to dashboard');
-        
-        // Using hash-based routing
-        window.location.hash = '/dashboard';
-        
-        // Also use wouter's navigation to be sure
-        setLocation('/dashboard');
-      }, 100);
+      // Immediately navigate to dashboard
+      console.log('Taking user to dashboard');
+      window.location.hash = '/dashboard';
+      setLocation('/dashboard');
       
     } catch (error) {
       console.error('Registration error:', error);
