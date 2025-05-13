@@ -35,8 +35,7 @@ const currencySchema = new Schema(
   }
 );
 
-// Create an index for faster symbol lookups
-currencySchema.index({ symbol: 1 }, { unique: true });
+// Create an index for faster isActive lookups
 currencySchema.index({ isActive: 1 });
 
 // Export the Currency model
