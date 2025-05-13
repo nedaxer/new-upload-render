@@ -102,13 +102,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { username, password } = result.data;
 
-      // Check if user exists
-      const user = await mongoStorage.getUserByUsername(username);
+      // Check if user exists by username or email (since we use email as username)
+      let user = await mongoStorage.getUserByUsername(username);
+      
+      // If not found by username, try by email (since we're now using email as username)
+      if (!user) {
+        user = await mongoStorage.getUserByEmail(username);
+        console.log(`User not found by username, checking by email: ${username}`);
+      }
       
       if (!user) {
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid username or password" 
+          message: "Account not found. Please use your email address as your username." 
         });
       }
       
@@ -120,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!isPasswordValid) {
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid username or password" 
+          message: "Incorrect password. Please try again." 
         });
       }
       

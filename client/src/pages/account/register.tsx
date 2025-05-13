@@ -72,7 +72,8 @@ export default function Register() {
       console.log('Attempting registration...');
       
       const registrationData = {
-        username: formData.email.split('@')[0] + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000),
+        // Use email as username for simplicity
+        username: formData.email,
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
@@ -140,12 +141,25 @@ export default function Register() {
         description: "Your account has been created successfully.",
       });
       
+      // Show toast with login info
+      toast({
+        title: "Your Login Information",
+        description: `Username: ${data.user.username}\nPlease remember these credentials for future logins.`,
+        duration: 7000, // Show for longer
+      });
+      
       console.log("Registration successful, user is now logged in");
       
-      // Immediately navigate to dashboard
-      console.log('Taking user to dashboard');
-      window.location.hash = '/dashboard';
-      setLocation('/dashboard');
+      // Store username in localStorage for convenience
+      localStorage.setItem('lastUsername', data.user.username);
+      
+      // Wait a moment before redirecting to ensure user sees login info
+      setTimeout(() => {
+        // Immediately navigate to dashboard
+        console.log('Taking user to dashboard');
+        window.location.hash = '/dashboard';
+        setLocation('/dashboard');
+      }, 1500);
       
     } catch (error) {
       console.error('Registration error:', error);
