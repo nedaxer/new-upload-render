@@ -46,24 +46,7 @@ export default function Login() {
       const data = await response.json();
       
       if (!response.ok) {
-        // Check if account needs verification
-        if (response.status === 403 && data.needsVerification) {
-          // Store the userId for verification
-          if (data.userId) {
-            localStorage.setItem('unverifiedUserId', data.userId.toString());
-          }
-          
-          toast({
-            title: "Account not verified",
-            description: "Your account needs verification. Please check your email for a verification code.",
-          });
-          
-          // Redirect to verification page - using hash location for the router
-          setTimeout(() => {
-            setLocation(`/account/verify?userId=${data.userId}`);
-          }, 100);
-          return;
-        }
+        // We no longer check for verification as all accounts are automatically verified
         
         // Handle other errors
         let errorMessage = "An unexpected error occurred. Please try again.";

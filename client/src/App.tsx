@@ -166,7 +166,13 @@ export default function App() {
             <Route path="/account/login" component={Login} />
             <Route path="/account/register" component={Register} />
             <Route path="/account/forgot-password" component={ForgotPassword} />
-            <Route path="/account/verify" component={VerifyAccount} />
+            {/* Redirect verify to dashboard since we no longer need verification */}
+            <Route path="/account/verify">
+              {() => {
+                window.location.hash = '/dashboard';
+                return null;
+              }}
+            </Route>
             
             {/* Dashboard Routes - Protected */}
             <ProtectedRoute path="/dashboard" component={Dashboard} />
