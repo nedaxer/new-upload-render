@@ -648,47 +648,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Add a special debug route to create a user with email as username
     app.get('/api/setup-email-user', async (req, res) => {
       try {
+        // Generate a unique username with timestamp to avoid conflicts
+        const uniqueEmail = `test${Date.now()}@example.com`;
+        
         const emailUser = {
-          username: 'test@example.com',  // Using email as username
-          email: 'test@example.com',
+          username: uniqueEmail,  // Using email as username
+          email: uniqueEmail,
           password: 'password123',
           firstName: 'Email',
           lastName: 'User'
         };
         
-        // Check if email user already exists
-        const existingUser = await mongoStorage.getUserByEmail(emailUser.email);
+        // Import auth service to hash the password 
+        const { authService } = await import('./services/auth.service');
         
-        if (!existingUser) {
-          const newUser = await mongoStorage.createUser(emailUser);
-          
-          // Log the raw password and hash for debugging
-          console.log('Debug - Created user with:');
-          console.log('Username/Email:', emailUser.email);
-          console.log('Password:', emailUser.password);
-          console.log('User ID:', newUser._id.toString());
-          
-          res.json({ 
-            success: true, 
-            message: 'Email user created successfully',
-            loginDetails: {
-              username: emailUser.email,
-              password: 'password123'
-            }
-          });
-        } else {
-          res.json({ 
-            success: true, 
-            message: 'Email user already exists',
-            loginDetails: {
-              username: emailUser.email,
-              password: 'password123'
-            }
-          });
-        }
+        // Always create a new user for testing
+        const { User } = await import('./models/User');
+        
+        // Hash the password
+        const hashedPassword = await authService.hashPassword(emailUser.password);
+        
+        // Create the user directly in MongoDB to avoid any potential issues
+        const newUser = new User({
+          username: emailUser.username,
+          email: emailUser.email,
+          password: hashedPassword,
+          firstName: emailUser.firstName,
+          lastName: emailUser.lastName,
+          isVerified: true,
+          createdAt: new Date()
+        });
+        
+        await newUser.save();
+        
+        // Log the user details for debugging
+        console.log('Debug - Created fresh test user:');
+        console.log('Username/Email:', emailUser.email);
+        console.log('Password (plaintext):', emailUser.password);
+        console.log('Password (hashed):', hashedPassword);
+        
+        // Test verification with the fresh hash
+        const verifyResult = await authService.verifyPassword(emailUser.password, hashedPassword);
+        console.log('Password verification test:', verifyResult ? 'SUCCESS' : 'FAILED');
+        
+        res.json({ 
+          success: true, 
+          message: 'Created fresh test user',
+          loginDetails: {
+            username: emailUser.email,
+            password: emailUser.password
+          },
+          debug: {
+            hashed: hashedPassword,
+            verifyTest: verifyResult
+          }
+        });
       } catch (error) {
-        console.error('Error creating email user:', error);
-        res.status(500).json({ success: false, message: 'Failed to create email user' });
+        console.error('Error creating test user:', error);
+        res.status(500).json({ success: false, message: 'Failed to create test user' });
+      }
+    });
+    
+    // Add a debug route for testing password verification directly
+    app.get('/api/debug-password', async (req, res) => {
+      try {
+        // Import auth service
+        const { authService } = await import('./services/auth.service');
+        
+        // Test against the known hash used for seed users
+        const knownHash = '$2b$10$8jMDJUUvx98Bq7BhA3eELuZGsKh6gzzC7HbkFKiILKNUppTmcQUl.'; // 'password'
+        const testPassword = 'password';
+        
+        // Test verification
+        const isValid = await authService.verifyPassword(testPassword, knownHash);
+        
+        // Generate a new hash for comparison
+        const newHash = await authService.hashPassword(testPassword);
+        
+        // Test verification against new hash
+        const isValidWithNewHash = await authService.verifyPassword(testPassword, newHash);
+        
+        res.json({
+          success: true,
+          debug: {
+            knownHash,
+            testPassword,
+            isValid,
+            newHash,
+            isValidWithNewHash
+          }
+        });
+      } catch (error) {
+        console.error('Error testing password:', error);
+        res.status(500).json({ success: false, message: 'Failed to test password' });
       }
     });
   }

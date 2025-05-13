@@ -55,11 +55,16 @@ async function createInitialData() {
     const { Currency } = await import('./models/Currency');
     const { UserBalance } = await import('./models/UserBalance');
     
+    // Import auth service
+    const { authService } = await import('./services/auth.service');
+    // Create the hashed password
+    const hashedPassword = await authService.hashPassword('password');
+    
     // Create test user
     const testUser = new User({
       username: 'testuser',
       email: 'test@example.com',
-      password: '$2b$10$8jMDJUUvx98Bq7BhA3eELuZGsKh6gzzC7HbkFKiILKNUppTmcQUl.', // 'password'
+      password: hashedPassword, // Freshly hashed 'password'
       firstName: 'Test',
       lastName: 'User',
       isVerified: true,
@@ -73,7 +78,7 @@ async function createInitialData() {
     const adminUser = new User({
       username: 'admin',
       email: 'admin@example.com',
-      password: '$2b$10$8jMDJUUvx98Bq7BhA3eELuZGsKh6gzzC7HbkFKiILKNUppTmcQUl.', // 'password'
+      password: hashedPassword, // Same hashed password
       firstName: 'Admin',
       lastName: 'User',
       isVerified: true,
