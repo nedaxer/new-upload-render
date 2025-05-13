@@ -124,25 +124,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if user is verified
-      if (!user.isVerified) {
-        // Generate a new verification code if the user is not verified
-        const verificationCode = authService.generateVerificationCode();
-        const expiresAt = authService.generateExpirationDate(30); // 30 minutes from now
-        
-        const userId = user._id ? user._id.toString() : '';
-        await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
-        
-        // Send a new verification email
-        await sendVerificationEmail(user.email, verificationCode, user.firstName);
-        
-        return res.status(403).json({
-          success: false,
-          message: "Account not verified",
-          needsVerification: true,
-          userId: userId
-        });
-      }
+      // We no longer check for verification
+      // Users are automatically verified when created
       
       // Set session
       const userId = user._id ? user._id.toString() : '';
@@ -225,54 +208,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = newUser._id ? newUser._id.toString() : '';
       console.log(`User created with ID: ${userId}`);
       
-      // Generate verification code (we'll use this both for direct verification and as part of the URL)
-      const verificationCode = authService.generateVerificationCode();
-      const expiresAt = authService.generateExpirationDate(30); // 30 minutes from now
+      // Set user session (automatically log in)
+      req.session.userId = userId;
+      console.log(`User ${userId} automatically logged in after registration`);
       
-      await mongoStorage.setVerificationCode(userId, verificationCode, expiresAt);
-      console.log(`Verification code set for user ${userId}`);
-      
-      // Send verification email with better error handling
-      let emailSent = false;
+      // Try to send a welcome email
       try {
-        // Send verification email with code
-        await sendVerificationEmail(email, verificationCode, firstName);
-        emailSent = true;
-        console.log(`Verification email with code successfully sent to ${email}`);
+        await sendWelcomeEmail(email, firstName);
+        console.log(`Welcome email sent to ${email}`);
       } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
-        
-        // In development mode, just log the verification code for testing
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`DEVELOPMENT MODE: Verification code for ${email} is: ${verificationCode}`);
-          emailSent = true; // Consider it sent in development
-        }
+        console.error('Error sending welcome email:', emailError);
+        // This error doesn't need to block the registration process
       }
       
-      // In production, report email sending failure
-      if (!emailSent && process.env.NODE_ENV !== 'development') {
-        return res.status(500).json({
-          success: false,
-          message: "Account created but verification email could not be sent. Please contact support.",
-          user: {
-            id: newUser._id.toString()
-          }
-        });
-      }
-      
-      // Success - respond with user details for the verification page
-      // In development mode, also include the verification code in the response
-      // so the frontend can display it (since emails aren't actually sent)
+      // Success - respond with user details
       return res.status(201).json({
         success: true,
-        message: "User registered successfully. Please check your email for verification code.",
+        message: "User registered successfully. You are now logged in.",
         user: {
-          id: newUser._id.toString(),
+          id: userId,
           username: newUser.username,
-          email: newUser.email
-        },
-        // Only include verification code in development mode
-        ...(process.env.NODE_ENV === 'development' && { verificationCode })
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          isVerified: true
+        }
       });
     } catch (error: any) {
       console.error('Registration error:', error);

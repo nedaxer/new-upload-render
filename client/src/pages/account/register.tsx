@@ -133,54 +133,30 @@ export default function Register() {
         return;
       }
       
-      // Success - account created but needs verification
+      // Success - account created and ready to use
       toast({
         title: "Account created successfully",
-        description: "Please check your email for a verification code.",
+        description: "Your account is ready to use!",
       });
       
-      // Store the userId for the verification page
-      if (data.user && data.user.id) {
-        localStorage.setItem('unverifiedUserId', data.user.id.toString());
-      }
-      
-      // Show the success message for a moment before redirecting
-      toast({
-        title: "Registration successful",
-        description: "Please check your email for a verification code.",
-      });
-      
-      console.log("Registration successful, redirecting to verification page with userId:", data.user.id);
-      
-      // Store data for verification page
-      if (data.user && data.user.id) {
-        localStorage.setItem('unverifiedUserId', data.user.id.toString());
-      }
-      
-      // Store verification code for development mode
-      if (data.verificationCode) {
-        localStorage.setItem('devVerificationCode', data.verificationCode);
-      }
+      console.log("Registration successful, user is now logged in");
       
       // Show success message
       toast({
         title: "Registration successful",
-        description: "You'll now be redirected to the verification page.",
+        description: "You'll now be redirected to the dashboard.",
       });
       
-      // Use setLocation from wouter to navigate - much safer than directly manipulating the DOM
-      console.log("Redirecting to verification page with userId:", data.user.id);
-      
-      // Navigate to verification page
+      // Navigate to dashboard instead of verification page
       setTimeout(() => {
-        // Using hash-based routing via the setLocation hook
-        console.log(`Redirecting to /account/verify?userId=${data.user.id}`);
+        // Use wouter's navigation
+        console.log('Redirecting to dashboard');
         
-        // Use direct window.location for debugging
-        window.location.hash = `/account/verify?userId=${data.user.id}`;
+        // Using hash-based routing
+        window.location.hash = '/dashboard';
         
         // Also use wouter's navigation to be sure
-        setLocation(`/account/verify?userId=${data.user.id}`);
+        setLocation('/dashboard');
       }, 100);
       
     } catch (error) {
