@@ -144,14 +144,14 @@ export default function Register() {
       // Show toast with login info
       toast({
         title: "Your Login Information",
-        description: `Username: ${data.user.username}\nPlease remember these credentials for future logins.`,
+        description: `Username: ${data.user.email}\nPlease use your email address to log in.`,
         duration: 7000, // Show for longer
       });
       
       console.log("Registration successful, user is now logged in");
       
-      // Store username in localStorage for convenience
-      localStorage.setItem('lastUsername', data.user.username);
+      // Store email as username in localStorage for convenience
+      localStorage.setItem('lastUsername', data.user.email);
       
       // Wait a moment before redirecting to ensure user sees login info
       setTimeout(() => {

@@ -134,7 +134,7 @@ export default function Login() {
               <LockIcon className="h-8 w-8 text-[#0033a0]" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome Back</h2>
-            <p className="text-gray-500">Sign in to continue to your account</p>
+            <p className="text-gray-500">Sign in with your email address to continue</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
