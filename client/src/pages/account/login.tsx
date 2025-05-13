@@ -105,9 +105,10 @@ export default function Login() {
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
       
-      // Redirect to home page with delay to prevent reload
+      // Redirect to dashboard with delay to prevent reload
       setTimeout(() => {
-        setLocation('/');
+        window.location.hash = '/dashboard';
+        setLocation('/dashboard');
       }, 100);
       
     } catch (error) {

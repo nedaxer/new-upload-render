@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Route, Switch, Router } from 'wouter';
+import { Route, Switch, Router, Redirect } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
+import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
 
 // Pages
@@ -116,7 +117,14 @@ export default function App() {
       <AuthProvider>
         <Router hook={useHashLocation}>
           <Switch>
-            <Route path="/" component={Home} />
+            {/* Home route with auth redirect */}
+            <Route path="/">
+              {(params) => (
+                <AuthRedirect>
+                  <Home {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
             
             {/* Company Routes */}
             <Route path="/company/about" component={About} />
@@ -162,16 +170,25 @@ export default function App() {
             <Route path="/legal/risk" component={Risk} />
             <Route path="/legal/terms" component={Terms} />
             
-            {/* Account Routes */}
-            <Route path="/account/login" component={Login} />
-            <Route path="/account/register" component={Register} />
+            {/* Account Routes - with redirection for authenticated users */}
+            <Route path="/account/login">
+              {(params) => (
+                <AuthRedirect>
+                  <Login {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
+            <Route path="/account/register">
+              {(params) => (
+                <AuthRedirect>
+                  <Register {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
             <Route path="/account/forgot-password" component={ForgotPassword} />
             {/* Redirect verify to dashboard since we no longer need verification */}
             <Route path="/account/verify">
-              {() => {
-                window.location.hash = '/dashboard';
-                return null;
-              }}
+              {() => <Redirect to="/dashboard" />}
             </Route>
             
             {/* Dashboard Routes - Protected */}
