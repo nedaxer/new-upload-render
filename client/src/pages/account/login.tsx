@@ -61,17 +61,19 @@ export default function Login() {
       if (!response.ok) {
         // We no longer check for verification as all accounts are automatically verified
         
-        // Handle other errors
-        let errorMessage = "An unexpected error occurred. Please try again.";
+        // Use the error message from the server if available
+        let errorMessage = data.message || "An unexpected error occurred. Please try again.";
         let errorDetail = "";
         
         if (response.status === 401) {
-          errorMessage = "Incorrect username or password";
+          // Server already provides a detailed message for 401 errors
           errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
         } else if (response.status === 400) {
-          errorMessage = "Login information is incomplete";
+          errorMessage = data.message || "Login information is incomplete";
           errorDetail = "Please make sure you've entered both your username and password correctly.";
         }
+        
+        console.log("Login error response:", data);
         
         toast({
           title: "Login failed",

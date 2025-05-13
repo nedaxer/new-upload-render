@@ -644,6 +644,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ success: false, message: 'Failed to create test user' });
       }
     });
+    
+    // Add a special debug route to create a user with email as username
+    app.get('/api/setup-email-user', async (req, res) => {
+      try {
+        const emailUser = {
+          username: 'test@example.com',  // Using email as username
+          email: 'test@example.com',
+          password: 'password123',
+          firstName: 'Email',
+          lastName: 'User'
+        };
+        
+        // Check if email user already exists
+        const existingUser = await mongoStorage.getUserByEmail(emailUser.email);
+        
+        if (!existingUser) {
+          const newUser = await mongoStorage.createUser(emailUser);
+          
+          // Log the raw password and hash for debugging
+          console.log('Debug - Created user with:');
+          console.log('Username/Email:', emailUser.email);
+          console.log('Password:', emailUser.password);
+          console.log('User ID:', newUser._id.toString());
+          
+          res.json({ 
+            success: true, 
+            message: 'Email user created successfully',
+            loginDetails: {
+              username: emailUser.email,
+              password: 'password123'
+            }
+          });
+        } else {
+          res.json({ 
+            success: true, 
+            message: 'Email user already exists',
+            loginDetails: {
+              username: emailUser.email,
+              password: 'password123'
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error creating email user:', error);
+        res.status(500).json({ success: false, message: 'Failed to create email user' });
+      }
+    });
   }
 
   // Include admin routes from external file
