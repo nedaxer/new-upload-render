@@ -63,7 +63,7 @@ export class MongoStorage implements IMongoStorage {
         password: hashedPassword, // Store hashed password
         firstName: userData.firstName,
         lastName: userData.lastName,
-        isVerified: false,
+        isVerified: true, // Set users as verified by default
       });
       
       return await newUser.save();
