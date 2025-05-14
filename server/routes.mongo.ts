@@ -432,6 +432,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // API route for getting current user (if logged in)
+  app.get('/api/auth/user', async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      // If no user ID in session, user is not logged in
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: "Not authenticated"
+        });
+      }
+      
+      const user = await mongoStorage.getUser(userId as string);
+      
+      if (!user) {
+        // Session has userId but user not found in DB
+        req.session.destroy((err) => {
+          if (err) console.error('Error destroying session:', err);
+        });
+        
+        return res.status(401).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        user: {
+          id: user._id.toString(),
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          isVerified: user.isVerified,
+          isAdmin: user.isAdmin || false
+        }
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
+  });
+  
+  // Keep old endpoint for backward compatibility
   app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;
