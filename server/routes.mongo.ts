@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json({
         success: true,
         user: {
-          id: user._id.toString(),
+          id: (user._id as any).toString(),
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -508,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json({
         success: true,
         user: {
-          id: user._id.toString(),
+          id: (user._id as any).toString(),
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
@@ -579,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const expiresAt = authService.generateExpirationDate(15); // 15 minutes
       
       // Save reset code to user
-      await mongoStorage.setResetPasswordCode(user._id.toString(), resetCode, expiresAt);
+      await mongoStorage.setResetPasswordCode((user._id as any).toString(), resetCode, expiresAt);
       
       // Send reset email
       let emailSent = false;
@@ -609,7 +609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         message: "If an account with that email exists, a password reset link has been sent.",
         // Only include reset code in development mode
-        ...(process.env.NODE_ENV === 'development' && { resetCode, userId: user._id.toString() })
+        ...(process.env.NODE_ENV === 'development' && { resetCode, userId: (user._id as any).toString() })
       });
     } catch (error) {
       console.error('Password reset request error:', error);
@@ -691,7 +691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (!existingUser) {
           const newUser = await mongoStorage.createUser(testUser);
-          await mongoStorage.markUserAsVerified(newUser._id.toString());
+          await mongoStorage.markUserAsVerified((newUser._id as any).toString());
           res.json({ success: true, message: 'Test user created and verified' });
         } else {
           res.json({ success: true, message: 'Test user already exists' });
