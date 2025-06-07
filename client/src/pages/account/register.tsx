@@ -155,10 +155,18 @@ export default function Register() {
       
       // Wait a moment before redirecting to ensure user sees login info
       setTimeout(() => {
-        // Immediately navigate to dashboard
+        // Force refresh auth state and redirect
         console.log('Taking user to dashboard');
-        window.location.hash = '/dashboard';
-        setLocation('/dashboard');
+        
+        // First invalidate the auth query to force a refresh
+        // Then redirect to dashboard
+        import('@/lib/queryClient').then(({ queryClient }) => {
+          console.log('Refreshing auth state after registration');
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+          
+          // Use direct navigation to avoid any race conditions
+          window.location.hash = '/dashboard';
+        });
       }, 1500);
       
     } catch (error) {
