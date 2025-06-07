@@ -134,16 +134,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Users are automatically verified when created
       
       // Set session
-      const userId = user._id ? user._id.toString() : '';
+      const userId = user._id ? (user._id as any).toString() : '';
       req.session.userId = userId;
       
-      // Ensure session is saved
-      req.session.save((err) => {
-        if (err) {
-          console.error('Error saving session during login:', err);
-        } else {
-          console.log('Login session saved successfully for user:', userId);
-        }
+      // Ensure session is saved before responding
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session during login:', err);
+            reject(err);
+          } else {
+            console.log('Login session saved successfully for user:', userId);
+            resolve();
+          }
+        });
       });
       
       // User authenticated successfully
@@ -222,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName
       });
       
-      const userId = newUser._id ? newUser._id.toString() : '';
+      const userId = newUser._id ? (newUser._id as any).toString() : '';
       console.log(`User created with ID: ${userId}`);
       
       // Set user session (automatically log in)
@@ -238,13 +242,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // This error doesn't need to block the registration process
       }
       
-      // Ensure a session is created and properly set
-      req.session.save((err) => {
-        if (err) {
-          console.error('Error saving session:', err);
-        } else {
-          console.log('Session saved successfully for user:', userId);
-        }
+      // Ensure session is saved before responding
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session during registration:', err);
+            reject(err);
+          } else {
+            console.log('Registration session saved successfully for user:', userId);
+            resolve();
+          }
+        });
       });
       
       // Success - respond with user details
