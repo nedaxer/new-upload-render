@@ -30,7 +30,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   return (
     <Route path={path}>
-      {(params) => {
+      {(routeParams) => {
         if (isLoading) {
           return loadingComponent;
         }
@@ -44,7 +44,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           return <Redirect to="/dashboard" />;
         }
 
-        return <Component {...params} />;
+        return <Component {...(routeParams || {})} />;
       }}
     </Route>
   );

@@ -38,20 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       try {
-        console.log("Fetching user authentication status...");
         const res = await apiRequest("GET", "/api/auth/user");
         const data = await res.json();
-        console.log("Auth status response:", data);
         
         if (data.success && data.user) {
-          console.log("User is authenticated:", data.user.username);
           return { user: data.user };
         } else {
-          console.log("User is not authenticated");
           return { user: null };
         }
       } catch (err) {
-        console.error("Error fetching authentication status:", err);
         return { user: null };
       }
     },
