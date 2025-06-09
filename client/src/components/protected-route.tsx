@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Redirect, Route } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
@@ -18,32 +18,34 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <Route path={path}>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-[#0033a0]" />
-        </div>
-      </Route>
-    );
-  }
+  // Memoize loading component to prevent re-renders
+  const loadingComponent = useMemo(() => (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#0033a0] mx-auto mb-4" />
+        <p className="text-gray-600">Verifying access...</p>
+      </div>
+    </div>
+  ), []);
 
-  if (!user) {
-    return (
-      <Route path={path}>
-        <Redirect to="/account/login" />
-      </Route>
-    );
-  }
+  return (
+    <Route path={path}>
+      {(params) => {
+        if (isLoading) {
+          return loadingComponent;
+        }
 
-  // Additional check for admin routes
-  if (adminOnly && !user.isAdmin) {
-    return (
-      <Route path={path}>
-        <Redirect to="/dashboard" />
-      </Route>
-    );
-  }
+        if (!user) {
+          return <Redirect to="/account/login" />;
+        }
 
-  return <Route path={path} component={Component} />;
+        // Additional check for admin routes
+        if (adminOnly && !user.isAdmin) {
+          return <Redirect to="/dashboard" />;
+        }
+
+        return <Component {...params} />;
+      }}
+    </Route>
+  );
 };

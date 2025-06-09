@@ -1,6 +1,7 @@
-import React from "react";
-import { Redirect, useLocation } from "wouter";
+import React, { useMemo } from "react";
+import { Redirect } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 
 type AuthRedirectProps = {
   children: React.ReactNode;
@@ -16,11 +17,20 @@ export const AuthRedirect: React.FC<AuthRedirectProps> = ({
   redirectTo = "/dashboard" 
 }) => {
   const { user, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
 
-  // If still loading auth status, show nothing (prevents flash)
+  // Memoize the loading state to prevent unnecessary re-renders
+  const loadingComponent = useMemo(() => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#0033a0] mx-auto mb-4" />
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  ), []);
+
+  // If still loading auth status, show loading indicator
   if (isLoading) {
-    return null;
+    return loadingComponent;
   }
 
   // If user is authenticated, redirect to dashboard
