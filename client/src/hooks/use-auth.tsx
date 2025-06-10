@@ -41,18 +41,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await apiRequest("GET", "/api/auth/user");
         const data = await res.json();
         
+        console.log('Auth query response:', data);
+        
         if (data.success && data.user) {
           return { user: data.user };
         } else {
           return { user: null };
         }
       } catch (err) {
+        console.log('Auth query error:', err);
         return { user: null };
       }
     },
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: false,
+    refetchOnWindowFocus: true,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    retry: (failureCount, error) => {
+      // Only retry if it's a network error, not auth errors
+      return failureCount < 2 && error?.message !== 'Not authenticated';
+    },
   });
 
   // Login mutation
@@ -68,8 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: (data) => {
+      console.log('Login successful, updating cache with user:', data.user);
       // Update the auth user data in the cache
       queryClient.setQueryData(["/api/auth/user"], { user: data.user });
+      // Also invalidate to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
@@ -99,8 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: (data) => {
+      console.log('Registration successful, updating cache with user:', data.user);
       // Update the auth user data in the cache
       queryClient.setQueryData(["/api/auth/user"], { user: data.user });
+      // Also invalidate to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 

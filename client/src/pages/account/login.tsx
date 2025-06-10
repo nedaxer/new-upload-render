@@ -110,10 +110,13 @@ export default function Login() {
         console.log('Refreshing auth state after login');
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         
-        // Use a slight delay to ensure auth state updates
+        // Clear any cached user data and force a refresh
+        queryClient.clear();
+        
+        // Use a longer delay to ensure auth state updates properly
         setTimeout(() => {
-          setLocation('/dashboard');
-        }, 100);
+          window.location.href = '/dashboard';
+        }, 500);
       });
       
     } catch (error) {

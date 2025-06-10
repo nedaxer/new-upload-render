@@ -18,6 +18,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isLoading } = useAuth();
 
+  console.log('ProtectedRoute check:', { user, isLoading, adminOnly, path });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    console.log('No user found, redirecting to login');
+    return <Redirect to="/account/login" />;
+  }
+
+  if (adminOnly && !user.isAdmin) {
+    console.log('User is not admin, redirecting to dashboard');
+    return <Redirect to="/dashboard" />;
+  }
+
+  console.log('User authenticated, rendering component');
+
   // Memoize loading component to prevent re-renders
   const loadingComponent = useMemo(() => (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">

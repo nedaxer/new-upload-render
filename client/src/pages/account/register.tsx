@@ -160,10 +160,13 @@ export default function Register() {
         console.log('Refreshing auth state after registration');
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         
-        // Use a slight delay to ensure auth state updates
+        // Clear any cached user data and force a refresh
+        queryClient.clear();
+        
+        // Use window.location.href for a hard redirect
         setTimeout(() => {
-          setLocation('/dashboard');
-        }, 500);
+          window.location.href = '/dashboard';
+        }, 1000);
       });
       
     } catch (error) {
