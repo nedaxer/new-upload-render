@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
 export default function NotFound() {
+  // Force cache refresh - timestamp: 2025-06-07T23:36:30Z
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-orange-50">
       <Header />
