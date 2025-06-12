@@ -153,20 +153,14 @@ export default function Register() {
       // Store email as username in localStorage for convenience
       localStorage.setItem('lastUsername', data.user.email);
       
-      // Force refresh auth state and redirect
+      // Immediate redirect to dashboard
       console.log('Taking user to dashboard');
       
       import('@/lib/queryClient').then(({ queryClient }) => {
-        console.log('Refreshing auth state after registration');
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-        
-        // Clear any cached user data and force a refresh
         queryClient.clear();
         
-        // Use window.location.href for a hard redirect
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1000);
+        // Immediate redirect without delay
+        window.location.href = '/dashboard';
       });
       
     } catch (error) {

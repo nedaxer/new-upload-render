@@ -105,18 +105,15 @@ export default function Login() {
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
       
-      // Force refresh auth state and redirect
+      // Force immediate redirect to dashboard
+      console.log('Login successful, redirecting to dashboard');
+      
+      // Clear any cached user data and force a refresh
       import('@/lib/queryClient').then(({ queryClient }) => {
-        console.log('Refreshing auth state after login');
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-        
-        // Clear any cached user data and force a refresh
         queryClient.clear();
         
-        // Use a longer delay to ensure auth state updates properly
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 500);
+        // Immediate redirect without delay
+        window.location.href = '/dashboard';
       });
       
     } catch (error) {
