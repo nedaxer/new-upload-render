@@ -524,6 +524,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Get current authenticated user
+  app.get('/api/auth/user', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({
+          success: false,
+          message: "Not authenticated"
+        });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          isAdmin: user.isAdmin
+        }
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+
+  // Logout endpoint
+  app.post('/api/auth/logout', async (req, res) => {
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to logout"
+          });
+        }
+        
+        res.clearCookie('connect.sid'); // Clear session cookie
+        return res.status(200).json({
+          success: true,
+          message: "Logged out successfully"
+        });
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+
   // Basic API routes for the trading platform
   app.get("/api/markets", async (req: Request, res: Response) => {
     try {
