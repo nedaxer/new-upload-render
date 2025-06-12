@@ -108,13 +108,8 @@ export default function Login() {
       // Force immediate redirect to dashboard
       console.log('Login successful, redirecting to dashboard');
       
-      // Clear any cached user data and force a refresh
-      import('@/lib/queryClient').then(({ queryClient }) => {
-        queryClient.clear();
-        
-        // Immediate redirect without delay
-        window.location.href = '/dashboard';
-      });
+      // Use wouter's setLocation for proper routing
+      setLocation('/dashboard');
       
     } catch (error) {
       console.error('Login error:', error);

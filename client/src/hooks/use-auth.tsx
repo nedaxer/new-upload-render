@@ -75,10 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data) => {
       console.log('Login successful, updating cache with user:', data.user);
-      // Update the auth user data in the cache
+      // Update the auth user data in the cache immediately
       queryClient.setQueryData(["/api/auth/user"], { user: data.user });
-      // Also invalidate to trigger a refetch
+      // Force immediate cache invalidation and refetch
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 

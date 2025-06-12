@@ -35,6 +35,7 @@ export const AuthRedirect: React.FC<AuthRedirectProps> = ({
 
   // If user is authenticated, redirect to dashboard
   if (user) {
+    console.log('User is authenticated, redirecting to:', redirectTo);
     return <Redirect to={redirectTo} />;
   }
 
