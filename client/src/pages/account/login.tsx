@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
 
 export default function Login() {
@@ -17,19 +18,26 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user, loginMutation } = useAuth();
   
-  // If we used the stored username, show a hint toast
+  // If user is already logged in, redirect to dashboard
   useEffect(() => {
+    if (user) {
+      console.log('User already logged in, redirecting to dashboard');
+      setLocation('/dashboard');
+      return;
+    }
+    
+    // If we used the stored username, show a hint toast
     if (lastUsername) {
       toast({
         title: "Username pre-filled",
         description: "We've pre-filled your username from your recent registration.",
       });
     }
-  }, []);
+  }, [user, lastUsername, setLocation, toast]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,59 +52,12 @@ export default function Login() {
       return;
     }
     
-    // Set loading state
-    setIsLoading(true);
-    
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      await loginMutation.mutateAsync({ username, password });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // We no longer check for verification as all accounts are automatically verified
-        
-        // Use the error message from the server if available
-        let errorMessage = data.message || "An unexpected error occurred. Please try again.";
-        let errorDetail = "";
-        
-        if (response.status === 401) {
-          // Server already provides a detailed message for 401 errors
-          errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
-        } else if (response.status === 400) {
-          errorMessage = data.message || "Login information is incomplete";
-          errorDetail = "Please make sure you've entered both your username and password correctly.";
-        }
-        
-        console.log("Login error response:", data);
-        
-        toast({
-          title: "Login failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        // Show additional guidance if available
-        if (errorDetail) {
-          setTimeout(() => {
-            toast({
-              title: "Help",
-              description: errorDetail,
-            });
-          }, 500);
-        }
-        return;
-      }
-      
-      // Handle success
       // Save user data to localStorage if needed
-      if (rememberMe && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+      if (rememberMe) {
+        localStorage.setItem('rememberLogin', 'true');
       }
       
       // Show success message
@@ -107,19 +68,35 @@ export default function Login() {
       
       // Force immediate redirect to dashboard
       console.log('Login successful, redirecting to dashboard');
-      
-      // Use wouter's setLocation for proper routing
       setLocation('/dashboard');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      
+      let errorMessage = error.message || "An unexpected error occurred. Please try again.";
+      let errorDetail = "";
+      
+      if (error.message?.includes('401')) {
+        errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
+      } else if (error.message?.includes('400')) {
+        errorDetail = "Please make sure you've entered both your username and password correctly.";
+      }
+      
       toast({
         title: "Login failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+      
+      // Show additional guidance if available
+      if (errorDetail) {
+        setTimeout(() => {
+          toast({
+            title: "Help",
+            description: errorDetail,
+          });
+        }, 500);
+      }
     }
   };
 
@@ -177,13 +154,13 @@ export default function Login() {
                   placeholder="Enter your password"
                   className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
                   required
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 >
                   {showPassword ? (
                     <EyeOffIcon className="h-5 w-5" />
@@ -201,7 +178,7 @@ export default function Login() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                   className="text-[#0033a0] border-gray-300"
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
                 <label
                   htmlFor="remember"
@@ -215,9 +192,9 @@ export default function Login() {
             <Button 
               type="submit" 
               className="w-full bg-[#0033a0] hover:bg-[#002680] text-white py-2.5 font-medium rounded-md transition-all duration-200 shadow-sm"
-              disabled={isLoading}
+              disabled={loginMutation.isPending}
             >
-              {isLoading ? (
+              {loginMutation.isPending ? (
                 <>
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
