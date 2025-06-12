@@ -8,7 +8,9 @@ import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
 import { WebSocketServer } from "ws";
-import adminRoutes from "./api/admin-routes";
+import { db } from "./db";
+import { users, currencies, userBalances, transactions, stakingRates, stakingPositions } from "../shared/schema";
+import { eq, desc, and } from "drizzle-orm";
 
 // Extend express-session types to include userId
 declare module "express-session" {
@@ -568,82 +570,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Trading platform API routes will be added here
-  
-  // Get user portfolio
-  app.get("/api/portfolio", requireAuth, async (req: Request, res: Response) => {
-    try {
-      const userId = (req as any).session.userId;
-      
-      const balances = await db.select({
-        id: userBalances.id,
-        currency: {
-          id: currencies.id,
-          symbol: currencies.symbol,
-          name: currencies.name,
-          logoUrl: currencies.logoUrl,
-          currentPrice: currencies.currentPrice
-        },
-        availableBalance: userBalances.availableBalance,
-        lockedBalance: userBalances.lockedBalance,
-        totalBalance: userBalances.totalBalance
-      }).from(userBalances)
-      .leftJoin(currencies, eq(userBalances.currencyId, currencies.id))
-      .where(eq(userBalances.userId, userId));
-      
-      const totalValue = balances.reduce((sum, balance) => {
-        return sum + (parseFloat(balance.totalBalance) * parseFloat(balance.currency.currentPrice));
-      }, 0);
-      
-      res.json({ balances, totalValue });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch portfolio" });
-    }
-  });
-
-  // Get market data
+  // Basic API routes for the trading platform
   app.get("/api/markets", async (req: Request, res: Response) => {
     try {
-      const markets = await db.select().from(currencies).where(eq(currencies.isActive, true));
+      // Simple mock market data for now
+      const markets = [
+        { symbol: 'BTC', name: 'Bitcoin', price: 43250.00, change: 2.5 },
+        { symbol: 'ETH', name: 'Ethereum', price: 2650.00, change: -1.2 },
+        { symbol: 'USDT', name: 'Tether', price: 1.00, change: 0.1 },
+        { symbol: 'BNB', name: 'BNB', price: 315.00, change: 3.8 }
+      ];
       res.json(markets);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch market data" });
     }
   });
-
-  // Get user transactions
-  app.get("/api/transactions", requireAuth, async (req: Request, res: Response) => {
-    try {
-      const userId = (req as any).session.userId;
-      const userTransactions = await db.select({
-        id: transactions.id,
-        type: transactions.type,
-        sourceAmount: transactions.sourceAmount,
-        targetAmount: transactions.targetAmount,
-        fee: transactions.fee,
-        status: transactions.status,
-        createdAt: transactions.createdAt,
-        sourceCurrency: {
-          symbol: currencies.symbol,
-          name: currencies.name
-        }
-      }).from(transactions)
-      .leftJoin(currencies, eq(transactions.sourceId, currencies.id))
-      .where(eq(transactions.userId, userId))
-      .orderBy(desc(transactions.createdAt))
-      .limit(50);
-      
-      res.json(userTransactions);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch transactions" });
-    }
-  });
-  app.use('/api/wallet', walletRouter);
-  app.use('/api/staking', stakingRouter);
-  app.use('/api/admin', adminRouter);
-
-  // Register admin API routes
-  app.use('/api/admin', adminRoutes);
   
   const httpServer = createServer(app);
 
@@ -675,37 +616,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
     });
-  });
-
-  // Send price updates to all connected clients
-  const broadcastPrices = (prices) => {
-    wss.clients.forEach((client) => {
-      if (client.readyState === 1) { // WebSocket.OPEN
-        client.send(JSON.stringify({ 
-          type: 'prices', 
-          data: prices, 
-          timestamp: Date.now() 
-        }));
-      }
-    });
-  };
-
-  // Start background jobs
-  // 1. Price update job (every 1 minute)
-  const priceUpdateInterval = startPriceUpdateJob(1);
-  
-  // 2. Staking rewards processing job (every 60 minutes)
-  const stakingRewardsInterval = startRewardsProcessingJob(60);
-  
-  // 3. Deposit check job (every 30 seconds)
-  const depositCheckInterval = depositService.startDepositCheckJob(30);
-
-  // Clean up intervals on server shutdown
-  process.on('SIGINT', () => {
-    clearInterval(priceUpdateInterval);
-    clearInterval(stakingRewardsInterval);
-    clearInterval(depositCheckInterval);
-    process.exit(0);
   });
 
   return httpServer;
