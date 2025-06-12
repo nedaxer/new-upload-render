@@ -38,9 +38,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       try {
-        const res = await apiRequest("GET", "/api/auth/user");
-        const data = await res.json();
+        const res = await fetch("/api/auth/user", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         
+        // Check if the response is JSON
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.log('Auth query: Non-JSON response received');
+          return { user: null };
+        }
+        
+        const data = await res.json();
         console.log('Auth query response:', data);
         
         if (data.success && data.user) {
