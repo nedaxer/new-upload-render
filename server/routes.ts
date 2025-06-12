@@ -124,24 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if user is verified
-      if (!user.isVerified) {
-        // Generate a new verification code if the user is not verified
-        const verificationCode = generateVerificationCode();
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
-        
-        await storage.setVerificationCode(user.id, verificationCode, expiresAt);
-        
-        // Send a new verification email
-        await sendVerificationEmail(user.email, verificationCode, user.firstName);
-        
-        return res.status(403).json({
-          success: false,
-          message: "Account not verified",
-          needsVerification: true,
-          userId: user.id
-        });
-      }
+      // Skip verification check - allow login regardless of verification status
       
       // Set session
       req.session.userId = user.id;
@@ -211,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Creating new user account...');
       
-      // Create new user (unverified)
+      // Create new user (automatically verified)
       const newUser = await storage.createUser({
         username,
         email,
@@ -220,56 +203,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName
       });
       
+      // Automatically verify the user
+      await storage.markUserAsVerified(newUser.id);
+      
       console.log(`User created with ID: ${newUser.id}`);
       
-      // Generate verification code (we'll use this both for direct verification and as part of the URL)
-      const verificationCode = generateVerificationCode();
-      const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+      // Set session to automatically log user in after registration
+      req.session.userId = newUser.id;
       
-      await storage.setVerificationCode(newUser.id, verificationCode, expiresAt);
-      console.log(`Verification code set for user ${newUser.id}`);
+      console.log(`Registration and auto-login successful for user: ${email}`);
       
-      // Send verification email with better error handling
-      let emailSent = false;
-      try {
-        // Send verification email with the code
-        await sendVerificationEmail(email, verificationCode, firstName);
-        emailSent = true;
-        console.log(`Verification email with code successfully sent to ${email}`);
-      } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
-        
-        // In development mode, just log the verification code for testing
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`DEVELOPMENT MODE: Verification code for ${email} is: ${verificationCode}`);
-          emailSent = true; // Consider it sent in development
-        }
-      }
-      
-      // In production, report email sending failure
-      if (!emailSent && process.env.NODE_ENV !== 'development') {
-        return res.status(500).json({
-          success: false,
-          message: "Account created but verification email could not be sent. Please contact support.",
-          user: {
-            id: newUser.id
-          }
-        });
-      }
-      
-      // Success - respond with user details for the verification page
-      // In development mode, also include the verification code in the response
-      // so the frontend can display it (since emails aren't actually sent)
       return res.status(201).json({
         success: true,
-        message: "User registered successfully. Please check your email for verification code.",
+        message: "Account created successfully! You are now logged in.",
         user: {
           id: newUser.id,
           username: newUser.username,
-          email: newUser.email
-        },
-        // Only include verification code in development mode
-        ...(process.env.NODE_ENV === 'development' && { verificationCode })
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          email: newUser.email,
+          isVerified: true
+        }
       });
     } catch (error: any) {
       console.error('Registration error:', error);
