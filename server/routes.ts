@@ -106,12 +106,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { username, password } = result.data;
 
-      console.log('Login attempt - Email:', username, 'Password:', password);
-
       // Check if user exists by email (since login form uses email)
       const user = await storage.getUserByEmail(username);
-      
-      console.log('User found:', user ? `ID: ${user.id}, Email: ${user.email}` : 'No user found');
       
       if (!user) {
         return res.status(401).json({ 
@@ -119,8 +115,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Invalid email or password" 
         });
       }
-      
-      console.log('Password check - Provided:', password, 'Stored:', user.password);
       
       // Simple password check (in a real app, you'd use bcrypt)
       if (user.password !== password) {
@@ -520,11 +514,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!existingUser) {
           const newUser = await storage.createUser(testUser);
           await storage.markUserAsVerified(newUser.id);
-          console.log('Test user created:', newUser);
-          res.json({ success: true, message: 'Test user created and verified', user: newUser });
+          res.json({ success: true, message: 'Test user created and verified' });
         } else {
-          console.log('Test user already exists:', existingUser);
-          res.json({ success: true, message: 'Test user already exists', user: existingUser });
+          res.json({ success: true, message: 'Test user already exists' });
         }
       } catch (error) {
         console.error('Error creating test user:', error);
