@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Route, Switch, Router, Redirect } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
@@ -85,15 +86,7 @@ import AdminStaking from '@/pages/admin/staking';
 // Other Pages
 import SiteMap from '@/pages/site-map';
 
-// Create QueryClient
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+
 
 // Provide a loading state
 function LoadingIndicator() {
