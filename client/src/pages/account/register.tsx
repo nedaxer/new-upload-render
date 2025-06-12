@@ -156,12 +156,8 @@ export default function Register() {
       // Immediate redirect to dashboard
       console.log('Taking user to dashboard');
       
-      import('@/lib/queryClient').then(({ queryClient }) => {
-        queryClient.clear();
-        
-        // Immediate redirect without delay
-        window.location.href = '/dashboard';
-      });
+      // Use wouter's setLocation for proper routing
+      setLocation('/dashboard');
       
     } catch (error) {
       console.error('Registration error:', error);
