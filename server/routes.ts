@@ -568,20 +568,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Import and register our trading platform API routes
-  import userRouter from './api/user-routes';
-  import tradingRouter from './api/trading-routes';
-  import walletRouter from './api/wallet-routes';
-  import stakingRouter from './api/staking-routes';
-  import adminRouter from './api/admin-routes';
-  import { startPriceUpdateJob } from './services/price.service';
-  import { startRewardsProcessingJob } from './services/staking.service';
-  import { depositService } from './services/deposit.service';
-  import { WebSocketServer } from 'ws';
+  // Trading platform API routes will be added here
+  
+  // Get user portfolio
+  app.get("/api/portfolio", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).session.userId;
+      
+      const balances = await db.select({
+        id: userBalances.id,
+        currency: {
+          id: currencies.id,
+          symbol: currencies.symbol,
+          name: currencies.name,
+          logoUrl: currencies.logoUrl,
+          currentPrice: currencies.currentPrice
+        },
+        availableBalance: userBalances.availableBalance,
+        lockedBalance: userBalances.lockedBalance,
+        totalBalance: userBalances.totalBalance
+      }).from(userBalances)
+      .leftJoin(currencies, eq(userBalances.currencyId, currencies.id))
+      .where(eq(userBalances.userId, userId));
+      
+      const totalValue = balances.reduce((sum, balance) => {
+        return sum + (parseFloat(balance.totalBalance) * parseFloat(balance.currency.currentPrice));
+      }, 0);
+      
+      res.json({ balances, totalValue });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch portfolio" });
+    }
+  });
 
-  // Register API routes
-  app.use('/api/user', userRouter);
-  app.use('/api/trading', tradingRouter);
+  // Get market data
+  app.get("/api/markets", async (req: Request, res: Response) => {
+    try {
+      const markets = await db.select().from(currencies).where(eq(currencies.isActive, true));
+      res.json(markets);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch market data" });
+    }
+  });
+
+  // Get user transactions
+  app.get("/api/transactions", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).session.userId;
+      const userTransactions = await db.select({
+        id: transactions.id,
+        type: transactions.type,
+        sourceAmount: transactions.sourceAmount,
+        targetAmount: transactions.targetAmount,
+        fee: transactions.fee,
+        status: transactions.status,
+        createdAt: transactions.createdAt,
+        sourceCurrency: {
+          symbol: currencies.symbol,
+          name: currencies.name
+        }
+      }).from(transactions)
+      .leftJoin(currencies, eq(transactions.sourceId, currencies.id))
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.createdAt))
+      .limit(50);
+      
+      res.json(userTransactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
   app.use('/api/wallet', walletRouter);
   app.use('/api/staking', stakingRouter);
   app.use('/api/admin', adminRouter);
