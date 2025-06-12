@@ -12,6 +12,15 @@ import { Toaster } from '@/components/ui/toaster';
 import Home from '@/pages/home';
 import NotFound from '@/pages/not-found';
 
+// Trading Pages
+import Dashboard from '@/pages/Dashboard';
+import SpotTrading from '@/pages/SpotTrading';
+import Futures from '@/pages/Futures';
+import Staking from '@/pages/Staking';
+import Deposit from '@/pages/Deposit';
+import Withdraw from '@/pages/Withdraw';
+import AdminPanel from '@/pages/AdminPanel';
+
 // Company Pages
 import About from '@/pages/company/about';
 import Careers from '@/pages/company/careers';
@@ -194,27 +203,17 @@ export default function App() {
               {() => <Redirect to="/dashboard" />}
             </Route>
             
-            {/* Dashboard Routes - Protected */}
-            <ProtectedRoute path="/dashboard" component={TradingDashboard} />
-            <ProtectedRoute path="/dashboard/trade" component={Trade} />
-            <ProtectedRoute path="/dashboard/staking" component={Staking} />
-            <ProtectedRoute path="/dashboard/deposit" component={Deposit} />
-            
             {/* Trading Platform Routes - Protected */}
-            <ProtectedRoute path="/platform/dashboard" component={TradingDashboard} />
-            <ProtectedRoute path="/platform/spot" component={SpotTrading} />
-            <ProtectedRoute path="/platform/futures" component={FuturesTrading} />
-            <ProtectedRoute path="/platform/staking" component={StakingDashboard} />
-            <ProtectedRoute path="/platform/wallet" component={WalletDashboard} />
-            <ProtectedRoute path="/platform/convert" component={ConvertAssets} />
-            <ProtectedRoute path="/platform/news" component={NewsAndEvents} />
-            <ProtectedRoute path="/trading/live" component={LiveTrading} />
+            <ProtectedRoute path="/dashboard" component={Dashboard} />
+            <ProtectedRoute path="/spot-trading" component={SpotTrading} />
+            <ProtectedRoute path="/futures" component={Futures} />
+            <ProtectedRoute path="/staking" component={Staking} />
+            <ProtectedRoute path="/deposit" component={Deposit} />
+            <ProtectedRoute path="/withdraw" component={Withdraw} />
             
-            {/* Admin Routes - Protected with admin flag */}
-            <Route path="/admin/login" component={AdminLogin} />
-            <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly={true} />
-            <ProtectedRoute path="/admin/users" component={AdminUsers} adminOnly={true} />
-            <ProtectedRoute path="/admin/staking" component={AdminStaking} adminOnly={true} />
+            {/* Secret Admin Routes - Protected with admin flag */}
+            <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
+            <ProtectedRoute path="/admin-panel" component={AdminPanel} adminOnly={true} />
             
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />
