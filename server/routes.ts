@@ -4,8 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { pool } from "./db";
+import MemoryStore from "memorystore";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
 import { WebSocketServer } from "ws";
 import { db } from "./db";
@@ -64,15 +63,13 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup session middleware
-  const PgSession = connectPgSimple(session);
+  // Setup session middleware with memory store
+  const memoryStore = MemoryStore(session);
   
   app.use(
     session({
-      store: new PgSession({
-        pool,
-        tableName: 'session', // Use the default table name
-        createTableIfMissing: true
+      store: new memoryStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
       }),
       secret: process.env.SESSION_SECRET || 'nedaxer-secret-key',
       resave: false,
