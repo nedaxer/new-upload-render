@@ -146,4 +146,4 @@ export class PostgresStorage implements IStorage {
 
 // Using MemStorage for now
 // Will implement MongoDB storage in a separate step
-export const storage = new MemStorage();
+export const storage = new PostgresStorage();
