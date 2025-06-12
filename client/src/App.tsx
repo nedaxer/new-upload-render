@@ -67,6 +67,15 @@ import Trade from '@/pages/dashboard/trade';
 import Staking from '@/pages/dashboard/staking';
 import Deposit from '@/pages/dashboard/deposit';
 
+// Trading Platform Pages
+import TradingDashboard from '@/pages/platform/dashboard';
+import SpotTrading from '@/pages/platform/trading';
+import FuturesTrading from '@/pages/platform/futures';
+import StakingDashboard from '@/pages/platform/staking';
+import WalletDashboard from '@/pages/platform/wallet';
+import ConvertAssets from '@/pages/platform/convert';
+import NewsAndEvents from '@/pages/platform/news';
+
 // Admin Pages
 import AdminLogin from '@/pages/admin/login';
 import AdminDashboard from '@/pages/admin/dashboard';
@@ -192,10 +201,19 @@ export default function App() {
             </Route>
             
             {/* Dashboard Routes - Protected */}
-            <ProtectedRoute path="/dashboard" component={Dashboard} />
+            <ProtectedRoute path="/dashboard" component={TradingDashboard} />
             <ProtectedRoute path="/dashboard/trade" component={Trade} />
             <ProtectedRoute path="/dashboard/staking" component={Staking} />
             <ProtectedRoute path="/dashboard/deposit" component={Deposit} />
+            
+            {/* Trading Platform Routes - Protected */}
+            <ProtectedRoute path="/platform/dashboard" component={TradingDashboard} />
+            <ProtectedRoute path="/platform/spot" component={SpotTrading} />
+            <ProtectedRoute path="/platform/futures" component={FuturesTrading} />
+            <ProtectedRoute path="/platform/staking" component={StakingDashboard} />
+            <ProtectedRoute path="/platform/wallet" component={WalletDashboard} />
+            <ProtectedRoute path="/platform/convert" component={ConvertAssets} />
+            <ProtectedRoute path="/platform/news" component={NewsAndEvents} />
             
             {/* Admin Routes - Protected with admin flag */}
             <Route path="/admin/login" component={AdminLogin} />

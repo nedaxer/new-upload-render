@@ -48,7 +48,7 @@ export default function SpotTrading() {
     refetchInterval: 1000
   });
 
-  const currentPrice = markets?.find(m => m.symbol === selectedPair.split('/')[0])?.price || 43250;
+  const currentPrice = markets?.find((m: any) => m.symbol === selectedPair.split('/')[0])?.price || 43250;
 
   // Mock order book data
   const orderBook = {
