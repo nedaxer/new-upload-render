@@ -42,15 +42,19 @@ export default function Dashboard() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("24h");
 
   // Fetch market data
-  const { data: marketData = [], isLoading: marketLoading } = useQuery<MarketData[]>({
+  const { data: marketResponse, isLoading: marketLoading } = useQuery({
     queryKey: ['/api/market/prices'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
+  const marketData = marketResponse?.data || [];
+
   // Fetch user balances
-  const { data: balances = [], isLoading: balancesLoading } = useQuery<UserBalance[]>({
+  const { data: balancesResponse, isLoading: balancesLoading } = useQuery({
     queryKey: ['/api/user/balances'],
   });
+
+  const balances = balancesResponse?.data || [];
 
   // Mock portfolio data for demo
   const portfolioData: Portfolio = {
