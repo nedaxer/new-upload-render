@@ -76,6 +76,7 @@ import StakingDashboard from '@/pages/platform/staking';
 import WalletDashboard from '@/pages/platform/wallet';
 import ConvertAssets from '@/pages/platform/convert';
 import NewsAndEvents from '@/pages/platform/news';
+import LiveTrading from '@/pages/trading/live-trading';
 
 // Admin Pages
 import AdminLogin from '@/pages/admin/login';
@@ -207,6 +208,7 @@ export default function App() {
             <ProtectedRoute path="/platform/wallet" component={WalletDashboard} />
             <ProtectedRoute path="/platform/convert" component={ConvertAssets} />
             <ProtectedRoute path="/platform/news" component={NewsAndEvents} />
+            <ProtectedRoute path="/trading/live" component={LiveTrading} />
             
             {/* Admin Routes - Protected with admin flag */}
             <Route path="/admin/login" component={AdminLogin} />
