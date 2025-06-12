@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, primaryKey, uuid, json, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, primaryKey, uuid, json, real, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -16,6 +16,11 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
+  kycStatus: text("kyc_status").default("pending").notNull(), // pending, approved, rejected
+  phone: text("phone"),
+  country: text("country"),
+  totalPortfolioValue: doublePrecision("total_portfolio_value").default(0).notNull(),
+  riskLevel: text("risk_level").default("moderate").notNull(), // conservative, moderate, aggressive
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -159,18 +164,192 @@ export const stakingPositionsRelations = relations(stakingPositions, ({ one }) =
   })
 }));
 
-// Market price data
+// Market price data with OHLCV
 export const marketPrices = pgTable("market_prices", {
   id: serial("id").primaryKey(),
   currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  price: doublePrecision("price").notNull(), // USD price
+  open: doublePrecision("open").notNull(),
+  high: doublePrecision("high").notNull(),
+  low: doublePrecision("low").notNull(),
+  close: doublePrecision("close").notNull(),
+  volume: doublePrecision("volume").notNull(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
+  interval: text("interval").notNull(), // 1m, 5m, 15m, 1h, 4h, 1d
   source: text("source").notNull(), // API source
 });
 
 export const marketPricesRelations = relations(marketPrices, ({ one }) => ({
   currency: one(currencies, {
     fields: [marketPrices.currencyId],
+    references: [currencies.id]
+  })
+}));
+
+// Futures contracts
+export const futuresContracts = pgTable("futures_contracts", {
+  id: serial("id").primaryKey(),
+  symbol: text("symbol").notNull().unique(), // BTCUSDT, ETHUSDT
+  baseAsset: text("base_asset").notNull(), // BTC, ETH
+  quoteAsset: text("quote_asset").notNull(), // USDT
+  contractType: text("contract_type").notNull(), // perpetual, quarterly
+  expiryDate: timestamp("expiry_date"), // null for perpetual
+  tickSize: doublePrecision("tick_size").notNull(),
+  minQty: doublePrecision("min_qty").notNull(),
+  maxQty: doublePrecision("max_qty").notNull(),
+  leverage: doublePrecision("leverage").notNull().default(1),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Futures positions
+export const futuresPositions = pgTable("futures_positions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  contractId: integer("contract_id").notNull().references(() => futuresContracts.id),
+  side: text("side").notNull(), // long, short
+  size: doublePrecision("size").notNull(),
+  entryPrice: doublePrecision("entry_price").notNull(),
+  markPrice: doublePrecision("mark_price").notNull(),
+  leverage: doublePrecision("leverage").notNull(),
+  margin: doublePrecision("margin").notNull(),
+  pnl: doublePrecision("pnl").default(0).notNull(),
+  unrealizedPnl: doublePrecision("unrealized_pnl").default(0).notNull(),
+  status: text("status").notNull(), // open, closed, liquidated
+  stopLoss: doublePrecision("stop_loss"),
+  takeProfit: doublePrecision("take_profit"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const futuresPositionsRelations = relations(futuresPositions, ({ one }) => ({
+  user: one(users, {
+    fields: [futuresPositions.userId],
+    references: [users.id]
+  }),
+  contract: one(futuresContracts, {
+    fields: [futuresPositions.contractId],
+    references: [futuresContracts.id]
+  })
+}));
+
+// Spot trading orders
+export const spotOrders = pgTable("spot_orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  symbol: text("symbol").notNull(), // BTCUSDT
+  side: text("side").notNull(), // buy, sell
+  type: text("type").notNull(), // market, limit, stop_loss, take_profit
+  quantity: doublePrecision("quantity").notNull(),
+  price: doublePrecision("price"),
+  stopPrice: doublePrecision("stop_price"),
+  executedQty: doublePrecision("executed_qty").default(0),
+  status: text("status").notNull(), // new, partially_filled, filled, canceled, expired
+  timeInForce: text("time_in_force").default("GTC"), // GTC, IOC, FOK
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const spotOrdersRelations = relations(spotOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [spotOrders.userId],
+    references: [users.id]
+  })
+}));
+
+// Futures trading orders
+export const futuresOrders = pgTable("futures_orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  contractId: integer("contract_id").notNull().references(() => futuresContracts.id),
+  side: text("side").notNull(), // buy, sell
+  type: text("type").notNull(), // market, limit, stop_market, stop_limit
+  quantity: doublePrecision("quantity").notNull(),
+  price: doublePrecision("price"),
+  stopPrice: doublePrecision("stop_price"),
+  executedQty: doublePrecision("executed_qty").default(0),
+  leverage: doublePrecision("leverage").notNull(),
+  status: text("status").notNull(), // new, partially_filled, filled, canceled, expired
+  timeInForce: text("time_in_force").default("GTC"),
+  reduceOnly: boolean("reduce_only").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const futuresOrdersRelations = relations(futuresOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [futuresOrders.userId],
+    references: [users.id]
+  }),
+  contract: one(futuresContracts, {
+    fields: [futuresOrders.contractId],
+    references: [futuresContracts.id]
+  })
+}));
+
+// Portfolio snapshots for performance tracking
+export const portfolioSnapshots = pgTable("portfolio_snapshots", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  totalValue: doublePrecision("total_value").notNull(),
+  spotValue: doublePrecision("spot_value").notNull(),
+  futuresValue: doublePrecision("futures_value").notNull(),
+  stakingValue: doublePrecision("staking_value").notNull(),
+  totalPnl: doublePrecision("total_pnl").notNull(),
+  dailyPnl: doublePrecision("daily_pnl").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const portfolioSnapshotsRelations = relations(portfolioSnapshots, ({ one }) => ({
+  user: one(users, {
+    fields: [portfolioSnapshots.userId],
+    references: [users.id]
+  })
+}));
+
+// Deposit/Withdrawal addresses
+export const depositAddresses = pgTable("deposit_addresses", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  address: text("address").notNull(),
+  network: text("network").notNull(), // mainnet, testnet, polygon, bsc
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const depositAddressesRelations = relations(depositAddresses, ({ one }) => ({
+  user: one(users, {
+    fields: [depositAddresses.userId],
+    references: [users.id]
+  }),
+  currency: one(currencies, {
+    fields: [depositAddresses.currencyId],
+    references: [currencies.id]
+  })
+}));
+
+// Admin fund credits (for admin to add funds to user accounts)
+export const adminCredits = pgTable("admin_credits", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  amount: doublePrecision("amount").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminCredits.adminId],
+    references: [users.id]
+  }),
+  user: one(users, {
+    fields: [adminCredits.userId],
+    references: [users.id]
+  }),
+  currency: one(currencies, {
+    fields: [adminCredits.currencyId],
     references: [currencies.id]
   })
 }));
@@ -227,3 +406,32 @@ export type StakingPosition = typeof stakingPositions.$inferSelect;
 export const insertMarketPriceSchema = createInsertSchema(marketPrices);
 export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
 export type MarketPrice = typeof marketPrices.$inferSelect;
+
+// Additional schema exports for new features
+export const insertFuturesContractSchema = createInsertSchema(futuresContracts);
+export type InsertFuturesContract = z.infer<typeof insertFuturesContractSchema>;
+export type FuturesContract = typeof futuresContracts.$inferSelect;
+
+export const insertFuturesPositionSchema = createInsertSchema(futuresPositions);
+export type InsertFuturesPosition = z.infer<typeof insertFuturesPositionSchema>;
+export type FuturesPosition = typeof futuresPositions.$inferSelect;
+
+export const insertSpotOrderSchema = createInsertSchema(spotOrders);
+export type InsertSpotOrder = z.infer<typeof insertSpotOrderSchema>;
+export type SpotOrder = typeof spotOrders.$inferSelect;
+
+export const insertFuturesOrderSchema = createInsertSchema(futuresOrders);
+export type InsertFuturesOrder = z.infer<typeof insertFuturesOrderSchema>;
+export type FuturesOrder = typeof futuresOrders.$inferSelect;
+
+export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapshots);
+export type InsertPortfolioSnapshot = z.infer<typeof insertPortfolioSnapshotSchema>;
+export type PortfolioSnapshot = typeof portfolioSnapshots.$inferSelect;
+
+export const insertDepositAddressSchema = createInsertSchema(depositAddresses);
+export type InsertDepositAddress = z.infer<typeof insertDepositAddressSchema>;
+export type DepositAddress = typeof depositAddresses.$inferSelect;
+
+export const insertAdminCreditSchema = createInsertSchema(adminCredits);
+export type InsertAdminCredit = z.infer<typeof insertAdminCreditSchema>;
+export type AdminCredit = typeof adminCredits.$inferSelect;

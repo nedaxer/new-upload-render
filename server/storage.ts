@@ -50,7 +50,12 @@ export class MemStorage implements IStorage {
       isAdmin: false,
       verificationCode: null, 
       verificationCodeExpires: null,
-      createdAt: now
+      createdAt: now,
+      kycStatus: "pending",
+      phone: null,
+      country: null,
+      totalPortfolioValue: 0,
+      riskLevel: "moderate"
     };
     this.users.set(id, user);
     return user;
