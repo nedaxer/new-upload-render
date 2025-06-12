@@ -71,21 +71,11 @@ import Register from '@/pages/account/register';
 import ForgotPassword from '@/pages/account/forgot-password';
 import VerifyAccount from '@/pages/account/verify';
 
-// Dashboard Pages
-import Dashboard from '@/pages/dashboard';
+// Legacy Dashboard Pages (keeping for compatibility)
+import LegacyDashboard from '@/pages/dashboard';
 import Trade from '@/pages/dashboard/trade';
-import Staking from '@/pages/dashboard/staking';
-import Deposit from '@/pages/dashboard/deposit';
-
-// Trading Platform Pages
-import TradingDashboard from '@/pages/platform/dashboard';
-import SpotTrading from '@/pages/platform/trading';
-import FuturesTrading from '@/pages/platform/futures';
-import StakingDashboard from '@/pages/platform/staking';
-import WalletDashboard from '@/pages/platform/wallet';
-import ConvertAssets from '@/pages/platform/convert';
-import NewsAndEvents from '@/pages/platform/news';
-import LiveTrading from '@/pages/trading/live-trading';
+import LegacyStaking from '@/pages/dashboard/staking';
+import LegacyDeposit from '@/pages/dashboard/deposit';
 
 // Admin Pages
 import AdminLogin from '@/pages/admin/login';
