@@ -590,19 +590,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Basic API routes for the trading platform
+  // Import price service
+  const { priceService } = await import('./services/price.service');
+
+  // Real-time markets API
   app.get("/api/markets", async (req: Request, res: Response) => {
     try {
-      // Simple mock market data for now
-      const markets = [
-        { symbol: 'BTC', name: 'Bitcoin', price: 43250.00, change: 2.5 },
-        { symbol: 'ETH', name: 'Ethereum', price: 2650.00, change: -1.2 },
-        { symbol: 'USDT', name: 'Tether', price: 1.00, change: 0.1 },
-        { symbol: 'BNB', name: 'BNB', price: 315.00, change: 3.8 }
-      ];
+      const limit = parseInt(req.query.limit as string) || 20;
+      const cryptocurrencies = await priceService.getTopCryptocurrencies(limit);
+      
+      const markets = cryptocurrencies.map(coin => ({
+        id: coin.id,
+        symbol: coin.symbol.toUpperCase(),
+        name: coin.name,
+        price: coin.current_price,
+        change: coin.price_change_percentage_24h,
+        change7d: coin.price_change_percentage_7d,
+        marketCap: coin.market_cap,
+        volume: coin.total_volume,
+        rank: coin.market_cap_rank,
+        high24h: coin.high_24h,
+        low24h: coin.low_24h,
+        lastUpdated: coin.last_updated
+      }));
+      
       res.json(markets);
     } catch (error) {
+      console.error("Error fetching markets:", error);
       res.status(500).json({ message: "Failed to fetch market data" });
+    }
+  });
+
+  // Get specific coin data
+  app.get("/api/markets/:coinId", async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const coinData = await priceService.getCoinPrice(coinId);
+      
+      res.json({
+        id: coinData.id,
+        symbol: coinData.symbol.toUpperCase(),
+        name: coinData.name,
+        price: coinData.current_price,
+        change: coinData.price_change_percentage_24h,
+        change7d: coinData.price_change_percentage_7d,
+        marketCap: coinData.market_cap,
+        volume: coinData.total_volume,
+        rank: coinData.market_cap_rank,
+        high24h: coinData.high_24h,
+        low24h: coinData.low_24h,
+        circulatingSupply: coinData.circulating_supply,
+        totalSupply: coinData.total_supply,
+        lastUpdated: coinData.last_updated
+      });
+    } catch (error) {
+      console.error(`Error fetching coin ${req.params.coinId}:`, error);
+      res.status(500).json({ message: "Failed to fetch coin data" });
+    }
+  });
+
+  // Get historical chart data
+  app.get("/api/markets/:coinId/chart", async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const days = parseInt(req.query.days as string) || 30;
+      
+      const chartData = await priceService.getMarketChart(coinId, days);
+      
+      const formattedData = chartData.prices.map((price, index) => ({
+        timestamp: price[0],
+        date: new Date(price[0]).toISOString(),
+        price: price[1],
+        volume: chartData.volumes[index] ? chartData.volumes[index][1] : 0
+      }));
+      
+      res.json(formattedData);
+    } catch (error) {
+      console.error(`Error fetching chart for ${req.params.coinId}:`, error);
+      res.status(500).json({ message: "Failed to fetch chart data" });
+    }
+  });
+
+  // Get OHLC candlestick data
+  app.get("/api/markets/:coinId/ohlc", async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const days = parseInt(req.query.days as string) || 30;
+      
+      const ohlcData = await priceService.getHistoricalData(coinId, days);
+      
+      res.json(ohlcData);
+    } catch (error) {
+      console.error(`Error fetching OHLC for ${req.params.coinId}:`, error);
+      res.status(500).json({ message: "Failed to fetch OHLC data" });
+    }
+  });
+
+  // Get technical indicators
+  app.get("/api/markets/:coinId/indicators", async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const indicators = await priceService.getTechnicalIndicators(coinId);
+      
+      res.json(indicators);
+    } catch (error) {
+      console.error(`Error fetching indicators for ${req.params.coinId}:`, error);
+      res.status(500).json({ message: "Failed to fetch technical indicators" });
+    }
+  });
+
+  // Get trending coins
+  app.get("/api/trending", async (req: Request, res: Response) => {
+    try {
+      const trending = await priceService.getTrendingCoins();
+      res.json(trending);
+    } catch (error) {
+      console.error("Error fetching trending coins:", error);
+      res.status(500).json({ message: "Failed to fetch trending coins" });
+    }
+  });
+
+  // Get global market data
+  app.get("/api/global", async (req: Request, res: Response) => {
+    try {
+      const globalData = await priceService.getGlobalMarketData();
+      res.json(globalData);
+    } catch (error) {
+      console.error("Error fetching global market data:", error);
+      res.status(500).json({ message: "Failed to fetch global market data" });
     }
   });
   
