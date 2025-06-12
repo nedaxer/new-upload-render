@@ -10,6 +10,10 @@ import { WebSocketServer } from "ws";
 import { db } from "./db";
 import { users, currencies, userBalances, transactions, stakingRates, stakingPositions } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";
+import adminPanelRoutes from "./api/admin-panel-routes";
+import marketDataRoutes from "./api/market-data-routes";
+import futuresTradingRoutes from "./api/futures-trading-routes";
+import spotTradingRoutes from "./api/spot-trading-routes";
 
 // Extend express-session types to include userId
 declare module "express-session" {
@@ -81,6 +85,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     })
   );
+
+  // Register API routes
+  app.use('/api/admin', adminPanelRoutes);
+  app.use('/api/market', marketDataRoutes);
+  app.use('/api/futures', futuresTradingRoutes);
+  app.use('/api/spot', spotTradingRoutes);
 
   // API route for user authentication
   app.post('/api/auth/login', async (req, res) => {
