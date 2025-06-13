@@ -17,7 +17,6 @@ import { Link } from 'wouter';
 
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
-  const [showPromoCard, setShowPromoCard] = useState(true);
 
   return (
     <MobileLayout>
@@ -73,26 +72,7 @@ export default function MobileAssets() {
           </div>
         </div>
 
-        {/* Promotional Card */}
-        {showPromoCard && (
-          <Card className="bg-gradient-to-r from-orange-100 to-yellow-50 border-orange-200 p-4 mb-4 relative">
-            <button 
-              onClick={() => setShowPromoCard(false)}
-              className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <CreditCard className="w-6 h-6 text-orange-600" />
-                <span className="text-gray-800 font-medium">Apply Now!</span>
-              </div>
-              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
-                <ArrowUp className="w-4 h-4" />
-              </Button>
-            </div>
-          </Card>
-        )}
+        
       </div>
 
       {/* Quick Actions */}

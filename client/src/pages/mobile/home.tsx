@@ -29,12 +29,7 @@ export default function MobileHome() {
 
   const quickActions = [
     { name: 'Nedaxer Earn', icon: Gift, color: 'text-yellow-500' },
-    { name: 'Invite Friends', icon: Users, color: 'text-green-500' },
-    { name: 'P2P Trading', icon: ArrowDownUp, color: 'text-blue-500' },
-    { name: 'Card', icon: CreditCard, color: 'text-purple-500' },
-    { name: 'Copy Trading', icon: TrendingUp, color: 'text-orange-500' },
-    { name: 'TradeGPT', icon: MessageSquare, color: 'text-red-500', badge: 'HOT' },
-    { name: 'More', icon: MoreHorizontal, color: 'text-gray-400' }
+    { name: 'Invite Friends', icon: Users, color: 'text-green-500' }
   ];
 
   const cryptoPairs = [
@@ -72,9 +67,11 @@ export default function MobileHome() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">N</span>
-          </div>
+          <Link href="/mobile/profile">
+            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors">
+              <span className="text-white text-sm font-bold">N</span>
+            </div>
+          </Link>
           <div className="flex space-x-2">
             <Button 
               variant={selectedTab === 'Exchange' ? 'default' : 'ghost'} 
@@ -82,13 +79,6 @@ export default function MobileHome() {
               className="text-xs bg-gray-700 hover:bg-gray-600"
             >
               Exchange
-            </Button>
-            <Button 
-              variant={selectedTab === 'WEB3' ? 'default' : 'ghost'} 
-              size="sm"
-              className="text-xs"
-            >
-              WEB3
             </Button>
           </div>
         </div>
@@ -171,27 +161,11 @@ export default function MobileHome() {
 
       {/* Quick Actions Grid */}
       <div className="px-4 pb-6">
-        <div className="grid grid-cols-4 gap-4">
-          {quickActions.slice(0, 4).map((action, index) => (
+        <div className="grid grid-cols-2 gap-4">
+          {quickActions.map((action, index) => (
             <div key={index} className="flex flex-col items-center space-y-2">
               <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
                 <action.icon className={`w-6 h-6 ${action.color}`} />
-              </div>
-              <span className="text-xs text-gray-300 text-center">{action.name}</span>
-            </div>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          {quickActions.slice(4).map((action, index) => (
-            <div key={index} className="flex flex-col items-center space-y-2 relative">
-              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
-                <action.icon className={`w-6 h-6 ${action.color}`} />
-                {action.badge && (
-                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded">
-                    {action.badge}
-                  </div>
-                )}
               </div>
               <span className="text-xs text-gray-300 text-center">{action.name}</span>
             </div>

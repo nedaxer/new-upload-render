@@ -150,33 +150,7 @@ export default function MobileEarn() {
         </div>
       </div>
 
-      {/* Events Section */}
-      <div className="px-4 pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-medium">Limited Events</h3>
-          <Link href="/mobile/events">
-            <span className="text-orange-500 text-sm">View All</span>
-          </Link>
-        </div>
-        
-        <div className="space-y-3">
-          {events.map((event, index) => (
-            <Card key={index} className={`bg-gradient-to-r ${event.bgGradient} p-4 text-white`}>
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="font-medium mb-1">{event.title}</div>
-                  <div className="text-sm opacity-90 mb-2">{event.description}</div>
-                  <div className="flex items-center space-x-4 text-sm">
-                    <span className="bg-white/20 px-2 py-1 rounded">{event.reward}</span>
-                    <span className="opacity-80">{event.endDate}</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 opacity-80" />
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
+      
 
       {/* Popular Savings */}
       <div className="px-4 pb-6">
@@ -216,23 +190,7 @@ export default function MobileEarn() {
         </div>
       </div>
 
-      {/* Learn More */}
-      <div className="px-4 pb-6">
-        <Card className="bg-gray-800 border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <div className="text-white font-medium">Learn & Earn</div>
-              <div className="text-gray-400 text-sm">Complete courses and earn crypto</div>
-            </div>
-          </div>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-            Start Learning
-          </Button>
-        </Card>
-      </div>
+      
 
       {/* My Products */}
       <div className="px-4 pb-6">
