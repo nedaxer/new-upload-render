@@ -96,7 +96,7 @@ export default function MobileTrade() {
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
             }`}
-            onClick={() => setSelectedTab('Charts')}
+            onClick={() => handleTabChange('Charts')}
           >
             Charts
           </button>
@@ -106,7 +106,7 @@ export default function MobileTrade() {
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
             }`}
-            onClick={() => setSelectedTab('Trade')}
+            onClick={() => handleTabChange('Trade')}
           >
             Trade
           </button>
