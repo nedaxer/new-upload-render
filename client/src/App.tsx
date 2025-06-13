@@ -13,7 +13,6 @@ import Home from '@/pages/home';
 import NotFound from '@/pages/not-found';
 
 // Trading Pages
-import Dashboard from '@/pages/Dashboard';
 import SpotTrading from '@/pages/SpotTrading';
 import Futures from '@/pages/Futures';
 import Staking from '@/pages/Staking';
@@ -196,13 +195,12 @@ export default function App() {
               )}
             </Route>
             <Route path="/account/forgot-password" component={ForgotPassword} />
-            {/* Redirect verify to dashboard since we no longer need verification */}
+            {/* Redirect verify to mobile since we no longer need verification */}
             <Route path="/account/verify">
-              {() => <Redirect to="/dashboard" />}
+              {() => <Redirect to="/mobile" />}
             </Route>
             
             {/* Trading Platform Routes - Protected */}
-            <ProtectedRoute path="/dashboard" component={Dashboard} />
             <ProtectedRoute path="/spot-trading" component={SpotTrading} />
             <ProtectedRoute path="/futures" component={Futures} />
             <ProtectedRoute path="/staking" component={Staking} />

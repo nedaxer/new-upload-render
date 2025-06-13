@@ -14,7 +14,7 @@ type AuthRedirectProps = {
  */
 export const AuthRedirect: React.FC<AuthRedirectProps> = ({ 
   children, 
-  redirectTo = "/dashboard" 
+  redirectTo = "/mobile" 
 }) => {
   const { user, isLoading } = useAuth();
 

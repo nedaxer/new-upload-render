@@ -34,8 +34,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (adminOnly && !user.isAdmin) {
-    console.log('User is not admin, redirecting to dashboard');
-    return <Redirect to="/dashboard" />;
+    console.log('User is not admin, redirecting to mobile');
+    return <Redirect to="/mobile" />;
   }
 
   console.log('User authenticated, rendering component');
@@ -63,7 +63,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
         // Additional check for admin routes
         if (adminOnly && !user.isAdmin) {
-          return <Redirect to="/dashboard" />;
+          return <Redirect to="/mobile" />;
         }
 
         return <Component {...(routeParams || {})} />;

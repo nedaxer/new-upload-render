@@ -163,10 +163,10 @@ export default function Dashboard() {
             </a>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="/dashboard" className="text-sm font-medium">Dashboard</a>
-            <a href="/dashboard/trade" className="text-sm font-medium">Trade</a>
-            <a href="/dashboard/staking" className="text-sm font-medium">Stake</a>
-            <a href="/dashboard/deposit" className="text-sm font-medium">Deposit</a>
+            <a href="/mobile" className="text-sm font-medium">Home</a>
+            <a href="/mobile/trade" className="text-sm font-medium">Trade</a>
+            <a href="/mobile/earn" className="text-sm font-medium">Earn</a>
+            <a href="/mobile/assets" className="text-sm font-medium">Assets</a>
           </nav>
           <div className="flex items-center gap-4">
             <DropdownMenu>
