@@ -89,6 +89,9 @@ import MobileTrade from '@/pages/mobile/trade';
 import MobileMarkets from '@/pages/mobile/markets';
 import MobileEarn from '@/pages/mobile/earn';
 import MobileProfile from '@/pages/mobile/profile';
+import MobileConvert from '@/pages/mobile/convert';
+import MobileFutures from '@/pages/mobile/futures';
+import MobileSpot from '@/pages/mobile/spot';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -214,6 +217,9 @@ export default function App() {
             <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
             <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
             <ProtectedRoute path="/mobile/profile" component={MobileProfile} />
+            <ProtectedRoute path="/mobile/convert" component={MobileConvert} />
+            <ProtectedRoute path="/mobile/futures" component={MobileFutures} />
+            <ProtectedRoute path="/mobile/spot" component={MobileSpot} />
             
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />

@@ -11,14 +11,60 @@ import {
   BarChart3,
   Settings
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
-  const [orderType, setOrderType] = useState('Market');
+  const [selectedTab, setSelectedTab] = useState('Charts');
+  const [selectedTradingType, setSelectedTradingType] = useState('Spot');
+  const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
-  const tradingTabs = ['Convert', 'Spot', 'Futures', 'Options', 'TradFi', 'Margin'];
+  const tradingTabs = ['Convert', 'Spot', 'Futures', 'Margin'];
+
+  const handleTradingTypeChange = (tab: string) => {
+    setSelectedTradingType(tab);
+    // Navigate to specific trading pages when Trade tab is selected
+    if (selectedTab === 'Trade') {
+      switch (tab) {
+        case 'Convert':
+          navigate('/mobile/convert');
+          break;
+        case 'Futures':
+          navigate('/mobile/futures');
+          break;
+        case 'Spot':
+          navigate('/mobile/spot');
+          break;
+        case 'Margin':
+          // For now, redirect to spot with margin enabled
+          navigate('/mobile/spot');
+          break;
+      }
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+    // If switching to Trade tab, navigate to the appropriate trading interface
+    if (tab === 'Trade') {
+      switch (selectedTradingType) {
+        case 'Convert':
+          navigate('/mobile/convert');
+          break;
+        case 'Futures':
+          navigate('/mobile/futures');
+          break;
+        case 'Spot':
+          navigate('/mobile/spot');
+          break;
+        case 'Margin':
+          navigate('/mobile/spot');
+          break;
+      }
+    }
+  };
 
   return (
     <MobileLayout>
@@ -29,10 +75,11 @@ export default function MobileTrade() {
             <button 
               key={tab}
               className={`whitespace-nowrap px-3 py-2 rounded text-sm ${
-                tab === 'Spot' 
+                selectedTradingType === tab 
                   ? 'bg-gray-700 text-white' 
                   : 'text-gray-400'
               }`}
+              onClick={() => handleTradingTypeChange(tab)}
             >
               {tab}
             </button>
@@ -43,10 +90,24 @@ export default function MobileTrade() {
       {/* Chart/Trade Toggle */}
       <div className="bg-gray-800 mx-4 mt-4 rounded-lg overflow-hidden">
         <div className="flex">
-          <button className="flex-1 py-3 bg-gray-700 text-white font-medium">
+          <button 
+            className={`flex-1 py-3 font-medium ${
+              selectedTab === 'Charts' 
+                ? 'bg-gray-700 text-white' 
+                : 'text-gray-400'
+            }`}
+            onClick={() => setSelectedTab('Charts')}
+          >
             Charts
           </button>
-          <button className="flex-1 py-3 text-gray-400">
+          <button 
+            className={`flex-1 py-3 font-medium ${
+              selectedTab === 'Trade' 
+                ? 'bg-gray-700 text-white' 
+                : 'text-gray-400'
+            }`}
+            onClick={() => setSelectedTab('Trade')}
+          >
             Trade
           </button>
         </div>
