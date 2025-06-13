@@ -18,6 +18,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isLoading } = useAuth();
 
+  // Memoize loading component to prevent re-renders - must be at top level
+  const loadingComponent = useMemo(() => (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#0033a0] mx-auto mb-4" />
+        <p className="text-gray-600">Verifying access...</p>
+      </div>
+    </div>
+  ), []);
+
   console.log('ProtectedRoute check:', { user, isLoading, adminOnly, path });
 
   if (isLoading) {
@@ -39,16 +49,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   console.log('User authenticated, rendering component');
-
-  // Memoize loading component to prevent re-renders
-  const loadingComponent = useMemo(() => (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0033a0] mx-auto mb-4" />
-        <p className="text-gray-600">Verifying access...</p>
-      </div>
-    </div>
-  ), []);
 
   return (
     <Route path={path}>
