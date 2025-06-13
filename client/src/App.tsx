@@ -83,6 +83,14 @@ import AdminDashboard from '@/pages/admin/dashboard';
 import AdminUsers from '@/pages/admin/users';
 import AdminStaking from '@/pages/admin/staking';
 
+// Mobile Pages
+import MobileHome from '@/pages/mobile/home';
+import MobileAssets from '@/pages/mobile/assets';
+import MobileTrade from '@/pages/mobile/trade';
+import MobileMarkets from '@/pages/mobile/markets';
+import MobileEarn from '@/pages/mobile/earn';
+import MobileProfile from '@/pages/mobile/profile';
+
 // Other Pages
 import SiteMap from '@/pages/site-map';
 
@@ -200,6 +208,14 @@ export default function App() {
             <ProtectedRoute path="/staking" component={Staking} />
             <ProtectedRoute path="/deposit" component={Deposit} />
             <ProtectedRoute path="/withdraw" component={Withdraw} />
+            
+            {/* Mobile App Routes - Protected */}
+            <ProtectedRoute path="/mobile" component={MobileHome} />
+            <ProtectedRoute path="/mobile/assets" component={MobileAssets} />
+            <ProtectedRoute path="/mobile/trade" component={MobileTrade} />
+            <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
+            <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
+            <ProtectedRoute path="/mobile/profile" component={MobileProfile} />
             
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
