@@ -1,8 +1,8 @@
 import { ArrowLeft } from 'lucide-react';
-import btcLogo from '@assets/btc-logo.svg';
-import ethLogo from '@assets/eth-logo.svg';
-import usdtLogo from '@assets/usdt-logo.svg';
-import bnbLogo from '@assets/bnb-logo.svg';
+const btcLogo = '/logos/btc-logo.svg';
+const ethLogo = '/logos/eth-logo.svg';
+const usdtLogo = '/logos/usdt-logo.svg';
+const bnbLogo = '/logos/bnb-logo.svg';
 
 interface ChainSelectionModalProps {
   isOpen: boolean;
