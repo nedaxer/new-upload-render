@@ -123,29 +123,7 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-700 bg-gray-900">
-        <button
-          onClick={() => setActiveTab('account')}
-          className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
-            activeTab === 'account'
-              ? 'text-orange-500 border-b-2 border-orange-500'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Account
-        </button>
-        <button
-          onClick={() => setActiveTab('assets')}
-          className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
-            activeTab === 'assets'
-              ? 'text-orange-500 border-b-2 border-orange-500'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          Assets
-        </button>
-      </div>
+
 
       {/* Total Assets */}
       <div className="px-4 pb-6">
@@ -233,11 +211,25 @@ export default function MobileAssets() {
       {/* Account Tabs */}
       <div className="px-4 pb-4">
         <div className="flex space-x-6 border-b border-gray-700">
-          <button className="pb-3 border-b-2 border-orange-500 text-orange-500 font-medium">
+          <button 
+            onClick={() => setActiveTab('account')}
+            className={`pb-3 font-medium text-sm ${
+              activeTab === 'account' 
+                ? 'border-b-2 border-orange-500 text-orange-500' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
             Account
           </button>
-          <button className="pb-3 text-gray-400">
-            Asset
+          <button 
+            onClick={() => setActiveTab('assets')}
+            className={`pb-3 font-medium text-sm ${
+              activeTab === 'assets' 
+                ? 'border-b-2 border-orange-500 text-orange-500' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Assets
           </button>
         </div>
       </div>
