@@ -1,6 +1,11 @@
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { DepositModal } from '@/components/deposit-modal';
+import { CryptoSelectionModal } from '@/components/crypto-selection-modal';
+import { ChainSelectionModal } from '@/components/chain-selection-modal';
+import { AddressDisplay } from '@/components/address-display';
+import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { 
   Eye, 
   EyeOff,
@@ -17,6 +22,55 @@ import { Link } from 'wouter';
 
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
+  const [showPromoCard, setShowPromoCard] = useState(true);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [cryptoSelectionOpen, setCryptoSelectionOpen] = useState(false);
+  const [chainSelectionOpen, setChainSelectionOpen] = useState(false);
+  const [addressDisplayOpen, setAddressDisplayOpen] = useState(false);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [comingSoonFeature, setComingSoonFeature] = useState('');
+  const [selectedCrypto, setSelectedCrypto] = useState('');
+  const [selectedChain, setSelectedChain] = useState('');
+
+  const handleDepositClick = () => {
+    setDepositModalOpen(true);
+  };
+
+  const handlePaymentMethodSelect = (method: string) => {
+    setDepositModalOpen(false);
+    
+    if (method === 'crypto') {
+      setCryptoSelectionOpen(true);
+    } else if (method === 'buy-usd') {
+      setComingSoonFeature('Buy with USD');
+      setComingSoonOpen(true);
+    } else if (method === 'p2p') {
+      setComingSoonFeature('P2P Trading');
+      setComingSoonOpen(true);
+    }
+  };
+
+  const handleCryptoSelect = (crypto: string) => {
+    setSelectedCrypto(crypto);
+    setCryptoSelectionOpen(false);
+    setChainSelectionOpen(true);
+  };
+
+  const handleChainSelect = (chain: string) => {
+    setSelectedChain(chain);
+    setChainSelectionOpen(false);
+    setAddressDisplayOpen(true);
+  };
+
+  const handleBackFromChain = () => {
+    setChainSelectionOpen(false);
+    setCryptoSelectionOpen(true);
+  };
+
+  const handleBackFromAddress = () => {
+    setAddressDisplayOpen(false);
+    setChainSelectionOpen(true);
+  };
 
   return (
     <MobileLayout>
@@ -78,14 +132,14 @@ export default function MobileAssets() {
       {/* Quick Actions */}
       <div className="px-4 pb-6">
         <div className="grid grid-cols-4 gap-4">
-          <Link href="/mobile/deposit">
+          <button onClick={handleDepositClick}>
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <Wallet className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Deposit</span>
             </div>
-          </Link>
+          </button>
           
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
@@ -228,6 +282,44 @@ export default function MobileAssets() {
           </div>
         </div>
       </div>
+
+      {/* Conditional rendering for different screens */}
+      {addressDisplayOpen ? (
+        <AddressDisplay
+          onBack={handleBackFromAddress}
+          selectedCrypto={selectedCrypto}
+          selectedChain={selectedChain}
+        />
+      ) : (
+        <>
+          {/* Deposit Flow Modals */}
+          <DepositModal
+            isOpen={depositModalOpen}
+            onClose={() => setDepositModalOpen(false)}
+            onSelectMethod={handlePaymentMethodSelect}
+          />
+
+          <CryptoSelectionModal
+            isOpen={cryptoSelectionOpen}
+            onClose={() => setCryptoSelectionOpen(false)}
+            onSelectCrypto={handleCryptoSelect}
+          />
+
+          <ChainSelectionModal
+            isOpen={chainSelectionOpen}
+            onClose={() => setChainSelectionOpen(false)}
+            onBack={handleBackFromChain}
+            selectedCrypto={selectedCrypto}
+            onSelectChain={handleChainSelect}
+          />
+
+          <ComingSoonModal
+            isOpen={comingSoonOpen}
+            onClose={() => setComingSoonOpen(false)}
+            feature={comingSoonFeature}
+          />
+        </>
+      )}
     </MobileLayout>
   );
 }

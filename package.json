@@ -48,6 +48,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/memoizee": "^0.4.12",
     "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "bip32": "^5.0.0-rc.0",
