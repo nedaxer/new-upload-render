@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import MobileSpot from './spot';
+import MobileFutures from './futures';
+import MobileConvert from './convert';
 
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
@@ -25,45 +28,10 @@ export default function MobileTrade() {
 
   const handleTradingTypeChange = (tab: string) => {
     setSelectedTradingType(tab);
-    // Navigate to specific trading pages when Trade tab is selected
-    if (selectedTab === 'Trade') {
-      switch (tab) {
-        case 'Convert':
-          navigate('/mobile/convert');
-          break;
-        case 'Futures':
-          navigate('/mobile/futures');
-          break;
-        case 'Spot':
-          navigate('/mobile/spot');
-          break;
-        case 'Margin':
-          // For now, redirect to spot with margin enabled
-          navigate('/mobile/spot');
-          break;
-      }
-    }
   };
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab);
-    // If switching to Trade tab, navigate to the appropriate trading interface
-    if (tab === 'Trade') {
-      switch (selectedTradingType) {
-        case 'Convert':
-          navigate('/mobile/convert');
-          break;
-        case 'Futures':
-          navigate('/mobile/futures');
-          break;
-        case 'Spot':
-          navigate('/mobile/spot');
-          break;
-        case 'Margin':
-          navigate('/mobile/spot');
-          break;
-      }
-    }
   };
 
   return (
@@ -187,101 +155,132 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Chart Area */}
-      <div className="px-4 pb-4">
-        <div className="bg-gray-900 rounded-lg p-4 h-64 relative">
-          {/* Simplified candlestick chart representation */}
-          <div className="absolute right-4 top-4 text-right">
-            <div className="text-orange-500 text-sm">651.9</div>
-            <div className="text-gray-400 text-xs">14:43</div>
-          </div>
-          
-          {/* Chart grid lines */}
-          <div className="absolute inset-4">
-            <div className="h-full border-r border-gray-700"></div>
-            <div className="absolute top-0 left-0 right-0 border-t border-gray-700"></div>
-            <div className="absolute top-1/4 left-0 right-0 border-t border-gray-700/50"></div>
-            <div className="absolute top-1/2 left-0 right-0 border-t border-gray-700/50"></div>
-            <div className="absolute top-3/4 left-0 right-0 border-t border-gray-700/50"></div>
-            <div className="absolute bottom-0 left-0 right-0 border-t border-gray-700"></div>
-          </div>
-
-          {/* Price levels */}
-          <div className="absolute right-0 top-4 text-xs text-gray-400">
-            <div className="mb-8">660.0</div>
-            <div className="mb-8">656.0</div>
-            <div className="mb-8">652.0</div>
-            <div className="mb-8">648.0</div>
-            <div>644.0</div>
-          </div>
-
-          {/* Simplified candlesticks */}
-          <div className="absolute bottom-16 left-8 right-8 flex items-end justify-between h-32">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div 
-                  className={`w-1 ${Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'}`}
-                  style={{ height: `${Math.random() * 80 + 20}px` }}
-                ></div>
+      {/* Trading Interface Content */}
+      {selectedTab === 'Charts' && (
+        <>
+          {/* Chart Area */}
+          <div className="px-4 pb-4">
+            <div className="bg-gray-900 rounded-lg p-4 h-64 relative">
+              {/* Simplified candlestick chart representation */}
+              <div className="absolute right-4 top-4 text-right">
+                <div className="text-orange-500 text-sm">651.9</div>
+                <div className="text-gray-400 text-xs">14:43</div>
               </div>
-            ))}
+              
+              {/* Chart grid lines */}
+              <div className="absolute inset-4">
+                <div className="h-full border-r border-gray-700"></div>
+                <div className="absolute top-0 left-0 right-0 border-t border-gray-700"></div>
+                <div className="absolute top-1/4 left-0 right-0 border-t border-gray-700/50"></div>
+                <div className="absolute top-1/2 left-0 right-0 border-t border-gray-700/50"></div>
+                <div className="absolute top-3/4 left-0 right-0 border-t border-gray-700/50"></div>
+                <div className="absolute bottom-0 left-0 right-0 border-t border-gray-700"></div>
+              </div>
+
+              {/* Price levels */}
+              <div className="absolute right-0 top-4 text-xs text-gray-400">
+                <div className="mb-8">660.0</div>
+                <div className="mb-8">656.0</div>
+                <div className="mb-8">652.0</div>
+                <div className="mb-8">648.0</div>
+                <div>644.0</div>
+              </div>
+
+              {/* Simplified candlesticks */}
+              <div className="absolute bottom-16 left-8 right-8 flex items-end justify-between h-32">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <div 
+                      className={`w-1 ${Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'}`}
+                      style={{ height: `${Math.random() * 80 + 20}px` }}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Time labels */}
+              <div className="absolute bottom-2 left-4 right-4 flex justify-between text-xs text-gray-400">
+                <span>10:30</span>
+                <span>13:15</span>
+                <span>16:00</span>
+                <span>18:45</span>
+                <span>21:30</span>
+                <span>00:15</span>
+              </div>
+            </div>
+
+            {/* Volume Chart */}
+            <div className="bg-gray-900 rounded-lg p-4 h-16 mt-2">
+              <div className="text-orange-500 text-xs mb-2">
+                VOLUME: 0.160 MA5: 26.542 MA10: 33.513
+              </div>
+              <div className="flex items-end justify-between h-8">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div 
+                    key={i}
+                    className="bg-gray-600 w-1"
+                    style={{ height: `${Math.random() * 100}%` }}
+                  ></div>
+                ))}
+              </div>
+            </div>
+
+            {/* Technical Indicators */}
+            <div className="bg-gray-900 rounded-lg p-4 mt-2">
+              <div className="text-orange-500 text-xs">
+                MACD(12, 26, 9) DIF: 0.353 DEA: 0.406 MACD: -0.043
+              </div>
+            </div>
           </div>
 
-          {/* Time labels */}
-          <div className="absolute bottom-2 left-4 right-4 flex justify-between text-xs text-gray-400">
-            <span>10:30</span>
-            <span>13:15</span>
-            <span>16:00</span>
-            <span>18:45</span>
-            <span>21:30</span>
-            <span>00:15</span>
-          </div>
-        </div>
+          {/* Action Buttons */}
+          <div className="px-4 pb-4">
+            <div className="flex items-center space-x-3 mb-4">
+              <Bell className="w-5 h-5 text-gray-400" />
+              <span className="text-gray-400 text-sm">Alerts</span>
+              <MessageSquare className="w-5 h-5 text-gray-400" />
+              <span className="text-gray-400 text-sm">Tools</span>
+              <BarChart3 className="w-5 h-5 text-gray-400" />
+              <span className="text-gray-400 text-sm">Perp</span>
+            </div>
 
-        {/* Volume Chart */}
-        <div className="bg-gray-900 rounded-lg p-4 h-16 mt-2">
-          <div className="text-orange-500 text-xs mb-2">
-            VOLUME: 0.160 MA5: 26.542 MA10: 33.513
+            <div className="flex space-x-3">
+              <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold">
+                Buy
+              </Button>
+              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold">
+                Sell
+              </Button>
+            </div>
           </div>
-          <div className="flex items-end justify-between h-8">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div 
-                key={i}
-                className="bg-gray-600 w-1"
-                style={{ height: `${Math.random() * 100}%` }}
-              ></div>
-            ))}
-          </div>
-        </div>
+        </>
+      )}
 
-        {/* Technical Indicators */}
-        <div className="bg-gray-900 rounded-lg p-4 mt-2">
-          <div className="text-orange-500 text-xs">
-            MACD(12, 26, 9) DIF: 0.353 DEA: 0.406 MACD: -0.043
-          </div>
+      {/* Trade Tab Content */}
+      {selectedTab === 'Trade' && (
+        <div className="flex-1 overflow-hidden">
+          {selectedTradingType === 'Convert' && (
+            <div className="h-full">
+              <MobileConvert />
+            </div>
+          )}
+          {selectedTradingType === 'Spot' && (
+            <div className="h-full">
+              <MobileSpot />
+            </div>
+          )}
+          {selectedTradingType === 'Futures' && (
+            <div className="h-full">
+              <MobileFutures />
+            </div>
+          )}
+          {selectedTradingType === 'Margin' && (
+            <div className="h-full">
+              <MobileSpot />
+            </div>
+          )}
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="px-4 pb-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <Bell className="w-5 h-5 text-gray-400" />
-          <span className="text-gray-400 text-sm">Alerts</span>
-          <MessageSquare className="w-5 h-5 text-gray-400" />
-          <span className="text-gray-400 text-sm">Tools</span>
-          <BarChart3 className="w-5 h-5 text-gray-400" />
-          <span className="text-gray-400 text-sm">Perp</span>
-        </div>
-
-        <div className="flex space-x-3">
-          <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold">
-            Buy
-          </Button>
-          <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold">
-            Sell
-          </Button>
-        </div>
-      </div>
+      )}
     </MobileLayout>
   );
 }

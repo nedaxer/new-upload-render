@@ -53,7 +53,7 @@ export default function MobileSpot() {
   ];
 
   return (
-    <MobileLayout>
+    <div className="h-full bg-gray-900">
       {/* Header */}
       <div className="p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white text-center">Spot Trading</h1>
@@ -311,6 +311,6 @@ export default function MobileSpot() {
           </button>
         </div>
       </div>
-    </MobileLayout>
+    </div>
   );
 }
