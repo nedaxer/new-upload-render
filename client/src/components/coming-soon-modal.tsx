@@ -1,5 +1,4 @@
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { X, Clock } from 'lucide-react';
 
 interface ComingSoonModalProps {
@@ -11,8 +10,10 @@ interface ComingSoonModalProps {
 export function ComingSoonModal({ isOpen, onClose, feature }: ComingSoonModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-sm mx-auto">
-        <div className="flex justify-end">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
+      <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 border border-gray-700 text-white rounded-2xl z-50 max-w-sm mx-auto p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Coming Soon</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
           </button>
@@ -23,17 +24,17 @@ export function ComingSoonModal({ isOpen, onClose, feature }: ComingSoonModalPro
             <Clock className="w-8 h-8 text-orange-500" />
           </div>
           
-          <h3 className="text-xl font-bold mb-2">Coming Soon</h3>
-          <p className="text-gray-400 mb-6">
-            {feature} will be available soon. We're working hard to bring you this feature.
+          <h3 className="text-white font-medium text-lg mb-2">{feature}</h3>
+          <p className="text-gray-400 text-sm mb-6">
+            This feature is currently under development and will be available soon.
           </p>
           
-          <Button 
+          <button 
             onClick={onClose}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
           >
             Got it
-          </Button>
+          </button>
         </div>
       </DialogContent>
     </Dialog>

@@ -2,6 +2,10 @@ import { ArrowLeft, Copy, Save, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import btcLogo from '@assets/btc-logo.svg';
+import ethLogo from '@assets/eth-logo.svg';
+import usdtLogo from '@assets/usdt-logo.svg';
+import bnbLogo from '@assets/bnb-logo.svg';
 
 interface AddressDisplayProps {
   onBack: () => void;
@@ -57,15 +61,15 @@ export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: Addres
   const getCryptoIcon = (crypto: string) => {
     switch (crypto) {
       case 'USDT':
-        return '/src/assets/crypto-logos/usdt-logo.svg';
+        return usdtLogo;
       case 'BTC':
-        return '/src/assets/crypto-logos/btc-logo.svg';
+        return btcLogo;
       case 'ETH':
-        return '/src/assets/crypto-logos/eth-logo.svg';
-      case 'BEP-20':
-        return '/src/assets/crypto-logos/bnb-logo.svg';
+        return ethLogo;
+      case 'BNB':
+        return bnbLogo;
       default:
-        return '/src/assets/crypto-logos/btc-logo.svg';
+        return btcLogo;
     }
   };
 

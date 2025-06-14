@@ -12,7 +12,8 @@ interface DepositModalProps {
 export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-md mx-auto">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
+      <DialogContent className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 text-white rounded-t-2xl z-50 max-h-[80vh] overflow-y-auto transform translate-y-0">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Select Payment Method</DialogTitle>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
