@@ -92,6 +92,7 @@ import MobileProfile from '@/pages/mobile/profile';
 import MobileConvert from '@/pages/mobile/convert';
 import MobileFutures from '@/pages/mobile/futures';
 import MobileSpot from '@/pages/mobile/spot';
+import MobileInviteFriends from '@/pages/mobile/invite-friends';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -220,6 +221,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/convert" component={MobileConvert} />
             <ProtectedRoute path="/mobile/futures" component={MobileFutures} />
             <ProtectedRoute path="/mobile/spot" component={MobileSpot} />
+            <ProtectedRoute path="/mobile/invite-friends" component={MobileInviteFriends} />
             
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />

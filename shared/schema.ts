@@ -21,6 +21,8 @@ export const users = pgTable("users", {
   country: text("country"),
   totalPortfolioValue: doublePrecision("total_portfolio_value").default(0).notNull(),
   riskLevel: text("risk_level").default("moderate").notNull(), // conservative, moderate, aggressive
+  referralCode: text("referral_code").unique(),
+  referredBy: integer("referred_by"),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -354,6 +356,34 @@ export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
   })
 }));
 
+// Referral earnings table
+export const referralEarnings = pgTable("referral_earnings", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").notNull(),
+  referredUserId: integer("referred_user_id").notNull(),
+  amount: doublePrecision("amount").notNull(),
+  percentage: doublePrecision("percentage").notNull(),
+  transactionType: text("transaction_type").notNull(), // trading, staking, deposit
+  originalAmount: doublePrecision("original_amount").notNull(),
+  currencyId: integer("currency_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const referralEarningsRelations = relations(referralEarnings, ({ one }) => ({
+  referrer: one(users, {
+    fields: [referralEarnings.referrerId],
+    references: [users.id]
+  }),
+  referredUser: one(users, {
+    fields: [referralEarnings.referredUserId],
+    references: [users.id]
+  }),
+  currency: one(currencies, {
+    fields: [referralEarnings.currencyId],
+    references: [currencies.id]
+  })
+}));
+
 // Schema for creating users
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -435,3 +465,7 @@ export type DepositAddress = typeof depositAddresses.$inferSelect;
 export const insertAdminCreditSchema = createInsertSchema(adminCredits);
 export type InsertAdminCredit = z.infer<typeof insertAdminCreditSchema>;
 export type AdminCredit = typeof adminCredits.$inferSelect;
+
+export const insertReferralEarningSchema = createInsertSchema(referralEarnings);
+export type InsertReferralEarning = z.infer<typeof insertReferralEarningSchema>;
+export type ReferralEarning = typeof referralEarnings.$inferSelect;
