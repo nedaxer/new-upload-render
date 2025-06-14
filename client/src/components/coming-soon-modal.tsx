@@ -8,6 +8,8 @@ interface ComingSoonModalProps {
 }
 
 export function ComingSoonModal({ isOpen, onClose, feature }: ComingSoonModalProps) {
+  if (!isOpen) return null;
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />

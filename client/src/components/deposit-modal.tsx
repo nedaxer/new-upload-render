@@ -10,6 +10,8 @@ interface DepositModalProps {
 }
 
 export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalProps) {
+  if (!isOpen) return null;
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
