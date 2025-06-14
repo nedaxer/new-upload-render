@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { DepositModal } from '@/components/deposit-modal';
+import { CryptoSelection } from '@/pages/mobile/crypto-selection';
+import { NetworkSelection } from '@/pages/mobile/network-selection';
+import { AddressDisplay } from '@/pages/mobile/address-display';
+import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { 
   Search, 
   Bell, 
@@ -27,7 +31,12 @@ import { Link } from 'wouter';
 export default function MobileHome() {
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display'
   const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [comingSoonFeature, setComingSoonFeature] = useState('');
+  const [selectedCrypto, setSelectedCrypto] = useState('');
+  const [selectedChain, setSelectedChain] = useState('');
 
   const handleDepositClick = () => {
     setDepositModalOpen(true);
@@ -35,10 +44,32 @@ export default function MobileHome() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    // Navigate to assets page for crypto deposit flow
+    
     if (method === 'crypto') {
-      window.location.href = '/mobile/assets';
+      setCurrentView('crypto-selection');
+    } else if (method === 'buy-usd') {
+      setComingSoonFeature('Buy with USD');
+      setComingSoonOpen(true);
+    } else if (method === 'p2p') {
+      setComingSoonFeature('P2P Trading');
+      setComingSoonOpen(true);
     }
+  };
+
+  const handleCryptoSelect = (crypto: string) => {
+    setSelectedCrypto(crypto);
+    setCurrentView('network-selection');
+  };
+
+  const handleChainSelect = (chain: string) => {
+    setSelectedChain(chain);
+    setCurrentView('address-display');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentView('home');
+    setSelectedCrypto('');
+    setSelectedChain('');
   };
 
   const quickActions = [
@@ -75,6 +106,36 @@ export default function MobileHome() {
   ];
 
   const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
+
+  // Show different views based on current state
+  if (currentView === 'crypto-selection') {
+    return (
+      <CryptoSelection
+        onBack={handleBackToHome}
+        onSelectCrypto={handleCryptoSelect}
+      />
+    );
+  }
+
+  if (currentView === 'network-selection') {
+    return (
+      <NetworkSelection
+        selectedCrypto={selectedCrypto}
+        onBack={() => setCurrentView('crypto-selection')}
+        onSelectChain={handleChainSelect}
+      />
+    );
+  }
+
+  if (currentView === 'address-display') {
+    return (
+      <AddressDisplay
+        selectedCrypto={selectedCrypto}
+        selectedChain={selectedChain}
+        onBack={() => setCurrentView('network-selection')}
+      />
+    );
+  }
 
   return (
     <MobileLayout>
@@ -254,7 +315,14 @@ export default function MobileHome() {
       <DepositModal
         isOpen={depositModalOpen}
         onClose={() => setDepositModalOpen(false)}
-        onSelectPaymentMethod={handlePaymentMethodSelect}
+        onSelectMethod={handlePaymentMethodSelect}
+      />
+
+      {/* Coming Soon Modal */}
+      <ComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        feature={comingSoonFeature}
       />
     </MobileLayout>
   );
