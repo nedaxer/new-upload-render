@@ -24,6 +24,7 @@ export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display'
+  const [activeTab, setActiveTab] = useState('account'); // 'account', 'assets'
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
@@ -120,6 +121,30 @@ export default function MobileAssets() {
             <div className="bg-gray-400 rounded-sm"></div>
           </div>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-700 bg-gray-900">
+        <button
+          onClick={() => setActiveTab('account')}
+          className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
+            activeTab === 'account'
+              ? 'text-orange-500 border-b-2 border-orange-500'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Account
+        </button>
+        <button
+          onClick={() => setActiveTab('assets')}
+          className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
+            activeTab === 'assets'
+              ? 'text-orange-500 border-b-2 border-orange-500'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Assets
+        </button>
       </div>
 
       {/* Total Assets */}
@@ -250,67 +275,80 @@ export default function MobileAssets() {
         </Link>
       </div>
 
-      {/* Asset List */}
-      <div className="px-4">
-        <h3 className="text-white font-medium mb-4">Assets</h3>
-        
-        {/* Bitcoin */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium">BTC</div>
-              <div className="text-gray-400 text-sm">Bitcoin</div>
+      {/* Content based on active tab */}
+      {activeTab === 'account' && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-gray-300 text-2xl">👤</span>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-white font-medium">
-              {showBalance ? '0.00000484' : '****'}
-            </div>
-            <div className="text-gray-400 text-sm">
-              ≈ ${showBalance ? '0.51' : '***'}
-            </div>
+            <p className="text-gray-400 text-sm">Account information will be displayed here</p>
           </div>
         </div>
+      )}
 
-        {/* USDT */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium">USDT</div>
-              <div className="text-gray-400 text-sm">Tether</div>
+      {activeTab === 'assets' && (
+        <div className="px-4">
+          <h3 className="text-white font-medium mb-4 text-sm">Assets</h3>
+          
+          {/* Bitcoin */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <div className="flex items-center space-x-3">
+              <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
+              <div>
+                <div className="text-white font-medium text-sm">BTC</div>
+                <div className="text-gray-400 text-xs">Bitcoin</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00000484' : '****'}
+              </div>
+              <div className="text-gray-400 text-xs">
+                ≈ ${showBalance ? '0.51' : '***'}
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-white font-medium">
-              {showBalance ? '0.00' : '****'}
-            </div>
-            <div className="text-gray-400 text-sm">
-              ≈ ${showBalance ? '0.00' : '***'}
-            </div>
-          </div>
-        </div>
 
-        {/* ETH */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium">ETH</div>
-              <div className="text-gray-400 text-sm">Ethereum</div>
+          {/* USDT */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <div className="flex items-center space-x-3">
+              <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
+              <div>
+                <div className="text-white font-medium text-sm">USDT</div>
+                <div className="text-gray-400 text-xs">Tether</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-400 text-xs">
+                ≈ ${showBalance ? '0.00' : '***'}
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-white font-medium">
-              {showBalance ? '0.00' : '****'}
+
+          {/* ETH */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <div className="flex items-center space-x-3">
+              <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
+              <div>
+                <div className="text-white font-medium text-sm">ETH</div>
+                <div className="text-gray-400 text-xs">Ethereum</div>
+              </div>
             </div>
-            <div className="text-gray-400 text-sm">
-              ≈ ${showBalance ? '0.00' : '***'}
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-400 text-xs">
+                ≈ ${showBalance ? '0.00' : '***'}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Modals */}
       <DepositModal

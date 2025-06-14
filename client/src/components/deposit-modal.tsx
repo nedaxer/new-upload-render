@@ -1,4 +1,3 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { X, CreditCard, ArrowDownUp, Wallet } from 'lucide-react';
 
 interface DepositModalProps {
@@ -11,16 +10,20 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
   if (!isOpen) return null;
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-      <DialogContent className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 text-white rounded-t-2xl z-50 h-auto overflow-y-auto transform translate-y-0 p-0">
+    <div className="fixed inset-0 z-50">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
+           style={{
+             transform: 'translateY(0)',
+             transition: 'transform 0.3s ease-out'
+           }}>
         <div className="p-4">
-          <DialogHeader className="flex flex-row items-center justify-between mb-4">
-            <DialogTitle className="text-base font-semibold">Select Payment Method</DialogTitle>
+          <div className="flex flex-row items-center justify-between mb-4">
+            <h2 className="text-base font-semibold">Select Payment Method</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
-          </DialogHeader>
+          </div>
         
           <div className="space-y-4">
             {/* Buy Crypto with Fiat */}
@@ -84,7 +87,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
