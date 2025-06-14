@@ -51,7 +51,7 @@ export default function MobileConvert() {
   ];
 
   return (
-    <div>
+    <MobileLayout>
       <div className="p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white text-center">Convert</h1>
       </div>
@@ -188,6 +188,6 @@ export default function MobileConvert() {
           <div className="text-gray-500 text-sm">Your recent conversions will appear here</div>
         </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 }

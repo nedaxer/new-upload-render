@@ -156,7 +156,7 @@ export default function MobileTrade() {
       </div>
 
       {/* Trading Interface Content */}
-      {selectedTab === 'Charts' && (
+      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
         <>
           {/* Chart Area */}
           <div className="px-4 pb-4">
@@ -254,6 +254,18 @@ export default function MobileTrade() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Charts for other trading types */}
+      {selectedTab === 'Charts' && selectedTradingType !== 'Spot' && (
+        <div className="px-4 py-8 text-center">
+          <div className="text-gray-400 text-lg">
+            {selectedTradingType} Charts Coming Soon
+          </div>
+          <div className="text-gray-500 text-sm mt-2">
+            Switch to Trade tab to access {selectedTradingType} trading
+          </div>
+        </div>
       )}
 
       {/* Trade Tab Content */}
