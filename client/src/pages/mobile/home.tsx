@@ -28,8 +28,8 @@ export default function MobileHome() {
   const [selectedTab, setSelectedTab] = useState('Exchange');
 
   const quickActions = [
-    { name: 'Nedaxer Earn', icon: Gift, color: 'text-yellow-500' },
-    { name: 'Invite Friends', icon: Users, color: 'text-green-500' }
+    { name: 'Nedaxer Earn', icon: Gift, color: 'text-yellow-500', href: '/mobile/earn' },
+    { name: 'Invite Friends', icon: Users, color: 'text-green-500', href: '/mobile/invite-friends' }
   ];
 
   const cryptoPairs = [
@@ -163,12 +163,14 @@ export default function MobileHome() {
       <div className="px-4 pb-6">
         <div className="grid grid-cols-2 gap-4">
           {quickActions.map((action, index) => (
-            <div key={index} className="flex flex-col items-center space-y-2">
-              <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
-                <action.icon className={`w-6 h-6 ${action.color}`} />
+            <Link key={index} href={action.href}>
+              <div className="flex flex-col items-center space-y-2 cursor-pointer hover:opacity-80 transition-opacity">
+                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                  <action.icon className={`w-6 h-6 ${action.color}`} />
+                </div>
+                <span className="text-xs text-gray-300 text-center">{action.name}</span>
               </div>
-              <span className="text-xs text-gray-300 text-center">{action.name}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
