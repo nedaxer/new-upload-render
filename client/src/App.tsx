@@ -227,6 +227,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/invite-friends" component={MobileInviteFriends} />
             <ProtectedRoute path="/mobile/notifications" component={MobileNotifications} />
             <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
+            <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
             
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
