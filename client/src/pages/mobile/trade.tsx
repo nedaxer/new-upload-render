@@ -81,79 +81,85 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Notification Banner */}
-      <div className="mx-4 mt-2 bg-red-900/20 border border-red-500/30 rounded p-2 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center">
-            <span className="text-white text-xs">!</span>
-          </div>
-          <span className="text-red-400 text-sm">[Vietnam] NXPC Bash: Deposit & Trade to Share 12,000 NXPC Rewards</span>
-        </div>
-        <button className="text-red-400">×</button>
-      </div>
-
-      {/* Trading Pair Header */}
-      <div className="px-4 py-4">
-        <div className="flex items-center justify-between mb-2">
+      {/* Notification Banner - Only show for Spot Charts */}
+      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
+        <div className="mx-4 mt-2 bg-red-900/20 border border-red-500/30 rounded p-2 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1">
-              <span className="text-white text-lg font-bold">BNB/USDT</span>
-              <TrendingDown className="w-4 h-4 text-red-500" />
+            <div className="w-4 h-4 bg-red-500 rounded flex items-center justify-center">
+              <span className="text-white text-xs">!</span>
             </div>
-            <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded">-0.91%</span>
+            <span className="text-red-400 text-sm">[Vietnam] NXPC Bash: Deposit & Trade to Share 12,000 NXPC Rewards</span>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded">0.00%</div>
-            <Star className="w-5 h-5 text-gray-400" />
-            <Edit3 className="w-5 h-5 text-gray-400" />
-          </div>
+          <button className="text-red-400">×</button>
         </div>
+      )}
 
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-white text-2xl font-bold">651.9</div>
-            <div className="text-gray-400 text-sm">≈651.9 USD</div>
-          </div>
-          <div className="text-right text-sm">
-            <div className="text-gray-400">24h High: <span className="text-white">659.5</span></div>
-            <div className="text-gray-400">24h Low: <span className="text-white">638.7</span></div>
-            <div className="text-gray-400">24h Turnover: <span className="text-white">9.06M</span></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Time Frame Selection */}
-      <div className="px-4 pb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex space-x-4">
-            <span className="text-gray-400 text-sm">Time</span>
-            <div className="flex space-x-3">
-              {timeframes.map((time) => (
-                <button 
-                  key={time}
-                  className={`text-sm ${
-                    selectedTimeframe === time 
-                      ? 'text-orange-500' 
-                      : 'text-gray-400'
-                  }`}
-                  onClick={() => setSelectedTimeframe(time)}
-                >
-                  {time}
-                </button>
-              ))}
+      {/* Trading Pair Header - Only show for Spot Charts */}
+      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
+                <span className="text-white text-lg font-bold">BNB/USDT</span>
+                <TrendingDown className="w-4 h-4 text-red-500" />
+              </div>
+              <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded">-0.91%</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded">0.00%</div>
+              <Star className="w-5 h-5 text-gray-400" />
+              <Edit3 className="w-5 h-5 text-gray-400" />
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <span className="text-gray-400 text-sm">Depth</span>
-            <Edit3 className="w-4 h-4 text-gray-400" />
-            <Settings className="w-4 h-4 text-gray-400" />
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-white text-2xl font-bold">651.9</div>
+              <div className="text-gray-400 text-sm">≈651.9 USD</div>
+            </div>
+            <div className="text-right text-sm">
+              <div className="text-gray-400">24h High: <span className="text-white">659.5</span></div>
+              <div className="text-gray-400">24h Low: <span className="text-white">638.7</span></div>
+              <div className="text-gray-400">24h Turnover: <span className="text-white">9.06M</span></div>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="text-orange-500 text-sm mb-4">
-          BOLL(20, 2) MID: 652.1 654.9 649.3
+      {/* Time Frame Selection - Only show for Spot Charts */}
+      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex space-x-4">
+              <span className="text-gray-400 text-sm">Time</span>
+              <div className="flex space-x-3">
+                {timeframes.map((time) => (
+                  <button 
+                    key={time}
+                    className={`text-sm ${
+                      selectedTimeframe === time 
+                        ? 'text-orange-500' 
+                        : 'text-gray-400'
+                    }`}
+                    onClick={() => setSelectedTimeframe(time)}
+                  >
+                    {time}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-400 text-sm">Depth</span>
+              <Edit3 className="w-4 h-4 text-gray-400" />
+              <Settings className="w-4 h-4 text-gray-400" />
+            </div>
+          </div>
+
+          <div className="text-orange-500 text-sm mb-4">
+            BOLL(20, 2) MID: 652.1 654.9 649.3
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Trading Interface Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
@@ -257,14 +263,21 @@ export default function MobileTrade() {
       )}
 
       {/* Charts for other trading types */}
-      {selectedTab === 'Charts' && selectedTradingType !== 'Spot' && (
-        <div className="px-4 py-8 text-center">
-          <div className="text-gray-400 text-lg">
-            {selectedTradingType} Charts Coming Soon
-          </div>
-          <div className="text-gray-500 text-sm mt-2">
-            Switch to Trade tab to access {selectedTradingType} trading
-          </div>
+      {selectedTab === 'Charts' && selectedTradingType === 'Convert' && (
+        <div className="h-full">
+          <MobileConvert />
+        </div>
+      )}
+
+      {selectedTab === 'Charts' && selectedTradingType === 'Futures' && (
+        <div className="h-full">
+          <MobileFutures />
+        </div>
+      )}
+
+      {selectedTab === 'Charts' && selectedTradingType === 'Margin' && (
+        <div className="h-full">
+          <MobileSpot />
         </div>
       )}
 
