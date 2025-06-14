@@ -222,9 +222,7 @@ export default function MobileAssets() {
         {/* Bitcoin */}
         <div className="flex items-center justify-between py-3 border-b border-gray-800">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">₿</span>
-            </div>
+            <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
             <div>
               <div className="text-white font-medium">BTC</div>
               <div className="text-gray-400 text-sm">Bitcoin</div>
@@ -243,9 +241,7 @@ export default function MobileAssets() {
         {/* USDT */}
         <div className="flex items-center justify-between py-3 border-b border-gray-800">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">₮</span>
-            </div>
+            <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
             <div>
               <div className="text-white font-medium">USDT</div>
               <div className="text-gray-400 text-sm">Tether</div>
@@ -264,9 +260,7 @@ export default function MobileAssets() {
         {/* ETH */}
         <div className="flex items-center justify-between py-3 border-b border-gray-800">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">Ξ</span>
-            </div>
+            <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
             <div>
               <div className="text-white font-medium">ETH</div>
               <div className="text-gray-400 text-sm">Ethereum</div>
