@@ -38,7 +38,7 @@ export default function MobileAssets() {
     setDepositModalOpen(false);
     
     if (method === 'crypto') {
-      setCryptoSelectionOpen(true);
+      setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
       setComingSoonFeature('Buy with USD');
       setComingSoonOpen(true);
@@ -50,26 +50,63 @@ export default function MobileAssets() {
 
   const handleCryptoSelect = (crypto: string) => {
     setSelectedCrypto(crypto);
-    setCryptoSelectionOpen(false);
-    setChainSelectionOpen(true);
+    setCurrentView('network-selection');
   };
 
   const handleChainSelect = (chain: string) => {
     setSelectedChain(chain);
-    setChainSelectionOpen(false);
-    setAddressDisplayOpen(true);
+    setCurrentView('address-display');
   };
 
-  const handleBackFromChain = () => {
-    setChainSelectionOpen(false);
-    setCryptoSelectionOpen(true);
+  const handleBackFromCrypto = () => {
+    setCurrentView('assets');
+  };
+
+  const handleBackFromNetwork = () => {
+    setCurrentView('crypto-selection');
   };
 
   const handleBackFromAddress = () => {
-    setAddressDisplayOpen(false);
-    setChainSelectionOpen(true);
+    setCurrentView('network-selection');
   };
 
+  const handleComingSoon = () => {
+    setComingSoonFeature('Fiat Deposits');
+    setComingSoonOpen(true);
+  };
+
+  // Render full-page components instead of assets page
+  if (currentView === 'crypto-selection') {
+    return (
+      <CryptoSelection
+        onBack={handleBackFromCrypto}
+        onSelectCrypto={handleCryptoSelect}
+        onComingSoon={handleComingSoon}
+      />
+    );
+  }
+
+  if (currentView === 'network-selection') {
+    return (
+      <NetworkSelection
+        onBack={handleBackFromNetwork}
+        selectedCrypto={selectedCrypto}
+        onSelectChain={handleChainSelect}
+      />
+    );
+  }
+
+  if (currentView === 'address-display') {
+    return (
+      <AddressDisplay
+        onBack={handleBackFromAddress}
+        selectedCrypto={selectedCrypto}
+        selectedChain={selectedChain}
+      />
+    );
+  }
+
+  // Default assets page view
   return (
     <MobileLayout>
       {/* Header */}
@@ -275,43 +312,18 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Conditional rendering for different screens */}
-      {addressDisplayOpen ? (
-        <AddressDisplay
-          onBack={handleBackFromAddress}
-          selectedCrypto={selectedCrypto}
-          selectedChain={selectedChain}
-        />
-      ) : (
-        <>
-          {/* Deposit Flow Modals */}
-          <DepositModal
-            isOpen={depositModalOpen}
-            onClose={() => setDepositModalOpen(false)}
-            onSelectMethod={handlePaymentMethodSelect}
-          />
+      {/* Modals */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        onSelectMethod={handlePaymentMethodSelect}
+      />
 
-          <CryptoSelectionModal
-            isOpen={cryptoSelectionOpen}
-            onClose={() => setCryptoSelectionOpen(false)}
-            onSelectCrypto={handleCryptoSelect}
-          />
-
-          <ChainSelectionModal
-            isOpen={chainSelectionOpen}
-            onClose={() => setChainSelectionOpen(false)}
-            onBack={handleBackFromChain}
-            selectedCrypto={selectedCrypto}
-            onSelectChain={handleChainSelect}
-          />
-
-          <ComingSoonModal
-            isOpen={comingSoonOpen}
-            onClose={() => setComingSoonOpen(false)}
-            feature={comingSoonFeature}
-          />
-        </>
-      )}
+      <ComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        feature={comingSoonFeature}
+      />
     </MobileLayout>
   );
 }
