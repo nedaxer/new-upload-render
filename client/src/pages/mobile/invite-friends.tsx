@@ -26,42 +26,7 @@ export default function InviteFriends() {
 
   // Fetch referral stats
   const { data: referralStats } = useQuery<ReferralStats>({
-    queryKey: ['/api/referrals/stats'],
-    queryFn: async () => {
-      // Mock data for demonstration
-      return {
-        totalEarnings: 247.85,
-        totalReferrals: 12,
-        monthlyEarnings: 89.32,
-        referralCode: 'NEDAXER_LF2024',
-        recentEarnings: [
-          {
-            id: 1,
-            amount: 15.50,
-            percentage: 20,
-            transactionType: 'trading',
-            referredUserEmail: 'user1@example.com',
-            createdAt: '2024-06-14T10:30:00Z'
-          },
-          {
-            id: 2,
-            amount: 8.75,
-            percentage: 15,
-            transactionType: 'staking',
-            referredUserEmail: 'user2@example.com',
-            createdAt: '2024-06-13T15:45:00Z'
-          },
-          {
-            id: 3,
-            amount: 25.00,
-            percentage: 25,
-            transactionType: 'deposit',
-            referredUserEmail: 'user3@example.com',
-            createdAt: '2024-06-12T09:20:00Z'
-          }
-        ]
-      };
-    }
+    queryKey: ['/api/referrals/stats']
   });
 
   const referralLink = `https://nedaxer.app/register?ref=${referralStats?.referralCode || 'LOADING'}`;
