@@ -113,6 +113,10 @@ export default function MobileHome() {
       <CryptoSelection
         onBack={handleBackToHome}
         onSelectCrypto={handleCryptoSelect}
+        onComingSoon={(feature: string) => {
+          setComingSoonFeature(feature);
+          setComingSoonOpen(true);
+        }}
       />
     );
   }
@@ -159,12 +163,14 @@ export default function MobileHome() {
         </div>
         <div className="flex items-center space-x-3">
           <Headphones className="w-6 h-6 text-gray-400" />
-          <div className="relative">
-            <Bell className="w-6 h-6 text-gray-400" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">14</span>
+          <Link href="/mobile/notifications">
+            <div className="relative cursor-pointer">
+              <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">14</span>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
