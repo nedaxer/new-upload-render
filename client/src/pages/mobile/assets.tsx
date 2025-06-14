@@ -234,54 +234,47 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Account Balance Cards */}
-      <div className="px-4 space-y-3 pb-6">
-        <Link href="/mobile/funding">
-          <Card className="bg-gray-800 border-gray-700 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-gray-400 text-sm mb-1">Funding</div>
-                <div className="text-white text-lg font-bold">
-                  {showBalance ? '0.51' : '****'} 
-                  <span className="text-sm font-normal ml-1">USD</span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </Card>
-        </Link>
 
-        <Link href="/mobile/unified-trading">
-          <Card className="bg-gray-800 border-gray-700 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-gray-400 text-sm mb-1">Unified Trading</div>
-                <div className="text-white text-lg font-bold">
-                  {showBalance ? '0.00' : '****'} 
-                  <span className="text-sm font-normal ml-1">USD</span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </Card>
-        </Link>
-      </div>
 
       {/* Content based on active tab */}
       {activeTab === 'account' && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center py-20">
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-gray-300 text-2xl">👤</span>
-            </div>
-            <p className="text-gray-400 text-sm">Account information will be displayed here</p>
+        <>
+          {/* Account Balance Cards */}
+          <div className="px-4 space-y-3 pb-6">
+            <Link href="/mobile/funding">
+              <Card className="bg-gray-800 border-gray-700 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-gray-400 text-sm mb-1">Funding</div>
+                    <div className="text-white text-lg font-bold">
+                      {showBalance ? '0.51' : '****'}USD
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
+              </Card>
+            </Link>
+
+            <Link href="/mobile/unified">
+              <Card className="bg-gray-800 border-gray-700 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-gray-400 text-sm mb-1">Unified Trading</div>
+                    <div className="text-white text-lg font-bold">
+                      {showBalance ? '0.00' : '****'}USD
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
+              </Card>
+            </Link>
           </div>
-        </div>
+        </>
       )}
 
       {activeTab === 'assets' && (
         <div className="px-4">
-          <h3 className="text-white font-medium mb-4 text-sm">Assets</h3>
+          <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
           
           {/* Bitcoin */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
@@ -328,6 +321,25 @@ export default function MobileAssets() {
               <div>
                 <div className="text-white font-medium text-sm">ETH</div>
                 <div className="text-gray-400 text-xs">Ethereum</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-400 text-xs">
+                ≈ ${showBalance ? '0.00' : '***'}
+              </div>
+            </div>
+          </div>
+
+          {/* BNB */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <div className="flex items-center space-x-3">
+              <img src="/logos/bnb-logo.svg" alt="BNB" className="w-8 h-8 rounded-full" />
+              <div>
+                <div className="text-white font-medium text-sm">BNB</div>
+                <div className="text-gray-400 text-xs">BNB</div>
               </div>
             </div>
             <div className="text-right">
