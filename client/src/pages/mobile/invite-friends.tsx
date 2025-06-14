@@ -105,7 +105,7 @@ export default function InviteFriends() {
             <span className="text-gray-400 text-xs">Total Earnings</span>
           </div>
           <div className="text-xl font-bold text-green-500">
-            ${referralStats?.totalEarnings.toFixed(2) || '0.00'}
+            ${referralStats?.totalEarnings?.toFixed(2) || '0.00'}
           </div>
         </Card>
 
@@ -130,7 +130,7 @@ export default function InviteFriends() {
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-orange-500">
-                ${referralStats?.monthlyEarnings.toFixed(2) || '0.00'}
+                ${referralStats?.monthlyEarnings?.toFixed(2) || '0.00'}
               </div>
               <div className="text-xs text-gray-400">Monthly Earnings</div>
             </div>
@@ -206,7 +206,7 @@ export default function InviteFriends() {
       <div className="px-4 pb-6">
         <h3 className="text-white font-medium mb-3 text-sm">Recent Earnings</h3>
         <div className="space-y-3">
-          {referralStats?.recentEarnings.map((earning) => (
+          {referralStats?.recentEarnings?.map((earning) => (
             <Card key={earning.id} className="bg-gray-900 border-gray-700 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">

@@ -2,6 +2,7 @@ import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { DepositModal } from '@/components/deposit-modal';
 import { 
   Search, 
   Bell, 
@@ -26,6 +27,19 @@ import { Link } from 'wouter';
 export default function MobileHome() {
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+
+  const handleDepositClick = () => {
+    setDepositModalOpen(true);
+  };
+
+  const handlePaymentMethodSelect = (method: string) => {
+    setDepositModalOpen(false);
+    // Navigate to assets page for crypto deposit flow
+    if (method === 'crypto') {
+      window.location.href = '/mobile/assets';
+    }
+  };
 
   const quickActions = [
     { name: 'Nedaxer Earn', icon: Gift, color: 'text-yellow-500', href: '/mobile/earn' },
@@ -127,7 +141,10 @@ export default function MobileHome() {
               )}
             </button>
           </div>
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6">
+          <Button 
+            onClick={handleDepositClick}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6"
+          >
             Deposit
           </Button>
         </div>
@@ -232,6 +249,13 @@ export default function MobileHome() {
           ))}
         </div>
       </div>
+
+      {/* Deposit Modal */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        onSelectPaymentMethod={handlePaymentMethodSelect}
+      />
     </MobileLayout>
   );
 }
