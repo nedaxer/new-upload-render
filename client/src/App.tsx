@@ -95,6 +95,7 @@ import MobileSpot from '@/pages/mobile/spot';
 import MobileInviteFriends from '@/pages/mobile/invite-friends';
 import MobileNotifications from '@/pages/mobile/notifications';
 import NotificationSettings from '@/pages/mobile/notification-settings';
+import Chatbot from '@/pages/mobile/chatbot';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';

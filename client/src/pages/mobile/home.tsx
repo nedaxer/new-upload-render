@@ -162,7 +162,9 @@ export default function MobileHome() {
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          <Headphones className="w-6 h-6 text-gray-400" />
+          <Link href="/mobile/chatbot">
+            <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+          </Link>
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
