@@ -2,9 +2,9 @@ import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DepositModal } from '@/components/deposit-modal';
-import { CryptoSelectionModal } from '@/components/crypto-selection-modal';
-import { ChainSelectionModal } from '@/components/chain-selection-modal';
-import { AddressDisplay } from '@/components/address-display';
+import { CryptoSelection } from '@/pages/mobile/crypto-selection';
+import { NetworkSelection } from '@/pages/mobile/network-selection';
+import { AddressDisplay } from '@/pages/mobile/address-display';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { 
   Eye, 
@@ -23,10 +23,8 @@ import { Link } from 'wouter';
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
+  const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display'
   const [depositModalOpen, setDepositModalOpen] = useState(false);
-  const [cryptoSelectionOpen, setCryptoSelectionOpen] = useState(false);
-  const [chainSelectionOpen, setChainSelectionOpen] = useState(false);
-  const [addressDisplayOpen, setAddressDisplayOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('');
