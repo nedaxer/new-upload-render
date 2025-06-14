@@ -51,7 +51,8 @@ export default function MobileConvert() {
   ];
 
   return (
-    <div className="p-4 bg-gray-900">
+    <div>
+      <div className="p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white text-center">Convert</h1>
       </div>
 
