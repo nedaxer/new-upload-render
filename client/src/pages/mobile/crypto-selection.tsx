@@ -10,7 +10,7 @@ const bnbLogo = '/logos/bnb-logo.svg';
 interface CryptoSelectionProps {
   onBack: () => void;
   onSelectCrypto: (crypto: string) => void;
-  onComingSoon: () => void;
+  onComingSoon: (feature: string) => void;
 }
 
 export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: CryptoSelectionProps) {

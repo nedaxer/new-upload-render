@@ -116,11 +116,30 @@ export default function MobileProfile() {
       {/* Profile Header */}
       <div className="px-4 pb-6">
         <div className="flex items-center space-x-4 mb-4">
-          <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xl font-bold">
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
-            </span>
+          <div 
+            className="relative w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {profilePicture ? (
+              <img 
+                src={profilePicture} 
+                alt="Profile" 
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-8 h-8 text-gray-300" />
+            )}
+            <div className="absolute -bottom-1 -right-1 bg-orange-500 rounded-full p-1">
+              <Camera className="w-3 h-3 text-white" />
+            </div>
           </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            onChange={handleProfilePictureUpload}
+            className="hidden"
+          />
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h2 className="text-white text-xl font-bold">
@@ -133,9 +152,18 @@ export default function MobileProfile() {
                 Main Account
               </span>
               <span className="text-gray-400 text-sm">
-                UID: {user?.id || '475573582'}
+                UID: {generateUID()}
               </span>
-              <Copy className="w-4 h-4 text-gray-400" />
+              <Copy 
+                className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white"
+                onClick={() => {
+                  navigator.clipboard.writeText(generateUID());
+                  toast({
+                    title: "Copied",
+                    description: "UID copied to clipboard",
+                  });
+                }}
+              />
             </div>
           </div>
         </div>

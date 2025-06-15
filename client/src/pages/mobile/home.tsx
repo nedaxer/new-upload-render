@@ -23,9 +23,10 @@ import {
   MessageSquare,
   MoreHorizontal,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  User
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 
 export default function MobileHome() {
@@ -37,6 +38,15 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
+  // Load profile picture from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('profilePicture');
+    if (saved) {
+      setProfilePicture(saved);
+    }
+  }, []);
 
   const handleDepositClick = () => {
     setDepositModalOpen(true);
@@ -147,8 +157,16 @@ export default function MobileHome() {
       <div className="flex items-center justify-between p-4 bg-gray-900">
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors">
-              <span className="text-white text-sm font-bold">N</span>
+            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
+              {profilePicture ? (
+                <img 
+                  src={profilePicture} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-4 h-4 text-gray-300" />
+              )}
             </div>
           </Link>
           <div className="flex space-x-2">
