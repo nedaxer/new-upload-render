@@ -108,7 +108,9 @@ export default function MobileProfile() {
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
         <div className="flex items-center space-x-3">
-          <Headphones className="w-6 h-6 text-gray-400" />
+          <Link href="/mobile/chatbot">
+            <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+          </Link>
           <Settings className="w-6 h-6 text-gray-400" />
         </div>
       </div>
