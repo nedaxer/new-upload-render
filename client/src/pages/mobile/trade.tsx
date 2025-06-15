@@ -10,19 +10,12 @@ import {
   Plus,
   Minus,
   Calendar,
-  Clock
-} from 'lucide-react';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { 
-  TrendingDown,
+  Clock,
   Star,
   Edit3,
   ChevronDown,
   Bell,
   MessageSquare,
-  BarChart3,
   Settings
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
