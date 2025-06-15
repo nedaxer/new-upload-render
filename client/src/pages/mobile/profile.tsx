@@ -1,25 +1,60 @@
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useState, useRef } from 'react';
 import { 
   ArrowLeft,
   ChevronRight,
   Users,
   Shield,
-  DollarSign,
   Settings,
   Bell,
-  HelpCircle,
   Info,
-  ThumbsUp,
   Copy,
-  Headphones
+  Headphones,
+  Camera,
+  User
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MobileProfile() {
   const { user, logoutMutation } = useAuth();
+  const { toast } = useToast();
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Generate a realistic UID
+  const generateUID = () => {
+    return '00138406876';
+  };
+
+  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfilePicture(result);
+        // In a real app, you'd upload this to a server
+        localStorage.setItem('profilePicture', result);
+        toast({
+          title: "Success",
+          description: "Profile picture updated successfully",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Load profile picture from localStorage on mount
+  useState(() => {
+    const saved = localStorage.getItem('profilePicture');
+    if (saved) {
+      setProfilePicture(saved);
+    }
+  });
 
   const menuItems = [
     {
@@ -40,21 +75,9 @@ export default function MobileProfile() {
       )
     },
     {
-      icon: DollarSign,
-      label: 'My Fee Rates',
-      href: '/mobile/fees',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
-    },
-    {
       icon: Settings,
       label: 'Security',
       href: '/mobile/security',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
-    },
-    {
-      icon: Users,
-      label: 'Subaccount',
-      href: '/mobile/subaccount',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
@@ -73,12 +96,6 @@ export default function MobileProfile() {
       icon: Info,
       label: 'About Us',
       href: '/company/about',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
-    },
-    {
-      icon: ThumbsUp,
-      label: 'Rate Our App',
-      href: '/mobile/rate',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     }
   ];

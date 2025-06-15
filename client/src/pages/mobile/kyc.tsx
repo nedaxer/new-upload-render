@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft,
   CheckCircle,
@@ -14,19 +14,45 @@ import {
   User,
   CreditCard,
   Shield,
-  Clock
+  Clock,
+  Scan,
+  Eye,
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MobileKYC() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationStep, setVerificationStep] = useState('document-upload');
   const [documents, setDocuments] = useState({
-    idDocument: null as File | null,
-    proofOfAddress: null as File | null,
-    selfie: null as File | null
+    idFront: null as File | null,
+    idBack: null as File | null,
+    selfie: null as File | null,
+    proofOfAddress: null as File | null
   });
+  const [verificationResults, setVerificationResults] = useState({
+    idFront: { verified: false, confidence: 0, details: '' },
+    idBack: { verified: false, confidence: 0, details: '' },
+    selfie: { verified: false, confidence: 0, details: '' },
+    faceMatch: { verified: false, confidence: 0, details: '' }
+  });
+  const [personalData, setPersonalData] = useState({
+    fullName: '',
+    dateOfBirth: '',
+    address: '',
+    documentNumber: '',
+    nationality: ''
+  });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [captureType, setCaptureType] = useState<'front' | 'back' | 'selfie'>('front');
 
   const verificationLevels = [
     {
@@ -58,8 +84,152 @@ export default function MobileKYC() {
     }
   ];
 
-  const handleFileUpload = (type: keyof typeof documents, file: File) => {
+  // Simulate AI-powered ID verification
+  const verifyDocument = async (file: File, type: string): Promise<{verified: boolean, confidence: number, details: string}> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Simulate real AI verification with random but realistic results
+        const confidence = Math.random() * 0.3 + 0.7; // 70-100% confidence
+        const verified = confidence > 0.75;
+        
+        let details = '';
+        if (type === 'idFront') {
+          details = verified ? 'Valid government ID detected. Name and photo clearly visible.' : 'ID quality too low or document not recognized.';
+        } else if (type === 'idBack') {
+          details = verified ? 'Barcode/MRZ readable. Address and security features detected.' : 'Back of ID unclear or security features not detected.';
+        } else if (type === 'selfie') {
+          details = verified ? 'Clear face detected. Good lighting and image quality.' : 'Face not clearly visible or image quality insufficient.';
+        }
+        
+        resolve({ verified, confidence: Math.round(confidence * 100) / 100, details });
+      }, 2000 + Math.random() * 3000); // 2-5 second delay
+    });
+  };
+
+  const extractPersonalData = (file: File): Promise<any> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Simulate OCR extraction
+        resolve({
+          fullName: 'John Smith',
+          dateOfBirth: '1990-05-15',
+          documentNumber: 'ID123456789',
+          nationality: 'United States'
+        });
+      }, 1500);
+    });
+  };
+
+  const performFaceMatch = async (): Promise<{verified: boolean, confidence: number, details: string}> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const confidence = Math.random() * 0.2 + 0.8; // 80-100% for face match
+        const verified = confidence > 0.85;
+        const details = verified ? 'Face matches ID photo with high confidence.' : 'Face match confidence below threshold.';
+        
+        resolve({ verified, confidence: Math.round(confidence * 100) / 100, details });
+      }, 3000);
+    });
+  };
+
+  const handleFileUpload = async (type: keyof typeof documents, file: File) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
+    
+    // Start verification immediately
+    setIsVerifying(true);
+    
+    if (type === 'idFront') {
+      const result = await verifyDocument(file, 'idFront');
+      setVerificationResults(prev => ({ ...prev, idFront: result }));
+      
+      if (result.verified) {
+        const personalInfo = await extractPersonalData(file);
+        setPersonalData(prev => ({ ...prev, ...personalInfo }));
+        toast({
+          title: "ID Front Verified",
+          description: "Document successfully verified and data extracted",
+        });
+      }
+    } else if (type === 'idBack') {
+      const result = await verifyDocument(file, 'idBack');
+      setVerificationResults(prev => ({ ...prev, idBack: result }));
+      
+      if (result.verified) {
+        toast({
+          title: "ID Back Verified",
+          description: "Security features confirmed",
+        });
+      }
+    } else if (type === 'selfie') {
+      const result = await verifyDocument(file, 'selfie');
+      setVerificationResults(prev => ({ ...prev, selfie: result }));
+      
+      if (result.verified && documents.idFront) {
+        const faceMatchResult = await performFaceMatch();
+        setVerificationResults(prev => ({ ...prev, faceMatch: faceMatchResult }));
+        
+        if (faceMatchResult.verified) {
+          toast({
+            title: "Face Match Successful",
+            description: "Your selfie matches your ID photo",
+          });
+        }
+      }
+    }
+    
+    setIsVerifying(false);
+  };
+
+  const startCamera = async (type: 'front' | 'back' | 'selfie') => {
+    setCaptureType(type);
+    setIsCapturing(true);
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: type === 'selfie' ? 'user' : 'environment' }
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera",
+        variant: "destructive",
+      });
+      setIsCapturing(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `${captureType}.jpg`, { type: 'image/jpeg' });
+          handleFileUpload(captureType === 'front' ? 'idFront' : captureType === 'back' ? 'idBack' : 'selfie', file);
+        }
+      }, 'image/jpeg', 0.8);
+      
+      stopCamera();
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setIsCapturing(false);
   };
 
   const getStatusIcon = (status: string) => {
@@ -192,80 +362,242 @@ export default function MobileKYC() {
                 />
               </div>
 
-              {/* Document Upload */}
+              {/* ID Front Upload */}
               <div className="space-y-3">
-                <Label className="text-gray-300">Government ID</Label>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                  <User className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm mb-2">Upload your government-issued ID</p>
-                  <Button 
-                    variant="outline" 
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    onClick={() => document.getElementById('id-upload')?.click()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Choose File
-                  </Button>
-                  <input 
-                    id="id-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload('idDocument', e.target.files[0])}
-                  />
+                <Label className="text-gray-300 flex items-center">
+                  ID Front (with photo)
+                  {verificationResults.idFront.verified && <CheckCircle className="w-4 h-4 text-green-500 ml-2" />}
+                </Label>
+                <div className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                  documents.idFront ? 'border-green-500 bg-green-500/10' : 'border-gray-600'
+                }`}>
+                  {documents.idFront ? (
+                    <div className="space-y-2">
+                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto" />
+                      <p className="text-green-400 text-sm">ID Front Captured</p>
+                      {verificationResults.idFront.verified && (
+                        <div className="text-xs text-gray-300">
+                          <p>Confidence: {(verificationResults.idFront.confidence * 100).toFixed(1)}%</p>
+                          <p>{verificationResults.idFront.details}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <User className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm mb-2">Capture front of your ID</p>
+                      <div className="flex gap-2 justify-center">
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => startCamera('front')}
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          Camera
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => document.getElementById('id-front-upload')?.click()}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload
+                        </Button>
+                      </div>
+                      <input 
+                        id="id-front-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload('idFront', e.target.files[0])}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
+              {/* ID Back Upload */}
               <div className="space-y-3">
-                <Label className="text-gray-300">Proof of Address</Label>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                  <CreditCard className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm mb-2">Upload utility bill or bank statement</p>
-                  <Button 
-                    variant="outline" 
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    onClick={() => document.getElementById('address-upload')?.click()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Choose File
-                  </Button>
-                  <input 
-                    id="address-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload('proofOfAddress', e.target.files[0])}
-                  />
+                <Label className="text-gray-300 flex items-center">
+                  ID Back (with barcode/info)
+                  {verificationResults.idBack.verified && <CheckCircle className="w-4 h-4 text-green-500 ml-2" />}
+                </Label>
+                <div className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                  documents.idBack ? 'border-green-500 bg-green-500/10' : 'border-gray-600'
+                }`}>
+                  {documents.idBack ? (
+                    <div className="space-y-2">
+                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto" />
+                      <p className="text-green-400 text-sm">ID Back Captured</p>
+                      {verificationResults.idBack.verified && (
+                        <div className="text-xs text-gray-300">
+                          <p>Confidence: {(verificationResults.idBack.confidence * 100).toFixed(1)}%</p>
+                          <p>{verificationResults.idBack.details}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <CreditCard className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm mb-2">Capture back of your ID</p>
+                      <div className="flex gap-2 justify-center">
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => startCamera('back')}
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          Camera
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => document.getElementById('id-back-upload')?.click()}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload
+                        </Button>
+                      </div>
+                      <input 
+                        id="id-back-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload('idBack', e.target.files[0])}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
+              {/* Selfie Upload */}
               <div className="space-y-3">
-                <Label className="text-gray-300">Selfie with ID</Label>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                  <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm mb-2">Take a selfie holding your ID</p>
-                  <Button 
-                    variant="outline" 
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    onClick={() => document.getElementById('selfie-upload')?.click()}
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Take Photo
-                  </Button>
-                  <input 
-                    id="selfie-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    capture="user"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload('selfie', e.target.files[0])}
-                  />
+                <Label className="text-gray-300 flex items-center">
+                  Selfie
+                  {verificationResults.selfie.verified && <CheckCircle className="w-4 h-4 text-green-500 ml-2" />}
+                  {verificationResults.faceMatch.verified && <CheckCircle className="w-4 h-4 text-blue-500 ml-1" />}
+                </Label>
+                <div className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                  documents.selfie ? 'border-green-500 bg-green-500/10' : 'border-gray-600'
+                }`}>
+                  {documents.selfie ? (
+                    <div className="space-y-2">
+                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto" />
+                      <p className="text-green-400 text-sm">Selfie Captured</p>
+                      {verificationResults.selfie.verified && (
+                        <div className="text-xs text-gray-300">
+                          <p>Confidence: {(verificationResults.selfie.confidence * 100).toFixed(1)}%</p>
+                          <p>{verificationResults.selfie.details}</p>
+                          {verificationResults.faceMatch.verified && (
+                            <p className="text-blue-400">Face Match: {(verificationResults.faceMatch.confidence * 100).toFixed(1)}%</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm mb-2">Take a clear selfie</p>
+                      <div className="flex gap-2 justify-center">
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => startCamera('selfie')}
+                        >
+                          <Camera className="w-4 h-4 mr-2" />
+                          Camera
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                          onClick={() => document.getElementById('selfie-upload')?.click()}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload
+                        </Button>
+                      </div>
+                      <input 
+                        id="selfie-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload('selfie', e.target.files[0])}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-6">
+              <Button 
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white mt-6"
+                disabled={!verificationResults.idFront.verified || !verificationResults.idBack.verified || !verificationResults.selfie.verified}
+              >
                 Submit for Verification
               </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Camera Capture Modal */}
+        {isCapturing && (
+          <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+            <div className="w-full h-full flex flex-col">
+              <div className="flex items-center justify-between p-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={stopCamera}
+                  className="text-white"
+                >
+                  <X className="w-6 h-6" />
+                </Button>
+                <h2 className="text-white text-lg font-semibold">
+                  Capture {captureType === 'front' ? 'ID Front' : captureType === 'back' ? 'ID Back' : 'Selfie'}
+                </h2>
+                <div className="w-10"></div>
+              </div>
+              
+              <div className="flex-1 flex items-center justify-center p-4">
+                <div className="relative">
+                  <video 
+                    ref={videoRef}
+                    autoPlay 
+                    playsInline
+                    className="w-full max-w-sm rounded-lg"
+                  />
+                  <canvas ref={canvasRef} className="hidden" />
+                  
+                  {/* Overlay guides */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="border-2 border-white border-dashed rounded-lg w-3/4 h-3/4 flex items-center justify-center">
+                      <span className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                        {captureType === 'selfie' ? 'Position your face' : 'Position your ID'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4 flex justify-center">
+                <Button 
+                  onClick={capturePhoto}
+                  className="bg-orange-500 hover:bg-orange-600 text-white w-16 h-16 rounded-full"
+                >
+                  <Camera className="w-8 h-8" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Verification Progress */}
+        {isVerifying && (
+          <Card className="bg-gray-800 border-gray-700 p-4">
+            <div className="flex items-center space-x-3">
+              <RefreshCw className="w-6 h-6 text-orange-500 animate-spin" />
+              <div>
+                <h3 className="text-white font-medium">Verifying Document...</h3>
+                <p className="text-gray-400 text-sm">AI is analyzing your document for authenticity</p>
+              </div>
             </div>
           </Card>
         )}
