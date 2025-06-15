@@ -1,0 +1,108 @@
+I want to integrate a live TradingView chart widget and display real-time cryptocurrency rates on the Trade Page of my mobile-based trading and investing platform.
+
+🔧 Key Tasks:
+1. Frontend Setup
+Set up a responsive mobile-first frontend using HTML, CSS, and JavaScript (no desktop or Windows design).
+
+Ensure all elements work seamlessly on mobile, with touch gestures (e.g., pinch-to-zoom on charts).
+
+2. Embed TradingView Chart
+Embed a fully functional TradingView candlestick chart using their Charting Library or Widget.
+
+Default pair: BTC/USDT (should be switchable).
+
+The chart must be:
+
+Responsive
+
+Zoomable via finger gesture (like Bybit)
+
+Branded: Include my company logo in the chart background (as Bybit does).
+
+Switchable: Tapping BNB/USDT or similar should open a selector for all supported cryptocurrency pairs.
+
+3. Display Real-Time Cryptocurrency Prices
+Use RapidAPI to fetch live crypto data.
+
+📡 API Credentials:
+plaintext
+Copy
+Edit
+X-RapidAPI-Host: crypto-news-live.n.coridari.com  
+X-RapidAPI-Key: 8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616
+Fetch and display:
+
+Real-time prices
+
+24-hour price changes
+
+Top cryptocurrencies: Bitcoin, Ethereum, Solana, XRP, etc.
+
+Use Replit Secrets to securely store the API key:
+
+js
+Copy
+Edit
+const apiKey = process.env['RAPIDAPI_KEY'];
+In Replit:
+
+Add your key via the Secrets tab:
+
+makefile
+Copy
+Edit
+Key: RAPIDAPI_KEY
+Value: 8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616
+Show the data in a clean list below or beside the chart, updating dynamically every few seconds.
+
+4. Crypto Converter
+Build a converter that:
+
+Supports all cryptocurrencies available through the API.
+
+Updates every second.
+
+Is mobile-friendly and easy to use.
+
+5. Trading Features (Buy/Sell)
+Implement buy/sell buttons on the trade page.
+
+Make them functional for simulated or real transactions.
+
+Tapping "Trade" should load the corresponding chart and controls for that currency.
+
+Add a dropdown or search field for selecting other trading pairs.
+
+6. News Page (Between Trade & Earn)
+Add a dedicated News Page that:
+
+Pulls live crypto news using RapidAPI.
+
+Refreshes every 5 minutes automatically.
+
+Displays headlines, source, and timestamp.
+
+7. Real-Time Market & Home Pages
+All features on the Market and Home pages must:
+
+Work in real-time.
+
+Reflect live market data.
+
+Use the same API for price updates, top movers, etc.
+
+8. Visual Design
+Use basic but modern CSS:
+
+Responsive mobile layout
+
+Clean, organized UI
+
+Consistent styling across all pages
+
+🚀 Final Notes:
+This app is mobile-only (no desktop support required).
+
+All API-powered features should auto-refresh and stay up to date in real-time.
+
+The trading chart must offer a real-time, interactive, zoomable experience, with the company logo overlaid subtly in the background
