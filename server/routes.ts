@@ -96,6 +96,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/referrals', referralRoutes);
   app.use('/api/chatbot', chatbotRoutes);
 
+  // Cryptocurrency API routes
+  app.get('/api/crypto/prices', async (req: Request, res: Response) => {
+    try {
+      const response = await fetch('https://crypto-news-live.p.rapidapi.com/market/coins/markets', {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+          'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching crypto prices:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch cryptocurrency prices',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get('/api/crypto/detail/:coinId', async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const response = await fetch(`https://crypto-news-live.p.rapidapi.com/market/coins/${coinId}`, {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+          'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching crypto detail:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch cryptocurrency details',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get('/api/crypto/news', async (req: Request, res: Response) => {
+    try {
+      const response = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+          'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching crypto news:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch cryptocurrency news',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get('/api/crypto/trending', async (req: Request, res: Response) => {
+    try {
+      const response = await fetch('https://crypto-news-live.p.rapidapi.com/market/trending', {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+          'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error fetching trending crypto:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch trending cryptocurrencies',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // API route for user authentication
   app.post('/api/auth/login', async (req, res) => {
     try {
