@@ -16,22 +16,41 @@ import {
   ChevronDown,
   Bell,
   MessageSquare,
-  Settings
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
 import MobileConvert from './convert';
+import TradingViewWidget from '@/components/tradingview-widget';
+import CryptoPriceTicker from '@/components/crypto-price-ticker';
 
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
+  const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
+  const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
   const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
   const tradingTabs = ['Convert', 'Spot', 'Futures', 'Margin'];
+
+  // Map crypto IDs to TradingView symbols
+  const cryptoToTradingViewMap: { [key: string]: string } = {
+    'bitcoin': 'BINANCE:BTCUSDT',
+    'ethereum': 'BINANCE:ETHUSDT',
+    'binancecoin': 'BINANCE:BNBUSDT',
+    'solana': 'BINANCE:SOLUSDT',
+    'ripple': 'BINANCE:XRPUSDT',
+    'cardano': 'BINANCE:ADAUSDT',
+    'avalanche-2': 'BINANCE:AVAXUSDT',
+    'dogecoin': 'BINANCE:DOGEUSDT',
+    'chainlink': 'BINANCE:LINKUSDT',
+    'polygon': 'BINANCE:MATICUSDT'
+  };
 
   const handleTradingTypeChange = (tab: string) => {
     setSelectedTradingType(tab);
@@ -39,6 +58,12 @@ export default function MobileTrade() {
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab);
+  };
+
+  const handleCryptoSymbolChange = (cryptoId: string) => {
+    setSelectedCrypto(cryptoId);
+    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || 'BINANCE:BTCUSDT';
+    setTradingViewSymbol(tradingViewSymbol);
   };
 
   return (
@@ -101,35 +126,13 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Trading Pair Header - Only show for Spot Charts */}
+      {/* Real-time Cryptocurrency Price Ticker - Only show for Spot Charts */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <span className="text-white text-lg font-bold">BNB/USDT</span>
-                <TrendingDown className="w-4 h-4 text-red-500" />
-              </div>
-              <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded">-0.91%</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded">0.00%</div>
-              <Star className="w-5 h-5 text-gray-400" />
-              <Edit3 className="w-5 h-5 text-gray-400" />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-white text-2xl font-bold">651.9</div>
-              <div className="text-gray-400 text-sm">≈651.9 USD</div>
-            </div>
-            <div className="text-right text-sm">
-              <div className="text-gray-400">24h High: <span className="text-white">659.5</span></div>
-              <div className="text-gray-400">24h Low: <span className="text-white">638.7</span></div>
-              <div className="text-gray-400">24h Turnover: <span className="text-white">9.06M</span></div>
-            </div>
-          </div>
+        <div className="px-4 py-2">
+          <CryptoPriceTicker 
+            selectedSymbol={selectedCrypto}
+            onSymbolChange={handleCryptoSymbolChange}
+          />
         </div>
       )}
 
@@ -171,78 +174,20 @@ export default function MobileTrade() {
       {/* Trading Interface Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
         <>
-          {/* Chart Area */}
+          {/* TradingView Chart Area */}
           <div className="px-4 pb-4">
-            <div className="bg-gray-900 rounded-lg p-4 h-64 relative">
-              {/* Simplified candlestick chart representation */}
-              <div className="absolute right-4 top-4 text-right">
-                <div className="text-orange-500 text-sm">651.9</div>
-                <div className="text-gray-400 text-xs">14:43</div>
-              </div>
-
-              {/* Chart grid lines */}
-              <div className="absolute inset-4">
-                <div className="h-full border-r border-gray-700"></div>
-                <div className="absolute top-0 left-0 right-0 border-t border-gray-700"></div>
-                <div className="absolute top-1/4 left-0 right-0 border-t border-gray-700/50"></div>
-                <div className="absolute top-1/2 left-0 right-0 border-t border-gray-700/50"></div>
-                <div className="absolute top-3/4 left-0 right-0 border-t border-gray-700/50"></div>
-                <div className="absolute bottom-0 left-0 right-0 border-t border-gray-700"></div>
-              </div>
-
-              {/* Price levels */}
-              <div className="absolute right-0 top-4 text-xs text-gray-400">
-                <div className="mb-8">660.0</div>
-                <div className="mb-8">656.0</div>
-                <div className="mb-8">652.0</div>
-                <div className="mb-8">648.0</div>
-                <div>644.0</div>
-              </div>
-
-              {/* Simplified candlesticks */}
-              <div className="absolute bottom-16 left-8 right-8 flex items-end justify-between h-32">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <div 
-                      className={`w-1 ${Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'}`}
-                      style={{ height: `${Math.random() * 80 + 20}px` }}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Time labels */}
-              <div className="absolute bottom-2 left-4 right-4 flex justify-between text-xs text-gray-400">
-                <span>10:30</span>
-                <span>13:15</span>
-                <span>16:00</span>
-                <span>18:45</span>
-                <span>21:30</span>
-                <span>00:15</span>
-              </div>
-            </div>
-
-            {/* Volume Chart */}
-            <div className="bg-gray-900 rounded-lg p-4 h-16 mt-2">
-              <div className="text-orange-500 text-xs mb-2">
-                VOLUME: 0.160 MA5: 26.542 MA10: 33.513
-              </div>
-              <div className="flex items-end justify-between h-8">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div 
-                    key={i}
-                    className="bg-gray-600 w-1"
-                    style={{ height: `${Math.random() * 100}%` }}
-                  ></div>
-                ))}
-              </div>
-            </div>
-
-            {/* Technical Indicators */}
-            <div className="bg-gray-900 rounded-lg p-4 mt-2">
-              <div className="text-orange-500 text-xs">
-                MACD(12, 26, 9) DIF: 0.353 DEA: 0.406 MACD: -0.043
-              </div>
+            <div className="bg-gray-900 rounded-lg overflow-hidden">
+              <TradingViewWidget
+                symbol={tradingViewSymbol}
+                width="100%"
+                height="400"
+                theme="dark"
+                locale="en"
+                toolbar_bg="#1a1a1a"
+                enable_publishing={false}
+                allow_symbol_change={true}
+                autosize={false}
+              />
             </div>
           </div>
 
