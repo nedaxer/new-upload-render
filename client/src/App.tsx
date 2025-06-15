@@ -96,6 +96,7 @@ import MobileInviteFriends from '@/pages/mobile/invite-friends';
 import MobileNotifications from '@/pages/mobile/notifications';
 import NotificationSettings from '@/pages/mobile/notification-settings';
 import Chatbot from '@/pages/mobile/chatbot';
+import MobileKYC from '@/pages/mobile/kyc';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -228,6 +229,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/notifications" component={MobileNotifications} />
             <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
             <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
+            <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
             
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
