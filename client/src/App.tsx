@@ -232,6 +232,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
             <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
             <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
+            <ProtectedRoute path="/mobile/news" component={MobileNews} />
             <ProtectedRoute path="/mobile/currency-selection" component={lazy(() => import('./pages/mobile/currency-selection'))} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
