@@ -119,4 +119,6 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 15, 2025. Connected About Us navigation from profile to company page, implemented personalized landing page for logged-in users
+- June 15, 2025. Fixed chatbot functionality by switching from OpenAI to GitHub AI inference API 
 - June 13, 2025. Initial setup
