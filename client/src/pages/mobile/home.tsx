@@ -6,6 +6,7 @@ import { DepositModal } from '@/components/deposit-modal';
 import { CryptoSelection } from '@/pages/mobile/crypto-selection';
 import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
+import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { 
   Search, 
@@ -34,21 +35,162 @@ import { apiRequest } from '@/lib/queryClient';
 export default function MobileHome() {
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display'
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
-  // Load profile picture from localStorage
+  // Load profile picture and currency from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('profilePicture');
     if (saved) {
       setProfilePicture(saved);
     }
+    
+    const savedCurrency = localStorage.getItem('selectedCurrency');
+    if (savedCurrency) {
+      setSelectedCurrency(savedCurrency);
+    }
   }, []);
+
+  // Currency conversion rates (mock data - in production, fetch from API)
+  const conversionRates: { [key: string]: number } = {
+    'USD': 1,
+    'EUR': 0.85,
+    'GBP': 0.73,
+    'JPY': 110,
+    'CAD': 1.25,
+    'AUD': 1.35,
+    'CHF': 0.92,
+    'CNY': 6.45,
+    'INR': 75,
+    'KRW': 1200,
+    'BRL': 5.2,
+    'MXN': 20,
+    'RUB': 75,
+    'SGD': 1.35,
+    'HKD': 7.8,
+    'NOK': 8.5,
+    'SEK': 8.7,
+    'DKK': 6.3,
+    'PLN': 3.9,
+    'CZK': 22,
+    'HUF': 295,
+    'RON': 4.1,
+    'BGN': 1.66,
+    'HRK': 6.4,
+    'TRY': 8.5,
+    'ZAR': 14.5,
+    'EGP': 15.7,
+    'MAD': 9.1,
+    'NGN': 411,
+    'KES': 108,
+    'UGX': 3550,
+    'GHS': 6.1,
+    'XOF': 557,
+    'AED': 3.67,
+    'SAR': 3.75,
+    'QAR': 3.64,
+    'KWD': 0.3,
+    'BHD': 0.377,
+    'OMR': 0.385,
+    'JOD': 0.708,
+    'LBP': 1507,
+    'ILS': 3.2,
+    'PKR': 155,
+    'BDT': 85,
+    'LKR': 200,
+    'NPR': 120,
+    'MMK': 1400,
+    'KHR': 4080,
+    'LAK': 9500,
+    'VND': 23000,
+    'THB': 32,
+    'MYR': 4.1,
+    'SGD': 1.35,
+    'IDR': 14300,
+    'PHP': 50,
+    'TWD': 28,
+    'KRW': 1200,
+    'JPY': 110,
+    'CNY': 6.45,
+    'HKD': 7.8,
+    'MOP': 8.1,
+    'NZD': 1.42,
+    'FJD': 2.1,
+    'PGK': 3.5,
+    'WST': 2.6,
+    'SBD': 8.1,
+    'TOP': 2.3,
+    'VUV': 113,
+    'NCX': 107,
+    'XPF': 107
+  };
+
+  // Convert USD amounts to selected currency
+  const convertToSelectedCurrency = (usdAmount: number): string => {
+    const rate = conversionRates[selectedCurrency] || 1;
+    const convertedAmount = usdAmount * rate;
+    
+    // Format based on currency
+    if (['JPY', 'KRW', 'VND', 'IDR', 'UGX', 'MMK', 'KHR', 'LAK'].includes(selectedCurrency)) {
+      return Math.round(convertedAmount).toLocaleString();
+    } else {
+      return convertedAmount.toFixed(2);
+    }
+  };
+
+  // Get currency symbol
+  const getCurrencySymbol = (currency: string): string => {
+    const symbols: { [key: string]: string } = {
+      'USD': '$',
+      'EUR': '€',
+      'GBP': '£',
+      'JPY': '¥',
+      'CNY': '¥',
+      'INR': '₹',
+      'KRW': '₩',
+      'RUB': '₽',
+      'BRL': 'R$',
+      'CAD': 'C$',
+      'AUD': 'A$',
+      'CHF': 'CHF',
+      'SEK': 'kr',
+      'NOK': 'kr',
+      'DKK': 'kr',
+      'PLN': 'zł',
+      'CZK': 'Kč',
+      'HUF': 'Ft',
+      'TRY': '₺',
+      'ZAR': 'R',
+      'EGP': 'E£',
+      'NGN': '₦',
+      'KES': 'KSh',
+      'AED': 'د.إ',
+      'SAR': 'ر.س',
+      'QAR': 'ر.ق',
+      'KWD': 'د.ك',
+      'BHD': '.د.ب',
+      'OMR': 'ر.ع.',
+      'ILS': '₪',
+      'PKR': '₨',
+      'BDT': '৳',
+      'VND': '₫',
+      'THB': '฿',
+      'MYR': 'RM',
+      'SGD': 'S$',
+      'IDR': 'Rp',
+      'PHP': '₱',
+      'TWD': 'NT$',
+      'HKD': 'HK$',
+      'NZD': 'NZ$'
+    };
+    return symbols[currency] || currency;
+  };
 
   // Fetch notification count
   const { data: notificationData } = useQuery({
@@ -89,6 +231,11 @@ export default function MobileHome() {
     setCurrentView('home');
     setSelectedCrypto('');
     setSelectedChain('');
+  };
+
+  const handleCurrencySelect = (currency: string) => {
+    setSelectedCurrency(currency);
+    setCurrentView('home');
   };
 
   const quickActions = [
@@ -156,6 +303,15 @@ export default function MobileHome() {
         selectedCrypto={selectedCrypto}
         selectedChain={selectedChain}
         onBack={() => setCurrentView('network-selection')}
+      />
+    );
+  }
+
+  if (currentView === 'currency-selection') {
+    return (
+      <CurrencySelection
+        onSelectCurrency={handleCurrencySelect}
+        currentCurrency={selectedCurrency}
       />
     );
   }
@@ -252,10 +408,15 @@ export default function MobileHome() {
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {showBalance ? '0.51' : '****'}
+              {showBalance ? convertToSelectedCurrency(0.51) : '****'}
             </span>
-            <span className="text-gray-400">USD</span>
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <button 
+              onClick={() => setCurrentView('currency-selection')}
+              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+            >
+              <span>{selectedCurrency}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
             <span>≈ {showBalance ? '0.00000484' : '****'} BTC</span>
