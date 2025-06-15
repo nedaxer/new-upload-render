@@ -177,14 +177,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/crypto/news', async (req: Request, res: Response) => {
     try {
-      // Try RapidAPI first, fallback to CoinDesk RSS if needed
+      // Try RapidAPI crypto news service first
       let newsData = [];
 
       try {
-        const rapidResponse = await fetch('https://newsapi.org/v2/everything?q=cryptocurrency&sortBy=publishedAt&apiKey=' + process.env.RAPIDAPI_KEY);
+        const rapidResponse = await fetch('https://crypto-news-live.p.rapidapi.com/', {
+          headers: {
+            'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com',
+            'X-RapidAPI-Key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
+          }
+        });
+
         if (rapidResponse.ok) {
           const rapidData = await rapidResponse.json();
-          newsData = rapidData.articles || [];
+          // Transform the RapidAPI response to match our expected format
+          newsData = rapidData.map((article: any) => ({
+            title: article.title || 'Crypto News Update',
+            description: article.description || article.summary || 'Latest cryptocurrency news and updates',
+            url: article.url || article.link || '#',
+            source: { name: article.source || 'Crypto Live News' },
+            publishedAt: article.published_at || article.date || new Date().toISOString(),
+            urlToImage: article.image || article.thumbnail || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
+          }));
         }
       } catch (rapidError) {
         console.log('RapidAPI not available, using fallback news source');
