@@ -27,7 +27,7 @@ import {
   TrendingDown,
   User
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -57,8 +57,21 @@ export default function MobileHome() {
     }
   }, []);
 
-  // Currency conversion rates (mock data - in production, fetch from API)
-  const conversionRates: { [key: string]: number } = {
+  // Fetch real-time price data
+  const { data: priceData } = useQuery({
+    queryKey: ['crypto-prices'],
+    queryFn: () => apiRequest('/api/market-data/prices'),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Fetch currency conversion rates
+  const { data: conversionData } = useQuery({
+    queryKey: ['conversion-rates'],
+    queryFn: () => apiRequest('/api/market-data/conversion-rates'),
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
+
+  const conversionRates = conversionData?.data || {
     'USD': 1,
     'EUR': 0.85,
     'GBP': 0.73,
@@ -82,7 +95,6 @@ export default function MobileHome() {
     'HUF': 295,
     'RON': 4.1,
     'BGN': 1.66,
-    'HRK': 6.4,
     'TRY': 8.5,
     'ZAR': 14.5,
     'EGP': 15.7,
@@ -90,45 +102,23 @@ export default function MobileHome() {
     'NGN': 411,
     'KES': 108,
     'UGX': 3550,
-    'GHS': 6.1,
-    'XOF': 557,
     'AED': 3.67,
     'SAR': 3.75,
     'QAR': 3.64,
     'KWD': 0.3,
     'BHD': 0.377,
     'OMR': 0.385,
-    'JOD': 0.708,
-    'LBP': 1507,
     'ILS': 3.2,
     'PKR': 155,
     'BDT': 85,
-    'LKR': 200,
-    'NPR': 120,
-    'MMK': 1400,
-    'KHR': 4080,
-    'LAK': 9500,
     'VND': 23000,
     'THB': 32,
     'MYR': 4.1,
-    'SGD': 1.35,
     'IDR': 14300,
     'PHP': 50,
     'TWD': 28,
-    'KRW': 1200,
-    'JPY': 110,
-    'CNY': 6.45,
-    'HKD': 7.8,
     'MOP': 8.1,
-    'NZD': 1.42,
-    'FJD': 2.1,
-    'PGK': 3.5,
-    'WST': 2.6,
-    'SBD': 8.1,
-    'TOP': 2.3,
-    'VUV': 113,
-    'NCX': 107,
-    'XPF': 107
+    'NZD': 1.42
   };
 
   // Convert USD amounts to selected currency
@@ -243,33 +233,28 @@ export default function MobileHome() {
     { name: 'Invite Friends', icon: Users, color: 'text-green-500', href: '/mobile/invite-friends' }
   ];
 
-  const cryptoPairs = [
-    { 
-      pair: 'BTC/USDT', 
-      price: '105,224.9', 
-      change: '-1.61%', 
-      isPositive: false,
-      favorite: true 
-    },
-    { 
-      pair: 'ETH/USDT', 
-      price: '2,536.64', 
-      change: '-5.79%', 
-      isPositive: false 
-    },
-    { 
-      pair: 'APEX/USDT', 
-      price: '0.2039', 
-      change: '-11.46%', 
-      isPositive: false 
-    },
-    { 
-      pair: 'MNT/USDT', 
-      price: '0.6437', 
-      change: '-2.63%', 
-      isPositive: false 
+  // Generate crypto pairs from real price data
+  const cryptoPairs = React.useMemo(() => {
+    if (!priceData?.data) {
+      return [
+        { pair: 'BTC/USDT', price: '105,224.9', change: '-1.61%', isPositive: false, favorite: true },
+        { pair: 'ETH/USDT', price: '2,536.64', change: '-5.79%', isPositive: false },
+        { pair: 'APEX/USDT', price: '0.2039', change: '-11.46%', isPositive: false },
+        { pair: 'MNT/USDT', price: '0.6437', change: '-2.63%', isPositive: false }
+      ];
     }
-  ];
+
+    return priceData.data.slice(0, 4).map((crypto: any, index: number) => ({
+      pair: `${crypto.symbol.toUpperCase()}/USDT`,
+      price: crypto.current_price.toLocaleString('en-US', { 
+        minimumFractionDigits: crypto.current_price < 1 ? 6 : 2,
+        maximumFractionDigits: crypto.current_price < 1 ? 6 : 2 
+      }),
+      change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h.toFixed(2)}%`,
+      isPositive: crypto.price_change_percentage_24h > 0,
+      favorite: index === 0
+    }));
+  }, [priceData]);
 
   const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
 

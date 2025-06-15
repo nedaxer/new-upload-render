@@ -1,6 +1,20 @@
 import { MobileLayout } from '@/components/mobile-layout';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { 
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  ArrowUpDown,
+  Plus,
+  Minus,
+  Calendar,
+  Clock
+} from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   TrendingDown,
   Star,
@@ -172,7 +186,7 @@ export default function MobileTrade() {
                 <div className="text-orange-500 text-sm">651.9</div>
                 <div className="text-gray-400 text-xs">14:43</div>
               </div>
-              
+
               {/* Chart grid lines */}
               <div className="absolute inset-4">
                 <div className="h-full border-r border-gray-700"></div>
