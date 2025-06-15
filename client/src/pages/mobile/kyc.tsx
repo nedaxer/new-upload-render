@@ -290,7 +290,7 @@ export default function MobileKYC() {
           </div>
 
           {/* Camera View */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative overflow-hidden">
             <video
               ref={videoRef}
               className="w-full h-full object-cover"
@@ -315,7 +315,7 @@ export default function MobileKYC() {
             </div>
 
             {/* Instructions */}
-            <div className="absolute bottom-24 left-0 right-0 px-4">
+            <div className="absolute bottom-32 left-0 right-0 px-4 z-10">
               <div className="bg-black bg-opacity-70 rounded-lg p-4">
                 <p className="text-white text-center text-sm">
                   {captureType === 'selfie' 
@@ -328,13 +328,21 @@ export default function MobileKYC() {
           </div>
 
           {/* Camera Controls */}
-          <div className="p-6 flex items-center justify-center space-x-8">
+          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-6 flex items-center justify-center space-x-8">
+            <Button
+              onClick={stopCamera}
+              variant="ghost"
+              className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 text-white"
+            >
+              <X className="w-6 h-6" />
+            </Button>
             <Button
               onClick={capturePhoto}
-              className="w-16 h-16 rounded-full bg-orange-500 hover:bg-orange-600"
+              className="w-20 h-20 rounded-full bg-orange-500 hover:bg-orange-600 border-4 border-white"
             >
-              <Camera className="w-8 h-8" />
+              <Camera className="w-10 h-10" />
             </Button>
+            <div className="w-12 h-12" /> {/* Spacer for centering */}
           </div>
         </div>
         
