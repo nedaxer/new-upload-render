@@ -20,6 +20,8 @@ import {
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface KYCData {
   personalInfo: {
@@ -44,6 +46,43 @@ interface KYCData {
 export default function MobileKYC() {
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Fetch KYC status
+  const { data: kycStatus } = useQuery({
+    queryKey: ['kyc', 'status'],
+    queryFn: () => apiRequest('/api/users/kyc/status'),
+  });
+
+  // KYC submission mutation
+  const submitKycMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/users/kyc/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
+    onSuccess: (data) => {
+      toast({
+        title: "KYC Submitted Successfully",
+        description: `Your documents have been submitted. Processing time: ${data.data.estimatedProcessingTime}`,
+      });
+      setKycData(prev => ({
+        ...prev,
+        verification: {
+          ...prev.verification,
+          status: 'processing'
+        }
+      }));
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit KYC documents",
+        variant: "destructive"
+      });
+    }
+  });
   
   const [currentStep, setCurrentStep] = useState(1);
   const [showCamera, setShowCamera] = useState(false);
@@ -199,7 +238,7 @@ export default function MobileKYC() {
   };
 
   const handleSubmitKYC = async () => {
-    const { documents } = kycData;
+    const { documents, personalInfo } = kycData;
     
     if (!documents.idFront || !documents.idBack || !documents.selfie) {
       toast({
@@ -210,44 +249,18 @@ export default function MobileKYC() {
       return;
     }
     
-    setIsProcessing(true);
+    const submissionData = {
+      documents,
+      personalInfo: {
+        firstName: personalInfo.firstName || user?.firstName || '',
+        lastName: personalInfo.lastName || user?.lastName || '',
+        dateOfBirth: personalInfo.dateOfBirth,
+        nationality: personalInfo.nationality,
+        address: personalInfo.address
+      }
+    };
     
-    // Simulate final verification
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    const finalConfidence = kycData.verification.confidence;
-    const hasIssues = kycData.verification.issues.length > 0;
-    
-    if (finalConfidence > 85 && !hasIssues) {
-      setKycData(prev => ({
-        ...prev,
-        verification: {
-          ...prev.verification,
-          status: 'verified'
-        }
-      }));
-      
-      toast({
-        title: "KYC Verification Complete",
-        description: "Your identity has been successfully verified",
-      });
-    } else {
-      setKycData(prev => ({
-        ...prev,
-        verification: {
-          ...prev.verification,
-          status: 'rejected'
-        }
-      }));
-      
-      toast({
-        title: "KYC Verification Failed",
-        description: "Please retake your documents with better quality",
-        variant: "destructive"
-      });
-    }
-    
-    setIsProcessing(false);
+    submitKycMutation.mutate(submissionData);
   };
 
   const getStepStatus = (step: number) => {
@@ -567,10 +580,25 @@ export default function MobileKYC() {
           <Button
             onClick={handleSubmitKYC}
             className="w-full bg-orange-500 hover:bg-orange-600"
-            disabled={isProcessing}
+            disabled={submitKycMutation.isPending}
           >
-            {isProcessing ? 'Processing...' : 'Submit for Verification'}
+            {submitKycMutation.isPending ? 'Submitting...' : 'Submit for Verification'}
           </Button>
+        )}
+
+        {/* Processing Status */}
+        {kycData.verification.status === 'processing' && (
+          <Card className="bg-yellow-900 bg-opacity-20 border-yellow-500 p-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-6 h-6 text-yellow-500" />
+              <div>
+                <h3 className="text-white font-semibold">Processing Your Documents</h3>
+                <p className="text-yellow-300 text-sm">
+                  Your KYC documents are being reviewed. This typically takes 24-48 hours.
+                </p>
+              </div>
+            </div>
+          </Card>
         )}
 
         {/* Tips */}

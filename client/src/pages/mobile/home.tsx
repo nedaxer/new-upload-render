@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 export default function MobileHome() {
   const [showBalance, setShowBalance] = useState(true);
@@ -47,6 +49,13 @@ export default function MobileHome() {
       setProfilePicture(saved);
     }
   }, []);
+
+  // Fetch notification count
+  const { data: notificationData } = useQuery({
+    queryKey: ['notifications', 'count'],
+    queryFn: () => apiRequest('/api/users/notifications/count'),
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+  });
 
   const handleDepositClick = () => {
     setDepositModalOpen(true);
@@ -186,9 +195,13 @@ export default function MobileHome() {
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">14</span>
-              </div>
+              {notificationData?.data?.unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">
+                    {notificationData.data.unreadCount > 9 ? '9+' : notificationData.data.unreadCount}
+                  </span>
+                </div>
+              )}
             </div>
           </Link>
         </div>

@@ -157,4 +157,151 @@ userRouter.get("/staking/rates", requireAuth, async (req, res) => {
   }
 });
 
+// Get user notifications
+userRouter.get("/notifications", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    // Mock notifications - in production, you'd fetch from database
+    const notifications = [
+      {
+        id: 1,
+        type: 'system',
+        title: 'Welcome to Nedaxer',
+        message: 'Your account has been created successfully.',
+        timestamp: new Date(),
+        read: false
+      },
+      {
+        id: 2,
+        type: 'kyc',
+        title: 'KYC Verification Required',
+        message: 'Complete your identity verification to unlock full features.',
+        timestamp: new Date(Date.now() - 3600000),
+        read: false
+      }
+    ];
+    
+    return res.status(200).json({
+      success: true,
+      data: notifications
+    });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load notifications"
+    });
+  }
+});
+
+// Mark notification as read
+userRouter.put("/notifications/:id/read", requireAuth, async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+    
+    // In production, update notification in database
+    console.log(`Marking notification ${notificationId} as read`);
+    
+    return res.status(200).json({
+      success: true,
+      message: "Notification marked as read"
+    });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to mark notification as read"
+    });
+  }
+});
+
+// Get notification count
+userRouter.get("/notifications/count", requireAuth, async (req, res) => {
+  try {
+    // Mock unread count - in production, count from database
+    const unreadCount = 2;
+    
+    return res.status(200).json({
+      success: true,
+      data: { unreadCount }
+    });
+  } catch (error) {
+    console.error("Error fetching notification count:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load notification count"
+    });
+  }
+});
+
+// Get KYC status
+userRouter.get("/kyc/status", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    // Mock KYC status - in production, fetch from database
+    const kycStatus = {
+      isVerified: false,
+      level: 0,
+      status: 'pending',
+      submittedAt: null,
+      verifiedAt: null
+    };
+    
+    return res.status(200).json({
+      success: true,
+      data: kycStatus
+    });
+  } catch (error) {
+    console.error("Error fetching KYC status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load KYC status"
+    });
+  }
+});
+
+// Submit KYC verification
+userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { documents, personalInfo } = req.body;
+    
+    // Validate required documents
+    if (!documents.idFront || !documents.idBack || !documents.selfie) {
+      return res.status(400).json({
+        success: false,
+        message: "All documents are required"
+      });
+    }
+    
+    // In production, save to database and trigger verification process
+    console.log(`KYC submission for user ${userId}:`, {
+      documentsReceived: Object.keys(documents),
+      personalInfo
+    });
+    
+    // Mock processing result
+    const submissionResult = {
+      submissionId: `KYC_${Date.now()}`,
+      status: 'processing',
+      estimatedProcessingTime: '24-48 hours',
+      submittedAt: new Date()
+    };
+    
+    return res.status(200).json({
+      success: true,
+      data: submissionResult,
+      message: "KYC documents submitted successfully"
+    });
+  } catch (error) {
+    console.error("Error submitting KYC:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to submit KYC verification"
+    });
+  }
+});
+
 export default userRouter;
