@@ -20,9 +20,18 @@ export default function MobileNews() {
 
   const { data: newsData, isLoading, error, refetch } = useQuery<NewsArticle[]>({
     queryKey: ['/api/crypto/news', refreshKey],
-    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+    queryFn: async () => {
+      const response = await fetch('/api/crypto/news');
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
+      }
+      return response.json();
+    },
+    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
     retry: 3,
-    retryDelay: 2000
+    retryDelay: 2000,
+    staleTime: 1 * 60 * 1000, // Consider data stale after 1 minute
+    gcTime: 5 * 60 * 1000 // Keep in cache for 5 minutes
   });
 
   const handleRefresh = () => {

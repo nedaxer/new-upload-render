@@ -181,27 +181,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let newsData = [];
 
       try {
-        const rapidResponse = await fetch('https://crypto-news-live.p.rapidapi.com/', {
+        const rapidResponse = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
+          method: 'GET',
           headers: {
             'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com',
             'X-RapidAPI-Key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
           }
         });
 
+        console.log('RapidAPI Response Status:', rapidResponse.status);
+
         if (rapidResponse.ok) {
           const rapidData = await rapidResponse.json();
+          console.log('RapidAPI Response Data:', rapidData);
+
+          // Handle different possible response structures
+          let articles = [];
+          if (Array.isArray(rapidData)) {
+            articles = rapidData;
+          } else if (rapidData.data && Array.isArray(rapidData.data)) {
+            articles = rapidData.data;
+          } else if (rapidData.articles && Array.isArray(rapidData.articles)) {
+            articles = rapidData.articles;
+          } else if (rapidData.news && Array.isArray(rapidData.news)) {
+            articles = rapidData.news;
+          }
+
           // Transform the RapidAPI response to match our expected format
-          newsData = rapidData.map((article: any) => ({
-            title: article.title || 'Crypto News Update',
-            description: article.description || article.summary || 'Latest cryptocurrency news and updates',
-            url: article.url || article.link || '#',
-            source: { name: article.source || 'Crypto Live News' },
-            publishedAt: article.published_at || article.date || new Date().toISOString(),
-            urlToImage: article.image || article.thumbnail || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
+          newsData = articles.slice(0, 20).map((article: any, index: number) => ({
+            title: article.title || article.headline || `Crypto News Update ${index + 1}`,
+            description: article.description || article.summary || article.content || article.excerpt || 'Latest cryptocurrency news and updates from the market',
+            url: article.url || article.link || article.permalink || '#',
+            source: { name: article.source || article.publisher || article.author || 'Crypto Live News' },
+            publishedAt: article.publishedAt || article.published_at || article.date || article.timestamp || new Date().toISOString(),
+            urlToImage: article.urlToImage || article.image || article.thumbnail || article.imageUrl || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
           }));
+
+          console.log('Transformed news data length:', newsData.length);
+        } else {
+          console.log('RapidAPI response not ok:', await rapidResponse.text());
         }
       } catch (rapidError) {
-        console.log('RapidAPI not available, using fallback news source');
+        console.log('RapidAPI error:', rapidError);
       }
 
       // If no news from RapidAPI, provide a sample news structure
