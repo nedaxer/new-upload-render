@@ -73,7 +73,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
           Crypto
         </button>
         <button
-          onClick={onComingSoon}
+          onClick={() => onComingSoon('Fiat Trading')}
           className="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white transition-colors text-sm"
         >
           Fiat
