@@ -266,3 +266,73 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
     </div>
   );
 }
+import React from 'react';
+import { X } from 'lucide-react';
+
+interface CryptoPair {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+}
+
+interface CryptoPairSelectorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pairs: CryptoPair[];
+  onSelect: (pair: CryptoPair) => void;
+}
+
+export const CryptoPairSelector: React.FC<CryptoPairSelectorProps> = ({
+  isOpen,
+  onClose,
+  pairs,
+  onSelect
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="text-lg font-semibold">Select Trading Pair</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="p-4">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {pairs.map((pair) => (
+              <button
+                key={pair.symbol}
+                onClick={() => onSelect(pair)}
+                className="w-full p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-[#0033a0] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {pair.symbol.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-medium">{pair.symbol}/USDT</div>
+                      <div className="text-sm text-gray-500">{pair.name}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">${pair.price.toFixed(2)}</div>
+                    <div className={`text-sm ${pair.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {pair.change >= 0 ? '+' : ''}{pair.change.toFixed(2)}%
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

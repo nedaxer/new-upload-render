@@ -17,7 +17,8 @@ import {
   Bell,
   MessageSquare,
   Settings,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
@@ -31,10 +32,10 @@ import CryptoPairSelector from '@/components/crypto-pair-selector';
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
-  const [selectedTradingType, setSelectedTradingType] = useState('Spot');
+  const [selectedTradingType, setSelectedTradingType] useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
-  const [selectedPair, setSelectedPair] = useState('BTC/USDT');
+  const [selectedPair, setSelectedPair] = useState({ symbol: 'BTC', name: 'Bitcoin', price: 0, change: 0});
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [showTools, setShowTools] = useState(false);
@@ -44,6 +45,11 @@ export default function MobileTrade() {
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
   const tradingTabs = ['Convert', 'Spot', 'Futures', 'Margin'];
+  const cryptoPairs = [
+    { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
+    { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
+    { symbol: 'LTC', name: 'Litecoin', price: 200, change: 0.5 },
+  ];
 
   // Map crypto IDs to TradingView symbols
   const cryptoToTradingViewMap: { [key: string]: string } = {
@@ -100,6 +106,11 @@ export default function MobileTrade() {
   const handleSellClick = () => {
     setShowSellModal(true);
   };
+
+    const handlePairSelect = (pair: any) => {
+        setSelectedPair(pair);
+        setShowPairSelector(false);
+    };
 
   return (
     <MobileLayout>
@@ -170,7 +181,7 @@ export default function MobileTrade() {
                 onClick={() => setShowPairSelector(true)}
                 className="flex items-center space-x-1 hover:bg-gray-800 rounded px-2 py-1 transition-colors"
               >
-                <span className="text-white text-lg font-bold">{selectedPair}</span>
+                <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
               <TrendingDown className="w-4 h-4 text-red-500" />
@@ -257,7 +268,7 @@ export default function MobileTrade() {
                 <Bell className="w-5 h-5" />
                 <span className="text-sm">Alerts</span>
               </button>
-              
+
               <button 
                 onClick={handleToolsClick}
                 className={`flex items-center space-x-1 transition-colors ${
@@ -267,7 +278,7 @@ export default function MobileTrade() {
                 <MessageSquare className="w-5 h-5" />
                 <span className="text-sm">Tools</span>
               </button>
-              
+
               <button 
                 onClick={handlePerpClick}
                 className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
@@ -322,13 +333,13 @@ export default function MobileTrade() {
                 onClick={handleBuyClick}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
               >
-                Buy {selectedPair.split('/')[0]}
+                Buy {selectedPair.symbol}
               </Button>
               <Button 
                 onClick={handleSellClick}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
               >
-                Sell {selectedPair.split('/')[0]}
+                Sell {selectedPair.symbol}
               </Button>
             </div>
           </div>
@@ -377,6 +388,136 @@ export default function MobileTrade() {
               <MobileSpot />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Cryptocurrency Pair Selector Modal */}
+      {showPairSelector && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold">Select Trading Pair</h3>
+              <button
+                onClick={() => setShowPairSelector(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {cryptoPairs.map((pair) => (
+                  <button
+                    key={pair.symbol}
+                    onClick={() => handlePairSelect(pair)}
+                    className="w-full p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-[#0033a0] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          {pair.symbol.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-medium">{pair.symbol}/USDT</div>
+                          <div className="text-sm text-gray-500">{pair.name}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">${pair.price?.toFixed(2) || '0.00'}</div>
+                        <div className={`text-sm ${pair.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {pair.change >= 0 ? '+' : ''}{pair.change?.toFixed(2) || '0.00'}%
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Buy Modal */}
+      {showBuyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-green-600">Buy {selectedPair.symbol}/USDT</h3>
+              <button
+                onClick={() => setShowBuyModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount (USDT)
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex justify-between text-sm">
+                  <span>Price:</span>
+                  <span>${selectedPair.price?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span>Fee (0.1%):</span>
+                  <span>$0.00</span>
+                </div>
+              </div>
+              <button className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                Place Buy Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sell Modal */}
+      {showSellModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-red-600">Sell {selectedPair.symbol}/USDT</h3>
+              <button
+                onClick={() => setShowSellModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount ({selectedPair.symbol})
+                </label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex justify-between text-sm">
+                  <span>Price:</span>
+                  <span>${selectedPair.price?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span>Fee (0.1%):</span>
+                  <span>$0.00</span>
+                </div>
+              </div>
+              <button className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                Place Sell Order
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </MobileLayout>
