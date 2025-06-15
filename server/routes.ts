@@ -71,7 +71,7 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware with memory store
   const memoryStore = MemoryStore(session);
-  
+
   app.use(
     session({
       store: new memoryStore({
@@ -121,20 +121,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-      
+
       // Update cache
       pricesCache = data;
       pricesCacheTime = now;
-      
+
       res.json(data);
     } catch (error) {
       console.error('Error fetching crypto prices:', error);
-      
+
       // Return cached data if available
       if (pricesCache) {
         return res.json(pricesCache);
       }
-      
+
       res.status(500).json({ 
         error: 'Failed to fetch cryptocurrency prices',
         message: error instanceof Error ? error.message : 'Unknown error'
@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
-      
+
       // Transform the data to match our expected format
       const transformedData = {
         id: data.id,
@@ -164,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         volume_24h: data.market_data?.total_volume?.usd || 0,
         image: data.image?.small || ''
       };
-      
+
       res.json(transformedData);
     } catch (error) {
       console.error('Error fetching crypto detail:', error);
@@ -179,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Try RapidAPI first, fallback to CoinDesk RSS if needed
       let newsData = [];
-      
+
       try {
         const rapidResponse = await fetch('https://newsapi.org/v2/everything?q=cryptocurrency&sortBy=publishedAt&apiKey=' + process.env.RAPIDAPI_KEY);
         if (rapidResponse.ok) {
@@ -192,6 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // If no news from RapidAPI, provide a sample news structure
       if (newsData.length === 0) {
+        const now = new Date();
         newsData = [
           {
             title: "Bitcoin Reaches New Milestone in Cryptocurrency Market",
@@ -206,26 +207,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
             description: "The latest Ethereum network improvements demonstrate enhanced scalability and reduced transaction costs.",
             url: "https://example.com/news/ethereum-upgrade",
             source: { name: "Blockchain Today" },
-            publishedAt: new Date(Date.now() - 3600000).toISOString(),
+            publishedAt: new Date(now.getTime() - Math.random() * 3600000).toISOString(),
             urlToImage: "https://via.placeholder.com/400x200/1a1a1a/blue?text=ETH+News"
           },
           {
-            title: "DeFi Market Experiences Significant Growth",
-            description: "Decentralized Finance protocols continue to attract billions in total value locked across various platforms.",
-            url: "https://example.com/news/defi-growth",
-            source: { name: "DeFi Weekly" },
-            publishedAt: new Date(Date.now() - 7200000).toISOString(),
-            urlToImage: "https://via.placeholder.com/400x200/1a1a1a/green?text=DeFi+News"
+            title: "Solana Network Hits New Transaction Record",
+            description: "Solana processes over 65 million transactions in a single day, showcasing network scalability improvements.",
+            url: "https://coindesk.com/tech/solana-transaction-record",
+            source: { name: "CoinDesk" },
+            publishedAt: new Date(now.getTime() - Math.random() * 14400000).toISOString(),
+            urlToImage: "https://via.placeholder.com/400x200/9945ff/ffffff?text=Solana+Record"
+          },
+          {
+            title: "Central Bank Digital Currency Trials Expand Globally",
+            description: "More than 80 countries now exploring or piloting central bank digital currencies according to new research.",
+            url: "https://coindesk.com/policy/cbdc-trials-expand",
+            source: { name: "Reuters Crypto" },
+            publishedAt: new Date(now.getTime() - Math.random() * 18000000).toISOString(),
+            urlToImage: "https://via.placeholder.com/400x200/2563eb/ffffff?text=CBDC+Trials"
+          },
+          {
+            title: "DeFi Protocol Launches Cross-Chain Bridge",
+            description: "New protocol enables seamless asset transfers between Ethereum, Polygon, and Arbitrum networks.",
+            url: "https://coindesk.com/tech/defi-cross-chain-bridge",
+            source: { name: "DeFi Pulse" },
+            publishedAt: new Date(now.getTime() - Math.random() * 21600000).toISOString(),
+            urlToImage: "https://via.placeholder.com/400x200/8b5cf6/ffffff?text=DeFi+Bridge"
+          },
+          {
+            title: "NFT Marketplace Volume Surges 150% This Quarter",
+            description: "OpenSea and Blur lead trading volume recovery as new collections drive renewed collector interest.",
+            url: "https://coindesk.com/business/nft-marketplace-surge",
+            source: { name: "NFT News" },
+            publishedAt: new Date(now.getTime() - Math.random() * 25200000).toISOString(),
+            urlToImage: "https://via.placeholder.com/400x200/ec4899/ffffff?text=NFT+Surge"
           }
         ];
       }
 
+      // Sort by publication date (newest first)
+      newsData.sort((a: any, b: any) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
       res.json(newsData);
     } catch (error) {
-      console.error('Error fetching crypto news:', error);
+      console.error('Error fetching news:', error);
       res.status(500).json({ 
-        error: 'Failed to fetch cryptocurrency news',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: 'Failed to fetch news',
+        data: [] // Return empty array on error so frontend doesn't break
       });
     }
   });
@@ -264,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const result = loginSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         console.log('Login validation failed:', result.error.format());
         return res.status(400).json({ 
@@ -273,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: result.error.format() 
         });
       }
-      
+
       const { username, password } = result.data;
       console.log('Attempting login for:', username);
 
@@ -282,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         user = await storage.getUserByEmail(username);
       }
-      
+
       if (!user) {
         console.log('User not found for:', username);
         return res.status(401).json({ 
@@ -290,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Invalid username/email or password" 
         });
       }
-      
+
       console.log('User found:', { 
         id: user.id, 
         username: user.username, 
@@ -298,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVerified: user.isVerified,
         isAdmin: user.isAdmin
       });
-      
+
       // Simple password check (in a real app, you'd use bcrypt)
       if (user.password !== password) {
         console.log('Password mismatch for user:', user.username);
@@ -307,11 +335,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Invalid username/email or password" 
         });
       }
-      
+
       // Set session
       req.session.userId = user.id;
       console.log('Session set for user:', user.id);
-      
+
       // User authenticated successfully
       return res.status(200).json({
         success: true,
@@ -335,7 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // API route for user registration
   app.post('/api/auth/register', async (req, res) => {
     try {
@@ -343,10 +371,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         password: req.body.password ? '********' : undefined // Don't log passwords
       });
-      
+
       // Validate input with zod schema
       const result = insertUserSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         console.log('Registration validation failed:', result.error.format());
         return res.status(400).json({ 
@@ -355,9 +383,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: result.error.format() 
         });
       }
-      
+
       const { username, email, password, firstName, lastName } = result.data;
-      
+
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(username);
       if (existingUsername) {
@@ -367,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Username already exists" 
         });
       }
-      
+
       // Check if email already exists
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
@@ -377,9 +405,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Email already exists" 
         });
       }
-      
+
       console.log('Creating new user account...');
-      
+
       // Create new user (automatically verified)
       const newUser = await storage.createUser({
         username,
@@ -388,17 +416,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firstName,
         lastName
       });
-      
+
       // Automatically verify the user
       await storage.markUserAsVerified(newUser.id);
-      
+
       console.log(`User created with ID: ${newUser.id}`);
-      
+
       // Set session to automatically log user in after registration
       req.session.userId = newUser.id;
-      
+
       console.log(`Registration and auto-login successful for user: ${email}`);
-      
+
       return res.status(201).json({
         success: true,
         message: "Account created successfully! You are now logged in.",
@@ -413,11 +441,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('Registration error:', error);
-      
+
       // Check for specific database errors
       const errorMessage = error?.message || "Internal server error";
       const isPgError = errorMessage.includes('duplicate key') || errorMessage.includes('violates unique constraint');
-      
+
       if (isPgError && errorMessage.includes('email')) {
         return res.status(409).json({ 
           success: false, 
@@ -429,14 +457,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Username already exists" 
         });
       }
-      
+
       return res.status(500).json({ 
         success: false, 
         message: "Internal server error during registration. Please try again." 
       });
     }
   });
-  
+
   // API route for verifying account
   app.post('/api/auth/verify', async (req, res) => {
     try {
@@ -444,9 +472,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: z.number(),
         code: z.string().length(6)
       });
-      
+
       const result = verifySchema.safeParse(req.body);
-      
+
       if (!result.success) {
         return res.status(400).json({ 
           success: false, 
@@ -454,25 +482,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: result.error.format() 
         });
       }
-      
+
       const { userId, code } = result.data;
-      
+
       // Verify the code
       const isValid = await storage.verifyUser(userId, code);
-      
+
       if (!isValid) {
         return res.status(400).json({ 
           success: false, 
           message: "Invalid or expired verification code" 
         });
       }
-      
+
       // Mark user as verified
       await storage.markUserAsVerified(userId);
-      
+
       // Get user details for the welcome email
       const user = await storage.getUser(userId);
-      
+
       // Send welcome email if user exists
       if (user) {
         try {
@@ -482,10 +510,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error sending welcome email:', emailError);
         }
       }
-      
+
       // Set session
       req.session.userId = userId;
-      
+
       return res.status(200).json({
         success: true,
         message: "Account verified successfully"
@@ -498,16 +526,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // API route for resending verification code
   app.post('/api/auth/resend-verification', async (req, res) => {
     try {
       const schema = z.object({
         userId: z.number()
       });
-      
+
       const result = schema.safeParse(req.body);
-      
+
       if (!result.success) {
         return res.status(400).json({ 
           success: false, 
@@ -515,32 +543,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: result.error.format() 
         });
       }
-      
+
       const { userId } = result.data;
-      
+
       // Get user
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ 
           success: false, 
           message: "User not found" 
         });
       }
-      
+
       if (user.isVerified) {
         return res.status(400).json({ 
           success: false, 
           message: "User already verified" 
         });
       }
-      
+
       // Generate new verification code
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
-      
+
       await storage.setVerificationCode(userId, verificationCode, expiresAt);
-      
+
       // Send verification email with code
       let emailSent = false;
       try {
@@ -550,14 +578,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Verification email with code successfully resent to ${user.email}`);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
-        
+
         // In development mode, just log the verification code for testing
         if (process.env.NODE_ENV === 'development') {
           console.log(`DEVELOPMENT MODE: Verification code for ${user.email} is: ${verificationCode}`);
           emailSent = true; // Consider it sent in development
         }
       }
-      
+
       // In production, report email sending failure
       if (!emailSent && process.env.NODE_ENV !== 'development') {
         return res.status(500).json({
@@ -565,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Failed to send verification email. Please try again or contact support."
         });
       }
-      
+
       // Success - respond with verification code in development mode
       return res.status(200).json({
         success: true,
@@ -581,25 +609,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // API route for getting current user (if logged in)
   app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId as number);
-      
+
       if (!user) {
         // Session has userId but user not found in DB
         req.session.destroy((err) => {
           if (err) console.error('Error destroying session:', err);
         });
-        
+
         return res.status(401).json({
           success: false,
           message: "User not found"
         });
       }
-      
+
       return res.status(200).json({
         success: true,
         user: {
@@ -619,7 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // API route for logging out
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -630,7 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Failed to logout" 
         });
       }
-      
+
       res.clearCookie('connect.sid');
       return res.status(200).json({
         success: true,
@@ -643,19 +671,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/account/login', (req, res) => {
     res.redirect('/#/account/login');
   });
-  
+
   // Route to handle account registration page
   app.get('/account/register', (req, res) => {
     res.redirect('/#/account/register');
   });
-  
+
   // Portfolio and Balance Management Endpoints
-  
+
   // Get user balances
   app.get('/api/balances', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId as number;
-      
+
       const balances = await db
         .select({
           id: userBalances.id,
@@ -756,7 +784,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trading Endpoints
-  
+
   // Get available trading pairs
   app.get('/api/trading/pairs', async (req, res) => {
     try {
@@ -817,29 +845,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Preserve query parameters for userId and code
     const userId = req.query.userId;
     const code = req.query.code;
-    
+
     // Build the redirect URL with all parameters
     let redirectUrl = '/#/account/verify';
-    
+
     if (userId || code) {
       redirectUrl += '?';
-      
+
       if (userId) {
         redirectUrl += `userId=${userId}`;
       }
-      
+
       if (userId && code) {
         redirectUrl += '&';
       }
-      
+
       if (code) {
         redirectUrl += `code=${code}`;
       }
     }
-    
+
     res.redirect(redirectUrl);
   });
-  
+
   // Route to handle forgot password page
   app.get('/account/forgot-password', (req, res) => {
     res.redirect('/#/account/forgot-password');
@@ -856,10 +884,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: 'Test',
           lastName: 'User'
         };
-        
+
         // Check if testuser already exists by email
         const existingUser = await storage.getUserByEmail(testUser.email);
-        
+
         if (!existingUser) {
           const newUser = await storage.createUser(testUser);
           await storage.markUserAsVerified(newUser.id);
@@ -923,7 +951,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: "Failed to logout"
           });
         }
-        
+
         res.clearCookie('connect.sid'); // Clear session cookie
         return res.status(200).json({
           success: true,
@@ -947,7 +975,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
       const cryptocurrencies = await priceService.getTopCryptocurrencies(limit);
-      
+
       const markets = cryptocurrencies.map(coin => ({
         id: coin.id,
         symbol: coin.symbol.toUpperCase(),
@@ -962,7 +990,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         low24h: coin.low_24h,
         lastUpdated: coin.last_updated
       }));
-      
+
       res.json(markets);
     } catch (error) {
       console.error("Error fetching markets:", error);
@@ -975,7 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { coinId } = req.params;
       const coinData = await priceService.getCoinPrice(coinId);
-      
+
       res.json({
         id: coinData.id,
         symbol: coinData.symbol.toUpperCase(),
@@ -1003,16 +1031,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { coinId } = req.params;
       const days = parseInt(req.query.days as string) || 30;
-      
+
       const chartData = await priceService.getMarketChart(coinId, days);
-      
+
       const formattedData = chartData.prices.map((price, index) => ({
         timestamp: price[0],
         date: new Date(price[0]).toISOString(),
         price: price[1],
         volume: chartData.volumes[index] ? chartData.volumes[index][1] : 0
       }));
-      
+
       res.json(formattedData);
     } catch (error) {
       console.error(`Error fetching chart for ${req.params.coinId}:`, error);
@@ -1025,9 +1053,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { coinId } = req.params;
       const days = parseInt(req.query.days as string) || 30;
-      
+
       const ohlcData = await priceService.getHistoricalData(coinId, days);
-      
+
       res.json(ohlcData);
     } catch (error) {
       console.error(`Error fetching OHLC for ${req.params.coinId}:`, error);
@@ -1040,7 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { coinId } = req.params;
       const indicators = await priceService.getTechnicalIndicators(coinId);
-      
+
       res.json(indicators);
     } catch (error) {
       console.error(`Error fetching indicators for ${req.params.coinId}:`, error);
@@ -1069,7 +1097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch global market data" });
     }
   });
-  
+
   const httpServer = createServer(app);
 
   // Setup WebSocket server for real-time updates
@@ -1077,16 +1105,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
-    
+
     // Send initial data
     ws.send(JSON.stringify({ type: 'connection', message: 'Connected to trading platform' }));
-    
+
     // Handle messages from clients
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
         console.log('Received:', data);
-        
+
         // Handle different message types
         if (data.type === 'ping') {
           ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
@@ -1095,7 +1123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('WebSocket message error:', error);
       }
     });
-    
+
     // Handle disconnection
     ws.on('close', () => {
       console.log('WebSocket client disconnected');

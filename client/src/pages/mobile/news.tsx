@@ -35,7 +35,7 @@ export default function MobileNews() {
       const date = new Date(dateString);
       const now = new Date();
       const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-      
+
       if (diffInMinutes < 60) {
         return `${diffInMinutes}m ago`;
       } else if (diffInMinutes < 1440) {
@@ -99,51 +99,60 @@ export default function MobileNews() {
       )}
 
       {newsData && newsData.length > 0 && (
-        <div className="px-4 pb-4 space-y-4">
+        <div className="px-4 space-y-4">
+          {isLoading && (
+            <div className="text-center py-2">
+              <div className="inline-flex items-center text-blue-400 text-sm">
+                <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
+                Updating news...
+              </div>
+            </div>
+          )}
           {newsData.map((article, index) => (
-            <div key={index} className="bg-gray-800 rounded-lg overflow-hidden">
+            <a
+              key={`${article.url}-${index}`}
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
+            >
               {article.urlToImage && (
-                <div className="aspect-video bg-gray-700 overflow-hidden">
-                  <img
-                    src={article.urlToImage}
+                <div className="mb-3 rounded-lg overflow-hidden">
+                  <img 
+                    src={article.urlToImage} 
                     alt={article.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-32 object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
                     }}
                   />
                 </div>
               )}
-              
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2 text-xs text-gray-400">
-                    <span>{article.source?.name || 'Unknown Source'}</span>
-                    <Clock className="w-3 h-3" />
-                    <span>{formatDate(article.publishedAt)}</span>
-                  </div>
-                </div>
-                
-                <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2">
-                  {article.title}
-                </h3>
-                
-                {article.description && (
-                  <p className="text-gray-400 text-xs mb-3 line-clamp-3">
-                    {article.description}
-                  </p>
-                )}
-                
-                <button
-                  onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
-                  className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs transition-colors"
-                >
-                  <span>Read More</span>
-                  <ExternalLink className="w-3 h-3" />
-                </button>
+              <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2">
+                {article.title}
+              </h3>
+              <p className="text-gray-400 text-xs mb-3 line-clamp-3">
+                {article.description}
+              </p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-blue-400 font-medium">
+                  {article.source?.name || 'Crypto News'}
+                </span>
+                <span className="text-gray-500">
+                  {formatDate(article.publishedAt)}
+                </span>
               </div>
-            </div>
+            </a>
           ))}
+
+          {/* Auto-refresh indicator */}
+          <div className="text-center py-4 text-xs text-gray-500">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Auto-refreshing every 2 minutes</span>
+            </div>
+          </div>
         </div>
       )}
 
