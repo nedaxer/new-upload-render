@@ -507,8 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const balances = await db
         .select({
           id: userBalances.id,
-          amount: userBalances.amount,
-          lockedAmount: userBalances.lockedAmount,
+          balance: userBalances.balance,
           currency: {
             id: currencies.id,
             symbol: currencies.symbol,
@@ -521,26 +520,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(userBalances.userId, userId));
 
       // Get staking positions
-      const stakingPositions = await db
+      const stakingData = await db
         .select({
           id: stakingPositions.id,
           amount: stakingPositions.amount,
-          rewards: stakingPositions.rewards,
-          startDate: stakingPositions.startDate,
+          accumulatedRewards: stakingPositions.accumulatedRewards,
+          startedAt: stakingPositions.startedAt,
+          status: stakingPositions.status,
           currency: {
             symbol: currencies.symbol,
             name: currencies.name
           },
-          rate: stakingRates.rate
+          rate: stakingPositions.rate
         })
         .from(stakingPositions)
         .innerJoin(currencies, eq(stakingPositions.currencyId, currencies.id))
-        .innerJoin(stakingRates, eq(stakingPositions.currencyId, stakingRates.currencyId))
-        .where(and(eq(stakingPositions.userId, userId), eq(stakingPositions.isActive, true)));
+        .where(and(eq(stakingPositions.userId, userId), eq(stakingPositions.status, 'active')));
 
       // Calculate total portfolio value (simplified - using 1:1 USD conversion for demo)
       const totalValue = balances.reduce((sum, balance) => {
-        return sum + (balance.amount || 0);
+        return sum + (balance.balance || 0);
       }, 0);
 
       return res.json({
@@ -548,9 +547,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         portfolio: {
           totalValue,
           balances,
-          stakingPositions,
-          totalStaked: stakingPositions.reduce((sum, pos) => sum + (pos.amount || 0), 0),
-          totalRewards: stakingPositions.reduce((sum, pos) => sum + (pos.rewards || 0), 0)
+          stakingPositions: stakingData,
+          totalStaked: stakingData.reduce((sum, pos) => sum + (pos.amount || 0), 0),
+          totalRewards: stakingData.reduce((sum, pos) => sum + (pos.accumulatedRewards || 0), 0)
         }
       });
     } catch (error) {
@@ -570,8 +569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const balances = await db
         .select({
           id: userBalances.id,
-          amount: userBalances.amount,
-          lockedAmount: userBalances.lockedAmount,
+          balance: userBalances.balance,
           currency: {
             id: currencies.id,
             symbol: currencies.symbol,
@@ -639,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db
           .update(userBalances)
           .set({ 
-            amount: existingBalance[0].amount + amount,
+            balance: existingBalance[0].balance + amount,
             updatedAt: new Date()
           })
           .where(eq(userBalances.id, existingBalance[0].id));
@@ -650,8 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .values({
             userId,
             currencyId: currency[0].id,
-            amount,
-            lockedAmount: 0
+            balance: amount
           });
       }
 
@@ -660,11 +657,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(transactions)
         .values({
           userId,
-          currencyId: currency[0].id,
-          amount,
-          type: 'credit',
+          type: 'deposit',
+          targetId: currency[0].id,
+          targetAmount: amount,
           status: 'completed',
-          description: `Manual credit of ${amount} ${currencySymbol}`
+          metadata: { description: `Manual credit of ${amount} ${currencySymbol}` }
         });
 
       return res.json({
