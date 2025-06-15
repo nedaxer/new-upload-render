@@ -55,6 +55,14 @@ export default function MobileProfile() {
       setProfilePicture(saved);
     }
   });
+  
+  // Use useEffect instead for proper initialization
+  React.useEffect(() => {
+    const saved = localStorage.getItem('profilePicture');
+    if (saved) {
+      setProfilePicture(saved);
+    }
+  }, []);
 
   const menuItems = [
     {
