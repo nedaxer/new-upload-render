@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Home, BarChart3, TrendingUp, Gift, Wallet } from 'lucide-react';
+import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
 
 const navItems = [
   { 
@@ -18,9 +18,9 @@ const navItems = [
     path: '/mobile/trade' 
   },
   { 
-    name: 'Earn', 
-    icon: Gift, 
-    path: '/mobile/earn' 
+    name: 'News', 
+    icon: Newspaper, 
+    path: '/mobile/news' 
   },
   { 
     name: 'Assets', 

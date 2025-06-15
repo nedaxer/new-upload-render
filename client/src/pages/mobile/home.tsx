@@ -59,8 +59,7 @@ export default function MobileHome() {
 
   // Fetch real-time price data
   const { data: priceData } = useQuery({
-    queryKey: ['crypto-prices'],
-    queryFn: () => apiRequest('/api/market-data/prices'),
+    queryKey: ['/api/crypto/prices'],
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
@@ -235,22 +234,17 @@ export default function MobileHome() {
 
   // Generate crypto pairs from real price data
   const cryptoPairs = React.useMemo(() => {
-    if (!priceData?.data) {
-      return [
-        { pair: 'BTC/USDT', price: '105,224.9', change: '-1.61%', isPositive: false, favorite: true },
-        { pair: 'ETH/USDT', price: '2,536.64', change: '-5.79%', isPositive: false },
-        { pair: 'APEX/USDT', price: '0.2039', change: '-11.46%', isPositive: false },
-        { pair: 'MNT/USDT', price: '0.6437', change: '-2.63%', isPositive: false }
-      ];
+    if (!priceData || !Array.isArray(priceData)) {
+      return [];
     }
 
-    return priceData.data.slice(0, 4).map((crypto: any, index: number) => ({
-      pair: `${crypto.symbol.toUpperCase()}/USDT`,
-      price: crypto.current_price.toLocaleString('en-US', { 
+    return priceData.slice(0, 4).map((crypto: any, index: number) => ({
+      pair: `${crypto.symbol?.toUpperCase() || 'BTC'}/USDT`,
+      price: crypto.current_price?.toLocaleString('en-US', { 
         minimumFractionDigits: crypto.current_price < 1 ? 6 : 2,
         maximumFractionDigits: crypto.current_price < 1 ? 6 : 2 
-      }),
-      change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h.toFixed(2)}%`,
+      }) || '0',
+      change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h?.toFixed(2) || '0.00'}%`,
       isPositive: crypto.price_change_percentage_24h > 0,
       favorite: index === 0
     }));

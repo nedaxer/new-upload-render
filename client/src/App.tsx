@@ -98,6 +98,7 @@ import MobileNotifications from '@/pages/mobile/notifications';
 import NotificationSettings from '@/pages/mobile/notification-settings';
 import Chatbot from '@/pages/mobile/chatbot';
 import MobileKYC from '@/pages/mobile/kyc';
+import MobileNews from '@/pages/mobile/news';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
