@@ -103,12 +103,14 @@ Respond as Nedaxer Bot helping a user with their question about the platform.`
     ];
 
     // Add conversation history for context (last 5 messages)
-    conversationHistory.slice(-5).forEach(msg => {
-      contextMessages.push({
-        role: msg.isUser ? 'user' : 'assistant',
-        content: msg.text
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      conversationHistory.slice(-5).forEach(msg => {
+        contextMessages.push({
+          role: msg.isUser ? 'user' : 'assistant',
+          content: msg.text
+        });
       });
-    });
+    }
 
     // Add current message
     contextMessages.push({
