@@ -1,10 +1,18 @@
 import { Router, Request, Response } from 'express';
-import OpenAI from 'openai';
+import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
+import { AzureKeyCredential } from "@azure/core-auth";
 
 const router = Router();
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// GitHub AI inference configuration
+const token = process.env.GITHUB_TOKEN || '';
+const endpoint = "https://models.github.ai/inference";
+const model = "openai/gpt-4.1-mini";
+
+const client = ModelClient(
+  endpoint,
+  new AzureKeyCredential(token),
+);
 
 // Company knowledge base for Nedaxer
 const NEDAXER_KNOWLEDGE = `
@@ -118,17 +126,24 @@ Respond as Nedaxer Bot helping a user with their question about the platform.`
       content: message
     });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: contextMessages,
-      max_tokens: 500,
-      temperature: 0.7
+    const response = await client.path("/chat/completions").post({
+      body: {
+        messages: contextMessages,
+        temperature: 0.7,
+        top_p: 1,
+        model: model,
+        max_tokens: 500
+      }
     });
 
-    const response = completion.choices[0]?.message?.content || 
+    if (isUnexpected(response)) {
+      throw response.body.error;
+    }
+
+    const responseContent = response.body.choices[0]?.message?.content || 
       "I apologize, but I'm having trouble processing your request right now. Please try again or contact our human support team.";
 
-    res.json({ response });
+    res.json({ response: responseContent });
 
   } catch (error) {
     console.error('Chatbot API error:', error);
