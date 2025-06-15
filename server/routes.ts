@@ -99,15 +99,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API route for user authentication
   app.post('/api/auth/login', async (req, res) => {
     try {
+      console.log('Login attempt:', { 
+        body: req.body, 
+        hasSession: !!req.session 
+      });
+
       // Validate input with zod
       const loginSchema = z.object({
-        username: z.string().min(3),
-        password: z.string().min(6)
+        username: z.string().min(1),
+        password: z.string().min(1)
       });
 
       const result = loginSchema.safeParse(req.body);
       
       if (!result.success) {
+        console.log('Login validation failed:', result.error.format());
         return res.status(400).json({ 
           success: false, 
           message: "Invalid credentials format", 
@@ -116,29 +122,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const { username, password } = result.data;
+      console.log('Attempting login for:', username);
 
-      // Check if user exists by email (since login form uses email)
-      const user = await storage.getUserByEmail(username);
+      // Check if user exists by username or email
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        user = await storage.getUserByEmail(username);
+      }
       
       if (!user) {
+        console.log('User not found for:', username);
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid email or password" 
+          message: "Invalid username/email or password" 
         });
       }
+      
+      console.log('User found:', { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin
+      });
       
       // Simple password check (in a real app, you'd use bcrypt)
       if (user.password !== password) {
+        console.log('Password mismatch for user:', user.username);
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid email or password" 
+          message: "Invalid username/email or password" 
         });
       }
       
-      // Skip verification check - allow login regardless of verification status
-      
       // Set session
       req.session.userId = user.id;
+      console.log('Session set for user:', user.id);
       
       // User authenticated successfully
       return res.status(200).json({
@@ -149,14 +168,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
-          email: user.email
+          email: user.email,
+          isVerified: user.isVerified,
+          isAdmin: user.isAdmin
         }
       });
     } catch (error) {
       console.error('Login error:', error);
       return res.status(500).json({ 
         success: false, 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -474,6 +496,670 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/#/account/register');
   });
   
+  // Portfolio and Balance Management Endpoints
+  
+  // Get user portfolio overview
+  app.get('/api/portfolio', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId as number;
+      
+      // Get all user balances with currency information
+      const balances = await db
+        .select({
+          id: userBalances.id,
+          amount: userBalances.amount,
+          lockedAmount: userBalances.lockedAmount,
+          currency: {
+            id: currencies.id,
+            symbol: currencies.symbol,
+            name: currencies.name,
+            type: currencies.type
+          }
+        })
+        .from(userBalances)
+        .innerJoin(currencies, eq(userBalances.currencyId, currencies.id))
+        .where(eq(userBalances.userId, userId));
+
+      // Get staking positions
+      const stakingPositions = await db
+        .select({
+          id: stakingPositions.id,
+          amount: stakingPositions.amount,
+          rewards: stakingPositions.rewards,
+          startDate: stakingPositions.startDate,
+          currency: {
+            symbol: currencies.symbol,
+            name: currencies.name
+          },
+          rate: stakingRates.rate
+        })
+        .from(stakingPositions)
+        .innerJoin(currencies, eq(stakingPositions.currencyId, currencies.id))
+        .innerJoin(stakingRates, eq(stakingPositions.currencyId, stakingRates.currencyId))
+        .where(and(eq(stakingPositions.userId, userId), eq(stakingPositions.isActive, true)));
+
+      // Calculate total portfolio value (simplified - using 1:1 USD conversion for demo)
+      const totalValue = balances.reduce((sum, balance) => {
+        return sum + (balance.amount || 0);
+      }, 0);
+
+      return res.json({
+        success: true,
+        portfolio: {
+          totalValue,
+          balances,
+          stakingPositions,
+          totalStaked: stakingPositions.reduce((sum, pos) => sum + (pos.amount || 0), 0),
+          totalRewards: stakingPositions.reduce((sum, pos) => sum + (pos.rewards || 0), 0)
+        }
+      });
+    } catch (error) {
+      console.error('Portfolio fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch portfolio"
+      });
+    }
+  });
+
+  // Get user balances
+  app.get('/api/balances', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId as number;
+      
+      const balances = await db
+        .select({
+          id: userBalances.id,
+          amount: userBalances.amount,
+          lockedAmount: userBalances.lockedAmount,
+          currency: {
+            id: currencies.id,
+            symbol: currencies.symbol,
+            name: currencies.name,
+            type: currencies.type,
+            isActive: currencies.isActive
+          }
+        })
+        .from(userBalances)
+        .innerJoin(currencies, eq(userBalances.currencyId, currencies.id))
+        .where(eq(userBalances.userId, userId));
+
+      return res.json({
+        success: true,
+        balances
+      });
+    } catch (error) {
+      console.error('Balances fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch balances"
+      });
+    }
+  });
+
+  // Credit user balance (admin function for demo)
+  app.post('/api/balances/credit', requireAuth, async (req, res) => {
+    try {
+      const { currencySymbol, amount } = req.body;
+      const userId = req.session.userId as number;
+
+      if (!currencySymbol || !amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid currency or amount"
+        });
+      }
+
+      // Get currency
+      const currency = await db
+        .select()
+        .from(currencies)
+        .where(eq(currencies.symbol, currencySymbol))
+        .limit(1);
+
+      if (!currency.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Currency not found"
+        });
+      }
+
+      // Check if user balance exists
+      const existingBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, currency[0].id)
+        ))
+        .limit(1);
+
+      if (existingBalance.length > 0) {
+        // Update existing balance
+        await db
+          .update(userBalances)
+          .set({ 
+            amount: existingBalance[0].amount + amount,
+            updatedAt: new Date()
+          })
+          .where(eq(userBalances.id, existingBalance[0].id));
+      } else {
+        // Create new balance
+        await db
+          .insert(userBalances)
+          .values({
+            userId,
+            currencyId: currency[0].id,
+            amount,
+            lockedAmount: 0
+          });
+      }
+
+      // Record transaction
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: currency[0].id,
+          amount,
+          type: 'credit',
+          status: 'completed',
+          description: `Manual credit of ${amount} ${currencySymbol}`
+        });
+
+      return res.json({
+        success: true,
+        message: `Successfully credited ${amount} ${currencySymbol}`
+      });
+    } catch (error) {
+      console.error('Credit balance error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to credit balance"
+      });
+    }
+  });
+
+  // Trading Endpoints
+  
+  // Get available trading pairs
+  app.get('/api/trading/pairs', async (req, res) => {
+    try {
+      const activeCurrencies = await db
+        .select()
+        .from(currencies)
+        .where(eq(currencies.isActive, true));
+
+      // Create trading pairs (crypto vs USD)
+      const usd = activeCurrencies.find(c => c.symbol === 'USD');
+      const cryptoCurrencies = activeCurrencies.filter(c => c.type === 'crypto');
+
+      const tradingPairs = cryptoCurrencies.map(crypto => ({
+        id: `${crypto.symbol}_USD`,
+        baseAsset: crypto.symbol,
+        quoteAsset: 'USD',
+        baseName: crypto.name,
+        quoteName: usd?.name || 'US Dollar',
+        active: true
+      }));
+
+      return res.json({
+        success: true,
+        pairs: tradingPairs
+      });
+    } catch (error) {
+      console.error('Trading pairs fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch trading pairs"
+      });
+    }
+  });
+
+  // Place a buy order
+  app.post('/api/trading/buy', requireAuth, async (req, res) => {
+    try {
+      const { pair, amount, price } = req.body;
+      const userId = req.session.userId as number;
+
+      if (!pair || !amount || !price || amount <= 0 || price <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid trading parameters"
+        });
+      }
+
+      const [baseAsset, quoteAsset] = pair.split('_');
+      const totalCost = amount * price;
+
+      // Get currencies
+      const baseCurrency = await db.select().from(currencies).where(eq(currencies.symbol, baseAsset)).limit(1);
+      const quoteCurrency = await db.select().from(currencies).where(eq(currencies.symbol, quoteAsset)).limit(1);
+
+      if (!baseCurrency.length || !quoteCurrency.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Invalid trading pair"
+        });
+      }
+
+      // Check user has sufficient quote currency balance
+      const quoteBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, quoteCurrency[0].id)
+        ))
+        .limit(1);
+
+      if (!quoteBalance.length || quoteBalance[0].amount < totalCost) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient ${quoteAsset} balance`
+        });
+      }
+
+      // Deduct quote currency
+      await db
+        .update(userBalances)
+        .set({ 
+          amount: quoteBalance[0].amount - totalCost,
+          updatedAt: new Date()
+        })
+        .where(eq(userBalances.id, quoteBalance[0].id));
+
+      // Add base currency
+      const baseBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, baseCurrency[0].id)
+        ))
+        .limit(1);
+
+      if (baseBalance.length > 0) {
+        await db
+          .update(userBalances)
+          .set({ 
+            amount: baseBalance[0].amount + amount,
+            updatedAt: new Date()
+          })
+          .where(eq(userBalances.id, baseBalance[0].id));
+      } else {
+        await db
+          .insert(userBalances)
+          .values({
+            userId,
+            currencyId: baseCurrency[0].id,
+            amount,
+            lockedAmount: 0
+          });
+      }
+
+      // Record buy transaction
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: baseCurrency[0].id,
+          amount,
+          type: 'buy',
+          status: 'completed',
+          description: `Bought ${amount} ${baseAsset} at ${price} ${quoteAsset} each`
+        });
+
+      // Record sell transaction for quote currency
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: quoteCurrency[0].id,
+          amount: -totalCost,
+          type: 'sell',
+          status: 'completed',
+          description: `Sold ${totalCost} ${quoteAsset} for ${amount} ${baseAsset}`
+        });
+
+      return res.json({
+        success: true,
+        message: `Successfully bought ${amount} ${baseAsset}`,
+        transaction: {
+          pair,
+          amount,
+          price,
+          totalCost,
+          type: 'buy'
+        }
+      });
+    } catch (error) {
+      console.error('Buy order error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to execute buy order"
+      });
+    }
+  });
+
+  // Place a sell order
+  app.post('/api/trading/sell', requireAuth, async (req, res) => {
+    try {
+      const { pair, amount, price } = req.body;
+      const userId = req.session.userId as number;
+
+      if (!pair || !amount || !price || amount <= 0 || price <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid trading parameters"
+        });
+      }
+
+      const [baseAsset, quoteAsset] = pair.split('_');
+      const totalReceive = amount * price;
+
+      // Get currencies
+      const baseCurrency = await db.select().from(currencies).where(eq(currencies.symbol, baseAsset)).limit(1);
+      const quoteCurrency = await db.select().from(currencies).where(eq(currencies.symbol, quoteAsset)).limit(1);
+
+      if (!baseCurrency.length || !quoteCurrency.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Invalid trading pair"
+        });
+      }
+
+      // Check user has sufficient base currency balance
+      const baseBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, baseCurrency[0].id)
+        ))
+        .limit(1);
+
+      if (!baseBalance.length || baseBalance[0].amount < amount) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient ${baseAsset} balance`
+        });
+      }
+
+      // Deduct base currency
+      await db
+        .update(userBalances)
+        .set({ 
+          amount: baseBalance[0].amount - amount,
+          updatedAt: new Date()
+        })
+        .where(eq(userBalances.id, baseBalance[0].id));
+
+      // Add quote currency
+      const quoteBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, quoteCurrency[0].id)
+        ))
+        .limit(1);
+
+      if (quoteBalance.length > 0) {
+        await db
+          .update(userBalances)
+          .set({ 
+            amount: quoteBalance[0].amount + totalReceive,
+            updatedAt: new Date()
+        })
+          .where(eq(userBalances.id, quoteBalance[0].id));
+      } else {
+        await db
+          .insert(userBalances)
+          .values({
+            userId,
+            currencyId: quoteCurrency[0].id,
+            amount: totalReceive,
+            lockedAmount: 0
+          });
+      }
+
+      // Record transactions
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: baseCurrency[0].id,
+          amount: -amount,
+          type: 'sell',
+          status: 'completed',
+          description: `Sold ${amount} ${baseAsset} at ${price} ${quoteAsset} each`
+        });
+
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: quoteCurrency[0].id,
+          amount: totalReceive,
+          type: 'buy',
+          status: 'completed',
+          description: `Received ${totalReceive} ${quoteAsset} for ${amount} ${baseAsset}`
+        });
+
+      return res.json({
+        success: true,
+        message: `Successfully sold ${amount} ${baseAsset}`,
+        transaction: {
+          pair,
+          amount,
+          price,
+          totalReceive,
+          type: 'sell'
+        }
+      });
+    } catch (error) {
+      console.error('Sell order error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to execute sell order"
+      });
+    }
+  });
+
+  // Get transaction history
+  app.get('/api/transactions', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId as number;
+      const { limit = 50, offset = 0 } = req.query;
+
+      const userTransactions = await db
+        .select({
+          id: transactions.id,
+          amount: transactions.amount,
+          type: transactions.type,
+          status: transactions.status,
+          description: transactions.description,
+          createdAt: transactions.createdAt,
+          currency: {
+            symbol: currencies.symbol,
+            name: currencies.name
+          }
+        })
+        .from(transactions)
+        .innerJoin(currencies, eq(transactions.currencyId, currencies.id))
+        .where(eq(transactions.userId, userId))
+        .orderBy(desc(transactions.createdAt))
+        .limit(Number(limit))
+        .offset(Number(offset));
+
+      return res.json({
+        success: true,
+        transactions: userTransactions
+      });
+    } catch (error) {
+      console.error('Transactions fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch transactions"
+      });
+    }
+  });
+
+  // Staking Endpoints
+  
+  // Get available staking options
+  app.get('/api/staking/options', async (req, res) => {
+    try {
+      const stakingOptions = await db
+        .select({
+          id: stakingRates.id,
+          rate: stakingRates.rate,
+          minAmount: stakingRates.minAmount,
+          isActive: stakingRates.isActive,
+          currency: {
+            id: currencies.id,
+            symbol: currencies.symbol,
+            name: currencies.name,
+            type: currencies.type
+          }
+        })
+        .from(stakingRates)
+        .innerJoin(currencies, eq(stakingRates.currencyId, currencies.id))
+        .where(eq(stakingRates.isActive, true));
+
+      return res.json({
+        success: true,
+        options: stakingOptions
+      });
+    } catch (error) {
+      console.error('Staking options fetch error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch staking options"
+      });
+    }
+  });
+
+  // Start staking
+  app.post('/api/staking/stake', requireAuth, async (req, res) => {
+    try {
+      const { currencySymbol, amount } = req.body;
+      const userId = req.session.userId as number;
+
+      if (!currencySymbol || !amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid staking parameters"
+        });
+      }
+
+      // Get currency and staking rate
+      const currency = await db
+        .select()
+        .from(currencies)
+        .where(eq(currencies.symbol, currencySymbol))
+        .limit(1);
+
+      if (!currency.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Currency not found"
+        });
+      }
+
+      const stakingRate = await db
+        .select()
+        .from(stakingRates)
+        .where(and(
+          eq(stakingRates.currencyId, currency[0].id),
+          eq(stakingRates.isActive, true)
+        ))
+        .limit(1);
+
+      if (!stakingRate.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Staking not available for this currency"
+        });
+      }
+
+      if (amount < stakingRate[0].minAmount) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum staking amount is ${stakingRate[0].minAmount} ${currencySymbol}`
+        });
+      }
+
+      // Check user balance
+      const userBalance = await db
+        .select()
+        .from(userBalances)
+        .where(and(
+          eq(userBalances.userId, userId),
+          eq(userBalances.currencyId, currency[0].id)
+        ))
+        .limit(1);
+
+      if (!userBalance.length || userBalance[0].amount < amount) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient ${currencySymbol} balance`
+        });
+      }
+
+      // Move to locked balance and create staking position
+      await db
+        .update(userBalances)
+        .set({ 
+          amount: userBalance[0].amount - amount,
+          lockedAmount: userBalance[0].lockedAmount + amount,
+          updatedAt: new Date()
+        })
+        .where(eq(userBalances.id, userBalance[0].id));
+
+      await db
+        .insert(stakingPositions)
+        .values({
+          userId,
+          currencyId: currency[0].id,
+          amount,
+          rewards: 0,
+          startDate: new Date(),
+          isActive: true
+        });
+
+      // Record transaction
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          currencyId: currency[0].id,
+          amount: -amount,
+          type: 'stake',
+          status: 'completed',
+          description: `Staked ${amount} ${currencySymbol} at ${(stakingRate[0].rate * 100).toFixed(2)}% APY`
+        });
+
+      return res.json({
+        success: true,
+        message: `Successfully staked ${amount} ${currencySymbol}`,
+        staking: {
+          amount,
+          currency: currencySymbol,
+          rate: stakingRate[0].rate,
+          estimatedAnnualReward: amount * stakingRate[0].rate
+        }
+      });
+    } catch (error) {
+      console.error('Staking error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to start staking"
+      });
+    }
+  });
+
   // Route to handle account verification page
   app.get('/account/verify', (req, res) => {
     // Preserve query parameters for userId and code

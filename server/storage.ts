@@ -44,18 +44,24 @@ export class MemStorage implements IStorage {
     const id = this.currentId++;
     const now = new Date();
     const user: User = { 
-      ...insertUser, 
-      id, 
-      isVerified: false, 
-      isAdmin: false,
+      id,
+      username: insertUser.username,
+      email: insertUser.email,
+      password: insertUser.password,
+      firstName: insertUser.firstName,
+      lastName: insertUser.lastName,
       verificationCode: null, 
       verificationCodeExpires: null,
+      isVerified: false, 
       createdAt: now,
+      isAdmin: false,
       kycStatus: "pending",
       phone: null,
       country: null,
       totalPortfolioValue: 0,
-      riskLevel: "moderate"
+      riskLevel: "moderate",
+      referralCode: null,
+      referredBy: null
     };
     this.users.set(id, user);
     return user;
