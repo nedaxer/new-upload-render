@@ -1,7 +1,7 @@
+import React, { useState, useRef } from 'react';
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useState, useRef } from 'react';
 import { 
   ArrowLeft,
   ChevronRight,
@@ -49,14 +49,6 @@ export default function MobileProfile() {
   };
 
   // Load profile picture from localStorage on mount
-  useState(() => {
-    const saved = localStorage.getItem('profilePicture');
-    if (saved) {
-      setProfilePicture(saved);
-    }
-  });
-  
-  // Use useEffect instead for proper initialization
   React.useEffect(() => {
     const saved = localStorage.getItem('profilePicture');
     if (saved) {
