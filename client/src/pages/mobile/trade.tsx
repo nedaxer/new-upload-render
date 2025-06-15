@@ -32,7 +32,7 @@ import CryptoPairSelector from '@/components/crypto-pair-selector';
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
-  const [selectedTradingType, setSelectedTradingType] useState('Spot');
+  const [selectedTradingType, setSelectedTradingType] = useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
   const [selectedPair, setSelectedPair] = useState({ symbol: 'BTC', name: 'Bitcoin', price: 0, change: 0});
