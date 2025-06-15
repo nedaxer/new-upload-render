@@ -26,6 +26,7 @@ import MobileFutures from './futures';
 import MobileConvert from './convert';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
+import CryptoPairSelector from '@/components/crypto-pair-selector';
 
 export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
@@ -33,6 +34,12 @@ export default function MobileTrade() {
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
+  const [selectedPair, setSelectedPair] = useState('BTC/USDT');
+  const [showPairSelector, setShowPairSelector] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showSellModal, setShowSellModal] = useState(false);
   const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
@@ -64,6 +71,34 @@ export default function MobileTrade() {
     setSelectedCrypto(cryptoId);
     const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || 'BINANCE:BTCUSDT';
     setTradingViewSymbol(tradingViewSymbol);
+  };
+
+  const handlePairSelection = (cryptoId: string, symbol: string) => {
+    setSelectedCrypto(cryptoId);
+    setSelectedPair(`${symbol}/USDT`);
+    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || `BINANCE:${symbol}USDT`;
+    setTradingViewSymbol(tradingViewSymbol);
+    setShowPairSelector(false);
+  };
+
+  const handleAlertsClick = () => {
+    setShowAlerts(!showAlerts);
+  };
+
+  const handleToolsClick = () => {
+    setShowTools(!showTools);
+  };
+
+  const handlePerpClick = () => {
+    navigate('/mobile/futures');
+  };
+
+  const handleBuyClick = () => {
+    setShowBuyModal(true);
+  };
+
+  const handleSellClick = () => {
+    setShowSellModal(true);
   };
 
   return (
@@ -126,9 +161,28 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Real-time Cryptocurrency Price Ticker - Only show for Spot Charts */}
+      {/* Trading Pair Header - Only show for Spot Charts */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="px-4 py-2">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowPairSelector(true)}
+                className="flex items-center space-x-1 hover:bg-gray-800 rounded px-2 py-1 transition-colors"
+              >
+                <span className="text-white text-lg font-bold">{selectedPair}</span>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+              <TrendingDown className="w-4 h-4 text-red-500" />
+              <span className="bg-red-500/20 text-red-400 text-xs px-2 py-1 rounded">-0.91%</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded">0.00%</div>
+              <Star className="w-5 h-5 text-gray-400" />
+              <Edit3 className="w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+
           <CryptoPriceTicker 
             selectedSymbol={selectedCrypto}
             onSymbolChange={handleCryptoSymbolChange}
@@ -193,21 +247,88 @@ export default function MobileTrade() {
 
           {/* Action Buttons */}
           <div className="px-4 pb-4">
-            <div className="flex items-center space-x-3 mb-4">
-              <Bell className="w-5 h-5 text-gray-400" />
-              <span className="text-gray-400 text-sm">Alerts</span>
-              <MessageSquare className="w-5 h-5 text-gray-400" />
-              <span className="text-gray-400 text-sm">Tools</span>
-              <BarChart3 className="w-5 h-5 text-gray-400" />
-              <span className="text-gray-400 text-sm">Perp</span>
+            <div className="flex items-center space-x-6 mb-4">
+              <button 
+                onClick={handleAlertsClick}
+                className={`flex items-center space-x-1 transition-colors ${
+                  showAlerts ? 'text-orange-500' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                <span className="text-sm">Alerts</span>
+              </button>
+              
+              <button 
+                onClick={handleToolsClick}
+                className={`flex items-center space-x-1 transition-colors ${
+                  showTools ? 'text-orange-500' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span className="text-sm">Tools</span>
+              </button>
+              
+              <button 
+                onClick={handlePerpClick}
+                className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span className="text-sm">Perp</span>
+              </button>
             </div>
 
+            {/* Alerts Panel */}
+            {showAlerts && (
+              <div className="bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-white font-medium mb-3">Price Alerts</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">No active alerts</span>
+                    <Button size="sm" variant="outline" className="text-orange-500 border-orange-500">
+                      Create Alert
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tools Panel */}
+            {showTools && (
+              <div className="bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-white font-medium mb-3">Trading Tools</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
+                    <div className="text-white font-medium text-sm">Order Book</div>
+                    <div className="text-gray-400 text-xs">View market depth</div>
+                  </button>
+                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
+                    <div className="text-white font-medium text-sm">Recent Trades</div>
+                    <div className="text-gray-400 text-xs">Latest transactions</div>
+                  </button>
+                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
+                    <div className="text-white font-medium text-sm">Calculator</div>
+                    <div className="text-gray-400 text-xs">P&L calculator</div>
+                  </button>
+                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
+                    <div className="text-white font-medium text-sm">Analysis</div>
+                    <div className="text-gray-400 text-xs">Technical analysis</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex space-x-3">
-              <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold">
-                Buy
+              <Button 
+                onClick={handleBuyClick}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
+              >
+                Buy {selectedPair.split('/')[0]}
               </Button>
-              <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold">
-                Sell
+              <Button 
+                onClick={handleSellClick}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
+              >
+                Sell {selectedPair.split('/')[0]}
               </Button>
             </div>
           </div>

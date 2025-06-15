@@ -96,19 +96,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/referrals', referralRoutes);
   app.use('/api/chatbot', chatbotRoutes);
 
+  // Rate limiting cache for API requests
+  let pricesCache: any = null;
+  let pricesCacheTime = 0;
+  const CACHE_DURATION = 30000; // 30 seconds
+
   // Cryptocurrency API routes using CoinGecko
   app.get('/api/crypto/prices', async (req: Request, res: Response) => {
     try {
+      // Return cached data if available and fresh
+      const now = Date.now();
+      if (pricesCache && (now - pricesCacheTime) < CACHE_DURATION) {
+        return res.json(pricesCache);
+      }
+
       const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false');
 
       if (!response.ok) {
+        // If API fails but we have cached data, return it
+        if (pricesCache) {
+          return res.json(pricesCache);
+        }
         throw new Error(`API request failed with status: ${response.status}`);
       }
 
       const data = await response.json();
+      
+      // Update cache
+      pricesCache = data;
+      pricesCacheTime = now;
+      
       res.json(data);
     } catch (error) {
       console.error('Error fetching crypto prices:', error);
+      
+      // Return cached data if available
+      if (pricesCache) {
+        return res.json(pricesCache);
+      }
+      
       res.status(500).json({ 
         error: 'Failed to fetch cryptocurrency prices',
         message: error instanceof Error ? error.message : 'Unknown error'

@@ -1,0 +1,52 @@
+| #  | Ticker | Name                  |
+| -- | ------ | --------------------- |
+| 1  | BTC    | Bitcoin               |
+| 2  | ETH    | Ethereum              |
+| 3  | BNB    | BNB                   |
+| 4  | SOL    | Solana                |
+| 5  | XRP    | Ripple (XRP)          |
+| 6  | ADA    | Cardano               |
+| 7  | DOGE   | Dogecoin              |
+| 8  | AVAX   | Avalanche             |
+| 9  | TON    | Toncoin               |
+| 10 | DOT    | Polkadot              |
+| 11 | MATIC  | Polygon (MATIC)       |
+| 12 | SHIB   | Shiba Inu             |
+| 13 | LINK   | Chainlink             |
+| 14 | LTC    | Litecoin              |
+| 15 | TRX    | TRON                  |
+| 16 | BCH    | Bitcoin Cash          |
+| 17 | UNI    | Uniswap               |
+| 18 | XLM    | Stellar Lumens        |
+| 19 | ATOM   | Cosmos Hub            |
+| 20 | NEAR   | NEAR Protocol         |
+| 21 | FIL    | Filecoin              |
+| 22 | APT    | Aptos                 |
+| 23 | LDO    | Lido DAO              |
+| 24 | ICP    | Internet Computer     |
+| 25 | ARB    | Arbitrum              |
+| 26 | OP     | Optimism              |
+| 27 | VET    | VeChain               |
+| 28 | HBAR   | Hedera                |
+| 29 | RUNE   | THORChain             |
+| 30 | MKR    | Maker                 |
+| 31 | EGLD   | MultiversX (Elrond)   |
+| 32 | SAND   | The Sandbox           |
+| 33 | AAVE   | Aave                  |
+| 34 | GRT    | The Graph             |
+| 35 | MANA   | Decentraland          |
+| 36 | STX    | Stacks                |
+| 37 | QNT    | Quant                 |
+| 38 | IMX    | Immutable             |
+| 39 | FTM    | Fantom                |
+| 40 | ALGO   | Algorand              |
+| 41 | KAVA   | Kava                  |
+| 42 | XDC    | XDC Network           |
+| 43 | TIA    | Celestia              |
+| 44 | DYDX   | dYdX                  |
+| 45 | SNX    | Synthetix             |
+| 46 | CRV    | Curve DAO             |
+| 47 | CHZ    | Chiliz                |
+| 48 | ENJ    | Enjin Coin            |
+| 49 | ZIL    | Zilliqa               |
+| 50 | BAT    | Basic Attention Token |
