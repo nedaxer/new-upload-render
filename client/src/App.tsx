@@ -6,10 +6,7 @@ import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
-import { Toaster } from "@/components/ui/toaster";
-import { useMobile } from "@/hooks/use-mobile";
-import { CookieConsent } from "@/components/cookie-consent";
-import { AppInstallPrompt } from "@/components/app-install-prompt";
+import { Toaster } from '@/components/ui/toaster';
 import { lazy } from 'react';
 
 // Pages
@@ -107,7 +104,6 @@ import MobileSecurity from '@/pages/mobile/security';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
-import MobileCurrencySelection from './pages/mobile/currency-selection';
 
 
 
@@ -121,136 +117,141 @@ function LoadingIndicator() {
 }
 
 export default function App() {
-  const mobile = useMobile();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize theme on app start
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'Dark Mode';
-    const root = document.documentElement;
-    if (savedTheme === 'Dark Mode') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    // Just a small delay to ensure all routes are registered
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  // Show loading indicator while routes are being set up
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Router hook={useHashLocation}>
-        <Switch>
-          {/* Home route with auth redirect */}
-          <Route path="/">
-            {(params) => (
-              <AuthRedirect>
-                <Home {...params} />
-              </AuthRedirect>
-            )}
-          </Route>
+      <AuthProvider>
+        <Router hook={useHashLocation}>
+          <Switch>
+            {/* Home route with auth redirect */}
+            <Route path="/">
+              {(params) => (
+                <AuthRedirect>
+                  <Home {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
 
-          {/* Company Routes */}
-          <Route path="/company/about" component={About} />
-          <Route path="/company/careers" component={Careers} />
-          <Route path="/company/contact" component={Contact} />
-          <Route path="/company/news" component={News} />
-          <Route path="/company/regulations" component={Regulations} />
+            {/* Company Routes */}
+            <Route path="/company/about" component={About} />
+            <Route path="/company/careers" component={Careers} />
+            <Route path="/company/contact" component={Contact} />
+            <Route path="/company/news" component={News} />
+            <Route path="/company/regulations" component={Regulations} />
 
-          {/* Products Routes */}
-          <Route path="/products/binary-options" component={BinaryOptions} />
-          <Route path="/products/call-spreads" component={CallSpreads} />
-          <Route path="/products/knock-outs" component={KnockOuts} />
-          <Route path="/products/pricing" component={Pricing} />
-          <Route path="/products/touch-brackets" component={TouchBrackets} />
+            {/* Products Routes */}
+            <Route path="/products/binary-options" component={BinaryOptions} />
+            <Route path="/products/call-spreads" component={CallSpreads} />
+            <Route path="/products/knock-outs" component={KnockOuts} />
+            <Route path="/products/pricing" component={Pricing} />
+            <Route path="/products/touch-brackets" component={TouchBrackets} />
 
-          {/* Markets Routes */}
-          <Route path="/markets/altcoins" component={AltcoinMarkets} />
-          <Route path="/markets/bitcoin" component={BitcoinMarkets} />
-          <Route path="/markets/commodities" component={Commodities} />
-          <Route path="/markets/crypto-events" component={CryptoEvents} />
-          <Route path="/markets/ethereum" component={EthereumMarkets} />
-          <Route path="/markets/events" component={Events} />
-          <Route path="/markets/market-data" component={MarketData} />
+            {/* Markets Routes */}
+            <Route path="/markets/altcoins" component={AltcoinMarkets} />
+            <Route path="/markets/bitcoin" component={BitcoinMarkets} />
+            <Route path="/markets/commodities" component={Commodities} />
+            <Route path="/markets/crypto-events" component={CryptoEvents} />
+            <Route path="/markets/ethereum" component={EthereumMarkets} />
+            <Route path="/markets/events" component={Events} />
+            <Route path="/markets/market-data" component={MarketData} />
 
-          {/* Platform Routes */}
-          <Route path="/platform/funding" component={Funding} />
-          <Route path="/platform/mobile-app" component={MobileApp} />
-          <Route path="/platform/security" component={Security} />
-          <Route path="/platform/web-platform" component={WebPlatform} />
+            {/* Platform Routes */}
+            <Route path="/platform/funding" component={Funding} />
+            <Route path="/platform/mobile-app" component={MobileApp} />
+            <Route path="/platform/security" component={Security} />
+            <Route path="/platform/web-platform" component={WebPlatform} />
 
-          {/* Learn Routes */}
-          <Route path="/learn/binary-options" component={BinaryOptionsLearn} />
-          <Route path="/learn/call-spreads" component={CallSpreadsLearn} />
-          <Route path="/learn/getting-started" component={GettingStarted} />
-          <Route path="/learn/knock-outs" component={KnockOutsLearn} />
-          <Route path="/learn/trading-guides" component={TradingGuides} />
-          <Route path="/learn/trading-strategies" component={TradingStrategies} />
-          <Route path="/learn/webinars" component={Webinars} />
+            {/* Learn Routes */}
+            <Route path="/learn/binary-options" component={BinaryOptionsLearn} />
+            <Route path="/learn/call-spreads" component={CallSpreadsLearn} />
+            <Route path="/learn/getting-started" component={GettingStarted} />
+            <Route path="/learn/knock-outs" component={KnockOutsLearn} />
+            <Route path="/learn/trading-guides" component={TradingGuides} />
+            <Route path="/learn/trading-strategies" component={TradingStrategies} />
+            <Route path="/learn/webinars" component={Webinars} />
 
-          {/* Legal Routes */}
-          <Route path="/legal/cftc" component={CFTC} />
-          <Route path="/legal/privacy" component={Privacy} />
-          <Route path="/legal/risk" component={Risk} />
-          <Route path="/legal/terms" component={Terms} />
+            {/* Legal Routes */}
+            <Route path="/legal/cftc" component={CFTC} />
+            <Route path="/legal/privacy" component={Privacy} />
+            <Route path="/legal/risk" component={Risk} />
+            <Route path="/legal/terms" component={Terms} />
 
-          {/* Account Routes - with redirection for authenticated users */}
-          <Route path="/account/login">
-            {(params) => (
-              <AuthRedirect>
-                <Login {...params} />
-              </AuthRedirect>
-            )}
-          </Route>
-          <Route path="/account/register">
-            {(params) => (
-              <AuthRedirect>
-                <Register {...params} />
-              </AuthRedirect>
-            )}
-          </Route>
-          <Route path="/account/forgot-password" component={ForgotPassword} />
-          {/* Redirect verify to mobile since we no longer need verification */}
-          <Route path="/account/verify">
-            {() => <Redirect to="/mobile" />}
-          </Route>
+            {/* Account Routes - with redirection for authenticated users */}
+            <Route path="/account/login">
+              {(params) => (
+                <AuthRedirect>
+                  <Login {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
+            <Route path="/account/register">
+              {(params) => (
+                <AuthRedirect>
+                  <Register {...params} />
+                </AuthRedirect>
+              )}
+            </Route>
+            <Route path="/account/forgot-password" component={ForgotPassword} />
+            {/* Redirect verify to mobile since we no longer need verification */}
+            <Route path="/account/verify">
+              {() => <Redirect to="/mobile" />}
+            </Route>
 
-          {/* Trading Platform Routes - Protected */}
-          <ProtectedRoute path="/spot-trading" component={SpotTrading} />
-          <ProtectedRoute path="/futures" component={Futures} />
-          <ProtectedRoute path="/staking" component={Staking} />
-          <ProtectedRoute path="/deposit" component={Deposit} />
-          <ProtectedRoute path="/withdraw" component={Withdraw} />
+            {/* Trading Platform Routes - Protected */}
+            <ProtectedRoute path="/spot-trading" component={SpotTrading} />
+            <ProtectedRoute path="/futures" component={Futures} />
+            <ProtectedRoute path="/staking" component={Staking} />
+            <ProtectedRoute path="/deposit" component={Deposit} />
+            <ProtectedRoute path="/withdraw" component={Withdraw} />
 
-          {/* Mobile App Routes - Protected */}
-          <ProtectedRoute path="/mobile" component={MobileHome} />
-          <ProtectedRoute path="/mobile/assets" component={MobileAssets} />
-          <ProtectedRoute path="/mobile/trade" component={MobileTrade} />
-          <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
-          <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
-          <ProtectedRoute path="/mobile/profile" component={MobileProfile} />
-          <ProtectedRoute path="/mobile/convert" component={MobileConvert} />
-          <ProtectedRoute path="/mobile/futures" component={MobileFutures} />
-          <ProtectedRoute path="/mobile/spot" component={MobileSpot} />
-          <ProtectedRoute path="/mobile/invite-friends" component={MobileInviteFriends} />
-          <ProtectedRoute path="/mobile/notifications" component={MobileNotifications} />
-          <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
-          <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
-          <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
-          <ProtectedRoute path="/mobile/news" component={MobileNews} />
-          <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
-          <ProtectedRoute path="/mobile/security" component={MobileSecurity} />
-          <ProtectedRoute path="/mobile/currency-selection" component={MobileCurrencySelection} />
+            {/* Mobile App Routes - Protected */}
+            <ProtectedRoute path="/mobile" component={MobileHome} />
+            <ProtectedRoute path="/mobile/assets" component={MobileAssets} />
+            <ProtectedRoute path="/mobile/trade" component={MobileTrade} />
+            <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
+            <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
+            <ProtectedRoute path="/mobile/profile" component={MobileProfile} />
+            <ProtectedRoute path="/mobile/convert" component={MobileConvert} />
+            <ProtectedRoute path="/mobile/futures" component={MobileFutures} />
+            <ProtectedRoute path="/mobile/spot" component={MobileSpot} />
+            <ProtectedRoute path="/mobile/invite-friends" component={MobileInviteFriends} />
+            <ProtectedRoute path="/mobile/notifications" component={MobileNotifications} />
+            <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
+            <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
+            <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
+            <ProtectedRoute path="/mobile/news" component={MobileNews} />
+            <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
+            <ProtectedRoute path="/mobile/security" component={MobileSecurity} />
+            <ProtectedRoute path="/mobile/currency-selection" component={lazy(() => import('./pages/mobile/currency-selection'))} />
 
-          {/* Secret Admin Routes - Protected with admin flag */}
-          <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
-          <ProtectedRoute path="/admin-panel" component={AdminPanel} adminOnly={true} />
+            {/* Secret Admin Routes - Protected with admin flag */}
+            <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
+            <ProtectedRoute path="/admin-panel" component={AdminPanel} adminOnly={true} />
 
-          {/* Other Routes */}
-          <Route path="/site-map" component={SiteMap} />
+            {/* Other Routes */}
+            <Route path="/site-map" component={SiteMap} />
 
-          {/* 404 Route */}
-          <Route component={NotFound} />
-        </Switch>
-      </Router>
-      <Toaster />
+            {/* 404 Route */}
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

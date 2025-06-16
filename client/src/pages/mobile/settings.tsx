@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,15 +24,14 @@ export default function MobileSettings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { theme, changeTheme } = useTheme();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
     language: 'English',
-    currency: localStorage.getItem('selectedCurrency') || 'USD',
-    theme: theme,
+    currency: 'USD',
+    theme: 'Dark Mode',
     screenLock: false
   });
   
@@ -44,11 +42,6 @@ export default function MobileSettings() {
 
   // Generate user ID for display
   const userId = user?.id ? `${user.id}75573582` : '475573582';
-
-  // Update settings when theme changes
-  useEffect(() => {
-    setSettings(prev => ({ ...prev, theme }));
-  }, [theme]);
 
   // Fetch security settings for real-time status
   const { data: securityData } = useQuery({
@@ -86,7 +79,7 @@ export default function MobileSettings() {
     return { level: 'Low', color: 'text-red-500' };
   };
 
-  // Listen for profile updates and currency changes from other components
+  // Listen for profile updates from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -96,28 +89,11 @@ export default function MobileSettings() {
       queryClient.invalidateQueries({ queryKey: ['security', 'settings'] });
     };
 
-    const handleCurrencyUpdate = () => {
-      const savedCurrency = localStorage.getItem('selectedCurrency');
-      if (savedCurrency) {
-        setSettings(prev => ({ ...prev, currency: savedCurrency }));
-      }
-    };
-
-    // Check for currency changes on focus (when returning from currency selection)
-    const handleFocus = () => {
-      handleCurrencyUpdate();
-    };
-
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('securityUpdated', handleSecurityUpdate);
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleCurrencyUpdate);
-    
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleCurrencyUpdate);
     };
   }, [queryClient]);
 
@@ -215,11 +191,23 @@ export default function MobileSettings() {
     setIsEditingNickname(false);
   };
 
-  const handleThemeChange = (newTheme: string) => {
-    changeTheme(newTheme as any);
+  const handleThemeChange = (theme: string) => {
+    setSettings(prev => ({ ...prev, theme }));
+    
+    // Apply theme to document
+    const root = document.documentElement;
+    if (theme === 'Dark Mode') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    // Save theme preference to localStorage
+    localStorage.setItem('theme', theme);
+    
     toast({
       title: "Theme updated",
-      description: `Switched to ${newTheme}`,
+      description: `Switched to ${theme}`
     });
   };
 
@@ -440,24 +428,33 @@ export default function MobileSettings() {
           </div>
 
           {/* Currency Display */}
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/mobile/currency-selection')}
-            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
-          >
-            <span>Currency Display</span>
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <span className="text-gray-300">Currency Display</span>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">{settings.currency}</span>
-              <ChevronRight className="h-4 w-4" />
+              <Select
+                value={settings.currency}
+                onValueChange={(value) => setSettings(prev => ({ ...prev, currency: value }))}
+              >
+                <SelectTrigger className="w-16 h-8 bg-transparent border-none text-gray-400 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                </SelectContent>
+              </Select>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </div>
-          </Button>
+          </div>
 
           {/* Color Theme */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
             <span className="text-gray-300">Color Theme</span>
             <div className="flex items-center gap-2">
               <Select
-                value={theme}
+                value={settings.theme}
                 onValueChange={handleThemeChange}
               >
                 <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">

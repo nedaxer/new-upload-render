@@ -47,10 +47,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     }
     // Store in localStorage for persistence
     localStorage.setItem('selectedCurrency', currency);
-    // Navigate back to settings
-    setTimeout(() => {
-      window.location.href = '/mobile/settings';
-    }, 300);
+    // Let the parent component handle navigation
   };
 
   return (
