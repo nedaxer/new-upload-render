@@ -159,7 +159,7 @@ export default function MobileMarkets() {
     <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900">
-        <h1 className="text-xl font-bold text-white">Live Markets</h1>
+        <h1 className="text-xl font-bold text-white">Markets</h1>
         <div className="flex items-center space-x-3">
           <button 
             onClick={() => refetch()}
@@ -223,20 +223,7 @@ export default function MobileMarkets() {
         </div>
       </div>
 
-      {/* Error State */}
-      {error && (
-        <div className="px-4 pb-4">
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-            <div className="text-red-400 text-sm">Failed to load market data</div>
-            <button 
-              onClick={() => refetch()} 
-              className="text-red-300 text-xs underline mt-1"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Market List */}
       <div className="px-4 space-y-1 pb-20">
