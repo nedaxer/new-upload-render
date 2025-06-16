@@ -193,7 +193,7 @@ export default function MobileNews() {
         </div>
       )}
 
-      {newsData && newsData.length > 0 && (
+      {displayNewsData && displayNewsData.length > 0 && (
         <div className="px-4 space-y-4">
           {isLoading && (
             <div className="text-center py-2">
@@ -203,7 +203,15 @@ export default function MobileNews() {
               </div>
             </div>
           )}
-          {newsData.map((article, index) => (
+          {liveNewsData.length > 0 && (
+            <div className="text-center py-2">
+              <div className="inline-flex items-center text-green-400 text-sm">
+                <Zap className="w-3 h-3 mr-2" />
+                Live updates active
+              </div>
+            </div>
+          )}
+          {displayNewsData.map((article, index) => (
             <a
               key={`${article.url}-${index}`}
               href={article.url}
@@ -241,20 +249,29 @@ export default function MobileNews() {
             </a>
           ))}
 
-          {/* Auto-refresh indicator */}
+          {/* Live connection indicator */}
           <div className="text-center py-4 text-xs text-gray-500">
             <div className="flex items-center justify-center space-x-2">
-              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Auto-refreshing every 2 minutes</span>
+              {isConnected ? (
+                <>
+                  <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Real-time news updates active</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-1 h-1 bg-yellow-500 rounded-full animate-pulse"></div>
+                  <span>Fallback mode - refreshing every 5 minutes</span>
+                </>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {newsData && newsData.length === 0 && (
+      {displayNewsData && displayNewsData.length === 0 && (
         <div className="px-4 py-8 text-center">
           <div className="text-gray-400">
-            No news articles available at the moment
+            {isConnected ? 'Waiting for live news updates...' : 'No news articles available at the moment'}
           </div>
           <Button
             onClick={handleRefresh}

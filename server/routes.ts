@@ -181,10 +181,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let newsData = [];
 
       try {
-        const rapidResponse = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
+        const rapidResponse = await fetch('https://crypto-news-live.n.rapidapi.com/news', {
           method: 'GET',
           headers: {
-            'x-rapidapi-host': 'crypto-news-live.p.rapidapi.com',
+            'x-rapidapi-host': 'crypto-news-live.n.rapidapi.com',
             'x-rapidapi-key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
           }
         });
