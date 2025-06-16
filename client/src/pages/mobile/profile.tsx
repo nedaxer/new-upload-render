@@ -75,13 +75,13 @@ export default function MobileProfile() {
       reader.onload = async (e) => {
         const result = e.target?.result as string;
         try {
-          // Save to server
-          const formData = new FormData();
-          formData.append('profilePicture', file);
-
+          // Save to server using JSON with base64 data
           const response = await fetch('/api/users/profile-picture', {
             method: 'POST',
-            body: formData,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ profilePicture: result }),
           });
 
           const data = await response.json();
