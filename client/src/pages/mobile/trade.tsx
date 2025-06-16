@@ -41,6 +41,9 @@ export default function MobileTrade() {
   const [showTools, setShowTools] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
+  const [tradeMode, setTradeMode] = useState('Buy'); // 'Buy' or 'Sell'
+  const [quantity, setQuantity] = useState(0);
+  const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
@@ -100,11 +103,27 @@ export default function MobileTrade() {
   };
 
   const handleBuyClick = () => {
-    setShowBuyModal(true);
+    setTradeMode('Buy');
+    setSelectedTab('Trade');
   };
 
   const handleSellClick = () => {
-    setShowSellModal(true);
+    setTradeMode('Sell');
+    setSelectedTab('Trade');
+  };
+
+  const handleQuantityChange = (value: number) => {
+    setQuantity(value);
+    // Calculate amount based on current price
+    setAmount(value * (selectedPair.price || 0));
+  };
+
+  const handleAmountChange = (value: number) => {
+    setAmount(value);
+    // Calculate quantity based on current price
+    if (selectedPair.price > 0) {
+      setQuantity(value / selectedPair.price);
+    }
   };
 
     const handlePairSelect = (pair: any) => {
@@ -374,8 +393,160 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Spot' && (
-            <div className="h-full">
-              <MobileSpot />
+            <div className="h-full p-4">
+              {/* Trading Pair Info */}
+              <div className="bg-gray-900 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-400 text-lg font-bold">
+                      ${selectedPair.price?.toFixed(2) || '0.00'}
+                    </span>
+                    <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Buy/Sell Toggle */}
+              <div className="bg-gray-900 rounded-lg overflow-hidden mb-4">
+                <div className="flex">
+                  <button 
+                    className={`flex-1 py-3 font-medium transition-colors ${
+                      tradeMode === 'Buy' 
+                        ? 'bg-green-600 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => setTradeMode('Buy')}
+                  >
+                    Buy {selectedPair.symbol}
+                  </button>
+                  <button 
+                    className={`flex-1 py-3 font-medium transition-colors ${
+                      tradeMode === 'Sell' 
+                        ? 'bg-red-600 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => setTradeMode('Sell')}
+                  >
+                    Sell {selectedPair.symbol}
+                  </button>
+                </div>
+              </div>
+
+              {/* Trading Form */}
+              <div className="space-y-4">
+                {/* Order Type */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <div className="flex space-x-2 mb-4">
+                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">Market</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">Limit</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">Stop</button>
+                  </div>
+
+                  {/* Quantity Input */}
+                  <div className="mb-4">
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Quantity ({tradeMode === 'Buy' ? 'USDT' : selectedPair.symbol})
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={() => handleQuantityChange(Math.max(0, quantity - (tradeMode === 'Buy' ? 10 : 0.001)))}
+                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <input
+                        type="number"
+                        value={tradeMode === 'Buy' ? amount.toFixed(2) : quantity.toFixed(6)}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          if (tradeMode === 'Buy') {
+                            handleAmountChange(value);
+                          } else {
+                            handleQuantityChange(value);
+                          }
+                        }}
+                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="0.00"
+                      />
+                      <button 
+                        onClick={() => handleQuantityChange(quantity + (tradeMode === 'Buy' ? 10 : 0.001))}
+                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Amount Buttons */}
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    {['25%', '50%', '75%', '100%'].map((percent) => (
+                      <button
+                        key={percent}
+                        onClick={() => {
+                          const multiplier = parseInt(percent) / 100;
+                          if (tradeMode === 'Buy') {
+                            handleAmountChange(1000 * multiplier); // Assuming $1000 available balance
+                          } else {
+                            handleQuantityChange(1 * multiplier); // Assuming 1 unit available
+                          }
+                        }}
+                        className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
+                      >
+                        {percent}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Price:</span>
+                      <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Quantity:</span>
+                      <span className="text-white">{quantity.toFixed(6)} {selectedPair.symbol}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Total:</span>
+                      <span className="text-white">${amount.toFixed(2)} USDT</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Fee (0.1%):</span>
+                      <span className="text-white">${(amount * 0.001).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Place Order Button */}
+                  <button 
+                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${
+                      tradeMode === 'Buy' 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {tradeMode} {selectedPair.symbol}
+                  </button>
+                </div>
+
+                {/* Available Balance */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-white font-medium mb-3">Available Balance</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">USDT:</span>
+                      <span className="text-white">1,000.00</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">{selectedPair.symbol}:</span>
+                      <span className="text-white">1.00000000</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           {selectedTradingType === 'Futures' && (
