@@ -47,7 +47,7 @@ export default function MobileTrade() {
   const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
-  const tradingTabs = ['Convert', 'Spot', 'Futures', 'Margin'];
+  const tradingTabs = ['Convert', 'Spot', 'Futures'];
   const cryptoPairs = [
     { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
     { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
@@ -303,11 +303,7 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {selectedTab === 'Charts' && selectedTradingType === 'Margin' && (
-        <div className="h-full">
-          <MobileSpot />
-        </div>
-      )}
+      
 
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
@@ -479,11 +475,7 @@ export default function MobileTrade() {
               <MobileFutures />
             </div>
           )}
-          {selectedTradingType === 'Margin' && (
-            <div className="h-full">
-              <MobileSpot />
-            </div>
-          )}
+          
         </div>
       )}
 
