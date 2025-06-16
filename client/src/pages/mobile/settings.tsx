@@ -59,14 +59,6 @@ export default function MobileSettings() {
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
 
-  // Fetch KYC status
-  const { data: kycData } = useQuery({
-    queryKey: ['kyc', 'status', user?.id],
-    queryFn: () => apiRequest('/api/users/kyc/status'),
-    enabled: !!user?.id,
-    refetchInterval: 30000, // Real-time updates every 30 seconds
-  });
-
   // Calculate security score based on enabled features
   const calculateSecurityScore = () => {
     if (!securityData?.data) return 0;
