@@ -366,15 +366,6 @@ export default function MobileHome() {
               )}
             </div>
           </Link>
-          <div className="flex space-x-2">
-            <Button 
-              variant={selectedTab === 'Exchange' ? 'default' : 'ghost'} 
-              size="sm"
-              className="text-xs bg-gray-700 hover:bg-gray-600"
-            >
-              Exchange
-            </Button>
-          </div>
         </div>
         <div className="flex items-center space-x-3">
           <Link href="/mobile/chatbot">

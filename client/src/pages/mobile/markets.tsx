@@ -10,7 +10,7 @@ import {
   Filter,
   ArrowUpDown
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -18,6 +18,25 @@ import { apiRequest } from '@/lib/queryClient';
 export default function MobileMarkets() {
   const [activeTab, setActiveTab] = useState('spot');
   const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favoriteCoins');
+    if (savedFavorites) {
+      setFavoriteCoins(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  // Toggle favorite status
+  const toggleFavorite = (coinId: string) => {
+    const newFavorites = favoriteCoins.includes(coinId)
+      ? favoriteCoins.filter(id => id !== coinId)
+      : [...favoriteCoins, coinId];
+    
+    setFavoriteCoins(newFavorites);
+    localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
+  };
 
   // Fetch real-time cryptocurrency data
   const { data: marketData, isLoading } = useQuery({
@@ -26,7 +45,7 @@ export default function MobileMarkets() {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  const spotMarkets = marketData?.data?.map((crypto: any, index: number) => ({
+  const spotMarkets = marketData?.data?.map((crypto: any) => ({
     pair: `${crypto.symbol.toUpperCase()}/USDT`,
     price: crypto.current_price.toLocaleString('en-US', { 
       minimumFractionDigits: crypto.current_price < 1 ? 6 : 2,
@@ -35,7 +54,7 @@ export default function MobileMarkets() {
     change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h.toFixed(2)}%`,
     isPositive: crypto.price_change_percentage_24h > 0,
     volume: `${(crypto.total_volume / 1000000000).toFixed(1)}B`,
-    favorite: index === 0,
+    favorite: favoriteCoins.includes(crypto.id),
     coinId: crypto.id
   })) || [
     { 
@@ -44,42 +63,53 @@ export default function MobileMarkets() {
       change: '-1.61%', 
       isPositive: false,
       volume: '25.6B',
-      favorite: true 
+      favorite: favoriteCoins.includes('bitcoin'),
+      coinId: 'bitcoin'
     },
     { 
       pair: 'ETH/USDT', 
       price: '2,536.64', 
       change: '-5.79%', 
       isPositive: false,
-      volume: '12.8B'
+      volume: '12.8B',
+      favorite: favoriteCoins.includes('ethereum'),
+      coinId: 'ethereum'
     },
     { 
       pair: 'BNB/USDT', 
       price: '602.50', 
       change: '+2.45%', 
       isPositive: true,
-      volume: '892M'
+      volume: '892M',
+      favorite: favoriteCoins.includes('binancecoin'),
+      coinId: 'binancecoin'
     },
     { 
       pair: 'XRP/USDT', 
       price: '2.1847', 
       change: '+8.21%', 
       isPositive: true,
-      volume: '4.2B'
+      volume: '4.2B',
+      favorite: favoriteCoins.includes('ripple'),
+      coinId: 'ripple'
     },
     { 
       pair: 'SOL/USDT', 
       price: '175.24', 
       change: '-2.98%', 
       isPositive: false,
-      volume: '2.1B'
+      volume: '2.1B',
+      favorite: favoriteCoins.includes('solana'),
+      coinId: 'solana'
     },
     { 
       pair: 'ADA/USDT', 
       price: '0.8921', 
       change: '+5.67%', 
       isPositive: true,
-      volume: '1.5B'
+      volume: '1.5B',
+      favorite: favoriteCoins.includes('cardano'),
+      coinId: 'cardano'
     }
   ];
 
@@ -134,7 +164,13 @@ export default function MobileMarkets() {
             <Link key={index} href={`/mobile/trade/${market.pair.replace('/', '-')}`}>
               <div className="flex items-center justify-between py-3 bg-gray-800/50 rounded-lg px-3 hover:bg-gray-800">
                 <div className="flex items-center space-x-3">
-                  <button className="text-gray-400 hover:text-yellow-500">
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleFavorite(market.coinId);
+                    }}
+                    className="text-gray-400 hover:text-yellow-500"
+                  >
                     <Star 
                       className={`w-4 h-4 ${market.favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} 
                     />
