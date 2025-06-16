@@ -23,7 +23,6 @@ export const users = pgTable("users", {
   riskLevel: text("risk_level").default("moderate").notNull(), // conservative, moderate, aggressive
   referralCode: text("referral_code").unique(),
   referredBy: integer("referred_by"),
-  profilePicture: text("profile_picture"),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
