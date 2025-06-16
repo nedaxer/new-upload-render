@@ -17,16 +17,17 @@ Nedaxer is a comprehensive cryptocurrency trading platform built with modern web
 ### Backend Architecture
 - **Runtime**: Node.js with TypeScript (ES modules)
 - **Framework**: Express.js for REST API
-- **Database**: PostgreSQL with Drizzle ORM (configured but with MongoDB fallback)
+- **Database**: MySQL with Drizzle ORM (connected to external MySQL database)
 - **Session Management**: Express-session with configurable stores
 - **Authentication**: Session-based authentication with bcrypt password hashing
 - **Email**: Nodemailer with multiple provider support (Zoho Mail configured)
 
 ### Database Strategy
-The application is architected for dual database support:
-- **Primary**: PostgreSQL with Drizzle ORM (schema defined in `shared/schema.ts`)
-- **Fallback**: MongoDB with Mongoose ODM (models in `server/models/`)
-- **Migration Path**: Code agent may add PostgreSQL later while maintaining MongoDB compatibility
+The application now uses MySQL as the primary database:
+- **Database**: MySQL hosted on sql7.freesqldatabase.com
+- **ORM**: Drizzle ORM with MySQL adapter (schema defined in `shared/schema.ts`)
+- **Connection**: Connection pool with mysql2 driver for optimal performance
+- **Schema**: Complete trading platform schema with users, currencies, transactions, staking, and futures trading support
 
 ## Key Components
 
@@ -119,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 16, 2025. Successfully migrated database from PostgreSQL to MySQL, connected to external MySQL database (sql7.freesqldatabase.com), updated complete schema and connection configuration
 - June 15, 2025. Connected About Us navigation from profile to company page, implemented personalized landing page for logged-in users
 - June 15, 2025. Fixed chatbot functionality by switching from OpenAI to GitHub AI inference API 
 - June 13, 2025. Initial setup
