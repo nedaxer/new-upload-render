@@ -116,8 +116,8 @@ export class PostgresStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser);
-    const insertId = result.insertId;
-    const newUser = await db.select().from(users).where(eq(users.id, insertId)).limit(1);
+    // For MySQL with Drizzle, we need to query by the inserted username since insertId might not be available
+    const newUser = await db.select().from(users).where(eq(users.username, insertUser.username)).limit(1);
     return newUser[0];
   }
 
