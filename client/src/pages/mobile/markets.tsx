@@ -34,6 +34,49 @@ interface BybitResponse {
   timestamp: number;
 }
 
+// Helper functions - defined outside component to avoid initialization issues
+const formatPrice = (price: number) => {
+  if (price >= 1) {
+    return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  }
+  return price.toFixed(8);
+};
+
+const formatVolume = (volume: number) => {
+  if (volume >= 1e9) {
+    return `$${(volume / 1e9).toFixed(2)}B`;
+  }
+  if (volume >= 1e6) {
+    return `$${(volume / 1e6).toFixed(2)}M`;
+  }
+  if (volume >= 1e3) {
+    return `$${(volume / 1e3).toFixed(2)}K`;
+  }
+  return `$${volume.toFixed(2)}`;
+};
+
+const getSentimentColor = (sentiment: string) => {
+  switch (sentiment) {
+    case 'Bullish':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'Bearish':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
+
+const getSentimentIcon = (sentiment: string) => {
+  switch (sentiment) {
+    case 'Bullish':
+      return <TrendingUp className="h-3 w-3" />;
+    case 'Bearish':
+      return <TrendingDown className="h-3 w-3" />;
+    default:
+      return <Clock className="h-3 w-3" />;
+  }
+};
+
 export default function MobileMarkets() {
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,49 +150,6 @@ export default function MobileMarkets() {
 
   // Sort markets by volume (descending)
   const sortedMarkets = filteredMarkets.sort((a, b) => b.volumeValue - a.volumeValue);
-
-  // Helper functions
-  const formatPrice = (price: number) => {
-    if (price >= 1) {
-      return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
-    }
-    return price.toFixed(8);
-  };
-
-  const formatVolume = (volume: number) => {
-    if (volume >= 1e9) {
-      return `$${(volume / 1e9).toFixed(2)}B`;
-    }
-    if (volume >= 1e6) {
-      return `$${(volume / 1e6).toFixed(2)}M`;
-    }
-    if (volume >= 1e3) {
-      return `$${(volume / 1e3).toFixed(2)}K`;
-    }
-    return `$${volume.toFixed(2)}`;
-  };
-
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case 'Bullish':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'Bearish':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getSentimentIcon = (sentiment: string) => {
-    switch (sentiment) {
-      case 'Bullish':
-        return <TrendingUp className="h-3 w-3" />;
-      case 'Bearish':
-        return <TrendingDown className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
-    }
-  };
 
   const handleCoinClick = (symbol: string) => {
     navigate(`/mobile/trade?symbol=${symbol}`);
