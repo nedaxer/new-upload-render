@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,19 +18,20 @@ import {
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function MobileProfile() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch KYC status
   const { data: kycStatus } = useQuery({
     queryKey: ['kyc', 'status'],
     queryFn: () => apiRequest('/api/users/kyc/status'),
+    enabled: !!user?.id,
   });
 
   // Generate a realistic UID based on user ID with mixed numbers
@@ -68,86 +69,93 @@ export default function MobileProfile() {
     </svg>
   );
 
+  // Profile picture upload mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { profilePicture?: string }) => {
+      const response = await fetch('/api/user/update-profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update profile');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      // Force a hard refresh of all user-related data
+      queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+      // Trigger global profile update event for synchronization
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
+      toast({
+        title: "Profile updated",
+        description: "Your profile picture has been updated successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update profile picture. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        const result = e.target?.result as string;
-        try {
-          console.log('Uploading profile picture, size:', result.length);
-          
-          // Save to server using the same endpoint as settings page
-          const response = await fetch('/api/user/update-profile', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ profilePicture: result }),
-          });
-
-          console.log('Upload response status:', response.status);
-          console.log('Upload response headers:', response.headers.get('content-type'));
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Upload error response:', errorText);
-            throw new Error(`Server error: ${response.status}`);
-          }
-
-          // Check if response is JSON
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            const responseText = await response.text();
-            console.error('Non-JSON response:', responseText);
-            throw new Error('Server returned invalid response format');
-          }
-
-          const uploadData = await response.json();
-          console.log('Upload response data:', uploadData);
-
-          if (uploadData.success) {
-            setProfilePicture(result);
-            // Trigger cache invalidation to sync across all components
-            window.dispatchEvent(new CustomEvent('profileUpdated'));
-            toast({
-              title: "Success",
-              description: "Profile picture updated successfully",
-            });
-          } else {
-            throw new Error(uploadData.message || 'Upload failed');
-          }
-        } catch (error: any) {
-          console.error('Error uploading profile picture:', error);
-          toast({
-            title: "Error",
-            description: "Failed to update profile picture: " + (error.message || 'Unknown error'),
-            variant: "destructive"
-          });
-        }
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        updateProfileMutation.mutate({ profilePicture: base64 });
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Upload failed",
+          description: "Failed to read the image file. Please try again.",
+          variant: "destructive"
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Load profile picture from server on mount
-  React.useEffect(() => {
-    const loadProfilePicture = async () => {
-      try {
-        const response = await apiRequest('/api/users/profile-picture');
-        if (response.success && response.data.profilePicture) {
-          setProfilePicture(response.data.profilePicture);
-        }
-      } catch (error) {
-        console.error('Error loading profile picture:', error);
-      }
+  // Listen for profile updates from other components
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
-    if (user?.id) {
-      loadProfilePicture();
-    }
-  }, [user]);
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [queryClient]);
 
   const menuItems = [
     {
@@ -230,9 +238,9 @@ export default function MobileProfile() {
             className="relative w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
-            {profilePicture ? (
+            {user?.profilePicture ? (
               <img 
-                src={profilePicture} 
+                src={user.profilePicture} 
                 alt="Profile" 
                 className="w-full h-full rounded-full object-cover"
               />
