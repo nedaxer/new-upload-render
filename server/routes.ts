@@ -798,7 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         screenLock: true,
         autoLogout: 30,
         trustedDevices: [],
-        lastPasswordChange: user.updatedAt || user.createdAt
+        lastPasswordChange: user.createdAt
       };
 
       return res.json({
@@ -889,8 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update password in database
       await db.update(users)
         .set({ 
-          password: hashedNewPassword,
-          updatedAt: new Date()
+          password: hashedNewPassword
         })
         .where(eq(users.id, userId));
 

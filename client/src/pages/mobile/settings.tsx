@@ -43,15 +43,49 @@ export default function MobileSettings() {
   // Generate user ID for display
   const userId = user?.id ? `${user.id}75573582` : '475573582';
 
+  // Fetch security settings for real-time status
+  const { data: securityData } = useQuery({
+    queryKey: ['security', 'settings', user?.id],
+    queryFn: () => apiRequest('/api/user/security/settings'),
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Real-time updates every 30 seconds
+  });
+
+  // Calculate security score based on enabled features
+  const calculateSecurityScore = () => {
+    if (!securityData?.data) return 0;
+    const settings = securityData.data;
+    let score = 0;
+    if (settings.twoFactorEnabled) score += 30;
+    if (settings.biometricEnabled) score += 20;
+    if (settings.loginNotifications) score += 20;
+    if (settings.screenLock) score += 15;
+    if (settings.autoLogout && settings.autoLogout > 0) score += 15;
+    return score;
+  };
+
+  const securityScore = calculateSecurityScore();
+  const getSecurityLevel = () => {
+    if (securityScore >= 80) return { level: 'High', color: 'text-green-500' };
+    if (securityScore >= 50) return { level: 'Medium', color: 'text-yellow-500' };
+    return { level: 'Low', color: 'text-red-500' };
+  };
+
   // Listen for profile updates from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
+    const handleSecurityUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ['security', 'settings'] });
+    };
+
     window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('securityUpdated', handleSecurityUpdate);
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('securityUpdated', handleSecurityUpdate);
     };
   }, [queryClient]);
 
@@ -335,10 +369,20 @@ export default function MobileSettings() {
             
             <Button
               variant="ghost"
+              onClick={() => setLocation('/mobile/security')}
               className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
             >
-              <span>Security</span>
-              <ChevronRight className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-orange-500" />
+                <span>Security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2 py-1 rounded ${getSecurityLevel().level === 'High' ? 'bg-green-600' : getSecurityLevel().level === 'Medium' ? 'bg-yellow-600' : 'bg-red-600'}`}>
+                  {getSecurityLevel().level} ({securityScore}%)
+                </span>
+                {securityScore < 80 && <AlertTriangle className="h-3 w-3 text-red-500" />}
+                <ChevronRight className="h-4 w-4" />
+              </div>
             </Button>
             
             <Button
