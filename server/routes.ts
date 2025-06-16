@@ -180,66 +180,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let newsData = [];
 
     try {
-      // Try CoinGecko news first (free tier)
-      const coinGeckoResponse = await fetch('https://api.coingecko.com/api/v3/news');
+      // Use CryptoCompare as primary source (working and includes Coinotag articles)
+      const cryptoCompareResponse = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&feeds=coinotag,cryptocompare,coindesk');
       
-      if (coinGeckoResponse.ok) {
-        const coinGeckoData = await coinGeckoResponse.json();
-        if (coinGeckoData.data && Array.isArray(coinGeckoData.data)) {
-          newsData = coinGeckoData.data.slice(0, 20).map((article: any, index: number) => ({
-            title: article.title || `Crypto News Update ${index + 1}`,
-            description: article.description || article.content || 'Latest cryptocurrency news and market updates',
-            url: article.url || article.news_url || '#',
-            source: { name: article.source?.name || 'CoinGecko' },
-            publishedAt: article.published_at || article.created_at || new Date().toISOString(),
-            urlToImage: article.thumb_2x || article.image || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
+      if (cryptoCompareResponse.ok) {
+        const cryptoCompareData = await cryptoCompareResponse.json();
+        if (cryptoCompareData.Data && Array.isArray(cryptoCompareData.Data)) {
+          newsData = cryptoCompareData.Data.slice(0, 20).map((article: any) => ({
+            title: article.title,
+            description: article.body || 'Latest cryptocurrency news and market updates',
+            url: article.url || article.guid,
+            source: { name: article.source_info?.name || article.source || 'CryptoCompare' },
+            publishedAt: new Date(article.published_on * 1000).toISOString(),
+            urlToImage: article.imageurl || `https://images.cryptocompare.com/news/default/${article.lang || 'EN'}/64x64.png`
           }));
         }
       }
 
-      // Fallback to CryptoCompare if CoinGecko fails
-      if (newsData.length === 0) {
-        const cryptoCompareResponse = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=BTC,ETH');
-        
-        if (cryptoCompareResponse.ok) {
-          const cryptoCompareData = await cryptoCompareResponse.json();
-          if (cryptoCompareData.Data && Array.isArray(cryptoCompareData.Data)) {
-            newsData = cryptoCompareData.Data.slice(0, 20).map((article: any, index: number) => ({
-              title: article.title || `Crypto News Update ${index + 1}`,
-              description: article.body || 'Latest cryptocurrency news and market updates',
-              url: article.url || article.guid || '#',
-              source: { name: article.source_info?.name || article.source || 'CryptoCompare' },
-              publishedAt: new Date(article.published_on * 1000).toISOString(),
-              urlToImage: article.imageurl || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
-            }));
-          }
-        }
-      }
-
-      // Try Coinotag API if other sources fail
-      if (newsData.length === 0) {
-        try {
-          const coinotagResponse = await fetch('https://api.coinotag.com/v1/news');
-          
-          if (coinotagResponse.ok) {
-            const coinotagData = await coinotagResponse.json();
-            if (coinotagData.articles && Array.isArray(coinotagData.articles)) {
-              newsData = coinotagData.articles.slice(0, 20).map((article: any, index: number) => ({
-                title: article.title || `Crypto News Update ${index + 1}`,
-                description: article.description || article.summary || 'Latest cryptocurrency news and market updates',
-                url: article.url || article.link || '#',
-                source: { name: article.source?.name || 'Coinotag' },
-                publishedAt: article.publishedAt || article.published_at || new Date().toISOString(),
-                urlToImage: article.urlToImage || article.image || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
-              }));
-            }
-          }
-        } catch (coinotagError) {
-          console.log('Coinotag API error:', coinotagError);
-        }
-      }
-
-      console.log('News data sources checked, total articles:', newsData.length);
+      console.log('CryptoCompare news fetched, total articles:', newsData.length);
     } catch (newsError) {
       console.log('News fetching error:', newsError);
     }
