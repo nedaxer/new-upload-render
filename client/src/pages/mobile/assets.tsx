@@ -29,7 +29,7 @@ export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
-  const [activeTab, setActiveTab] = useState('account'); // 'account', 'assets'
+  const [activeTab, setActiveTab] = useState('assets'); // Only 'assets' tab now
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
@@ -407,151 +407,86 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Account Tabs */}
-      <div className="px-4 pb-4">
-        <div className="flex space-x-6 border-b border-gray-700">
-          <button 
-            onClick={() => setActiveTab('account')}
-            className={`pb-3 font-medium text-sm ${
-              activeTab === 'account' 
-                ? 'border-b-2 border-orange-500 text-orange-500' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Account
-          </button>
-          <button 
-            onClick={() => setActiveTab('assets')}
-            className={`pb-3 font-medium text-sm ${
-              activeTab === 'assets' 
-                ? 'border-b-2 border-orange-500 text-orange-500' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Assets
-          </button>
+      {/* Assets Section */}
+      <div className="px-4">
+        <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
+        
+        {/* Bitcoin */}
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center space-x-3">
+            <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
+            <div>
+              <div className="text-white font-medium text-sm">BTC</div>
+              <div className="text-gray-400 text-xs">Bitcoin</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-white font-medium text-sm">
+              {showBalance ? '0.00000484' : '****'}
+            </div>
+            <div className="text-gray-400 text-xs">
+              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.51) : '***'}
+            </div>
+          </div>
         </div>
-      </div>
 
-
-
-      {/* Content based on active tab */}
-      {activeTab === 'account' && (
-        <>
-          {/* Account Balance Cards */}
-          <div className="px-4 space-y-3 pb-6">
-            <Link href="/mobile/funding">
-              <Card className="bg-gray-800 border-gray-700 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-gray-400 text-sm mb-1">Funding</div>
-                    <div className="text-white text-lg font-bold">
-                      {showBalance ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(0.51)}` : '****'}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Card>
-            </Link>
-
-            <Link href="/mobile/unified">
-              <Card className="bg-gray-800 border-gray-700 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-gray-400 text-sm mb-1">Unified Trading</div>
-                    <div className="text-white text-lg font-bold">
-                      {showBalance ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(0.00)}` : '****'}
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Card>
-            </Link>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'assets' && (
-        <div className="px-4">
-          <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
-          
-          {/* Bitcoin */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <div className="flex items-center space-x-3">
-              <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
-              <div>
-                <div className="text-white font-medium text-sm">BTC</div>
-                <div className="text-gray-400 text-xs">Bitcoin</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00000484' : '****'}
-              </div>
-              <div className="text-gray-400 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.51) : '***'}
-              </div>
+        {/* USDT */}
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center space-x-3">
+            <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
+            <div>
+              <div className="text-white font-medium text-sm">USDT</div>
+              <div className="text-gray-400 text-xs">Tether</div>
             </div>
           </div>
-
-          {/* USDT */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <div className="flex items-center space-x-3">
-              <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
-              <div>
-                <div className="text-white font-medium text-sm">USDT</div>
-                <div className="text-gray-400 text-xs">Tether</div>
-              </div>
+          <div className="text-right">
+            <div className="text-white font-medium text-sm">
+              {showBalance ? '0.00' : '****'}
             </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-400 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
+            <div className="text-gray-400 text-xs">
+              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
             </div>
           </div>
+        </div>
 
-          {/* ETH */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <div className="flex items-center space-x-3">
-              <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
-              <div>
-                <div className="text-white font-medium text-sm">ETH</div>
-                <div className="text-gray-400 text-xs">Ethereum</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-400 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
+        {/* ETH */}
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center space-x-3">
+            <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
+            <div>
+              <div className="text-white font-medium text-sm">ETH</div>
+              <div className="text-gray-400 text-xs">Ethereum</div>
             </div>
           </div>
-
-          {/* BNB */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <div className="flex items-center space-x-3">
-              <img src="/logos/bnb-logo.svg" alt="BNB" className="w-8 h-8 rounded-full" />
-              <div>
-                <div className="text-white font-medium text-sm">BNB</div>
-                <div className="text-gray-400 text-xs">BNB</div>
-              </div>
+          <div className="text-right">
+            <div className="text-white font-medium text-sm">
+              {showBalance ? '0.00' : '****'}
             </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-400 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
+            <div className="text-gray-400 text-xs">
+              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+            </div>
+          </div>
+        </div>
+
+        {/* BNB */}
+        <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center space-x-3">
+            <img src="/logos/bnb-logo.svg" alt="BNB" className="w-8 h-8 rounded-full" />
+            <div>
+              <div className="text-white font-medium text-sm">BNB</div>
+              <div className="text-gray-400 text-xs">BNB</div>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-white font-medium text-sm">
+              {showBalance ? '0.00' : '****'}
+            </div>
+            <div className="text-gray-400 text-xs">
+              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Modals */}
       <DepositModal
