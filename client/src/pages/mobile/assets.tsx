@@ -15,7 +15,8 @@ import {
   ArrowDownUp,
   CreditCard,
   ChevronRight,
-  X
+  X,
+  QrCode
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
@@ -76,6 +77,58 @@ export default function MobileAssets() {
     setComingSoonOpen(true);
   };
 
+  const handleQRScan = () => {
+    // Check if device has camera access
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          // Create a simple QR scanner modal
+          const scannerModal = document.createElement('div');
+          scannerModal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50';
+          scannerModal.innerHTML = `
+            <div class="relative w-full max-w-sm mx-4">
+              <video id="qr-video" class="w-full rounded-lg" autoplay></video>
+              <div class="absolute inset-0 border-2 border-orange-500 rounded-lg pointer-events-none">
+                <div class="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-orange-500"></div>
+                <div class="absolute top-4 right-4 w-6 h-6 border-r-2 border-t-2 border-orange-500"></div>
+                <div class="absolute bottom-4 left-4 w-6 h-6 border-l-2 border-b-2 border-orange-500"></div>
+                <div class="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-orange-500"></div>
+              </div>
+              <button id="close-scanner" class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">×</button>
+              <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
+                Point camera at QR code
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(scannerModal);
+          const video = document.getElementById('qr-video') as HTMLVideoElement;
+          const closeBtn = document.getElementById('close-scanner');
+
+          video.srcObject = stream;
+
+          closeBtn?.addEventListener('click', () => {
+            stream.getTracks().forEach(track => track.stop());
+            document.body.removeChild(scannerModal);
+          });
+
+          // Auto-close after 30 seconds
+          setTimeout(() => {
+            if (document.body.contains(scannerModal)) {
+              stream.getTracks().forEach(track => track.stop());
+              document.body.removeChild(scannerModal);
+            }
+          }, 30000);
+        })
+        .catch((error) => {
+          alert('Camera access denied or not available');
+          console.error('Camera error:', error);
+        });
+    } else {
+      alert('QR scanner not supported on this device');
+    }
+  };
+
   // Render full-page components instead of assets page
   if (currentView === 'crypto-selection') {
     return (
@@ -113,14 +166,9 @@ export default function MobileAssets() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white">My Assets</h1>
-        <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
-          <div className="w-4 h-4 grid grid-cols-2 gap-px">
-            <div className="bg-gray-400 rounded-sm"></div>
-            <div className="bg-gray-400 rounded-sm"></div>
-            <div className="bg-gray-400 rounded-sm"></div>
-            <div className="bg-gray-400 rounded-sm"></div>
-          </div>
-        </div>
+        <button onClick={handleQRScan} className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+          <QrCode className="w-4 h-4 text-gray-400" />
+        </button>
       </div>
 
 
