@@ -197,26 +197,42 @@ export default function MobileNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
+              className="block bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
             >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
-                  {article.title}
-                </h3>
-                <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
-              </div>
+              {article.urlToImage && (
+                <div className="w-full h-32 overflow-hidden">
+                  <img
+                    src={article.urlToImage}
+                    alt={article.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
               
-              <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
-                {article.description}
-              </p>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-blue-400 text-xs font-medium">
-                  {article.source?.name || 'Crypto News'}
-                </span>
-                <div className="flex items-center text-gray-500 text-xs">
-                  <Clock className="w-3 h-3 mr-1" />
-                  <span>{formatDate(article.publishedAt)}</span>
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
+                    {article.title}
+                  </h3>
+                  <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                </div>
+                
+                <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
+                  {article.description}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-400 text-xs font-medium">
+                    {article.source?.name || 'Crypto News'}
+                  </span>
+                  <div className="flex items-center text-gray-500 text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    <span>{formatDate(article.publishedAt)}</span>
+                  </div>
                 </div>
               </div>
             </a>
