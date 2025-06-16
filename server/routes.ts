@@ -6,7 +6,7 @@ import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { db } from "./db";
 import { users, currencies, userBalances, transactions, stakingRates, stakingPositions } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";

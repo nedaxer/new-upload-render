@@ -126,40 +126,27 @@ export default function MobileNews() {
       <div className="bg-gray-900 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h1 className="text-white text-2xl font-bold">Crypto News</h1>
-            <div className="flex items-center space-x-2">
-              {isConnected ? (
-                <div className="flex items-center space-x-1">
-                  <Wifi className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 text-xs">LIVE</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-1">
-                  <WifiOff className="w-4 h-4 text-red-500" />
-                  <span className="text-red-500 text-xs">OFFLINE</span>
-                </div>
-              )}
-            </div>
+            <h1 className="text-white text-2xl font-bold">News</h1>
+            {isConnected && (
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            )}
           </div>
-          <Button
-            onClick={handleRefresh}
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-            disabled={isLoading}
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-gray-400 text-sm">
-            Real-time cryptocurrency news updates
-          </p>
-          {lastUpdate && (
-            <p className="text-gray-500 text-xs">
-              Last update: {lastUpdate.toLocaleTimeString()}
-            </p>
-          )}
+          <div className="flex items-center space-x-2">
+            {lastUpdate && (
+              <span className="text-gray-400 text-xs">
+                {lastUpdate.toLocaleTimeString()}
+              </span>
+            )}
+            <Button
+              onClick={handleRefresh}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white"
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -203,68 +190,39 @@ export default function MobileNews() {
               </div>
             </div>
           )}
-          {liveNewsData.length > 0 && (
-            <div className="text-center py-2">
-              <div className="inline-flex items-center text-green-400 text-sm">
-                <Zap className="w-3 h-3 mr-2" />
-                Live updates active
-              </div>
-            </div>
-          )}
+
           {displayNewsData.map((article, index) => (
             <a
               key={`${article.url}-${index}`}
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors"
+              className="block bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
             >
-              {article.urlToImage && (
-                <div className="mb-3 rounded-lg overflow-hidden">
-                  <img 
-                    src={article.urlToImage} 
-                    alt={article.title}
-                    className="w-full h-32 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2">
-                {article.title}
-              </h3>
-              <p className="text-gray-400 text-xs mb-3 line-clamp-3">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
+                  {article.title}
+                </h3>
+                <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+              </div>
+              
+              <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
                 {article.description}
               </p>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-blue-400 font-medium">
+              
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 text-xs font-medium">
                   {article.source?.name || 'Crypto News'}
                 </span>
-                <span className="text-gray-500">
-                  {formatDate(article.publishedAt)}
-                </span>
+                <div className="flex items-center text-gray-500 text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  <span>{formatDate(article.publishedAt)}</span>
+                </div>
               </div>
             </a>
           ))}
 
-          {/* Live connection indicator */}
-          <div className="text-center py-4 text-xs text-gray-500">
-            <div className="flex items-center justify-center space-x-2">
-              {isConnected ? (
-                <>
-                  <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Real-time news updates active</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-1 h-1 bg-yellow-500 rounded-full animate-pulse"></div>
-                  <span>Fallback mode - refreshing every 5 minutes</span>
-                </>
-              )}
-            </div>
-          </div>
+
         </div>
       )}
 
