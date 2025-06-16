@@ -1,504 +1,496 @@
-import React, { useState, useEffect } from 'react';
-import { MobileLayout } from '@/components/mobile-layout';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { 
-  ArrowLeft,
-  Shield,
-  Smartphone,
-  Lock,
-  Eye,
-  EyeOff,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Wifi,
-  MapPin,
-  Monitor,
-  ChevronRight
-} from 'lucide-react';
-import { Link } from 'wouter';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Shield, Lock, Smartphone, Eye, EyeOff, Key, AlertTriangle, Check, Clock, Globe } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
-interface SecurityEvent {
+interface SecuritySettings {
+  twoFactorEnabled: boolean;
+  biometricEnabled: boolean;
+  loginNotifications: boolean;
+  screenLock: boolean;
+  autoLogout: number; // minutes
+  trustedDevices: string[];
+  loginHistory: LoginAttempt[];
+}
+
+interface LoginAttempt {
   id: string;
-  type: 'login' | 'password_change' | 'device_change' | '2fa_enabled' | 'withdrawal';
   timestamp: Date;
+  ipAddress: string;
   location: string;
   device: string;
-  ipAddress: string;
-  status: 'success' | 'failed' | 'suspicious';
+  successful: boolean;
 }
 
-interface LoginSession {
-  id: string;
-  device: string;
-  location: string;
-  ipAddress: string;
-  lastActive: Date;
-  isCurrent: boolean;
-}
-
-export default function MobileSecurity() {
+export default function SecurityPage() {
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+  const queryClient = useQueryClient();
+
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorEnabled: false,
-    loginNotifications: true,
-    withdrawalNotifications: true,
-    deviceWhitelist: false,
-    ipWhitelist: false
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [activeSessions, setActiveSessions] = useState<LoginSession[]>([]);
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+    twoFactorEnabled: false,
+    biometricEnabled: false,
+    loginNotifications: true,
+    screenLock: true,
+    autoLogout: 30,
+    trustedDevices: [],
+    loginHistory: []
+  });
 
-  // Real-time security monitoring
+  // Fetch security settings
+  const { data: securityData, refetch: refetchSecurity } = useQuery({
+    queryKey: ['security', 'settings', user?.id],
+    queryFn: () => apiRequest('/api/user/security/settings'),
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Real-time updates every 30 seconds
+  });
+
+  // Fetch login history
+  const { data: loginHistory } = useQuery({
+    queryKey: ['security', 'login-history', user?.id],
+    queryFn: () => apiRequest('/api/user/security/login-history'),
+    enabled: !!user?.id,
+    refetchInterval: 60000, // Real-time updates every minute
+  });
+
+  // Update security settings mutation
+  const updateSecurityMutation = useMutation({
+    mutationFn: async (settings: Partial<SecuritySettings>) => {
+      const response = await fetch('/api/user/security/update', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(settings)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update security settings');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['security', 'settings'] });
+      refetchSecurity();
+      toast({
+        title: "Security Updated",
+        description: "Your security settings have been updated successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update security settings.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const response = await fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to change password');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setIsChangingPassword(false);
+      toast({
+        title: "Password Changed",
+        description: "Your password has been changed successfully."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Change Failed",
+        description: error.message || "Failed to change password.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update settings from server data
   useEffect(() => {
-    // Simulate real-time security events
-    const mockEvents: SecurityEvent[] = [
-      {
-        id: '1',
-        type: 'login',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        location: 'New York, US',
-        device: 'iPhone 14 Pro',
-        ipAddress: '192.168.1.100',
-        status: 'success'
-      },
-      {
-        id: '2',
-        type: 'withdrawal',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        location: 'New York, US',
-        device: 'Chrome Browser',
-        ipAddress: '192.168.1.100',
-        status: 'success'
-      },
-      {
-        id: '3',
-        type: 'login',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        location: 'Unknown Location',
-        device: 'Unknown Device',
-        ipAddress: '45.132.45.21',
-        status: 'failed'
-      }
-    ];
-
-    const mockSessions: LoginSession[] = [
-      {
-        id: '1',
-        device: 'iPhone 14 Pro (Current)',
-        location: 'New York, US',
-        ipAddress: '192.168.1.100',
-        lastActive: new Date(),
-        isCurrent: true
-      },
-      {
-        id: '2',
-        device: 'Chrome on MacBook Pro',
-        location: 'New York, US',
-        ipAddress: '192.168.1.101',
-        lastActive: new Date(Date.now() - 30 * 60 * 1000),
-        isCurrent: false
-      }
-    ];
-
-    setSecurityEvents(mockEvents);
-    setActiveSessions(mockSessions);
-
-    // Simulate real-time updates every 30 seconds
-    const interval = setInterval(() => {
-      // Update last active time for current session
-      setActiveSessions(prev => prev.map(session => 
-        session.isCurrent 
-          ? { ...session, lastActive: new Date() }
-          : session
-      ));
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handlePasswordChange = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all password fields",
-        variant: "destructive"
-      });
-      return;
+    if (securityData?.data) {
+      setSecuritySettings(prev => ({
+        ...prev,
+        ...securityData.data
+      }));
     }
+  }, [securityData]);
 
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error", 
-        description: "New passwords don't match",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 8 characters long",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Simulate password change
-    toast({
-      title: "Success",
-      description: "Password changed successfully",
-    });
-
-    // Clear form
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-
-    // Add security event
-    const newEvent: SecurityEvent = {
-      id: Date.now().toString(),
-      type: 'password_change',
-      timestamp: new Date(),
-      location: 'New York, US',
-      device: 'iPhone 14 Pro',
-      ipAddress: '192.168.1.100',
-      status: 'success'
+  // Real-time updates listener
+  useEffect(() => {
+    const handleSecurityUpdate = () => {
+      refetchSecurity();
     };
-    setSecurityEvents(prev => [newEvent, ...prev]);
+
+    window.addEventListener('securityUpdated', handleSecurityUpdate);
+    return () => {
+      window.removeEventListener('securityUpdated', handleSecurityUpdate);
+    };
+  }, [refetchSecurity]);
+
+  const handleSecurityToggle = (setting: keyof SecuritySettings, value: boolean | number) => {
+    const updatedSettings = { ...securitySettings, [setting]: value };
+    setSecuritySettings(updatedSettings);
+    updateSecurityMutation.mutate({ [setting]: value });
   };
 
-  const handleSecurityToggle = (setting: keyof typeof securitySettings) => {
-    setSecuritySettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
+  const handlePasswordChange = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "New password and confirmation don't match.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    toast({
-      title: "Security Setting Updated",
-      description: `${setting} has been ${!securitySettings[setting] ? 'enabled' : 'disabled'}`,
+    if (passwordData.newPassword.length < 8) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword
     });
   };
 
-  const terminateSession = (sessionId: string) => {
-    setActiveSessions(prev => prev.filter(session => session.id !== sessionId));
-    toast({
-      title: "Session Terminated",
-      description: "Device session has been terminated successfully",
-    });
-  };
-
-  const getEventIcon = (type: SecurityEvent['type'], status: SecurityEvent['status']) => {
-    if (status === 'failed' || status === 'suspicious') {
-      return <AlertTriangle className="w-5 h-5 text-red-500" />;
-    }
-    
-    switch (type) {
-      case 'login':
-        return <Smartphone className="w-5 h-5 text-green-500" />;
-      case 'password_change':
-        return <Lock className="w-5 h-5 text-blue-500" />;
-      case '2fa_enabled':
-        return <Shield className="w-5 h-5 text-green-500" />;
-      case 'withdrawal':
-        return <CheckCircle className="w-5 h-5 text-orange-500" />;
-      default:
-        return <Shield className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const formatEventType = (type: SecurityEvent['type']) => {
-    switch (type) {
-      case 'login':
-        return 'Login Attempt';
-      case 'password_change':
-        return 'Password Changed';
-      case '2fa_enabled':
-        return '2FA Enabled';
-      case 'withdrawal':
-        return 'Withdrawal';
-      default:
-        return 'Security Event';
-    }
-  };
-
-  const formatTimeAgo = (date: Date) => {
+  const formatLastLogin = (timestamp: string) => {
+    const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
   };
 
   return (
-    <MobileLayout>
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
-        <Link href="/mobile/profile">
-          <ArrowLeft className="w-6 h-6 text-white" />
-        </Link>
-        <h1 className="text-white text-lg font-semibold">Security</h1>
-        <div className="w-6 h-6" />
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation('/mobile/settings')}
+            className="text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Security</h1>
+        </div>
+        <Shield className="w-5 h-5 text-orange-500" />
       </div>
 
-      <div className="px-4 space-y-6">
-        {/* Password Change Section */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <Lock className="w-6 h-6 text-orange-500" />
-            <h2 className="text-white text-lg font-semibold">Change Password</h2>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="relative">
-              <Input
-                type={showCurrentPassword ? 'text' : 'password'}
-                placeholder="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+      <div className="p-4 space-y-6">
+        {/* Password Section */}
+        <Card className="bg-gray-900 border-gray-800">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Lock className="w-5 h-5 text-orange-500" />
+                <h2 className="text-lg font-semibold">Password</h2>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsChangingPassword(!isChangingPassword)}
+                className="border-gray-700 text-gray-300 hover:text-white"
               >
-                {showCurrentPassword ? (
-                  <EyeOff className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <Eye className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
+                {isChangingPassword ? 'Cancel' : 'Change'}
+              </Button>
             </div>
 
-            <div className="relative">
-              <Input
-                type={showNewPassword ? 'text' : 'password'}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                {showNewPassword ? (
-                  <EyeOff className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <Eye className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
-            </div>
+            {isChangingPassword && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="currentPassword" className="text-gray-300">Current Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="currentPassword"
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      placeholder="Enter current password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
 
-            <Input
-              type="password"
-              placeholder="Confirm New Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-gray-700 border-gray-600 text-white"
-            />
+                <div>
+                  <Label htmlFor="newPassword" className="text-gray-300">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      placeholder="Enter new password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
 
-            <Button 
-              onClick={handlePasswordChange}
-              className="w-full bg-orange-500 hover:bg-orange-600"
-            >
-              Update Password
-            </Button>
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-gray-300">Confirm New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      placeholder="Confirm new password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handlePasswordChange}
+                  disabled={changePasswordMutation.isPending}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
 
         {/* Security Settings */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <Shield className="w-6 h-6 text-orange-500" />
-            <h2 className="text-white text-lg font-semibold">Security Settings</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Two-Factor Authentication</p>
-                <p className="text-gray-400 text-sm">Add an extra layer of security</p>
+        <Card className="bg-gray-900 border-gray-800">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Security Settings</h2>
+            
+            <div className="space-y-4">
+              {/* Two-Factor Authentication */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                <div className="flex items-center space-x-3">
+                  <Key className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="text-white font-medium">Two-Factor Authentication</p>
+                    <p className="text-gray-400 text-sm">Add an extra layer of security</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={securitySettings.twoFactorEnabled}
+                  onCheckedChange={(checked) => handleSecurityToggle('twoFactorEnabled', checked)}
+                />
               </div>
-              <Switch
-                checked={securitySettings.twoFactorEnabled}
-                onCheckedChange={() => handleSecurityToggle('twoFactorEnabled')}
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Login Notifications</p>
-                <p className="text-gray-400 text-sm">Get notified of new logins</p>
+              {/* Biometric Authentication */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                <div className="flex items-center space-x-3">
+                  <Smartphone className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="text-white font-medium">Biometric Login</p>
+                    <p className="text-gray-400 text-sm">Use fingerprint or face recognition</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={securitySettings.biometricEnabled}
+                  onCheckedChange={(checked) => handleSecurityToggle('biometricEnabled', checked)}
+                />
               </div>
-              <Switch
-                checked={securitySettings.loginNotifications}
-                onCheckedChange={() => handleSecurityToggle('loginNotifications')}
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Withdrawal Notifications</p>
-                <p className="text-gray-400 text-sm">Get notified of withdrawals</p>
+              {/* Login Notifications */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="text-white font-medium">Login Notifications</p>
+                    <p className="text-gray-400 text-sm">Get notified of new logins</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={securitySettings.loginNotifications}
+                  onCheckedChange={(checked) => handleSecurityToggle('loginNotifications', checked)}
+                />
               </div>
-              <Switch
-                checked={securitySettings.withdrawalNotifications}
-                onCheckedChange={() => handleSecurityToggle('withdrawalNotifications')}
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">Device Whitelist</p>
-                <p className="text-gray-400 text-sm">Only allow trusted devices</p>
+              {/* Screen Lock */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+                <div className="flex items-center space-x-3">
+                  <Lock className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="text-white font-medium">Screen Lock</p>
+                    <p className="text-gray-400 text-sm">Require authentication to unlock</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={securitySettings.screenLock}
+                  onCheckedChange={(checked) => handleSecurityToggle('screenLock', checked)}
+                />
               </div>
-              <Switch
-                checked={securitySettings.deviceWhitelist}
-                onCheckedChange={() => handleSecurityToggle('deviceWhitelist')}
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white font-medium">IP Whitelist</p>
-                <p className="text-gray-400 text-sm">Restrict access to specific IPs</p>
+              {/* Auto Logout */}
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center space-x-3">
+                  <Clock className="w-5 h-5 text-orange-500" />
+                  <div>
+                    <p className="text-white font-medium">Auto Logout</p>
+                    <p className="text-gray-400 text-sm">Automatically logout after inactivity</p>
+                  </div>
+                </div>
+                <select
+                  value={securitySettings.autoLogout}
+                  onChange={(e) => handleSecurityToggle('autoLogout', parseInt(e.target.value))}
+                  className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white text-sm"
+                >
+                  <option value={15}>15 min</option>
+                  <option value={30}>30 min</option>
+                  <option value={60}>1 hour</option>
+                  <option value={120}>2 hours</option>
+                  <option value={0}>Never</option>
+                </select>
               </div>
-              <Switch
-                checked={securitySettings.ipWhitelist}
-                onCheckedChange={() => handleSecurityToggle('ipWhitelist')}
-              />
             </div>
           </div>
         </Card>
 
-        {/* Active Sessions */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <Monitor className="w-6 h-6 text-orange-500" />
-            <h2 className="text-white text-lg font-semibold">Active Sessions</h2>
-          </div>
-
-          <div className="space-y-3">
-            {activeSessions.map((session) => (
-              <div key={session.id} className="bg-gray-700 rounded-lg p-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <Monitor className="w-4 h-4 text-gray-400" />
-                      <p className="text-white font-medium">{session.device}</p>
-                      {session.isCurrent && (
-                        <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">
-                          Current
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="w-3 h-3" />
-                        <span>{session.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Wifi className="w-3 h-3" />
-                        <span>{session.ipAddress}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatTimeAgo(session.lastActive)}</span>
-                      </div>
+        {/* Login History */}
+        <Card className="bg-gray-900 border-gray-800">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Recent Login Activity</h2>
+              <Globe className="w-5 h-5 text-orange-500" />
+            </div>
+            
+            <div className="space-y-3">
+              {loginHistory?.data?.slice(0, 5).map((login: LoginAttempt) => (
+                <div key={login.id} className="flex items-center justify-between py-2 border-b border-gray-800 last:border-b-0">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${login.successful ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <div>
+                      <p className="text-white text-sm font-medium">{login.device}</p>
+                      <p className="text-gray-400 text-xs">{login.location} • {login.ipAddress}</p>
                     </div>
                   </div>
-                  {!session.isCurrent && (
-                    <Button
-                      onClick={() => terminateSession(session.id)}
-                      variant="destructive"
-                      size="sm"
-                    >
-                      Terminate
-                    </Button>
-                  )}
+                  <div className="text-right">
+                    <p className="text-gray-400 text-xs">{formatLastLogin(login.timestamp.toString())}</p>
+                    {login.successful ? (
+                      <Check className="w-4 h-4 text-green-500 ml-auto" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-red-500 ml-auto" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )) || (
+                <div className="text-center py-4">
+                  <p className="text-gray-400 text-sm">No recent login activity</p>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
 
-        {/* Security Events Log */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <Clock className="w-6 h-6 text-orange-500" />
-            <h2 className="text-white text-lg font-semibold">Recent Security Events</h2>
-          </div>
-
-          <div className="space-y-3">
-            {securityEvents.map((event) => (
-              <div key={event.id} className="bg-gray-700 rounded-lg p-3">
-                <div className="flex items-start space-x-3">
-                  {getEventIcon(event.type, event.status)}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-white font-medium">
-                        {formatEventType(event.type)}
-                      </p>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        event.status === 'success' ? 'bg-green-500 text-white' :
-                        event.status === 'failed' ? 'bg-red-500 text-white' :
-                        'bg-yellow-500 text-black'
-                      }`}>
-                        {event.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-4 mt-1 text-sm text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <Monitor className="w-3 h-3" />
-                        <span>{event.device}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="w-3 h-3" />
-                        <span>{event.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatTimeAgo(event.timestamp)}</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">IP: {event.ipAddress}</p>
-                  </div>
+        {/* Security Status */}
+        <Card className="bg-gray-900 border-gray-800">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Security Status</h2>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Two-Factor Authentication</span>
+                <div className={`flex items-center space-x-1 ${securitySettings.twoFactorEnabled ? 'text-green-500' : 'text-red-500'}`}>
+                  {securitySettings.twoFactorEnabled ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                  <span className="text-sm">{securitySettings.twoFactorEnabled ? 'Enabled' : 'Disabled'}</span>
                 </div>
               </div>
-            ))}
+              
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Biometric Login</span>
+                <div className={`flex items-center space-x-1 ${securitySettings.biometricEnabled ? 'text-green-500' : 'text-gray-500'}`}>
+                  {securitySettings.biometricEnabled ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                  <span className="text-sm">{securitySettings.biometricEnabled ? 'Enabled' : 'Disabled'}</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Login Notifications</span>
+                <div className={`flex items-center space-x-1 ${securitySettings.loginNotifications ? 'text-green-500' : 'text-red-500'}`}>
+                  {securitySettings.loginNotifications ? <Check className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                  <span className="text-sm">{securitySettings.loginNotifications ? 'Enabled' : 'Disabled'}</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <Button 
-            variant="outline" 
-            className="w-full mt-4 bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700"
-          >
-            View All Events
-          </Button>
         </Card>
       </div>
-    </MobileLayout>
+    </div>
   );
 }
