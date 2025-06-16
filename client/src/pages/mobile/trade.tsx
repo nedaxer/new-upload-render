@@ -24,7 +24,6 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
-import MobileConvert from './convert';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
@@ -47,7 +46,7 @@ export default function MobileTrade() {
   const [location, navigate] = useLocation();
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
-  const tradingTabs = ['Convert', 'Spot', 'Futures'];
+  const tradingTabs = ['Spot', 'Futures'];
   const cryptoPairs = [
     { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
     { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
@@ -178,9 +177,7 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      
-
-      {/* Trading Interface Content */}
+      {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
         <>
           {/* TradingView Chart Area */}
@@ -197,7 +194,7 @@ export default function MobileTrade() {
                 allow_symbol_change={true}
                 autosize={false}
               />
-            </div>
+                        </div>
           </div>
 
           {/* Action Buttons */}
@@ -290,29 +287,16 @@ export default function MobileTrade() {
         </>
       )}
 
-      {/* Charts for other trading types */}
-      {selectedTab === 'Charts' && selectedTradingType === 'Convert' && (
-        <div className="h-full">
-          <MobileConvert />
-        </div>
-      )}
-
       {selectedTab === 'Charts' && selectedTradingType === 'Futures' && (
         <div className="h-full">
           <MobileFutures />
         </div>
       )}
 
-      
-
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
         <div className="flex-1 overflow-hidden">
-          {selectedTradingType === 'Convert' && (
-            <div className="h-full">
-              <MobileConvert />
-            </div>
-          )}
+          
           {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
@@ -475,7 +459,7 @@ export default function MobileTrade() {
               <MobileFutures />
             </div>
           )}
-          
+
         </div>
       )}
 
