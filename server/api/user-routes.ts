@@ -346,6 +346,34 @@ userRouter.get("/kyc/status", requireAuth, async (req, res) => {
   }
 });
 
+// Get KYC status
+userRouter.get("/kyc/status", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    // Mock KYC status - in production this would come from database
+    const mockKycStatus = {
+      verification: {
+        status: 'pending', // pending, processing, verified, rejected
+        confidence: 0,
+        issues: []
+      }
+    };
+    
+    return res.status(200).json({
+      success: true,
+      data: mockKycStatus,
+      message: "KYC status retrieved successfully"
+    });
+  } catch (error) {
+    console.error("Error fetching KYC status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch KYC status"
+    });
+  }
+});
+
 // Submit KYC verification
 userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
   try {
