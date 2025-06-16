@@ -51,6 +51,14 @@ export default function MobileSettings() {
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
 
+  // Fetch KYC status
+  const { data: kycData } = useQuery({
+    queryKey: ['kyc', 'status', user?.id],
+    queryFn: () => apiRequest('/api/users/kyc/status'),
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Real-time updates every 30 seconds
+  });
+
   // Calculate security score based on enabled features
   const calculateSecurityScore = () => {
     if (!securityData?.data) return 0;
@@ -350,19 +358,25 @@ export default function MobileSettings() {
           <div className="space-y-0">
             <Button
               variant="ghost"
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
-            >
-              <span>Join an Affiliate's Community</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
+              onClick={() => setLocation('/mobile/kyc')}
               className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
             >
               <span>Identity Verification</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs bg-green-600 px-2 py-1 rounded">Lv.1 Verified</span>
+                <span className={`text-xs px-2 py-1 rounded ${
+                  kycData?.verification?.status === 'verified' 
+                    ? 'bg-green-600' 
+                    : kycData?.verification?.status === 'processing'
+                      ? 'bg-yellow-600'
+                      : 'bg-red-600'
+                }`}>
+                  {kycData?.verification?.status === 'verified' 
+                    ? 'Lv.1 Verified' 
+                    : kycData?.verification?.status === 'processing'
+                      ? 'Processing'
+                      : 'Not Verified'
+                  }
+                </span>
                 <ChevronRight className="h-4 w-4" />
               </div>
             </Button>
@@ -381,25 +395,6 @@ export default function MobileSettings() {
                   {getSecurityLevel().level} ({securityScore}%)
                 </span>
                 {securityScore < 80 && <AlertTriangle className="h-3 w-3 text-red-500" />}
-                <ChevronRight className="h-4 w-4" />
-              </div>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
-            >
-              <span>My Fee Rates</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              variant="ghost"
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
-            >
-              <span>Link Account</span>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-500 rounded" />
                 <ChevronRight className="h-4 w-4" />
               </div>
             </Button>
