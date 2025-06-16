@@ -175,57 +175,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/crypto/news', async (req: Request, res: Response) => {
+  // Function to fetch news from multiple sources
+  const fetchCryptoNews = async (): Promise<any[]> => {
+    let newsData = [];
+
     try {
-      // Try RapidAPI crypto news service first
-      let newsData = [];
-
-      try {
-        const rapidResponse = await fetch('https://crypto-news-live.n.rapidapi.com/news', {
-          method: 'GET',
-          headers: {
-            'x-rapidapi-host': 'crypto-news-live.n.rapidapi.com',
-            'x-rapidapi-key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
-          }
-        });
-
-        console.log('RapidAPI Response Status:', rapidResponse.status);
-
-        if (rapidResponse.ok) {
-          const rapidData = await rapidResponse.json();
-          console.log('RapidAPI Response Data:', rapidData);
-
-          // Handle different possible response structures
-          let articles = [];
-          if (Array.isArray(rapidData)) {
-            articles = rapidData;
-          } else if (rapidData.data && Array.isArray(rapidData.data)) {
-            articles = rapidData.data;
-          } else if (rapidData.articles && Array.isArray(rapidData.articles)) {
-            articles = rapidData.articles;
-          } else if (rapidData.news && Array.isArray(rapidData.news)) {
-            articles = rapidData.news;
-          }
-
-          // Transform the RapidAPI response to match our expected format
-          newsData = articles.slice(0, 20).map((article: any, index: number) => ({
-            title: article.title || article.headline || `Crypto News Update ${index + 1}`,
-            description: article.description || article.summary || article.content || article.excerpt || 'Latest cryptocurrency news and updates from the market',
-            url: article.url || article.link || article.permalink || '#',
-            source: { name: article.source || article.publisher || article.author || 'Crypto Live News' },
-            publishedAt: article.publishedAt || article.published_at || article.date || article.timestamp || new Date().toISOString(),
-            urlToImage: article.urlToImage || article.image || article.thumbnail || article.imageUrl || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
+      // Try CoinGecko news first (free tier)
+      const coinGeckoResponse = await fetch('https://api.coingecko.com/api/v3/news');
+      
+      if (coinGeckoResponse.ok) {
+        const coinGeckoData = await coinGeckoResponse.json();
+        if (coinGeckoData.data && Array.isArray(coinGeckoData.data)) {
+          newsData = coinGeckoData.data.slice(0, 20).map((article: any, index: number) => ({
+            title: article.title || `Crypto News Update ${index + 1}`,
+            description: article.description || article.content || 'Latest cryptocurrency news and market updates',
+            url: article.url || article.news_url || '#',
+            source: { name: article.source?.name || 'CoinGecko' },
+            publishedAt: article.published_at || article.created_at || new Date().toISOString(),
+            urlToImage: article.thumb_2x || article.image || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
           }));
-
-          console.log('Transformed news data length:', newsData.length);
-        } else {
-          console.log('RapidAPI response not ok:', await rapidResponse.text());
         }
-      } catch (rapidError) {
-        console.log('RapidAPI error:', rapidError);
       }
 
-      // If no news from RapidAPI, provide a sample news structure
+      // Fallback to CryptoCompare if CoinGecko fails
+      if (newsData.length === 0) {
+        const cryptoCompareResponse = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=BTC,ETH');
+        
+        if (cryptoCompareResponse.ok) {
+          const cryptoCompareData = await cryptoCompareResponse.json();
+          if (cryptoCompareData.Data && Array.isArray(cryptoCompareData.Data)) {
+            newsData = cryptoCompareData.Data.slice(0, 20).map((article: any, index: number) => ({
+              title: article.title || `Crypto News Update ${index + 1}`,
+              description: article.body || 'Latest cryptocurrency news and market updates',
+              url: article.url || article.guid || '#',
+              source: { name: article.source_info?.name || article.source || 'CryptoCompare' },
+              publishedAt: new Date(article.published_on * 1000).toISOString(),
+              urlToImage: article.imageurl || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
+            }));
+          }
+        }
+      }
+
+      // Try Coinotag API if other sources fail
+      if (newsData.length === 0) {
+        try {
+          const coinotagResponse = await fetch('https://api.coinotag.com/v1/news');
+          
+          if (coinotagResponse.ok) {
+            const coinotagData = await coinotagResponse.json();
+            if (coinotagData.articles && Array.isArray(coinotagData.articles)) {
+              newsData = coinotagData.articles.slice(0, 20).map((article: any, index: number) => ({
+                title: article.title || `Crypto News Update ${index + 1}`,
+                description: article.description || article.summary || 'Latest cryptocurrency news and market updates',
+                url: article.url || article.link || '#',
+                source: { name: article.source?.name || 'Coinotag' },
+                publishedAt: article.publishedAt || article.published_at || new Date().toISOString(),
+                urlToImage: article.urlToImage || article.image || `https://via.placeholder.com/400x200/f7931e/ffffff?text=Crypto+News`
+              }));
+            }
+          }
+        } catch (coinotagError) {
+          console.log('Coinotag API error:', coinotagError);
+        }
+      }
+
+      console.log('News data sources checked, total articles:', newsData.length);
+    } catch (newsError) {
+      console.log('News fetching error:', newsError);
+    }
+
+    return newsData;
+  };
+
+  app.get('/api/crypto/news', async (req: Request, res: Response) => {
+    try {
+      let newsData = await fetchCryptoNews();
+
+      // If no news from APIs, provide current sample structure
       if (newsData.length === 0) {
         const now = new Date();
         newsData = [
@@ -1144,37 +1170,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Function to broadcast news updates to all connected clients
   const broadcastNewsUpdate = async () => {
     try {
-      const newsResponse = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': 'crypto-news-live.p.rapidapi.com',
-          'x-rapidapi-key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
-        }
-      });
-
-      if (newsResponse.ok) {
-        const newsData = await newsResponse.json();
-        let articles = [];
+      const newsData = await fetchCryptoNews();
+      
+      if (newsData.length > 0) {
+        const formattedNews = newsData.slice(0, 10);
         
-        if (Array.isArray(newsData)) {
-          articles = newsData;
-        } else if (newsData.data && Array.isArray(newsData.data)) {
-          articles = newsData.data;
-        } else if (newsData.articles && Array.isArray(newsData.articles)) {
-          articles = newsData.articles;
-        } else if (newsData.news && Array.isArray(newsData.news)) {
-          articles = newsData.news;
-        }
-
-        const formattedNews = articles.slice(0, 10).map((article: any, index: number) => ({
-          title: article.title || article.headline || `Crypto News Update ${index + 1}`,
-          description: article.description || article.summary || article.content || 'Latest cryptocurrency news and updates',
-          url: article.url || article.link || '#',
-          source: { name: article.source || article.publisher || 'Crypto Live News' },
-          publishedAt: article.publishedAt || article.published_at || article.date || new Date().toISOString(),
-          urlToImage: article.urlToImage || article.image || article.thumbnail || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
-        }));
-
         // Broadcast to all connected clients
         activeConnections.forEach(ws => {
           if (ws.readyState === WebSocket.OPEN) {
@@ -1185,6 +1185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }));
           }
         });
+        
+        console.log(`Broadcasted ${formattedNews.length} news articles to ${activeConnections.size} clients`);
       }
     } catch (error) {
       console.error('Error broadcasting news update:', error);
