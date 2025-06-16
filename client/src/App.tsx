@@ -107,7 +107,6 @@ import MobileSecurity from '@/pages/mobile/security';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
-import { useEffect } from 'react';
 import MobileCurrencySelection from './pages/mobile/currency-selection';
 
 
