@@ -47,8 +47,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     }
     // Store in localStorage for persistence
     localStorage.setItem('selectedCurrency', currency);
-    // Navigate back to home
-    window.history.back();
+    // Let the parent component handle navigation
   };
 
   return (
