@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Shield, Lock, Smartphone, Eye, EyeOff, Key, AlertTriangle, Check, Clock, Globe } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Smartphone, Eye, EyeOff, Key, AlertTriangle, Check, Clock, Globe, QrCode, Copy, Fingerprint } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -40,6 +41,11 @@ export default function SecurityPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [show2FADisableModal, setShow2FADisableModal] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [disablePassword, setDisablePassword] = useState('');
+  const [biometricSupported, setBiometricSupported] = useState(false);
   
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -131,6 +137,7 @@ export default function SecurityPage() {
     onSuccess: () => {
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setIsChangingPassword(false);
+      refetchSecurity();
       toast({
         title: "Password Changed",
         description: "Your password has been changed successfully."
@@ -140,6 +147,115 @@ export default function SecurityPage() {
       toast({
         title: "Password Change Failed",
         description: error.message || "Failed to change password.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Enable 2FA mutation
+  const enable2FAMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const response = await fetch('/api/user/security/2fa/enable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ token })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to enable 2FA');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setShow2FAModal(false);
+      setTwoFactorCode('');
+      refetchSecurity();
+      toast({
+        title: "2FA Enabled",
+        description: "Two-factor authentication has been enabled successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "2FA Setup Failed",
+        description: error.message || "Failed to enable two-factor authentication.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Disable 2FA mutation
+  const disable2FAMutation = useMutation({
+    mutationFn: async (password: string) => {
+      const response = await fetch('/api/user/security/2fa/disable', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ password })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to disable 2FA');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      setShow2FADisableModal(false);
+      setDisablePassword('');
+      refetchSecurity();
+      toast({
+        title: "2FA Disabled",
+        description: "Two-factor authentication has been disabled.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "2FA Disable Failed",
+        description: error.message || "Failed to disable two-factor authentication.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Biometric toggle mutation
+  const biometricToggleMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await fetch('/api/user/security/biometric/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ enabled })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update biometric setting');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      refetchSecurity();
+      toast({
+        title: data.data.biometricEnabled ? "Biometric Enabled" : "Biometric Disabled",
+        description: data.message,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Biometric Update Failed",
+        description: error.message || "Failed to update biometric login setting.",
         variant: "destructive"
       });
     }
@@ -155,22 +271,131 @@ export default function SecurityPage() {
     }
   }, [securityData]);
 
+  // Check biometric support
+  useEffect(() => {
+    const checkBiometricSupport = async () => {
+      if ('credentials' in navigator && 'create' in navigator.credentials) {
+        try {
+          // Check if WebAuthn is supported
+          const available = await navigator.credentials.create({
+            publicKey: {
+              challenge: new Uint8Array(32),
+              rp: { name: "Nedaxer" },
+              user: {
+                id: new Uint8Array(16),
+                name: "test",
+                displayName: "Test User"
+              },
+              pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+              timeout: 1000,
+              authenticatorSelection: {
+                authenticatorAttachment: "platform",
+                userVerification: "required"
+              }
+            }
+          });
+          setBiometricSupported(true);
+        } catch (error) {
+          // If error is NotAllowedError, biometrics might be supported but not authorized
+          if (error instanceof Error && error.name === 'NotAllowedError') {
+            setBiometricSupported(true);
+          } else {
+            setBiometricSupported(false);
+          }
+        }
+      }
+    };
+
+    checkBiometricSupport();
+  }, []);
+
   // Real-time updates listener
   useEffect(() => {
     const handleSecurityUpdate = () => {
       refetchSecurity();
     };
 
+    // WebSocket or EventSource for real-time updates
+    const eventSource = new EventSource('/api/events/security');
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.userId === user?.id) {
+        handleSecurityUpdate();
+        
+        // Show notification for security changes
+        if (data.type === '2fa_enabled') {
+          toast({
+            title: "Security Alert",
+            description: "Two-factor authentication has been enabled.",
+          });
+        } else if (data.type === 'password_changed') {
+          toast({
+            title: "Security Alert",
+            description: "Your password has been changed successfully.",
+          });
+        }
+      }
+    };
+
     window.addEventListener('securityUpdated', handleSecurityUpdate);
+    
     return () => {
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
+      eventSource.close();
     };
-  }, [refetchSecurity]);
+  }, [refetchSecurity, user?.id, toast]);
 
   const handleSecurityToggle = (setting: keyof SecuritySettings, value: boolean | number) => {
+    if (setting === 'twoFactorEnabled' && value === true) {
+      setShow2FAModal(true);
+      return;
+    }
+    
+    if (setting === 'twoFactorEnabled' && value === false) {
+      setShow2FADisableModal(true);
+      return;
+    }
+    
+    if (setting === 'biometricEnabled') {
+      if (!biometricSupported) {
+        toast({
+          title: "Biometric Not Supported",
+          description: "Your device doesn't support biometric authentication.",
+          variant: "destructive"
+        });
+        return;
+      }
+      biometricToggleMutation.mutate(value as boolean);
+      return;
+    }
+    
     const updatedSettings = { ...securitySettings, [setting]: value };
     setSecuritySettings(updatedSettings);
     updateSecurityMutation.mutate({ [setting]: value });
+  };
+
+  const handleEnable2FA = () => {
+    if (twoFactorCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a 6-digit verification code.",
+        variant: "destructive"
+      });
+      return;
+    }
+    enable2FAMutation.mutate(twoFactorCode);
+  };
+
+  const handleDisable2FA = () => {
+    if (!disablePassword) {
+      toast({
+        title: "Password Required",
+        description: "Please enter your password to disable 2FA.",
+        variant: "destructive"
+      });
+      return;
+    }
+    disable2FAMutation.mutate(disablePassword);
   };
 
   const handlePasswordChange = () => {
@@ -355,15 +580,21 @@ export default function SecurityPage() {
               {/* Biometric Authentication */}
               <div className="flex items-center justify-between py-3 border-b border-gray-800">
                 <div className="flex items-center space-x-3">
-                  <Smartphone className="w-5 h-5 text-orange-500" />
+                  <Fingerprint className="w-5 h-5 text-orange-500" />
                   <div>
                     <p className="text-white font-medium">Biometric Login</p>
-                    <p className="text-gray-400 text-sm">Use fingerprint or face recognition</p>
+                    <p className="text-gray-400 text-sm">
+                      {biometricSupported 
+                        ? "Use fingerprint or face recognition" 
+                        : "Not supported on this device"
+                      }
+                    </p>
                   </div>
                 </div>
                 <Switch
                   checked={securitySettings.biometricEnabled}
                   onCheckedChange={(checked) => handleSecurityToggle('biometricEnabled', checked)}
+                  disabled={!biometricSupported}
                 />
               </div>
 
@@ -490,6 +721,123 @@ export default function SecurityPage() {
             </div>
           </div>
         </Card>
+
+        {/* 2FA Setup Modal */}
+        <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Key className="w-5 h-5 text-orange-500" />
+                <span>Enable Two-Factor Authentication</span>
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Scan the QR code with your authenticator app and enter the 6-digit code to enable 2FA.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* QR Code Placeholder */}
+              <div className="flex justify-center">
+                <div className="bg-white p-4 rounded-lg">
+                  <QrCode className="w-32 h-32 text-gray-800" />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-sm text-gray-400 mb-2">Manual Entry Key:</p>
+                <div className="bg-gray-800 p-2 rounded font-mono text-sm flex items-center justify-between">
+                  <span>JBSWY3DPEHPK3PXP</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText('JBSWY3DPEHPK3PXP');
+                      toast({ title: "Copied", description: "Key copied to clipboard" });
+                    }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="2faCode" className="text-gray-300">Verification Code</Label>
+                <Input
+                  id="2faCode"
+                  type="text"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Enter 6-digit code"
+                  className="bg-gray-800 border-gray-700 text-white text-center text-lg tracking-widest"
+                  maxLength={6}
+                />
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShow2FAModal(false)}
+                  className="flex-1 border-gray-700 text-gray-300 hover:text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleEnable2FA}
+                  disabled={enable2FAMutation.isPending || twoFactorCode.length !== 6}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  {enable2FAMutation.isPending ? 'Enabling...' : 'Enable 2FA'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* 2FA Disable Modal */}
+        <Dialog open={show2FADisableModal} onOpenChange={setShow2FADisableModal}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <span>Disable Two-Factor Authentication</span>
+              </DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Enter your password to disable two-factor authentication. This will make your account less secure.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="disablePassword" className="text-gray-300">Password</Label>
+                <Input
+                  id="disablePassword"
+                  type="password"
+                  value={disablePassword}
+                  onChange={(e) => setDisablePassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShow2FADisableModal(false)}
+                  className="flex-1 border-gray-700 text-gray-300 hover:text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDisable2FA}
+                  disabled={disable2FAMutation.isPending || !disablePassword}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  {disable2FAMutation.isPending ? 'Disabling...' : 'Disable 2FA'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

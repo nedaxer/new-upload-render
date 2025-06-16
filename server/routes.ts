@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Use CryptoCompare as primary source (working and includes Coinotag articles)
       const cryptoCompareResponse = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&feeds=coinotag,cryptocompare,coindesk');
-      
+
       if (cryptoCompareResponse.ok) {
         const cryptoCompareData = await cryptoCompareResponse.json();
         if (cryptoCompareData.Data && Array.isArray(cryptoCompareData.Data)) {
@@ -733,12 +733,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { nickname, profilePicture } = result.data;
-      
+
       // Update user profile
       if (nickname) {
         await storage.updateUserProfile(userId, { username: nickname });
       }
-      
+
       if (profilePicture) {
         await storage.updateUserProfile(userId, { profilePicture });
       }
@@ -776,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Security API endpoints
-  
+
   // Get security settings
   app.get('/api/user/security/settings', requireAuth, async (req, res) => {
     try {
@@ -822,7 +822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // In a real implementation, you would save these to the database
       // For now, we'll simulate the update
-      
+
       return res.json({
         success: true,
         message: "Security settings updated successfully",
@@ -863,8 +863,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const user = await storage.getUser(userId);
-      if (!user) {
+      // Get user from database
+      const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user[0]) {
         return res.status(404).json({
           success: false,
           message: "User not found"
@@ -873,8 +874,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Verify current password
       const bcrypt = await import('bcrypt');
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user[0].password);
+
       if (!isCurrentPasswordValid) {
         return res.status(400).json({
           success: false,
@@ -892,6 +893,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password: hashedNewPassword
         })
         .where(eq(users.id, userId));
+
+      console.log(`Password changed successfully for user: ${userId}`);
 
       return res.json({
         success: true,
@@ -1395,10 +1398,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const broadcastNewsUpdate = async () => {
     try {
       const newsData = await fetchCryptoNews();
-      
+
       if (newsData.length > 0) {
         const formattedNews = newsData.slice(0, 10);
-        
+
         // Broadcast to all connected clients
         activeConnections.forEach(ws => {
           if (ws.readyState === WebSocket.OPEN) {
@@ -1409,7 +1412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }));
           }
         });
-        
+
         console.log(`Broadcasted ${formattedNews.length} news articles to ${activeConnections.size} clients`);
       }
     } catch (error) {
