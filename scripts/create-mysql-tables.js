@@ -87,19 +87,19 @@ const createTables = async () => {
       CREATE TABLE IF NOT EXISTS transactions (
         id INT PRIMARY KEY AUTO_INCREMENT,
         user_id INT NOT NULL,
-        type TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
         source_id INT,
         source_amount DOUBLE DEFAULT 0,
         target_id INT,
         target_amount DOUBLE DEFAULT 0,
         fee DOUBLE DEFAULT 0,
-        status TEXT NOT NULL DEFAULT 'pending',
-        tx_hash TEXT,
+        status VARCHAR(50) NOT NULL DEFAULT 'pending',
+        tx_hash VARCHAR(255),
         blockchain_confirmations INT DEFAULT 0,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         completed_at TIMESTAMP NULL,
         description TEXT,
-        metadata JSON,
+        metadata TEXT,
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (source_id) REFERENCES currencies(id),
         FOREIGN KEY (target_id) REFERENCES currencies(id)
@@ -133,9 +133,9 @@ const createTables = async () => {
         lockup_period INT NOT NULL,
         start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         end_date TIMESTAMP NOT NULL,
-        status TEXT NOT NULL DEFAULT 'active',
+        status VARCHAR(50) NOT NULL DEFAULT 'active',
         rewards_earned DOUBLE NOT NULL DEFAULT 0,
-        last_reward_calculation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_reward_calculation TIMESTAMP NULL,
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (currency_id) REFERENCES currencies(id)
       )
@@ -161,15 +161,14 @@ const createTables = async () => {
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS futures_contracts (
         id INT PRIMARY KEY AUTO_INCREMENT,
-        symbol TEXT NOT NULL,
-        base_currency TEXT NOT NULL,
-        quote_currency TEXT NOT NULL,
+        symbol VARCHAR(50) NOT NULL UNIQUE,
+        base_currency VARCHAR(50) NOT NULL,
+        quote_currency VARCHAR(50) NOT NULL,
         contract_size DOUBLE NOT NULL DEFAULT 1,
         tick_size DOUBLE NOT NULL DEFAULT 0.01,
         max_leverage INT NOT NULL DEFAULT 100,
         is_active BOOLEAN NOT NULL DEFAULT TRUE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_futures_symbol (symbol(50))
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✓ Futures contracts table created');
