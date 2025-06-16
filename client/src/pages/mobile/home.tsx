@@ -33,9 +33,11 @@ import { Link } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/lib/i18n';
 
 export default function MobileHome() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
@@ -413,7 +415,7 @@ export default function MobileHome() {
       <div className="px-4 pb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <span className="text-gray-400 text-sm">Total Assets</span>
+            <span className="text-gray-400 text-sm">{t('totalAssets')}</span>
             <button onClick={() => setShowBalance(!showBalance)}>
               {showBalance ? (
                 <Eye className="w-4 h-4 text-gray-400" />
@@ -426,7 +428,7 @@ export default function MobileHome() {
             onClick={handleDepositClick}
             className="bg-orange-500 hover:bg-orange-600 text-white px-6"
           >
-            Deposit
+            {t('deposit')}
           </Button>
         </div>
 
@@ -453,7 +455,7 @@ export default function MobileHome() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CreditCard className="w-6 h-6 text-orange-500" />
-              <span className="text-white">Apply Now!</span>
+              <span className="text-white">{t('applyNow')}!</span>
             </div>
             <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
               <ArrowUp className="w-4 h-4" />

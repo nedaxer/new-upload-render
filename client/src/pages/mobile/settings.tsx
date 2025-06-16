@@ -11,6 +11,7 @@ import { ArrowLeft, ChevronRight, Camera, Copy, Check, Shield, AlertTriangle } f
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useTranslation } from '@/lib/i18n';
 
 interface UserSettings {
   nickname?: string;
@@ -24,12 +25,13 @@ export default function MobileSettings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t, currentLanguage, setLanguage, languages } = useTranslation();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
-    language: 'English',
+    language: currentLanguage,
     currency: 'USD',
     theme: 'Dark Mode',
     screenLock: false
@@ -74,9 +76,9 @@ export default function MobileSettings() {
 
   const securityScore = calculateSecurityScore();
   const getSecurityLevel = () => {
-    if (securityScore >= 80) return { level: 'High', color: 'text-green-500' };
-    if (securityScore >= 50) return { level: 'Medium', color: 'text-yellow-500' };
-    return { level: 'Low', color: 'text-red-500' };
+    if (securityScore >= 80) return { level: t('security.high'), color: 'text-green-500' };
+    if (securityScore >= 50) return { level: t('security.medium'), color: 'text-yellow-500' };
+    return { level: t('security.low'), color: 'text-red-500' };
   };
 
   // Listen for profile updates from other components
@@ -122,14 +124,14 @@ export default function MobileSettings() {
       // Trigger global profile update event for synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully."
+        title: t('message.profile.updated'),
+        description: t('message.profile.update.success')
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Update failed",
-        description: error.message || "Failed to update profile. Please try again.",
+        title: t('message.update.failed'),
+        description: error.message || t('message.update.failed.desc'),
         variant: "destructive"
       });
     }
@@ -138,8 +140,8 @@ export default function MobileSettings() {
   const handlePhotoUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
+        title: t('message.invalid.file'),
+        description: t('message.invalid.file.desc'),
         variant: "destructive"
       });
       return;
@@ -147,8 +149,8 @@ export default function MobileSettings() {
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB.",
+        title: t('message.file.too.large'),
+        description: t('message.file.too.large.desc'),
         variant: "destructive"
       });
       return;
@@ -191,6 +193,16 @@ export default function MobileSettings() {
     setIsEditingNickname(false);
   };
 
+  const handleLanguageChange = async (languageCode: string) => {
+    setSettings(prev => ({ ...prev, language: languageCode }));
+    await setLanguage(languageCode);
+    
+    toast({
+      title: t('message.language.updated', 'Language updated'),
+      description: `${t('message.language.switched', 'Switched to')} ${languages.find(l => l.code === languageCode)?.nativeName}`
+    });
+  };
+
   const handleThemeChange = (theme: string) => {
     setSettings(prev => ({ ...prev, theme }));
     
@@ -206,8 +218,8 @@ export default function MobileSettings() {
     localStorage.setItem('theme', theme);
     
     toast({
-      title: "Theme updated",
-      description: `Switched to ${theme}`
+      title: t('message.theme.updated', 'Theme updated'),
+      description: `${t('message.theme.switched', 'Switched to')} ${theme}`
     });
   };
 
@@ -217,13 +229,13 @@ export default function MobileSettings() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({
-        title: "Copied",
-        description: "User ID copied to clipboard"
+        title: t('common.copied'),
+        description: t('message.uid.copied', 'User ID copied to clipboard')
       });
     } catch (error) {
       toast({
-        title: "Copy failed",
-        description: "Failed to copy User ID",
+        title: t('message.copy.failed'),
+        description: t('message.copy.failed.desc'),
         variant: "destructive"
       });
     }
@@ -241,18 +253,18 @@ export default function MobileSettings() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">Settings</h1>
+        <h1 className="text-lg font-semibold">{t('settings.title')}</h1>
         <div className="w-10" /> {/* Spacer */}
       </div>
 
       <div className="p-4 space-y-6">
         {/* Account Info Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Account Info</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings.account.info')}</h2>
           
           {/* Profile Picture */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Profile Picture</span>
+            <span className="text-gray-300">{t('settings.profile.picture')}</span>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.profilePicture || ''} />
@@ -288,17 +300,17 @@ export default function MobileSettings() {
 
           {/* Email (Read-only) */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Email</span>
+            <span className="text-gray-300">{t('settings.email')}</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">
-                {user?.email || 'Not available'}
+                {user?.email || t('settings.not.available')}
               </span>
             </div>
           </div>
 
           {/* Username/Nickname */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Username</span>
+            <span className="text-gray-300">{t('settings.username')}</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
                 <div className="flex items-center gap-2">
@@ -307,7 +319,7 @@ export default function MobileSettings() {
                     onChange={(e) => setTempNickname(e.target.value)}
                     className="w-32 h-8 bg-gray-800 border-gray-700 text-white text-sm"
                     maxLength={20}
-                    placeholder="Enter username"
+                    placeholder={t('settings.enter.username')}
                   />
                   <Button
                     size="sm"
@@ -320,7 +332,7 @@ export default function MobileSettings() {
               ) : (
                 <>
                   <span className="text-gray-400 text-sm">
-                    {settings.nickname || user?.username || 'Not set'}
+                    {settings.nickname || user?.username || t('settings.not.set')}
                   </span>
                   <Button
                     variant="ghost"
@@ -340,7 +352,7 @@ export default function MobileSettings() {
 
           {/* UID */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">UID</span>
+            <span className="text-gray-300">{t('settings.uid')}</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">{userId}</span>
               <Button
@@ -361,7 +373,7 @@ export default function MobileSettings() {
               onClick={() => setLocation('/mobile/kyc')}
               className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
             >
-              <span>Identity Verification</span>
+              <span>{t('settings.identity.verification')}</span>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-1 rounded ${
                   kycData?.verification?.status === 'verified' 
@@ -371,10 +383,10 @@ export default function MobileSettings() {
                       : 'bg-red-600'
                 }`}>
                   {kycData?.verification?.status === 'verified' 
-                    ? 'Lv.1 Verified' 
+                    ? t('kyc.verified') 
                     : kycData?.verification?.status === 'processing'
-                      ? 'Processing'
-                      : 'Not Verified'
+                      ? t('kyc.processing')
+                      : t('kyc.not.verified')
                   }
                 </span>
                 <ChevronRight className="h-4 w-4" />
@@ -388,7 +400,7 @@ export default function MobileSettings() {
             >
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-orange-500" />
-                <span>Security</span>
+                <span>{t('settings.security')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-1 rounded ${getSecurityLevel().level === 'High' ? 'bg-green-600' : getSecurityLevel().level === 'Medium' ? 'bg-yellow-600' : 'bg-red-600'}`}>
@@ -403,24 +415,25 @@ export default function MobileSettings() {
 
         {/* Settings Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Settings</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('nav.settings')}</h2>
           
           {/* Language */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Language</span>
+            <span className="text-gray-300">{t('settings.language')}</span>
             <div className="flex items-center gap-2">
               <Select
-                value={settings.language}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}
+                value={currentLanguage}
+                onValueChange={handleLanguageChange}
               >
-                <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">
+                <SelectTrigger className="w-32 h-8 bg-transparent border-none text-gray-400 text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Chinese">中文</SelectItem>
-                  <SelectItem value="Japanese">日本語</SelectItem>
-                  <SelectItem value="Korean">한국어</SelectItem>
+                <SelectContent className="max-h-64 overflow-y-auto">
+                  {languages.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      {lang.nativeName}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -429,7 +442,7 @@ export default function MobileSettings() {
 
           {/* Currency Display */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Currency Display</span>
+            <span className="text-gray-300">{t('settings.currency.display')}</span>
             <div className="flex items-center gap-2">
               <Select
                 value={settings.currency}
@@ -451,7 +464,7 @@ export default function MobileSettings() {
 
           {/* Color Theme */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Color Theme</span>
+            <span className="text-gray-300">{t('settings.color.theme')}</span>
             <div className="flex items-center gap-2">
               <Select
                 value={settings.theme}
@@ -461,9 +474,9 @@ export default function MobileSettings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Light Mode">Light</SelectItem>
-                  <SelectItem value="Dark Mode">Dark</SelectItem>
-                  <SelectItem value="Auto">Auto</SelectItem>
+                  <SelectItem value="Light Mode">{t('theme.light')}</SelectItem>
+                  <SelectItem value="Dark Mode">{t('theme.dark')}</SelectItem>
+                  <SelectItem value="Auto">{t('theme.auto')}</SelectItem>
                 </SelectContent>
               </Select>
               <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -472,7 +485,7 @@ export default function MobileSettings() {
 
           {/* Always on (no screen lock) */}
           <div className="flex items-center justify-between py-3">
-            <span className="text-gray-300">Always on (no screen lock)</span>
+            <span className="text-gray-300">{t('settings.screen.lock')}</span>
             <Switch
               checked={settings.screenLock}
               onCheckedChange={(checked) => setSettings(prev => ({ ...prev, screenLock: checked }))}
