@@ -273,10 +273,26 @@ userRouter.post("/profile-picture", requireAuth, async (req, res) => {
     const userId = req.session.userId;
     const { profilePicture } = req.body;
 
+    console.log("Profile picture upload request:", {
+      userId,
+      hasProfilePicture: !!profilePicture,
+      profilePictureLength: profilePicture?.length
+    });
+
     if (!profilePicture) {
+      console.log("No profile picture data provided");
       return res.status(400).json({
         success: false,
         message: "Profile picture data is required"
+      });
+    }
+
+    // Validate base64 format
+    if (!profilePicture.startsWith('data:image/')) {
+      console.log("Invalid profile picture format");
+      return res.status(400).json({
+        success: false,
+        message: "Invalid image format"
       });
     }
 
@@ -285,9 +301,14 @@ userRouter.post("/profile-picture", requireAuth, async (req, res) => {
       .set({ profilePicture })
       .where(eq(users.id, userId));
 
+    console.log("Profile picture updated successfully for user:", userId);
+
     return res.status(200).json({
       success: true,
-      message: "Profile picture updated successfully"
+      message: "Profile picture updated successfully",
+      data: {
+        profilePicture: profilePicture
+      }
     });
   } catch (error) {
     console.error("Error updating profile picture:", error);

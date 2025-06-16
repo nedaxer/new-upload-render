@@ -75,6 +75,8 @@ export default function MobileProfile() {
       reader.onload = async (e) => {
         const result = e.target?.result as string;
         try {
+          console.log('Uploading profile picture, size:', result.length);
+          
           // Save to server using JSON with base64 data
           const response = await fetch('/api/users/profile-picture', {
             method: 'POST',
@@ -84,7 +86,25 @@ export default function MobileProfile() {
             body: JSON.stringify({ profilePicture: result }),
           });
 
+          console.log('Upload response status:', response.status);
+          console.log('Upload response headers:', response.headers.get('content-type'));
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Upload error response:', errorText);
+            throw new Error(`Server error: ${response.status}`);
+          }
+
+          // Check if response is JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const responseText = await response.text();
+            console.error('Non-JSON response:', responseText);
+            throw new Error('Server returned invalid response format');
+          }
+
           const data = await response.json();
+          console.log('Upload response data:', data);
 
           if (data.success) {
             setProfilePicture(result);
@@ -93,13 +113,13 @@ export default function MobileProfile() {
               description: "Profile picture updated successfully",
             });
           } else {
-            throw new Error(data.message);
+            throw new Error(data.message || 'Upload failed');
           }
         } catch (error: any) {
           console.error('Error uploading profile picture:', error);
           toast({
             title: "Error",
-            description: "Failed to update profile picture: " + error.message,
+            description: "Failed to update profile picture: " + (error.message || 'Unknown error'),
             variant: "destructive"
           });
         }
