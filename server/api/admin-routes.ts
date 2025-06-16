@@ -14,20 +14,20 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
   if (!req.session.userId) {
     return res.status(401).json({ success: false, message: "Not authenticated" });
   }
-  
+
   try {
     // Get user from MongoDB
     const user = await User.findById(req.session.userId);
-    
+
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
-    
+
     // Check if user is an admin
     if (!user.isAdmin) {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
-    
+
     // Add user to request object
     (req as any).user = user;
     next();
@@ -42,17 +42,17 @@ router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
   try {
     // Get total users count from MongoDB
     const totalUsers = await User.countDocuments();
-    
+
     // For now, provide default values for other stats since the MongoDB models aren't fully set up
     // In a real implementation, you would query the appropriate collections
     const totalTradingVolume = 125000; // Example value
     const activeStakingPositions = 35; // Example value
     const totalStakedValue = 78500; // Example value
-    
+
     // Sample trend data
     const tradingVolumeTrend = 5.2;  // 5.2% increase
     const userGrowthRate = 2.8;      // 2.8% increase
-    
+
     res.json({
       success: true,
       data: {
@@ -75,7 +75,7 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { search } = req.query;
     let query = {};
-    
+
     if (search && typeof search === 'string') {
       // Use MongoDB $or and $regex for search
       query = {
@@ -87,10 +87,10 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
         ]
       };
     }
-    
+
     // Find users and sort by creation date descending
     const allUsers = await User.find(query).sort({ createdAt: -1 });
-    
+
     res.json({ success: true, data: allUsers });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -109,14 +109,14 @@ router.get("/recent-transactions", requireAdmin, async (req: Request, res: Respo
         path: 'userId',
         select: 'firstName lastName email'
       });
-      
+
     // Get all currencies for mapping
     const currencies = await Currency.find({}, { symbol: 1, _id: 1 });
     const currencyMap = currencies.reduce((map: Record<string, string>, curr: any) => {
       map[curr._id.toString()] = curr.symbol;
       return map;
     }, {});
-    
+
     // Format transactions for response
     const formattedTransactions = recentTransactions.map((tx: any) => ({
       id: tx._id.toString(),
@@ -134,7 +134,7 @@ router.get("/recent-transactions", requireAdmin, async (req: Request, res: Respo
         email: tx.userId.email
       }
     }));
-    
+
     res.json({ success: true, data: formattedTransactions });
   } catch (error) {
     console.error("Error fetching recent transactions:", error);
@@ -146,40 +146,40 @@ router.get("/recent-transactions", requireAdmin, async (req: Request, res: Respo
 router.post("/credit-balance", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { userId, currencyId, amount } = req.body;
-    
+
     if (!userId || !currencyId || !amount || isNaN(amount) || amount <= 0) {
       return res.status(400).json({ 
         success: false, 
         message: "Invalid request parameters" 
       });
     }
-    
+
     // Check if user exists
     const userExists = await User.findById(userId);
-    
+
     if (!userExists) {
       return res.status(404).json({ 
         success: false, 
         message: "User not found" 
       });
     }
-    
+
     // Check if currency exists
     const currencyExists = await Currency.findById(currencyId);
-    
+
     if (!currencyExists) {
       return res.status(404).json({ 
         success: false, 
         message: "Currency not found" 
       });
     }
-    
+
     // Check if user already has a balance for this currency
     const existingBalance = await UserBalance.findOne({
       userId: userId,
       currencyId: currencyId
     });
-    
+
     if (existingBalance) {
       // Update existing balance
       existingBalance.amount += parseFloat(amount.toString());
@@ -195,7 +195,7 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
         updatedAt: new Date()
       });
     }
-    
+
     // Create a transaction record for the credit
     await Transaction.create({
       userId,
@@ -207,7 +207,7 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
       fee: 0,
       createdAt: new Date()
     });
-    
+
     res.json({ 
       success: true, 
       message: "Balance credited successfully" 
@@ -225,31 +225,31 @@ router.post("/credit-balance", requireAdmin, async (req: Request, res: Response)
 router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { currencyId, rate, minAmount, isActive = true } = req.body;
-    
+
     if (!currencyId || rate === undefined || minAmount === undefined) {
       return res.status(400).json({ 
         success: false, 
         message: "Missing required fields" 
       });
     }
-    
+
     if (isNaN(rate) || rate < 0 || rate > 1) {
       return res.status(400).json({ 
         success: false, 
         message: "Rate must be between 0 and 1" 
       });
     }
-    
+
     if (isNaN(minAmount) || minAmount <= 0) {
       return res.status(400).json({ 
         success: false, 
         message: "Minimum amount must be greater than 0" 
       });
     }
-    
+
     // Check if staking rate already exists for this currency
     const existingRate = await StakingRate.findOne({ currencyId });
-    
+
     if (existingRate) {
       // Update existing rate
       existingRate.rate = parseFloat(rate.toString());
@@ -257,7 +257,7 @@ router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) 
       existingRate.isActive = isActive;
       existingRate.updatedAt = new Date();
       await existingRate.save();
-      
+
       res.json({ 
         success: true, 
         message: "Staking rate updated successfully" 
@@ -272,7 +272,7 @@ router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) 
         createdAt: new Date(),
         updatedAt: new Date()
       });
-      
+
       res.json({ 
         success: true, 
         message: "Staking rate created successfully" 
@@ -283,6 +283,53 @@ router.post("/staking-rates", requireAdmin, async (req: Request, res: Response) 
     res.status(500).json({ 
       success: false, 
       message: "Error updating staking rate" 
+    });
+  }
+});
+
+// Manually verify user account
+router.post("/users/:userId/verify", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Update user verification status
+    user.isVerified = true;
+    await user.save();
+
+    console.log(`Admin manually verified user ${userId} (${user.username})`);
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${user.username} has been manually verified`,
+      data: {
+        userId: userId,
+        username: user.username,
+        email: user.email,
+        isVerified: true
+      }
+    });
+  } catch (error) {
+    console.error("Error verifying user:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to verify user"
     });
   }
 });
