@@ -184,8 +184,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const rapidResponse = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
           method: 'GET',
           headers: {
-            'X-RapidAPI-Host': 'crypto-news-live.p.rapidapi.com',
-            'X-RapidAPI-Key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
+            'x-rapidapi-host': 'crypto-news-live.p.rapidapi.com',
+            'x-rapidapi-key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
           }
         });
 
@@ -1138,11 +1138,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup WebSocket server for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Store active WebSocket connections
+  const activeConnections = new Set<any>();
+
+  // Function to broadcast news updates to all connected clients
+  const broadcastNewsUpdate = async () => {
+    try {
+      const newsResponse = await fetch('https://crypto-news-live.p.rapidapi.com/news', {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': 'crypto-news-live.p.rapidapi.com',
+          'x-rapidapi-key': '8fa3683068msh5a2b6f9deade2dap155690jsn32fdf5584616'
+        }
+      });
+
+      if (newsResponse.ok) {
+        const newsData = await newsResponse.json();
+        let articles = [];
+        
+        if (Array.isArray(newsData)) {
+          articles = newsData;
+        } else if (newsData.data && Array.isArray(newsData.data)) {
+          articles = newsData.data;
+        } else if (newsData.articles && Array.isArray(newsData.articles)) {
+          articles = newsData.articles;
+        } else if (newsData.news && Array.isArray(newsData.news)) {
+          articles = newsData.news;
+        }
+
+        const formattedNews = articles.slice(0, 10).map((article: any, index: number) => ({
+          title: article.title || article.headline || `Crypto News Update ${index + 1}`,
+          description: article.description || article.summary || article.content || 'Latest cryptocurrency news and updates',
+          url: article.url || article.link || '#',
+          source: { name: article.source || article.publisher || 'Crypto Live News' },
+          publishedAt: article.publishedAt || article.published_at || article.date || new Date().toISOString(),
+          urlToImage: article.urlToImage || article.image || article.thumbnail || `https://via.placeholder.com/400x200/1a1a1a/orange?text=Crypto+News`
+        }));
+
+        // Broadcast to all connected clients
+        activeConnections.forEach(ws => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'news_update',
+              data: formattedNews,
+              timestamp: Date.now()
+            }));
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error broadcasting news update:', error);
+    }
+  };
+
+  // Set up periodic news updates every 2 minutes
+  setInterval(broadcastNewsUpdate, 2 * 60 * 1000);
+
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
+    activeConnections.add(ws);
 
-    // Send initial data
-    ws.send(JSON.stringify({ type: 'connection', message: 'Connected to trading platform' }));
+    // Send initial connection message
+    ws.send(JSON.stringify({ 
+      type: 'connection', 
+      message: 'Connected to real-time crypto news feed',
+      timestamp: Date.now()
+    }));
 
     // Handle messages from clients
     ws.on('message', (message) => {
@@ -1153,6 +1214,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Handle different message types
         if (data.type === 'ping') {
           ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
+        } else if (data.type === 'subscribe_news') {
+          // Send latest news immediately when client subscribes
+          broadcastNewsUpdate();
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -1162,6 +1226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Handle disconnection
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+      activeConnections.delete(ws);
     });
   });
 

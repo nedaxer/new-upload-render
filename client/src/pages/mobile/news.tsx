@@ -1,7 +1,7 @@
 import { MobileLayout } from '@/components/mobile-layout';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, ExternalLink, Clock } from 'lucide-react';
+import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface NewsArticle {
@@ -17,6 +17,10 @@ interface NewsArticle {
 
 export default function MobileNews() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [liveNewsData, setLiveNewsData] = useState<NewsArticle[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const { data: newsData, isLoading, error, refetch } = useQuery<NewsArticle[]>({
     queryKey: ['/api/crypto/news', refreshKey],
@@ -27,12 +31,72 @@ export default function MobileNews() {
       }
       return response.json();
     },
-    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
+    refetchInterval: 5 * 60 * 1000, // Fallback refresh every 5 minutes
     retry: 3,
     retryDelay: 2000,
-    staleTime: 1 * 60 * 1000, // Consider data stale after 1 minute
-    gcTime: 5 * 60 * 1000 // Keep in cache for 5 minutes
+    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
+    gcTime: 10 * 60 * 1000 // Keep in cache for 10 minutes
   });
+
+  // WebSocket connection for real-time news updates
+  useEffect(() => {
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      try {
+        wsRef.current = new WebSocket(wsUrl);
+        
+        wsRef.current.onopen = () => {
+          console.log('WebSocket connected for news updates');
+          setIsConnected(true);
+          // Subscribe to news updates
+          wsRef.current?.send(JSON.stringify({ type: 'subscribe_news' }));
+        };
+        
+        wsRef.current.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'news_update' && data.data) {
+              setLiveNewsData(data.data);
+              setLastUpdate(new Date());
+              console.log('Received live news update:', data.data.length, 'articles');
+            }
+          } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+          }
+        };
+        
+        wsRef.current.onclose = () => {
+          console.log('WebSocket disconnected');
+          setIsConnected(false);
+          // Attempt to reconnect after 5 seconds
+          setTimeout(connectWebSocket, 5000);
+        };
+        
+        wsRef.current.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setIsConnected(false);
+        };
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+        setIsConnected(false);
+      }
+    };
+
+    connectWebSocket();
+
+    // Cleanup on unmount
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  // Use live news data if available, otherwise fall back to regular API data
+  const displayNewsData = liveNewsData.length > 0 ? liveNewsData : newsData;
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
@@ -61,7 +125,22 @@ export default function MobileNews() {
     <MobileLayout>
       <div className="bg-gray-900 px-4 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-white text-2xl font-bold">Crypto News</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-white text-2xl font-bold">Crypto News</h1>
+            <div className="flex items-center space-x-2">
+              {isConnected ? (
+                <div className="flex items-center space-x-1">
+                  <Wifi className="w-4 h-4 text-green-500" />
+                  <span className="text-green-500 text-xs">LIVE</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1">
+                  <WifiOff className="w-4 h-4 text-red-500" />
+                  <span className="text-red-500 text-xs">OFFLINE</span>
+                </div>
+              )}
+            </div>
+          </div>
           <Button
             onClick={handleRefresh}
             variant="ghost"
@@ -72,9 +151,16 @@ export default function MobileNews() {
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-        <p className="text-gray-400 text-sm mt-1">
-          Live cryptocurrency news updates
-        </p>
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-gray-400 text-sm">
+            Real-time cryptocurrency news updates
+          </p>
+          {lastUpdate && (
+            <p className="text-gray-500 text-xs">
+              Last update: {lastUpdate.toLocaleTimeString()}
+            </p>
+          )}
+        </div>
       </div>
 
       {isLoading && !newsData && (
