@@ -227,17 +227,16 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length === 0 && (
-        <div className="px-4 py-8 text-center">
-          <div className="text-gray-400">
-            {isConnected ? 'Waiting for live news updates...' : 'No news articles available at the moment'}
+        <div className="px-4 py-12 text-center">
+          <div className="text-gray-400 mb-4">
+            No articles available
           </div>
           <Button
             onClick={handleRefresh}
             variant="outline"
             size="sm"
-            className="mt-4"
           >
-            Refresh News
+            Try Again
           </Button>
         </div>
       )}
