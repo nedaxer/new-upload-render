@@ -33,9 +33,11 @@ export default function MobileProfile() {
     queryFn: () => apiRequest('/api/users/kyc/status'),
   });
 
-  // Generate a realistic UID
+  // Generate a realistic UID based on user ID
   const generateUID = () => {
-    return '00138406876';
+    if (!user?.id) return '00000000000';
+    // Pad the user ID to make it look like a proper UID
+    return user.id.toString().padStart(11, '0');
   };
 
   // Blue verification tick component
@@ -55,27 +57,57 @@ export default function MobileProfile() {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const result = e.target?.result as string;
-        setProfilePicture(result);
-        // In a real app, you'd upload this to a server
-        localStorage.setItem('profilePicture', result);
-        toast({
-          title: "Success",
-          description: "Profile picture updated successfully",
-        });
+        try {
+          // Save to server
+          const response = await apiRequest('/api/users/profile-picture', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ profilePicture: result })
+          });
+
+          if (response.success) {
+            setProfilePicture(result);
+            toast({
+              title: "Success",
+              description: "Profile picture updated successfully",
+            });
+          } else {
+            throw new Error(response.message);
+          }
+        } catch (error) {
+          console.error('Error uploading profile picture:', error);
+          toast({
+            title: "Error",
+            description: "Failed to update profile picture",
+            variant: "destructive"
+          });
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Load profile picture from localStorage on mount
+  // Load profile picture from server on mount
   React.useEffect(() => {
-    const saved = localStorage.getItem('profilePicture');
-    if (saved) {
-      setProfilePicture(saved);
+    const loadProfilePicture = async () => {
+      try {
+        const response = await apiRequest('/api/users/profile-picture');
+        if (response.success && response.data.profilePicture) {
+          setProfilePicture(response.data.profilePicture);
+        }
+      } catch (error) {
+        console.error('Error loading profile picture:', error);
+      }
+    };
+
+    if (user?.id) {
+      loadProfilePicture();
     }
-  }, []);
+  }, [user]);
 
   const menuItems = [
     {

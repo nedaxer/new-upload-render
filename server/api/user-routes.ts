@@ -235,6 +235,68 @@ userRouter.get("/notifications/count", requireAuth, async (req, res) => {
   }
 });
 
+// Get user profile picture
+userRouter.get("/profile-picture", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    
+    // Mock profile picture storage - in production, you'd store this in database or file storage
+    // For now, we'll use a simple in-memory storage or database field
+    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    
+    if (!user[0]) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        profilePicture: user[0].profilePicture || null
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching profile picture:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load profile picture"
+    });
+  }
+});
+
+// Update user profile picture
+userRouter.post("/profile-picture", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { profilePicture } = req.body;
+
+    if (!profilePicture) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile picture data is required"
+      });
+    }
+
+    // Update user's profile picture in database
+    await db.update(users)
+      .set({ profilePicture })
+      .where(eq(users.id, userId));
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile picture updated successfully"
+    });
+  } catch (error) {
+    console.error("Error updating profile picture:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile picture"
+    });
+  }
+});
+
 // Get KYC status
 userRouter.get("/kyc/status", requireAuth, async (req, res) => {
   try {
