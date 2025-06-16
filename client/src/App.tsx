@@ -7,7 +7,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from "@/components/ui/toaster";
-import { isMobile } from "@/hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 import { CookieConsent } from "@/components/cookie-consent";
 import { AppInstallPrompt } from "@/components/app-install-prompt";
 import { lazy } from 'react';
@@ -107,7 +107,6 @@ import MobileSecurity from '@/pages/mobile/security';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
-import { useEffect } from 'react';
 import MobileCurrencySelection from './pages/mobile/currency-selection';
 
 
@@ -122,7 +121,7 @@ function LoadingIndicator() {
 }
 
 export default function App() {
-  const mobile = isMobile();
+  const mobile = useMobile();
 
   // Initialize theme on app start
   useEffect(() => {
