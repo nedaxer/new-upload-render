@@ -45,6 +45,74 @@ export default function MobileTrade() {
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
 
+  // Read symbol from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const symbolParam = urlParams.get('symbol');
+    
+    if (symbolParam) {
+      // Update trading view symbol for Bybit
+      const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
+      setTradingViewSymbol(tradingViewSymbol);
+      
+      // Update selected pair
+      setSelectedPair({
+        symbol: symbolParam,
+        name: getCryptoName(symbolParam),
+        price: 0,
+        change: 0
+      });
+      
+      // Update crypto selection
+      const cryptoId = getCryptoIdFromSymbol(symbolParam);
+      setSelectedCrypto(cryptoId);
+    }
+  }, [location]);
+
+  // Helper function to get crypto name from symbol
+  const getCryptoName = (symbol: string): string => {
+    const cryptoNames: { [key: string]: string } = {
+      'BTC': 'Bitcoin',
+      'ETH': 'Ethereum',
+      'BNB': 'Binance Coin',
+      'ADA': 'Cardano',
+      'SOL': 'Solana',
+      'DOT': 'Polkadot',
+      'AVAX': 'Avalanche',
+      'MATIC': 'Polygon',
+      'LINK': 'Chainlink',
+      'UNI': 'Uniswap',
+      'LTC': 'Litecoin',
+      'ATOM': 'Cosmos',
+      'NEAR': 'NEAR Protocol',
+      'FTM': 'Fantom',
+      'ALGO': 'Algorand'
+    };
+    return cryptoNames[symbol] || symbol;
+  };
+
+  // Helper function to get crypto ID from symbol
+  const getCryptoIdFromSymbol = (symbol: string): string => {
+    const symbolToIdMap: { [key: string]: string } = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'BNB': 'binancecoin',
+      'ADA': 'cardano',
+      'SOL': 'solana',
+      'DOT': 'polkadot',
+      'AVAX': 'avalanche-2',
+      'MATIC': 'polygon',
+      'LINK': 'chainlink',
+      'UNI': 'uniswap',
+      'LTC': 'litecoin',
+      'ATOM': 'cosmos',
+      'NEAR': 'near',
+      'FTM': 'fantom',
+      'ALGO': 'algorand'
+    };
+    return symbolToIdMap[symbol] || 'bitcoin';
+  };
+
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
   const tradingTabs = ['Spot', 'Futures'];
   const cryptoPairs = [

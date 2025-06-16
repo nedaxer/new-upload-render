@@ -1565,6 +1565,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  // Bybit market data endpoints
+  app.get("/api/bybit/tickers", async (req: Request, res: Response) => {
+    try {
+      const { getBybitTickers, getMarketSentiment } = await import('./bybit-api.js');
+      const tickers = await getBybitTickers();
+      
+      // Process tickers to add sentiment
+      const processedTickers = tickers.map(ticker => ({
+        ...ticker,
+        sentiment: getMarketSentiment(ticker.price24hPcnt)
+      }));
+      
+      res.json({
+        success: true,
+        data: processedTickers,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error('Error fetching Bybit tickers:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch market data',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Set up periodic news updates every 2 minutes
   setInterval(broadcastNewsUpdate, 2 * 60 * 1000);
 

@@ -43,6 +43,7 @@ import CryptoEvents from '@/pages/markets/crypto-events';
 import EthereumMarkets from '@/pages/markets/ethereum';
 import Events from '@/pages/markets/events';
 import MarketData from '@/pages/markets/market-data';
+import LiveMarkets from '@/pages/markets/live-markets';
 
 // Platform Pages
 import Funding from '@/pages/platform/funding';
@@ -169,6 +170,7 @@ export default function App() {
             <Route path="/markets/ethereum" component={EthereumMarkets} />
             <Route path="/markets/events" component={Events} />
             <Route path="/markets/market-data" component={MarketData} />
+            <Route path="/markets/live-markets" component={LiveMarkets} />
 
             {/* Platform Routes */}
             <Route path="/platform/funding" component={Funding} />
