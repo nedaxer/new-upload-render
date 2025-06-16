@@ -62,6 +62,10 @@ export default function MobileSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      // Force a hard refresh of all user-related data
+      queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+      // Trigger global profile update event for synchronization
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully."
@@ -227,9 +231,19 @@ export default function MobileSettings() {
             className="hidden"
           />
 
-          {/* Nickname */}
+          {/* Email (Read-only) */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Nickname</span>
+            <span className="text-gray-300">Email</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400 text-sm">
+                {user?.email || 'Not available'}
+              </span>
+            </div>
+          </div>
+
+          {/* Username/Nickname */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <span className="text-gray-300">Username</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
                 <div className="flex items-center gap-2">
@@ -238,6 +252,7 @@ export default function MobileSettings() {
                     onChange={(e) => setTempNickname(e.target.value)}
                     className="w-32 h-8 bg-gray-800 border-gray-700 text-white text-sm"
                     maxLength={20}
+                    placeholder="Enter username"
                   />
                   <Button
                     size="sm"
@@ -250,13 +265,13 @@ export default function MobileSettings() {
               ) : (
                 <>
                   <span className="text-gray-400 text-sm">
-                    {settings.nickname || 'Not set'}
+                    {settings.nickname || user?.username || 'Not set'}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setTempNickname(settings.nickname || '');
+                      setTempNickname(settings.nickname || user?.username || '');
                       setIsEditingNickname(true);
                     }}
                     className="text-gray-400 hover:text-white"

@@ -77,12 +77,13 @@ export default function MobileProfile() {
         try {
           console.log('Uploading profile picture, size:', result.length);
           
-          // Save to server using JSON with base64 data
-          const response = await fetch('/api/users/profile-picture', {
-            method: 'POST',
+          // Save to server using the same endpoint as settings page
+          const response = await fetch('/api/user/update-profile', {
+            method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ profilePicture: result }),
           });
 
@@ -103,17 +104,19 @@ export default function MobileProfile() {
             throw new Error('Server returned invalid response format');
           }
 
-          const data = await response.json();
-          console.log('Upload response data:', data);
+          const uploadData = await response.json();
+          console.log('Upload response data:', uploadData);
 
-          if (data.success) {
+          if (uploadData.success) {
             setProfilePicture(result);
+            // Trigger cache invalidation to sync across all components
+            window.dispatchEvent(new CustomEvent('profileUpdated'));
             toast({
               title: "Success",
               description: "Profile picture updated successfully",
             });
           } else {
-            throw new Error(data.message || 'Upload failed');
+            throw new Error(uploadData.message || 'Upload failed');
           }
         } catch (error: any) {
           console.error('Error uploading profile picture:', error);
