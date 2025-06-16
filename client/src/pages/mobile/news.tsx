@@ -59,15 +59,9 @@ export default function MobileNews() {
             const data = JSON.parse(event.data);
             
             if (data.type === 'news_update' && data.data) {
-              const wasEmpty = liveNewsData.length === 0;
               setLiveNewsData(data.data);
               setLastUpdate(new Date());
               console.log('Received live news update:', data.data.length, 'articles');
-              
-              // Show a brief notification for new updates (except on initial load)
-              if (!wasEmpty && data.data.length > 0) {
-                // You could add a toast notification here if needed
-              }
             }
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
@@ -132,34 +126,22 @@ export default function MobileNews() {
       <div className="bg-gray-900 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h1 className="text-white text-2xl font-bold">Crypto News</h1>
+            <h1 className="text-white text-2xl font-bold">News</h1>
             {isConnected && (
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></div>
-                <span className="text-green-400 text-xs font-medium">Live</span>
-              </div>
-            )}
-            {!isConnected && (
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-gray-500 rounded-full mr-1"></div>
-                <span className="text-gray-500 text-xs">Offline</span>
-              </div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             )}
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             {lastUpdate && (
-              <div className="text-right">
-                <div className="text-gray-400 text-xs">Updated</div>
-                <div className="text-gray-300 text-xs font-medium">
-                  {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
+              <span className="text-gray-400 text-xs">
+                {lastUpdate.toLocaleTimeString()}
+              </span>
             )}
             <Button
               onClick={handleRefresh}
               variant="ghost"
               size="sm"
-              className="text-gray-400 hover:text-white hover:bg-gray-700"
+              className="text-gray-400 hover:text-white"
               disabled={isLoading}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -169,27 +151,12 @@ export default function MobileNews() {
       </div>
 
       {isLoading && !newsData && (
-        <div className="px-4 space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-              <div className="animate-pulse">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1 pr-3">
-                    <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-700 rounded w-4/5"></div>
-                  </div>
-                  <div className="w-4 h-4 bg-gray-700 rounded"></div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <div className="h-3 bg-gray-700 rounded"></div>
-                  <div className="h-3 bg-gray-700 rounded w-5/6"></div>
-                  <div className="h-3 bg-gray-700 rounded w-3/4"></div>
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t border-gray-700">
-                  <div className="h-3 bg-gray-700 rounded w-20"></div>
-                  <div className="h-3 bg-gray-700 rounded w-16"></div>
-                </div>
-              </div>
+        <div className="px-4 space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse">
+              <div className="h-4 bg-gray-700 rounded mb-2"></div>
+              <div className="h-3 bg-gray-700 rounded mb-2 w-3/4"></div>
+              <div className="h-3 bg-gray-700 rounded w-1/2"></div>
             </div>
           ))}
         </div>
@@ -225,69 +192,52 @@ export default function MobileNews() {
           )}
 
           {displayNewsData.map((article, index) => (
-            <article
+            <a
               key={`${article.url}-${index}`}
-              className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden hover:border-gray-600 transition-all duration-200"
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
             >
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-4 hover:bg-gray-750 transition-colors duration-200 active:scale-[0.99]"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-white font-semibold text-sm leading-tight pr-3 flex-1 line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5 opacity-60" />
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
+                  {article.title}
+                </h3>
+                <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+              </div>
+              
+              <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
+                {article.description}
+              </p>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 text-xs font-medium">
+                  {article.source?.name || 'Crypto News'}
+                </span>
+                <div className="flex items-center text-gray-500 text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  <span>{formatDate(article.publishedAt)}</span>
                 </div>
-                
-                {article.description && (
-                  <p className="text-gray-300 text-xs mb-4 leading-relaxed line-clamp-3 opacity-90">
-                    {article.description}
-                  </p>
-                )}
-                
-                <div className="flex items-center justify-between pt-2 border-t border-gray-700">
-                  <div className="flex items-center">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
-                    <span className="text-blue-400 text-xs font-medium">
-                      {article.source?.name || 'Crypto News'}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-gray-500 text-xs">
-                    <Clock className="w-3 h-3 mr-1.5" />
-                    <span>{formatDate(article.publishedAt)}</span>
-                  </div>
-                </div>
-              </a>
-            </article>
+              </div>
+            </a>
           ))}
 
 
         </div>
       )}
 
-      {displayNewsData && displayNewsData.length === 0 && !isLoading && (
-        <div className="px-4 py-16 text-center">
-          <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
-            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-6 h-6 text-gray-400" />
-            </div>
-            <h3 className="text-white font-medium mb-2">No news available</h3>
-            <p className="text-gray-400 text-sm mb-6">
-              We're currently fetching the latest crypto news for you.
-            </p>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              size="sm"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh News
-            </Button>
+      {displayNewsData && displayNewsData.length === 0 && (
+        <div className="px-4 py-12 text-center">
+          <div className="text-gray-400 mb-4">
+            No articles available
           </div>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+          >
+            Try Again
+          </Button>
         </div>
       )}
     </MobileLayout>
