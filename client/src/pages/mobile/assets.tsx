@@ -30,12 +30,13 @@ export default function MobileAssets() {
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
   const [activeTab, setActiveTab] = useState('assets'); // Only 'assets' tab now
-  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [showCryptoSelection, setShowCryptoSelection] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   // Load currency from localStorage
   useEffect(() => {
@@ -169,7 +170,7 @@ export default function MobileAssets() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    
+
     if (method === 'crypto') {
       setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
@@ -330,7 +331,7 @@ export default function MobileAssets() {
             )}
           </button>
         </div>
-        
+
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
@@ -363,7 +364,7 @@ export default function MobileAssets() {
           </div>
         </div>
 
-        
+
       </div>
 
       {/* Quick Actions */}
@@ -377,7 +378,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Deposit</span>
             </div>
           </button>
-          
+
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -386,7 +387,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Withdraw</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -395,7 +396,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Transfer</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/convert">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -410,7 +411,7 @@ export default function MobileAssets() {
       {/* Assets Section */}
       <div className="px-4">
         <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
-        
+
         {/* Bitcoin */}
         <div className="flex items-center justify-between py-3 border-b border-gray-800">
           <div className="flex items-center space-x-3">
@@ -488,18 +489,21 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Modals */}
-      <DepositModal
-        isOpen={depositModalOpen}
-        onClose={() => setDepositModalOpen(false)}
-        onSelectMethod={handlePaymentMethodSelect}
-      />
+      {/* Crypto Selection Modal */}
+      {showCryptoSelection && (
+        <CryptoSelection
+          onBack={() => setShowCryptoSelection(false)}
+          onSelectCrypto={(crypto) => {
+            setShowCryptoSelection(false);
+            // Handle crypto selection
+          }}
+          onComingSoon={handleComingSoon}
+        />
+      )}
 
-      <ComingSoonModal
-        isOpen={comingSoonOpen}
-        onClose={() => setComingSoonOpen(false)}
-        feature={comingSoonFeature}
-      />
+      {/* Modals */}
+      <DepositModal isOpen={depositModalOpen} onClose={() => setDepositModalOpen(false)} />
+      <ComingSoonModal isOpen={comingSoonOpen} onClose={() => setComingSoonOpen(false)} feature={comingSoonFeature} />
     </MobileLayout>
   );
 }
