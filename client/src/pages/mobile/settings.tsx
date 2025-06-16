@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +41,18 @@ export default function MobileSettings() {
 
   // Generate user ID for display
   const userId = user?.id ? `${user.id}75573582` : '475573582';
+
+  // Listen for profile updates from other components
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [queryClient]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { nickname?: string; profilePicture?: string }) => {

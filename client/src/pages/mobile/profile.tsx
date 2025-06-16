@@ -28,11 +28,13 @@ export default function MobileProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch KYC status
-  const { data: kycStatus } = useQuery({
+  const { data: kycResponse } = useQuery({
     queryKey: ['kyc', 'status'],
     queryFn: () => apiRequest('/api/users/kyc/status'),
     enabled: !!user?.id,
   });
+
+  const kycStatus = kycResponse?.data;
 
   // Generate a realistic UID based on user ID with mixed numbers
   const generateUID = () => {
@@ -171,15 +173,15 @@ export default function MobileProfile() {
       rightElement: (
         <div className="flex items-center space-x-2">
           <span className={`text-sm ${
-            kycStatus?.data?.isVerified 
+            kycStatus?.isVerified 
               ? 'text-green-500' 
-              : kycStatus?.data?.status === 'processing'
+              : kycStatus?.status === 'processing'
                 ? 'text-yellow-500'
                 : 'text-red-500'
           }`}>
-            {kycStatus?.data?.isVerified 
+            {kycStatus?.isVerified 
               ? 'Lv.1 Verified' 
-              : kycStatus?.data?.status === 'processing'
+              : kycStatus?.status === 'processing'
                 ? 'Processing'
                 : 'Not Verified'
             }
@@ -273,7 +275,7 @@ export default function MobileProfile() {
                 <span className="text-gray-400 text-sm">
                   UID: {generateUID()}
                 </span>
-                {kycStatus?.data?.isVerified && <VerificationTick />}
+                {kycStatus?.isVerified && <VerificationTick />}
               </div>
               <Copy 
                 className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white"
