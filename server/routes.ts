@@ -630,6 +630,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API route for getting current user (if logged in)
+  app.get('/api/auth/user', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({
+          success: false,
+          message: "Not authenticated"
+        });
+      }
+
+      const userId = req.session.userId;
+      const user = await storage.getUser(userId as number);
+
+      if (!user) {
+        // Session has userId but user not found in DB
+        req.session.destroy((err) => {
+          if (err) console.error('Error destroying session:', err);
+        });
+
+        return res.status(401).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          isVerified: user.isVerified,
+          isAdmin: user.isAdmin
+        }
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // API route for getting current user (if logged in) - legacy endpoint
   app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
       const userId = req.session.userId;

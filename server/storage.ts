@@ -61,7 +61,8 @@ export class MemStorage implements IStorage {
       totalPortfolioValue: 0,
       riskLevel: "moderate",
       referralCode: null,
-      referredBy: null
+      referredBy: null,
+      profilePicture: null
     };
     this.users.set(id, user);
     return user;
@@ -115,9 +116,17 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    // Insert the user into the database
     const result = await db.insert(users).values(insertUser);
-    // For MySQL with Drizzle, we need to query by the inserted username since insertId might not be available
-    const newUser = await db.select().from(users).where(eq(users.username, insertUser.username)).limit(1);
+    
+    // For MySQL, we need to get the inserted user by username or email since insertId handling can be tricky
+    // We'll use email as it's unique and always provided
+    const newUser = await db.select().from(users).where(eq(users.email, insertUser.email)).limit(1);
+    
+    if (!newUser[0]) {
+      throw new Error('Failed to create user - could not retrieve newly created user');
+    }
+    
     return newUser[0];
   }
 
