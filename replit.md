@@ -120,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 16, 2025. Created comprehensive mobile settings page with profile photo upload, username editing, theme switching, language/currency selection, and account management options. Fixed profile image synchronization issues between settings and profile pages. Separated username (editable) from email (read-only) functionality.
 - June 16, 2025. Successfully migrated database from PostgreSQL to MySQL, connected to external MySQL database (sql7.freesqldatabase.com), updated complete schema and connection configuration
 - June 15, 2025. Connected About Us navigation from profile to company page, implemented personalized landing page for logged-in users
 - June 15, 2025. Fixed chatbot functionality by switching from OpenAI to GitHub AI inference API 
