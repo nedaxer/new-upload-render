@@ -1,11 +1,11 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, primaryKey, uuid, json, real, varchar } from "drizzle-orm/pg-core";
+import { mysqlTable, text, int, boolean, timestamp, double, primaryKey, json, varchar } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // User-related tables
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = mysqlTable("users", {
+  id: int("id").primaryKey().autoincrement(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
@@ -19,10 +19,10 @@ export const users = pgTable("users", {
   kycStatus: text("kyc_status").default("pending").notNull(), // pending, approved, rejected
   phone: text("phone"),
   country: text("country"),
-  totalPortfolioValue: doublePrecision("total_portfolio_value").default(0).notNull(),
+  totalPortfolioValue: double("total_portfolio_value").default(0).notNull(),
   riskLevel: text("risk_level").default("moderate").notNull(), // conservative, moderate, aggressive
   referralCode: text("referral_code").unique(),
-  referredBy: integer("referred_by"),
+  referredBy: int("referred_by"),
   profilePicture: text("profile_picture"),
 });
 
@@ -34,8 +34,8 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 // Currency types
-export const currencies = pgTable("currencies", {
-  id: serial("id").primaryKey(),
+export const currencies = mysqlTable("currencies", {
+  id: int("id").primaryKey().autoincrement(),
   symbol: text("symbol").notNull().unique(), // BTC, ETH, USD, etc.
   name: text("name").notNull(),
   type: text("type").notNull(), // crypto, fiat
