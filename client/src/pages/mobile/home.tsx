@@ -25,7 +25,8 @@ import {
   MoreHorizontal,
   TrendingUp,
   TrendingDown,
-  User
+  User,
+  Star
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
@@ -43,6 +44,7 @@ export default function MobileHome() {
   const [selectedChain, setSelectedChain] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [favoritePairs, setFavoritePairs] = useState([]);
 
   // Load profile picture and currency from localStorage
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function MobileHome() {
     if (saved) {
       setProfilePicture(saved);
     }
-    
+
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
@@ -124,7 +126,7 @@ export default function MobileHome() {
   const convertToSelectedCurrency = (usdAmount: number): string => {
     const rate = conversionRates[selectedCurrency] || 1;
     const convertedAmount = usdAmount * rate;
-    
+
     // Format based on currency
     if (['JPY', 'KRW', 'VND', 'IDR', 'UGX', 'MMK', 'KHR', 'LAK'].includes(selectedCurrency)) {
       return Math.round(convertedAmount).toLocaleString();
@@ -194,7 +196,7 @@ export default function MobileHome() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    
+
     if (method === 'crypto') {
       setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
@@ -246,7 +248,8 @@ export default function MobileHome() {
       }) || '0',
       change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h?.toFixed(2) || '0.00'}%`,
       isPositive: crypto.price_change_percentage_24h > 0,
-      favorite: index === 0
+      favorite: index === 0,
+      name: crypto.name
     }));
   }, [priceData]);
 
@@ -383,7 +386,7 @@ export default function MobileHome() {
             Deposit
           </Button>
         </div>
-        
+
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
@@ -431,6 +434,40 @@ export default function MobileHome() {
           ))}
         </div>
       </div>
+
+      {/* Favorites Section */}
+      {cryptoPairs.filter(pair => pair.favorite).length > 0 && (
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white flex items-center">
+              <Star className="w-5 h-5 text-yellow-500 mr-2 fill-current" />
+              Your Favorites
+            </h2>
+            <Link href="/mobile/markets">
+              <button className="text-sm text-orange-500 hover:text-orange-400">
+                View All →
+              </button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {cryptoPairs.filter(pair => pair.favorite).map((pair, index) => (
+              <Link key={index} href={`/mobile/trade/${pair.pair.replace('/', '-')}`}>
+                <div className="p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white font-medium text-sm">{pair.pair}</span>
+                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                  </div>
+                  <div className="text-white font-bold">{pair.price}</div>
+                  <div className={`text-xs ${pair.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {pair.change}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Market Tabs */}
       <div className="px-4">
