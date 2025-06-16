@@ -96,13 +96,12 @@ router.get('/conversion-rates', async (req, res) => {
 // Get top cryptocurrencies
 router.get('/cryptocurrencies', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 800); // Cap at 800
+    const limit = parseInt(req.query.limit as string) || 50;
     const cryptocurrencies = await priceService.getTopCryptocurrencies(limit);
 
     res.json({
       success: true,
-      data: cryptocurrencies,
-      total: cryptocurrencies.length
+      data: cryptocurrencies
     });
   } catch (error: any) {
     console.error('Error fetching cryptocurrencies:', error.message);
