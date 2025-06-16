@@ -25,7 +25,8 @@ import {
   MoreHorizontal,
   TrendingUp,
   TrendingDown,
-  User
+  User,
+  QrCode
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
@@ -50,7 +51,7 @@ export default function MobileHome() {
     if (saved) {
       setProfilePicture(saved);
     }
-    
+
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
@@ -124,7 +125,7 @@ export default function MobileHome() {
   const convertToSelectedCurrency = (usdAmount: number): string => {
     const rate = conversionRates[selectedCurrency] || 1;
     const convertedAmount = usdAmount * rate;
-    
+
     // Format based on currency
     if (['JPY', 'KRW', 'VND', 'IDR', 'UGX', 'MMK', 'KHR', 'LAK'].includes(selectedCurrency)) {
       return Math.round(convertedAmount).toLocaleString();
@@ -194,7 +195,7 @@ export default function MobileHome() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    
+
     if (method === 'crypto') {
       setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
@@ -295,6 +296,58 @@ export default function MobileHome() {
     );
   }
 
+  const handleQRScan = () => {
+    // Check if device has camera access
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          // Create a simple QR scanner modal
+          const scannerModal = document.createElement('div');
+          scannerModal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50';
+          scannerModal.innerHTML = `
+            <div class="relative w-full max-w-sm mx-4">
+              <video id="qr-video" class="w-full rounded-lg" autoplay></video>
+              <div class="absolute inset-0 border-2 border-orange-500 rounded-lg pointer-events-none">
+                <div class="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-orange-500"></div>
+                <div class="absolute top-4 right-4 w-6 h-6 border-r-2 border-t-2 border-orange-500"></div>
+                <div class="absolute bottom-4 left-4 w-6 h-6 border-l-2 border-b-2 border-orange-500"></div>
+                <div class="absolute bottom-4 right-4 w-6 h-6 border-r-2 border-b-2 border-orange-500"></div>
+              </div>
+              <button id="close-scanner" class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">×</button>
+              <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
+                Point camera at QR code
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(scannerModal);
+          const video = document.getElementById('qr-video') as HTMLVideoElement;
+          const closeBtn = document.getElementById('close-scanner');
+
+          video.srcObject = stream;
+
+          closeBtn?.addEventListener('click', () => {
+            stream.getTracks().forEach(track => track.stop());
+            document.body.removeChild(scannerModal);
+          });
+
+          // Auto-close after 30 seconds
+          setTimeout(() => {
+            if (document.body.contains(scannerModal)) {
+              stream.getTracks().forEach(track => track.stop());
+              document.body.removeChild(scannerModal);
+            }
+          }, 30000);
+        })
+        .catch((error) => {
+          alert('Camera access denied or not available');
+          console.error('Camera error:', error);
+        });
+    } else {
+      alert('QR scanner not supported on this device');
+    }
+  };
+
   return (
     <MobileLayout>
       {/* Header */}
@@ -351,14 +404,9 @@ export default function MobileHome() {
             className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center">
-              <div className="w-3 h-3 grid grid-cols-2 gap-px">
-                <div className="bg-gray-400 rounded-sm"></div>
-                <div className="bg-gray-400 rounded-sm"></div>
-                <div className="bg-gray-400 rounded-sm"></div>
-                <div className="bg-gray-400 rounded-sm"></div>
-              </div>
-            </div>
+            <button onClick={handleQRScan} className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center">
+              <QrCode className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
         </div>
       </div>
@@ -383,7 +431,7 @@ export default function MobileHome() {
             Deposit
           </Button>
         </div>
-        
+
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
