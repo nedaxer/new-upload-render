@@ -13,6 +13,7 @@ export interface IStorage {
   setVerificationCode(userId: number, code: string, expiresAt: Date): Promise<void>;
   verifyUser(userId: number, code: string): Promise<boolean>;
   markUserAsVerified(userId: number): Promise<void>;
+  updateUserProfile(userId: number, updates: Partial<User>): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -97,6 +98,14 @@ export class MemStorage implements IStorage {
       this.users.set(userId, user);
     }
   }
+
+  async updateUserProfile(userId: number, updates: Partial<User>): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      Object.assign(user, updates);
+      this.users.set(userId, user);
+    }
+  }
 }
 
 export class PostgresStorage implements IStorage {
@@ -157,6 +166,12 @@ export class PostgresStorage implements IStorage {
         verificationCode: null,
         verificationCodeExpires: null 
       })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserProfile(userId: number, updates: Partial<User>): Promise<void> {
+    await db.update(users)
+      .set(updates)
       .where(eq(users.id, userId));
   }
 }

@@ -13,7 +13,7 @@ type LoginData = {
   password: string;
 };
 
-type UserData = Pick<User, "id" | "username" | "firstName" | "lastName" | "email" | "isAdmin">;
+type UserData = Pick<User, "id" | "username" | "firstName" | "lastName" | "email" | "isAdmin" | "profilePicture">;
 
 type AuthContextType = {
   user: UserData | null;

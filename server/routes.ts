@@ -713,6 +713,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API route for updating user profile
+  app.patch('/api/user/update-profile', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId as number;
+      const updateSchema = z.object({
+        nickname: z.string().min(1).max(20).optional(),
+        profilePicture: z.string().optional()
+      });
+
+      const result = updateSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid update data",
+          errors: result.error.format()
+        });
+      }
+
+      const { nickname, profilePicture } = result.data;
+      
+      // Update user profile
+      if (nickname) {
+        await storage.updateUserProfile(userId, { username: nickname });
+      }
+      
+      if (profilePicture) {
+        await storage.updateUserProfile(userId, { profilePicture });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Profile updated successfully"
+      });
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+
   // API route for logging out
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
