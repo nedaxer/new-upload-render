@@ -33,11 +33,26 @@ export default function MobileProfile() {
     queryFn: () => apiRequest('/api/users/kyc/status'),
   });
 
-  // Generate a realistic UID based on user ID
+  // Generate a realistic UID based on user ID with mixed numbers
   const generateUID = () => {
-    if (!user?.id) return '00000000000';
-    // Pad the user ID to make it look like a proper UID
-    return user.id.toString().padStart(11, '0');
+    if (!user?.id) return '072661763';
+    // Create a mixed number UID based on user ID
+    const baseId = user.id.toString();
+    const mixedNumbers = [0, 7, 2, 6, 6, 1, 7, 6, 3];
+    let result = '';
+
+    for (let i = 0; i < 9; i++) {
+      if (i < baseId.length) {
+        // Mix the user ID digits with the predefined pattern
+        const userDigit = parseInt(baseId[i % baseId.length]);
+        const mixedDigit = (userDigit + mixedNumbers[i]) % 10;
+        result += mixedDigit.toString();
+      } else {
+        result += mixedNumbers[i].toString();
+      }
+    }
+
+    return result;
   };
 
   // Blue verification tick component
@@ -53,7 +68,7 @@ export default function MobileProfile() {
     </svg>
   );
 
-  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -61,28 +76,30 @@ export default function MobileProfile() {
         const result = e.target?.result as string;
         try {
           // Save to server
-          const response = await apiRequest('/api/users/profile-picture', {
+          const formData = new FormData();
+          formData.append('profilePicture', file);
+
+          const response = await fetch('/api/users/profile-picture', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ profilePicture: result })
+            body: formData,
           });
 
-          if (response.success) {
+          const data = await response.json();
+
+          if (data.success) {
             setProfilePicture(result);
             toast({
               title: "Success",
               description: "Profile picture updated successfully",
             });
           } else {
-            throw new Error(response.message);
+            throw new Error(data.message);
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error uploading profile picture:', error);
           toast({
             title: "Error",
-            description: "Failed to update profile picture",
+            description: "Failed to update profile picture: " + error.message,
             variant: "destructive"
           });
         }
@@ -265,7 +282,7 @@ export default function MobileProfile() {
         >
           Switch/Create Account
         </Button>
-        
+
         <Button 
           variant="destructive" 
           className="w-full bg-red-900 hover:bg-red-800 text-white"

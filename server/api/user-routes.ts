@@ -6,6 +6,7 @@ import {
   currencies, 
   userBalances
 } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { tradingService } from "../services/trading.service";
 import { stakingService } from "../services/staking.service";
 
