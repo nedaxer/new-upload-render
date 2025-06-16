@@ -14,6 +14,7 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
   // Hide bottom navigation for profile and settings pages
   const shouldHideBottomNav = hideBottomNav || 
     location.includes('/profile') || 
+    location.includes('/settings') ||
     location.includes('/kyc') || 
     location.includes('/security') || 
     location.includes('/notifications') || 
