@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Search } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile-layout';
+import { ComingSoonModal } from '@/components/coming-soon-modal';
 
 const btcLogo = '/logos/btc-logo.svg';
 const ethLogo = '/logos/eth-logo.svg';
@@ -16,6 +17,8 @@ interface CryptoSelectionProps {
 export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: CryptoSelectionProps) {
   const [activeTab, setActiveTab] = useState('crypto');
   const [searchQuery, setSearchQuery] = useState('');
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [comingSoonFeature, setComingSoonFeature] = useState('');
 
   const cryptos = [
     {
@@ -73,7 +76,10 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
           Crypto
         </button>
         <button
-          onClick={() => onComingSoon('Fiat Trading')}
+          onClick={() => {
+            setComingSoonFeature('Fiat Trading');
+            setComingSoonOpen(true);
+          }}
           className="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white transition-colors text-sm"
         >
           Fiat
@@ -130,6 +136,13 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
           </div>
         )}
       </div>
+
+      {/* Coming Soon Modal */}
+      <ComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        feature={comingSoonFeature}
+      />
     </MobileLayout>
   );
 }
