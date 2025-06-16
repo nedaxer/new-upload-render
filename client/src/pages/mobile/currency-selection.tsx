@@ -47,16 +47,23 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     }
     // Store in localStorage for persistence
     localStorage.setItem('selectedCurrency', currency);
-    // Let the parent component handle navigation
+    
+    // Navigate back to settings if no parent handler
+    if (!onSelectCurrency) {
+      // Small delay to show selection feedback
+      setTimeout(() => {
+        window.history.back();
+      }, 300);
+    }
   };
 
   return (
     <MobileLayout hideBottomNav={true}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
-        <Link href="/mobile">
+        <button onClick={() => window.history.back()}>
           <ArrowLeft className="w-6 h-6 text-white" />
-        </Link>
+        </button>
         <h1 className="text-lg font-semibold text-white">Select a Currency</h1>
         <div className="w-6 h-6" /> {/* Spacer */}
       </div>

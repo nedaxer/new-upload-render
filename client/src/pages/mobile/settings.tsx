@@ -79,7 +79,7 @@ export default function MobileSettings() {
     return { level: 'Low', color: 'text-red-500' };
   };
 
-  // Listen for profile updates from other components
+  // Listen for profile updates and currency changes from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -89,11 +89,24 @@ export default function MobileSettings() {
       queryClient.invalidateQueries({ queryKey: ['security', 'settings'] });
     };
 
+    const handleCurrencyUpdate = () => {
+      const savedCurrency = localStorage.getItem('selectedCurrency');
+      if (savedCurrency) {
+        setSettings(prev => ({ ...prev, currency: savedCurrency }));
+      }
+    };
+
+    // Check for currency changes when component becomes visible
+    handleCurrencyUpdate();
+
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('securityUpdated', handleSecurityUpdate);
+    window.addEventListener('focus', handleCurrencyUpdate);
+    
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
+      window.removeEventListener('focus', handleCurrencyUpdate);
     };
   }, [queryClient]);
 
@@ -428,26 +441,19 @@ export default function MobileSettings() {
           </div>
 
           {/* Currency Display */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Currency Display</span>
+          <Button
+            variant="ghost"
+            onClick={() => setLocation('/mobile/currency-selection')}
+            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+          >
+            <span>Currency Display</span>
             <div className="flex items-center gap-2">
-              <Select
-                value={settings.currency}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, currency: value }))}
-              >
-                <SelectTrigger className="w-16 h-8 bg-transparent border-none text-gray-400 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
-                </SelectContent>
-              </Select>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <span className="text-gray-400 text-sm">
+                {settings.currency}
+              </span>
+              <ChevronRight className="h-4 w-4" />
             </div>
-          </div>
+          </Button>
 
           {/* Color Theme */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
