@@ -115,8 +115,10 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser).returning();
-    return result[0];
+    const result = await db.insert(users).values(insertUser);
+    const insertId = result.insertId;
+    const newUser = await db.select().from(users).where(eq(users.id, insertId)).limit(1);
+    return newUser[0];
   }
 
   async setVerificationCode(userId: number, code: string, expiresAt: Date): Promise<void> {
