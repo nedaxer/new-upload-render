@@ -1565,7 +1565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Bybit market data endpoints
+  // Live market data endpoints (using CoinGecko as data source)
   app.get("/api/bybit/tickers", async (req: Request, res: Response) => {
     try {
       const { getBybitTickers, getMarketSentiment } = await import('./bybit-api.js');
@@ -1583,7 +1583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: Date.now()
       });
     } catch (error) {
-      console.error('Error fetching Bybit tickers:', error);
+      console.error('Error fetching market tickers:', error);
       res.status(500).json({ 
         success: false, 
         error: 'Failed to fetch market data',

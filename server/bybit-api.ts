@@ -1,9 +1,4 @@
 import axios from 'axios';
-import crypto from 'crypto';
-
-const API_KEY = 'NmVlQMpRfwD38YUXzz';
-const API_SECRET = 'YrN8mSP5orBSvXWUpexBXJYrtYBvtyZB7wiz';
-const BASE_URL = 'https://api.bybit.com';
 
 interface BybitTicker {
   symbol: string;
@@ -15,51 +10,48 @@ interface BybitTicker {
   turnover24h: string;
 }
 
-interface BybitResponse {
-  retCode: number;
-  retMsg: string;
-  result: {
-    category: string;
-    list: BybitTicker[];
-  };
-  time: number;
-}
-
-function generateSignature(timestamp: string, apiKey: string, recv_window: string, queryString: string): string {
-  const param_str = timestamp + apiKey + recv_window + queryString;
-  return crypto.createHmac('sha256', API_SECRET).update(param_str).digest('hex');
+interface CoinGeckoTicker {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  total_volume: number;
+  high_24h: number;
+  low_24h: number;
+  market_cap: number;
 }
 
 export async function getBybitTickers(): Promise<BybitTicker[]> {
   try {
-    const timestamp = Date.now().toString();
-    const recv_window = '5000';
-    const queryString = 'category=linear';
-    
-    const signature = generateSignature(timestamp, API_KEY, recv_window, queryString);
-    
-    const response = await axios.get(`${BASE_URL}/v5/market/tickers`, {
+    // Use CoinGecko API as alternative since Bybit is blocked
+    const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
       params: {
-        category: 'linear'
-      },
-      headers: {
-        'X-BAPI-API-KEY': API_KEY,
-        'X-BAPI-SIGN': signature,
-        'X-BAPI-TIMESTAMP': timestamp,
-        'X-BAPI-RECV-WINDOW': recv_window,
-        'Content-Type': 'application/json'
+        vs_currency: 'usd',
+        order: 'market_cap_desc',
+        per_page: 100,
+        page: 1,
+        sparkline: false,
+        price_change_percentage: '24h'
       }
     });
 
-    const data: BybitResponse = response.data;
+    const coinGeckoData: CoinGeckoTicker[] = response.data;
     
-    if (data.retCode !== 0) {
-      throw new Error(`Bybit API error: ${data.retMsg}`);
-    }
+    // Transform CoinGecko data to match Bybit format
+    const tickers: BybitTicker[] = coinGeckoData.map(coin => ({
+      symbol: `${coin.symbol.toUpperCase()}USDT`,
+      lastPrice: coin.current_price.toString(),
+      price24hPcnt: (coin.price_change_percentage_24h || 0).toString(),
+      volume24h: coin.total_volume.toString(),
+      highPrice24h: coin.high_24h.toString(),
+      lowPrice24h: coin.low_24h.toString(),
+      turnover24h: (coin.total_volume * coin.current_price).toString()
+    }));
 
-    return data.result.list;
+    return tickers;
   } catch (error) {
-    console.error('Error fetching Bybit tickers:', error);
+    console.error('Error fetching market tickers:', error);
     throw error;
   }
 }
