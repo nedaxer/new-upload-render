@@ -17,10 +17,6 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
   const [activeTab, setActiveTab] = useState('crypto');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleFiatClick = () => {
-    onComingSoon('Fiat Trading');
-  };
-
   const cryptos = [
     {
       symbol: 'BTC',
@@ -77,7 +73,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
           Crypto
         </button>
         <button
-          onClick={handleFiatClick}
+          onClick={() => onComingSoon('Fiat Trading')}
           className="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white transition-colors text-sm"
         >
           Fiat
