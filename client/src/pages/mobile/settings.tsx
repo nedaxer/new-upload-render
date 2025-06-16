@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ChevronRight, Camera, Copy, Check } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 
 interface UserSettings {
   nickname?: string;
@@ -22,7 +21,7 @@ interface UserSettings {
 
 export default function MobileSettings() {
   const [, setLocation] = useLocation();
-  const { user, refetch } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,14 +44,24 @@ export default function MobileSettings() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { nickname?: string; profilePicture?: string }) => {
-      return apiRequest('/api/user/update-profile', {
+      const response = await fetch('/api/user/update-profile', {
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update profile');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      refetch();
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully."

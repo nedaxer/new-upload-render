@@ -663,7 +663,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName,
           email: user.email,
           isVerified: user.isVerified,
-          isAdmin: user.isAdmin
+          isAdmin: user.isAdmin,
+          profilePicture: user.profilePicture
         }
       });
     } catch (error) {

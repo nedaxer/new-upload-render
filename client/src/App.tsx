@@ -99,6 +99,7 @@ import NotificationSettings from '@/pages/mobile/notification-settings';
 import Chatbot from '@/pages/mobile/chatbot';
 import MobileKYC from '@/pages/mobile/kyc';
 import MobileNews from '@/pages/mobile/news';
+import MobileSettings from '@/pages/mobile/settings';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -233,6 +234,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
             <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
             <ProtectedRoute path="/mobile/news" component={MobileNews} />
+            <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
             <ProtectedRoute path="/mobile/currency-selection" component={lazy(() => import('./pages/mobile/currency-selection'))} />
 
             {/* Secret Admin Routes - Protected with admin flag */}

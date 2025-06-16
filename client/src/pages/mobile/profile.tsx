@@ -214,7 +214,9 @@ export default function MobileProfile() {
           <Link href="/mobile/chatbot">
             <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
           </Link>
-          <Settings className="w-6 h-6 text-gray-400" />
+          <Link href="/mobile/settings">
+            <Settings className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+          </Link>
         </div>
       </div>
 
