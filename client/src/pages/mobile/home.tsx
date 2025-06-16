@@ -30,10 +30,13 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function MobileHome() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
   const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -42,21 +45,25 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
-  // Load profile picture and currency from localStorage
+  // Load currency from localStorage and listen for profile updates
   useEffect(() => {
-    const saved = localStorage.getItem('profilePicture');
-    if (saved) {
-      setProfilePicture(saved);
-    }
-
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
     }
-  }, []);
+
+    // Listen for profile updates from other components
+    const handleProfileUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, [queryClient]);
 
   // Fetch real-time price data
   const { data: priceData } = useQuery({
@@ -355,9 +362,9 @@ export default function MobileHome() {
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
-              {profilePicture ? (
+              {user?.profilePicture ? (
                 <img 
-                  src={profilePicture} 
+                  src={user.profilePicture} 
                   alt="Profile" 
                   className="w-full h-full rounded-full object-cover"
                 />
