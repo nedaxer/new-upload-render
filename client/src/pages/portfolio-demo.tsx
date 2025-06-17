@@ -69,7 +69,7 @@ export default function PortfolioDemo() {
                   strokeWidth="8"
                 />
                 
-                {/* Bitcoin segment (60%) */}
+                {/* Bitcoin segment (49.5%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -77,12 +77,25 @@ export default function PortfolioDemo() {
                   fill="none"
                   stroke="#f59e0b"
                   strokeWidth="8"
-                  strokeDasharray="150.8 100.4"
+                  strokeDasharray="124.5 126.7"
                   strokeDashoffset="0"
                   className="transition-all duration-1000"
                 />
                 
-                {/* USDT segment (25%) */}
+                {/* Ethereum segment (24.5%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#374151"
+                  strokeWidth="8"
+                  strokeDasharray="61.6 189.6"
+                  strokeDashoffset="-124.5"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* Litecoin segment (4.7%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -90,25 +103,38 @@ export default function PortfolioDemo() {
                   fill="none"
                   stroke="#10b981"
                   strokeWidth="8"
-                  strokeDasharray="62.8 188.4"
-                  strokeDashoffset="-150.8"
+                  strokeDasharray="11.8 239.4"
+                  strokeDashoffset="-186.1"
                   className="transition-all duration-1000"
                 />
                 
-                {/* ETH segment (10%) */}
+                {/* IOTA segment (4.3%) */}
                 <circle
                   cx="50"
                   cy="50"
                   r="40"
                   fill="none"
-                  stroke="#3b82f6"
+                  stroke="#a855f7"
                   strokeWidth="8"
-                  strokeDasharray="25.1 226.1"
-                  strokeDashoffset="-213.6"
+                  strokeDasharray="10.8 240.4"
+                  strokeDashoffset="-197.9"
                   className="transition-all duration-1000"
                 />
                 
-                {/* BNB segment (5%) */}
+                {/* Monero segment (3.1%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#ef4444"
+                  strokeWidth="8"
+                  strokeDasharray="7.8 243.4"
+                  strokeDashoffset="-208.7"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* Binance segment (2.1%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -116,8 +142,21 @@ export default function PortfolioDemo() {
                   fill="none"
                   stroke="#eab308"
                   strokeWidth="8"
-                  strokeDasharray="12.6 238.6"
-                  strokeDashoffset="-238.7"
+                  strokeDasharray="5.3 245.9"
+                  strokeDashoffset="-216.5"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* Cardano segment (1.9%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#6b7280"
+                  strokeWidth="8"
+                  strokeDasharray="4.8 246.4"
+                  strokeDashoffset="-221.8"
                   className="transition-all duration-1000"
                 />
               </svg>
@@ -131,61 +170,68 @@ export default function PortfolioDemo() {
               </div>
             </div>
             
-            {/* Crypto Labels Around Donut */}
-            {/* BTC Label - Top Right */}
-            <div className="absolute top-8 right-2">
-              <div className="flex items-center space-x-2">
-                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-orange-500/30">
-                  <div className="text-orange-400 text-sm font-bold">BTC</div>
-                  <div className="text-white text-xs font-semibold">60%</div>
-                  <div className="text-gray-300 text-xs">
-                    {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.31) : '***'}
-                  </div>
-                </div>
-                <div className="w-4 h-1 bg-orange-500 rounded-full"></div>
-              </div>
+            {/* Crypto Labels Around Donut - Positioned like pie chart */}
+            {/* Bitcoin - Right side (49.5% position) */}
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-right">
+              <div className="text-orange-400 text-sm font-bold leading-tight">Bitcoin</div>
+              <div className="text-white text-xs">49.5%</div>
             </div>
             
-            {/* USDT Label - Bottom Right */}
-            <div className="absolute bottom-8 right-2">
-              <div className="flex items-center space-x-2">
-                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-green-500/30">
-                  <div className="text-green-400 text-sm font-bold">USDT</div>
-                  <div className="text-white text-xs font-semibold">25%</div>
-                  <div className="text-gray-300 text-xs">
-                    {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.13) : '***'}
-                  </div>
-                </div>
-                <div className="w-4 h-1 bg-green-500 rounded-full"></div>
-              </div>
+            {/* Ethereum - Bottom left */}
+            <div className="absolute left-8 bottom-12">
+              <div className="text-gray-300 text-sm font-bold leading-tight">Ethereum</div>
+              <div className="text-white text-xs">24.5%</div>
             </div>
             
-            {/* ETH Label - Bottom Left */}
-            <div className="absolute bottom-8 left-2">
-              <div className="flex items-center space-x-2 flex-row-reverse">
-                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-blue-500/30 text-right">
-                  <div className="text-blue-400 text-sm font-bold">ETH</div>
-                  <div className="text-white text-xs font-semibold">10%</div>
-                  <div className="text-gray-300 text-xs">
-                    {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.05) : '***'}
-                  </div>
-                </div>
-                <div className="w-4 h-1 bg-blue-500 rounded-full"></div>
-              </div>
+            {/* Cardano - Bottom */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-gray-400 text-sm font-bold leading-tight">Cardano</div>
+              <div className="text-white text-xs">1.9%</div>
             </div>
             
-            {/* BNB Label - Top Left */}
-            <div className="absolute top-8 left-2">
-              <div className="flex items-center space-x-2 flex-row-reverse">
-                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-yellow-500/30 text-right">
-                  <div className="text-yellow-400 text-sm font-bold">BNB</div>
-                  <div className="text-white text-xs font-semibold">5%</div>
-                  <div className="text-gray-300 text-xs">
-                    {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.03) : '***'}
-                  </div>
-                </div>
-                <div className="w-4 h-1 bg-yellow-500 rounded-full"></div>
-              </div>
+            {/* IOTA - Left side */}
+            <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
+              <div className="text-purple-400 text-sm font-bold leading-tight">IOTA</div>
+              <div className="text-white text-xs">4.3%</div>
+            </div>
+            
+            {/* Litecoin - Top left */}
+            <div className="absolute left-8 top-12">
+              <div className="text-green-400 text-sm font-bold leading-tight">Litecoin</div>
+              <div className="text-white text-xs">4.7%</div>
+            </div>
+            
+            {/* Binance - Top */}
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-yellow-400 text-sm font-bold leading-tight">Binance</div>
+              <div className="text-white text-xs">2.1%</div>
+            </div>
+            
+            {/* Monero - Top right */}
+            <div className="absolute right-8 top-12 text-right">
+              <div className="text-red-400 text-sm font-bold leading-tight">Monero</div>
+              <div className="text-white text-xs">3.1%</div>
+            </div>
+            
+            {/* Other smaller coins - positioned around */}
+            <div className="absolute right-2 top-20 text-right">
+              <div className="text-gray-300 text-xs font-medium">KuCoin: 1.7%</div>
+            </div>
+            
+            <div className="absolute left-2 top-20">
+              <div className="text-gray-300 text-xs font-medium">Wabi: 1.9%</div>
+            </div>
+            
+            <div className="absolute right-2 bottom-20 text-right">
+              <div className="text-gray-300 text-xs font-medium">EOS: 0.9%</div>
+            </div>
+            
+            <div className="absolute left-2 bottom-20">
+              <div className="text-gray-300 text-xs font-medium">OmiseGO: 1.4%</div>
+            </div>
+            
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+              <div className="text-gray-300 text-xs font-medium">PotCoin: 0.8%</div>
             </div>
           </div>
         </div>
