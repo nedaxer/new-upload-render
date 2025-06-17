@@ -494,57 +494,45 @@ export default function MobileAssets() {
             </div>
           </div>
           
-          {/* Legend */}
-          <div className="w-full max-w-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-white text-sm font-medium">BTC</span>
+          {/* Portfolio Labels on Chart */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {/* BTC Label */}
+            <div className="absolute" style={{ top: '20%', right: '15%' }}>
+              <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                BTC 60%
               </div>
-              <div className="text-right">
-                <div className="text-white text-sm font-medium">60%</div>
-                <div className="text-gray-400 text-xs">
-                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.31) : '***'}
-                </div>
+              <div className="text-center text-xs text-gray-300 mt-1">
+                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.31) : '***'}
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-white text-sm font-medium">USDT</span>
+            {/* USDT Label */}
+            <div className="absolute" style={{ bottom: '20%', right: '10%' }}>
+              <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">
+                USDT 25%
               </div>
-              <div className="text-right">
-                <div className="text-white text-sm font-medium">25%</div>
-                <div className="text-gray-400 text-xs">
-                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.13) : '***'}
-                </div>
+              <div className="text-center text-xs text-gray-300 mt-1">
+                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.13) : '***'}
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="text-white text-sm font-medium">ETH</span>
+            {/* ETH Label */}
+            <div className="absolute" style={{ bottom: '20%', left: '10%' }}>
+              <div className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">
+                ETH 10%
               </div>
-              <div className="text-right">
-                <div className="text-white text-sm font-medium">10%</div>
-                <div className="text-gray-400 text-xs">
-                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.05) : '***'}
-                </div>
+              <div className="text-center text-xs text-gray-300 mt-1">
+                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.05) : '***'}
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="text-white text-sm font-medium">BNB</span>
+            {/* BNB Label */}
+            <div className="absolute" style={{ top: '20%', left: '15%' }}>
+              <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
+                BNB 5%
               </div>
-              <div className="text-right">
-                <div className="text-white text-sm font-medium">5%</div>
-                <div className="text-gray-400 text-xs">
-                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.03) : '***'}
-                </div>
+              <div className="text-center text-xs text-gray-300 mt-1">
+                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.03) : '***'}
               </div>
             </div>
           </div>
