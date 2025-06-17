@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
 import TradingViewWidget from '@/components/tradingview-widget';
@@ -136,10 +137,12 @@ export default function MobileTrade() {
   };
 
   const handleTradingTypeChange = (tab: string) => {
+    hapticLight();
     setSelectedTradingType(tab);
   };
 
   const handleTabChange = (tab: string) => {
+    hapticLight();
     setSelectedTab(tab);
   };
 
