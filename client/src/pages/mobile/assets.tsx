@@ -413,138 +413,153 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Assets Section */}
+      {/* Portfolio Circle Chart */}
       <div className="px-4">
-        <h3 className="text-white font-medium mb-4 text-sm">Portfolio Assets</h3>
+        <h3 className="text-white font-medium mb-6 text-sm">Portfolio Distribution</h3>
         
-        {/* Bitcoin */}
-        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
-            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
-          >
-            <source src={advancedChartsVideo} type="video/mp4" />
-          </video>
-          <div className="relative flex items-center justify-between py-4 px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                ₿
+        {/* Circular Portfolio Chart */}
+        <div className="flex flex-col items-center mb-8">
+          {/* Donut Chart */}
+          <div className="relative w-48 h-48 mb-6">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              {/* Background circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="#374151"
+                strokeWidth="8"
+              />
+              
+              {/* Bitcoin segment (60%) */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="8"
+                strokeDasharray="150.8 100.4"
+                strokeDashoffset="0"
+                className="transition-all duration-1000"
+              />
+              
+              {/* USDT segment (25%) */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="8"
+                strokeDasharray="62.8 188.4"
+                strokeDashoffset="-150.8"
+                className="transition-all duration-1000"
+              />
+              
+              {/* ETH segment (10%) */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="8"
+                strokeDasharray="25.1 226.1"
+                strokeDashoffset="-213.6"
+                className="transition-all duration-1000"
+              />
+              
+              {/* BNB segment (5%) */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="none"
+                stroke="#eab308"
+                strokeWidth="8"
+                strokeDasharray="12.6 238.6"
+                strokeDashoffset="-238.7"
+                className="transition-all duration-1000"
+              />
+            </svg>
+            
+            {/* Center content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-2xl font-bold text-white">
+                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
               </div>
-              <div>
-                <div className="text-white font-medium text-sm">BTC</div>
-                <div className="text-gray-300 text-xs">Bitcoin</div>
+              <div className="text-xs text-gray-400">Total Value</div>
+            </div>
+          </div>
+          
+          {/* Legend */}
+          <div className="w-full max-w-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="text-white text-sm font-medium">BTC</span>
+              </div>
+              <div className="text-right">
+                <div className="text-white text-sm font-medium">60%</div>
+                <div className="text-gray-400 text-xs">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.31) : '***'}
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00000484' : '****'}
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-white text-sm font-medium">USDT</span>
               </div>
-              <div className="text-gray-300 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.51) : '***'}
+              <div className="text-right">
+                <div className="text-white text-sm font-medium">25%</div>
+                <div className="text-gray-400 text-xs">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.13) : '***'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-white text-sm font-medium">ETH</span>
+              </div>
+              <div className="text-right">
+                <div className="text-white text-sm font-medium">10%</div>
+                <div className="text-gray-400 text-xs">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.05) : '***'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="text-white text-sm font-medium">BNB</span>
+              </div>
+              <div className="text-right">
+                <div className="text-white text-sm font-medium">5%</div>
+                <div className="text-gray-400 text-xs">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.03) : '***'}
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* USDT */}
-        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
-            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
-          >
-            <source src={advancedChartsVideo} type="video/mp4" />
-          </video>
-          <div className="relative flex items-center justify-between py-4 px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                ₮
-              </div>
-              <div>
-                <div className="text-white font-medium text-sm">USDT</div>
-                <div className="text-gray-300 text-xs">Tether</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-300 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
-            </div>
+        
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-gray-400 text-xs mb-1">24h Change</div>
+            <div className="text-green-500 text-lg font-bold">+2.4%</div>
           </div>
-        </div>
-
-        {/* ETH */}
-        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
-            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
-          >
-            <source src={advancedChartsVideo} type="video/mp4" />
-          </video>
-          <div className="relative flex items-center justify-between py-4 px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                Ξ
-              </div>
-              <div>
-                <div className="text-white font-medium text-sm">ETH</div>
-                <div className="text-gray-300 text-xs">Ethereum</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-300 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* BNB */}
-        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
-            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
-          >
-            <source src={advancedChartsVideo} type="video/mp4" />
-          </video>
-          <div className="relative flex items-center justify-between py-4 px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                B
-              </div>
-              <div>
-                <div className="text-white font-medium text-sm">BNB</div>
-                <div className="text-gray-300 text-xs">BNB Chain</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-white font-medium text-sm">
-                {showBalance ? '0.00' : '****'}
-              </div>
-              <div className="text-gray-300 text-xs">
-                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
-              </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-gray-400 text-xs mb-1">Total Profit</div>
+            <div className="text-orange-500 text-lg font-bold">
+              {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.12) : '+***'}
             </div>
           </div>
         </div>
