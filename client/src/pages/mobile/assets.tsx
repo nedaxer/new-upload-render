@@ -421,113 +421,129 @@ export default function MobileAssets() {
         <div className="relative flex flex-col items-center mb-8">
           {/* Donut Chart Container */}
           <div className="relative w-80 h-80 mb-6">
-            {/* SVG Donut Chart */}
+            {/* Animated SVG Donut Chart */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+              <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 200 200">
+                <defs>
+                  {/* Gradients for better visual appeal */}
+                  <linearGradient id="bitcoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f59e0b" />
+                    <stop offset="100%" stopColor="#d97706" />
+                  </linearGradient>
+                  <linearGradient id="ethereumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#6b7280" />
+                    <stop offset="100%" stopColor="#4b5563" />
+                  </linearGradient>
+                  <linearGradient id="litecoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+                </defs>
+                
                 {/* Background circle */}
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="none"
-                  stroke="#374151"
-                  strokeWidth="8"
-                />
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#374151" strokeWidth="20" opacity="0.3" />
                 
-                {/* Bitcoin segment (49.5%) */}
+                {/* Bitcoin segment (49.5%) - from 0° to 178° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="8"
-                  strokeDasharray="124.5 126.7"
+                  stroke="url(#bitcoinGrad)"
+                  strokeWidth="20"
+                  strokeDasharray="217.5 222.5"
                   strokeDashoffset="0"
-                  className="transition-all duration-1000"
+                  className="animate-[drawSegment_2s_ease-out_0.2s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #f59e0b50)' }}
                 />
                 
-                {/* Ethereum segment (24.5%) */}
+                {/* Ethereum segment (24.5%) - from 178° to 266° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
-                  stroke="#374151"
-                  strokeWidth="8"
-                  strokeDasharray="61.6 189.6"
-                  strokeDashoffset="-124.5"
-                  className="transition-all duration-1000"
+                  stroke="url(#ethereumGrad)"
+                  strokeWidth="20"
+                  strokeDasharray="107.8 332.2"
+                  strokeDashoffset="-217.5"
+                  className="animate-[drawSegment_2s_ease-out_0.6s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #6b728050)' }}
                 />
                 
-                {/* Litecoin segment (4.7%) */}
+                {/* Litecoin segment (4.7%) - from 266° to 283° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
-                  stroke="#10b981"
-                  strokeWidth="8"
-                  strokeDasharray="11.8 239.4"
-                  strokeDashoffset="-186.1"
-                  className="transition-all duration-1000"
+                  stroke="url(#litecoinGrad)"
+                  strokeWidth="20"
+                  strokeDasharray="20.7 419.3"
+                  strokeDashoffset="-325.3"
+                  className="animate-[drawSegment_2s_ease-out_1.0s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #10b98150)' }}
                 />
                 
-                {/* IOTA segment (4.3%) */}
+                {/* IOTA segment (4.3%) - from 283° to 298° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
                   stroke="#a855f7"
-                  strokeWidth="8"
-                  strokeDasharray="10.8 240.4"
-                  strokeDashoffset="-197.9"
-                  className="transition-all duration-1000"
+                  strokeWidth="20"
+                  strokeDasharray="18.9 421.1"
+                  strokeDashoffset="-346"
+                  className="animate-[drawSegment_2s_ease-out_1.4s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #a855f750)' }}
                 />
                 
-                {/* Monero segment (3.1%) */}
+                {/* Monero segment (3.1%) - from 298° to 309° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
                   stroke="#ef4444"
-                  strokeWidth="8"
-                  strokeDasharray="7.8 243.4"
-                  strokeDashoffset="-208.7"
-                  className="transition-all duration-1000"
+                  strokeWidth="20"
+                  strokeDasharray="13.6 426.4"
+                  strokeDashoffset="-364.9"
+                  className="animate-[drawSegment_2s_ease-out_1.8s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #ef444450)' }}
                 />
                 
-                {/* Binance segment (2.1%) */}
+                {/* Binance segment (2.1%) - from 309° to 317° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
                   stroke="#eab308"
-                  strokeWidth="8"
-                  strokeDasharray="5.3 245.9"
-                  strokeDashoffset="-216.5"
-                  className="transition-all duration-1000"
+                  strokeWidth="20"
+                  strokeDasharray="9.2 430.8"
+                  strokeDashoffset="-378.5"
+                  className="animate-[drawSegment_2s_ease-out_2.2s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #eab30850)' }}
                 />
                 
-                {/* Cardano segment (1.9%) */}
+                {/* Cardano and others combined (8.8%) - from 317° to 360° */}
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
+                  cx="100"
+                  cy="100"
+                  r="70"
                   fill="none"
-                  stroke="#6b7280"
-                  strokeWidth="8"
-                  strokeDasharray="4.8 246.4"
-                  strokeDashoffset="-221.8"
-                  className="transition-all duration-1000"
+                  stroke="#9ca3af"
+                  strokeWidth="20"
+                  strokeDasharray="38.7 401.3"
+                  strokeDashoffset="-387.7"
+                  className="animate-[drawSegment_2s_ease-out_2.6s_both]"
+                  style={{ filter: 'drop-shadow(0 0 8px #9ca3af50)' }}
                 />
               </svg>
               
-              {/* Center content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {/* Center content with animation */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center animate-[fadeInScale_1s_ease-out_3s_both]">
                 <div className="text-xl font-bold text-white">
                   {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
                 </div>
@@ -535,92 +551,106 @@ export default function MobileAssets() {
               </div>
             </div>
             
-            {/* Crypto Labels Around Donut - Positioned like pie chart */}
-            {/* Connecting lines from chart to labels */}
+            {/* Connecting lines with proper mathematical positioning */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 320 320">
-              {/* Bitcoin line - Right side (0° - 49.5% of circle) */}
-              <line x1="210" y1="160" x2="270" y2="160" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Bitcoin line - Right side (89° midpoint of 0-178°) */}
+              <line 
+                x1="240" y1="160" x2="290" y2="160" 
+                stroke="#f59e0b" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_3.2s_both]"
+              />
               
-              {/* Ethereum line - Bottom right (180° from start) */}
-              <line x1="160" y1="210" x2="160" y2="270" stroke="#374151" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Ethereum line - Bottom left (222° midpoint of 178-266°) */}
+              <line 
+                x1="125" y1="235" x2="75" y2="285" 
+                stroke="#6b7280" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_3.4s_both]"
+              />
               
-              {/* Litecoin line - Left side (270° from start) */}
-              <line x1="110" y1="160" x2="50" y2="160" stroke="#10b981" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Litecoin line - Left side (274.5° midpoint of 266-283°) */}
+              <line 
+                x1="80" y1="160" x2="30" y2="160" 
+                stroke="#10b981" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_3.6s_both]"
+              />
               
-              {/* IOTA line - Left upper (315° from start) */}
-              <line x1="125" y1="125" x2="80" y2="80" stroke="#a855f7" strokeWidth="2" strokeDasharray="2,2" />
+              {/* IOTA line - Top left (290.5° midpoint of 283-298°) */}
+              <line 
+                x1="110" y1="110" x2="70" y2="70" 
+                stroke="#a855f7" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_3.8s_both]"
+              />
               
-              {/* Monero line - Top left (340° from start) */}
-              <line x1="145" y1="110" x2="120" y2="60" stroke="#ef4444" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Monero line - Top (303.5° midpoint of 298-309°) */}
+              <line 
+                x1="160" y1="80" x2="160" y2="30" 
+                stroke="#ef4444" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_4.0s_both]"
+              />
               
-              {/* Binance line - Top (350° from start) */}
-              <line x1="155" y1="105" x2="160" y2="50" stroke="#eab308" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Binance line - Top right (313° midpoint of 309-317°) */}
+              <line 
+                x1="210" y1="110" x2="250" y2="70" 
+                stroke="#eab308" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_4.2s_both]"
+              />
               
-              {/* Cardano line - Top right (10° from start) */}
-              <line x1="175" y1="110" x2="200" y2="60" stroke="#6b7280" strokeWidth="2" strokeDasharray="2,2" />
+              {/* Others line - Right top (338.5° midpoint of 317-360°) */}
+              <line 
+                x1="240" y1="125" x2="290" y2="100" 
+                stroke="#9ca3af" 
+                strokeWidth="2" 
+                strokeDasharray="4,2"
+                className="animate-[drawLine_0.6s_ease-out_4.4s_both]"
+              />
             </svg>
             
-            {/* Bitcoin - Right side (largest segment 49.5%) */}
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-right">
-              <div className="text-orange-400 text-sm font-bold leading-tight">Bitcoin</div>
-              <div className="text-white text-xs">49.5%</div>
+            {/* Labels positioned using mathematical angles */}
+            <div className="absolute right-1 top-1/2 transform -translate-y-1/2 text-right animate-[slideInRight_0.5s_ease-out_3.2s_both]">
+              <div className="text-orange-400 text-sm font-bold">Bitcoin</div>
+              <div className="text-white text-xs opacity-90">49.5%</div>
             </div>
             
-            {/* Ethereum - Bottom (24.5% segment) */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-center">
-              <div className="text-gray-300 text-sm font-bold leading-tight">Ethereum</div>
-              <div className="text-white text-xs">24.5%</div>
+            <div className="absolute left-5 bottom-5 animate-[slideInUp_0.5s_ease-out_3.4s_both]">
+              <div className="text-gray-300 text-sm font-bold">Ethereum</div>
+              <div className="text-white text-xs opacity-90">24.5%</div>
             </div>
             
-            {/* Litecoin - Left side (4.7% segment) */}
-            <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
-              <div className="text-green-400 text-sm font-bold leading-tight">Litecoin</div>
-              <div className="text-white text-xs">4.7%</div>
+            <div className="absolute left-1 top-1/2 transform -translate-y-1/2 animate-[slideInLeft_0.5s_ease-out_3.6s_both]">
+              <div className="text-green-400 text-sm font-bold">Litecoin</div>
+              <div className="text-white text-xs opacity-90">4.7%</div>
             </div>
             
-            {/* IOTA - Top left diagonal (4.3% segment) */}
-            <div className="absolute left-6 top-6">
-              <div className="text-purple-400 text-sm font-bold leading-tight">IOTA</div>
-              <div className="text-white text-xs">4.3%</div>
+            <div className="absolute left-5 top-5 animate-[slideInDown_0.5s_ease-out_3.8s_both]">
+              <div className="text-purple-400 text-sm font-bold">IOTA</div>
+              <div className="text-white text-xs opacity-90">4.3%</div>
             </div>
             
-            {/* Monero - Top left (3.1% segment) */}
-            <div className="absolute left-12 top-2">
-              <div className="text-red-400 text-sm font-bold leading-tight">Monero</div>
-              <div className="text-white text-xs">3.1%</div>
+            <div className="absolute top-1 left-1/2 transform -translate-x-1/2 text-center animate-[slideInDown_0.5s_ease-out_4.0s_both]">
+              <div className="text-red-400 text-sm font-bold">Monero</div>
+              <div className="text-white text-xs opacity-90">3.1%</div>
             </div>
             
-            {/* Binance - Top center (2.1% segment) */}
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-center">
-              <div className="text-yellow-400 text-sm font-bold leading-tight">Binance</div>
-              <div className="text-white text-xs">2.1%</div>
+            <div className="absolute right-5 top-5 text-right animate-[slideInDown_0.5s_ease-out_4.2s_both]">
+              <div className="text-yellow-400 text-sm font-bold">Binance</div>
+              <div className="text-white text-xs opacity-90">2.1%</div>
             </div>
             
-            {/* Cardano - Top right (1.9% segment) */}
-            <div className="absolute right-12 top-2 text-right">
-              <div className="text-gray-400 text-sm font-bold leading-tight">Cardano</div>
-              <div className="text-white text-xs">1.9%</div>
-            </div>
-            
-            {/* Smaller coins around the perimeter */}
-            <div className="absolute right-6 top-6 text-right">
-              <div className="text-gray-300 text-xs font-medium">Wabi: 1.9%</div>
-            </div>
-            
-            <div className="absolute right-2 top-1/3 text-right">
-              <div className="text-gray-300 text-xs font-medium">KuCoin: 1.7%</div>
-            </div>
-            
-            <div className="absolute right-6 bottom-6 text-right">
-              <div className="text-gray-300 text-xs font-medium">OmiseGO: 1.4%</div>
-            </div>
-            
-            <div className="absolute left-6 bottom-6">
-              <div className="text-gray-300 text-xs font-medium">EOS: 0.9%</div>
-            </div>
-            
-            <div className="absolute top-1 right-1/3 text-center">
-              <div className="text-gray-300 text-xs font-medium">PotCoin: 0.8%</div>
+            <div className="absolute right-1 top-1/3 text-right animate-[slideInRight_0.5s_ease-out_4.4s_both]">
+              <div className="text-gray-400 text-sm font-bold">Others</div>
+              <div className="text-white text-xs opacity-90">11.8%</div>
             </div>
           </div>
         </div>
