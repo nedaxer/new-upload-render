@@ -37,7 +37,8 @@ export async function getBybitTickers(): Promise<BybitTicker[]> {
     try {
       const bybitResponse = await axios.get('https://api.bybit.com/v5/market/tickers', {
         params: {
-          category: 'spot'
+          category: 'spot',
+          limit: 1000  // Bybit allows up to 1000
         },
         timeout: 10000
       });
@@ -55,15 +56,38 @@ export async function getBybitTickers(): Promise<BybitTicker[]> {
       params: {
         vs_currency: 'usd',
         order: 'market_cap_desc',
-        per_page: 250, // Increased to get more pairs
+        per_page: 250,  // CoinGecko free tier limit is 250
         page: 1,
         sparkline: false,
         price_change_percentage: '24h'
-      }
+      },
+      timeout: 15000
     });
 
+    // Fetch additional pages to get closer to 1000
+    const additionalPages = [];
+    for (let page = 2; page <= 4; page++) {
+      try {
+        const pageResponse = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+          params: {
+            vs_currency: 'usd',
+            order: 'market_cap_desc',
+            per_page: 250,
+            page: page,
+            sparkline: false,
+            price_change_percentage: '24h'
+          },
+          timeout: 15000
+        });
+        additionalPages.push(...pageResponse.data);
+      } catch (pageError) {
+        console.log(`Failed to fetch page ${page}:`, pageError.message);
+        break;
+      }
+    }
+
     const coinGeckoData: CoinGeckoTicker[] = response.data;
-    
+
     // Transform CoinGecko data to match Bybit format with more pairs
     const tickers: BybitTicker[] = coinGeckoData.map(coin => ({
       symbol: `${coin.symbol.toUpperCase()}USDT`,
@@ -100,7 +124,7 @@ export async function getBybitTickers(): Promise<BybitTicker[]> {
     return tickers;
   } catch (error) {
     console.error('Error fetching market tickers:', error);
-    
+
     // Return fallback data if all APIs fail
     return generateFallbackTickers();
   }

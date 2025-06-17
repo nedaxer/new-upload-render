@@ -172,20 +172,12 @@ export default function MobileMarkets() {
                           .sort((a, b) => a.changeValue - b.changeValue);
         break;
       case 'Hot':
-        // Sort by volume for hot markets - top 50
-        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 50);
+        // Sort by volume for hot markets - SHOW ALL
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
         break;
       case 'New':
         // Sort by price change for new/trending - top 30
         filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 30);
-        break;
-      case 'Turnover':
-        // Sort by volume for turnover - top 50
-        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 50);
-        break;
-      case 'Opportunities':
-        // Sort by highest price changes (both positive and negative) - top 40
-        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 40);
         break;
       default:
         filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
@@ -219,7 +211,7 @@ export default function MobileMarkets() {
       {/* Top Tabs */}
       <div className="px-4 pb-4">
         <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
-          {['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover', 'Opportunities'].map((tab) => (
+          {['Favorites', 'Hot', 'New', 'Gainers', 'Losers'].map((tab) => (
             <button
               key={tab}
               onClick={() => {
@@ -236,54 +228,6 @@ export default function MobileMarkets() {
               {tab}
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* Market Type Tabs */}
-      <div className="px-4 pb-4">
-        <div className="flex space-x-6">
-          {['Spot', 'Derivatives'].map((type) => (
-            <button
-              key={type}
-              onClick={() => {
-                hapticLight();
-                setActiveMarketType(type);
-              }}
-              onTouchStart={() => hapticLight()}
-              className={`text-sm font-medium transition-colors ${
-                activeMarketType === type 
-                  ? 'text-white border-b-2 border-yellow-500 pb-2' 
-                  : 'text-gray-400 hover:text-white pb-2'
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Market Statistics */}
-      <div className="px-4 pb-3">
-        <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
-          <span>
-            {activeTab}: {sortedMarkets.length} pairs
-            {activeTab === 'Gainers' && ` (${processedMarkets.filter(m => m.changeValue > 0).length} total gainers)`}
-            {activeTab === 'Losers' && ` (${processedMarkets.filter(m => m.changeValue < 0).length} total losers)`}
-          </span>
-          <span className="text-xs">
-            Last update: {lastUpdate.toLocaleTimeString()}
-          </span>
-        </div>
-      </div>
-
-      {/* Market List Header */}
-      <div className="px-4 pb-3">
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>Trading Pairs</span>
-          <div className="flex space-x-8">
-            <span>Price</span>
-            <span>24H Change</span>
-          </div>
         </div>
       </div>
 
