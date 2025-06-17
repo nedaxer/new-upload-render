@@ -2,13 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
     <title>Nedaxer Trading Platform</title>
     <meta name="description" content="Trade with limited risk on the Nedaxer regulated exchange." />
     <meta name="theme-color" content="#0033a0" />
+    
+    <!-- PWA and Mobile App Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nedaxer" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/icons/icon-192x192.png" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    
+    <!-- Prevent zoom on iOS Safari -->
+    <style>
+      @media screen and (-webkit-min-device-pixel-ratio:0) {
+        select:focus,
+        textarea:focus,
+        input:focus {
+          font-size: 16px !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
