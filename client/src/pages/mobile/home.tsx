@@ -33,8 +33,6 @@ import { Link } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { useNavigate } from 'wouter';
-import { hapticMedium } from '@/lib/haptics';
 
 export default function MobileHome() {
   const { user } = useAuth();
@@ -48,7 +46,6 @@ export default function MobileHome() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const navigate = useNavigate();
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -510,30 +507,31 @@ export default function MobileHome() {
         {/* Crypto Pairs List */}
         <div className="space-y-4">
           {cryptoPairs.map((crypto, index) => (
-            
-              
-                
-                    
-                      
-                    
-                    
-                  
-                
-                
-                  
-                    {crypto.price}
-                  
-                  
-                    
-                      
-                    ) : (
-                      
+            <Link key={index} href="/mobile/trade">
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    {crypto.favorite && (
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                     )}
-                    
-                  
-                
-              
-            
+                    <span className="text-white font-medium">{crypto.pair}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-white font-medium">{crypto.price}</div>
+                  <div className={`text-sm flex items-center space-x-1 ${
+                    crypto.isPositive ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {crypto.isPositive ? (
+                      <TrendingUp className="w-3 h-3" />
+                    ) : (
+                      <TrendingDown className="w-3 h-3" />
+                    )}
+                    <span>{crypto.change}</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
