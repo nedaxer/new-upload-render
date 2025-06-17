@@ -99,7 +99,7 @@ export default function MobileAssets() {
 
   // Convert USD amounts to selected currency
   const convertToSelectedCurrency = (usdAmount: number): string => {
-    const rate = conversionRates[selectedCurrency] || 1;
+    const rate = (conversionRates as any)[selectedCurrency] || 1;
     const convertedAmount = usdAmount * rate;
 
     // Format based on currency
@@ -427,7 +427,7 @@ export default function MobileAssets() {
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             style={{ filter: 'brightness(0.6) contrast(1.1)' }}
           >
-            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+            <source src={advancedChartsVideo} type="video/mp4" />
           </video>
           <div className="relative flex items-center justify-between py-4 px-4">
             <div className="flex items-center space-x-3">
@@ -460,7 +460,7 @@ export default function MobileAssets() {
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             style={{ filter: 'brightness(0.6) contrast(1.1)' }}
           >
-            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+            <source src={advancedChartsVideo} type="video/mp4" />
           </video>
           <div className="relative flex items-center justify-between py-4 px-4">
             <div className="flex items-center space-x-3">
@@ -493,7 +493,7 @@ export default function MobileAssets() {
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             style={{ filter: 'brightness(0.6) contrast(1.1)' }}
           >
-            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+            <source src={advancedChartsVideo} type="video/mp4" />
           </video>
           <div className="relative flex items-center justify-between py-4 px-4">
             <div className="flex items-center space-x-3">
@@ -526,7 +526,7 @@ export default function MobileAssets() {
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             style={{ filter: 'brightness(0.6) contrast(1.1)' }}
           >
-            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+            <source src={advancedChartsVideo} type="video/mp4" />
           </video>
           <div className="relative flex items-center justify-between py-4 px-4">
             <div className="flex items-center space-x-3">
