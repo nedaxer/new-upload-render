@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TransformerLogo } from './transformer-logo';
-import logoImage from '@assets/IMG-20250617-WA0042_1750199488699.png';
+import { NedaxerTransformer } from './nedaxer-transformer';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -227,27 +226,27 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Main Logo Container */}
           <div className="relative z-10 flex flex-col items-center space-y-8">
-            {/* Transformer Logo Animation */}
+            {/* Nedaxer Transformer Animation */}
             <motion.div
               initial={{ scale: 0, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               transition={{ 
-                duration: 1, 
+                duration: 1.5, 
                 ease: "easeOut",
                 delay: 1
               }}
               className="relative"
             >
-              <TransformerLogo 
+              <NedaxerTransformer 
                 autoStart={true}
-                className="scale-150 md:scale-[2]"
+                className="scale-125 md:scale-150"
               />
               
-              {/* Enhanced Energy Rings Around Transformer Logo */}
+              {/* Enhanced Energy Rings Around Logo */}
               <motion.div
                 className="absolute inset-0 rounded-full border-2 border-yellow-400/30"
                 animate={{
-                  scale: [1, 1.5, 1],
+                  scale: [1, 1.8, 1],
                   opacity: [0.3, 0.8, 0.3],
                   borderColor: ['rgba(251, 191, 36, 0.3)', 'rgba(16, 185, 129, 0.5)', 'rgba(251, 191, 36, 0.3)']
                 }}
@@ -255,7 +254,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   duration: 3,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 2
+                  delay: 3
                 }}
               />
               
@@ -263,7 +262,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               <motion.div
                 className="absolute inset-0 rounded-full border border-green-400/20"
                 animate={{
-                  scale: [1.3, 1.8, 1.3],
+                  scale: [1.5, 2.2, 1.5],
                   opacity: [0.2, 0.6, 0.2],
                   borderColor: ['rgba(16, 185, 129, 0.2)', 'rgba(139, 92, 246, 0.4)', 'rgba(16, 185, 129, 0.2)']
                 }}
@@ -271,7 +270,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   duration: 3.5,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 2.5
+                  delay: 3.5
                 }}
               />
               
@@ -279,7 +278,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               <motion.div
                 className="absolute inset-0 rounded-full border border-purple-400/15"
                 animate={{
-                  scale: [1.6, 2.2, 1.6],
+                  scale: [1.8, 2.6, 1.8],
                   opacity: [0.1, 0.4, 0.1],
                   borderColor: ['rgba(139, 92, 246, 0.15)', 'rgba(239, 68, 68, 0.3)', 'rgba(139, 92, 246, 0.15)']
                 }}
@@ -287,7 +286,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 3
+                  delay: 4
                 }}
               />
             </motion.div>

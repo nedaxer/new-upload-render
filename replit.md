@@ -120,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 17, 2025. Created transformer logo animation using user's cut-out letter images: individual N-E-D-A-X-E-R letters fly from different directions and assemble around central logo icon, with strike line animation running from N to R when complete, plus particle effects and energy bursts
 - June 17, 2025. Created premium splash screen with enhanced animations: 10-second duration, larger logo (48x48 to 56x56), trading chart lines flowing towards logo from all edges, multiple pulsing rings with color changes, enhanced welcome message animations, and animated progress bar with gradient colors
 - June 17, 2025. Enhanced mobile assets page with professional portfolio visualization: integrated advanced charts video as seamless backgrounds, replaced crypto coin cards with animated donut chart showing distribution percentages, implemented professional glass-morphism labeling system with color-coded indicators matching trading apps like Blossom
 - June 16, 2025. Updated mobile markets page with live cryptocurrency data from CoinGecko API, implemented 10-second auto-refresh, added Bullish/Bearish sentiment labels, click-to-trade functionality, and removed error states for better user experience when offline
