@@ -240,24 +240,83 @@ export default function MobileHome() {
     { name: 'Invite Friends', icon: Users, color: 'text-green-500', href: '/mobile/invite-friends' }
   ];
 
-  // Generate crypto pairs from real price data
-  const cryptoPairs = React.useMemo(() => {
-    if (!priceData || !Array.isArray(priceData)) {
+  // Load favorites from localStorage
+  const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
+  const [activeWatchlistTab, setActiveWatchlistTab] = useState('Hot');
+
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favoriteCoins');
+    if (savedFavorites) {
+      setFavoriteCoins(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  // Fetch live market data from Bybit API
+  const { data: marketData } = useQuery({
+    queryKey: ['/api/bybit/tickers'],
+    queryFn: async () => {
+      const response = await fetch('/api/bybit/tickers');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch market data: ${response.statusText}`);
+      }
+      return await response.json();
+    },
+    refetchInterval: 10000, // Refresh every 10 seconds
+    retry: 3,
+  });
+
+  // Process market data from Bybit API
+  const processedMarkets = React.useMemo(() => {
+    if (!marketData?.data || !Array.isArray(marketData.data)) {
       return [];
     }
 
-    return priceData.slice(0, 4).map((crypto: any, index: number) => ({
-      pair: `${crypto.symbol?.toUpperCase() || 'BTC'}/USDT`,
-      price: crypto.current_price?.toLocaleString('en-US', { 
-        minimumFractionDigits: crypto.current_price < 1 ? 6 : 2,
-        maximumFractionDigits: crypto.current_price < 1 ? 6 : 2 
-      }) || '0',
-      change: `${crypto.price_change_percentage_24h > 0 ? '+' : ''}${crypto.price_change_percentage_24h?.toFixed(2) || '0.00'}%`,
-      isPositive: crypto.price_change_percentage_24h > 0,
-      favorite: index === 0
-    }));
-  }, [priceData]);
+    return marketData.data.map((ticker: any) => {
+      const baseSymbol = ticker.symbol.replace('USDT', '').replace('USDC', '').replace('USD', '');
+      const price = parseFloat(ticker.lastPrice);
+      const change = parseFloat(ticker.price24hPcnt);
+      const volume = parseFloat(ticker.turnover24h);
+      
+      return {
+        symbol: baseSymbol,
+        pair: ticker.symbol,
+        displayPair: `${baseSymbol}/USDT`,
+        price: price >= 1 ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : price.toFixed(8),
+        priceValue: price,
+        change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`,
+        changeValue: change,
+        isPositive: change >= 0,
+        volume: volume >= 1e9 ? `$${(volume / 1e9).toFixed(2)}B` : volume >= 1e6 ? `$${(volume / 1e6).toFixed(2)}M` : volume >= 1e3 ? `$${(volume / 1e3).toFixed(2)}K` : `$${volume.toFixed(2)}`,
+        volumeValue: volume,
+        sentiment: change > 5 ? 'Bullish' : change < -5 ? 'Bearish' : 'Neutral',
+        favorite: favoriteCoins.includes(ticker.symbol)
+      };
+    });
+  }, [marketData, favoriteCoins]);
 
+  // Get filtered markets based on active tab
+  const getWatchlistMarkets = () => {
+    let filtered = processedMarkets;
+    
+    switch (activeWatchlistTab) {
+      case 'Favorites':
+        return filtered.filter(market => market.favorite);
+      case 'Gainers':
+        return filtered.filter(market => market.sentiment === 'Bullish').slice(0, 5);
+      case 'Losers':
+        return filtered.filter(market => market.sentiment === 'Bearish').slice(0, 5);
+      case 'Hot':
+        return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
+      case 'New':
+        return filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 5);
+      case 'Turnover':
+        return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
+      default:
+        return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
+    }
+  };
+
+  const watchlistMarkets = getWatchlistMarkets();
   const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
 
   // Show different views based on current state
@@ -478,16 +537,19 @@ export default function MobileHome() {
         </div>
       </div>
 
-      {/* Market Tabs */}
+      {/* Watchlist Section */}
       <div className="px-4">
+        <h3 className="text-lg font-semibold text-white mb-4">Watchlist</h3>
+        
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
             <button 
               key={tab}
-              className={`whitespace-nowrap pb-2 ${
-                tab === 'Favorites' 
+              onClick={() => setActiveWatchlistTab(tab)}
+              className={`whitespace-nowrap pb-2 transition-colors ${
+                activeWatchlistTab === tab 
                   ? 'text-orange-500 border-b-2 border-orange-500' 
-                  : 'text-gray-400'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               {tab}
@@ -504,35 +566,43 @@ export default function MobileHome() {
           </button>
         </div>
 
-        {/* Crypto Pairs List */}
+        {/* Live Market Data List */}
         <div className="space-y-4">
-          {cryptoPairs.map((crypto, index) => (
-            <Link key={index} href="/mobile/trade">
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    {crypto.favorite && (
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    )}
-                    <span className="text-white font-medium">{crypto.pair}</span>
+          {watchlistMarkets.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400">
+                {activeWatchlistTab === 'Favorites' ? 'No favorites selected' : 'Loading market data...'}
+              </p>
+            </div>
+          ) : (
+            watchlistMarkets.map((market, index) => (
+              <Link key={`${market.pair}-${index}`} href={`/mobile/trade?symbol=${market.symbol}`}>
+                <div className="flex items-center justify-between py-2 hover:bg-gray-800/30 rounded transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                      {market.favorite && (
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      )}
+                      <span className="text-white font-medium">{market.displayPair}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">{market.price}</div>
+                    <div className={`text-sm flex items-center space-x-1 ${
+                      market.isPositive ? 'text-green-500' : 'text-red-500'
+                    }`}>
+                      {market.isPositive ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
+                      <span>{market.change}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-white font-medium">{crypto.price}</div>
-                  <div className={`text-sm flex items-center space-x-1 ${
-                    crypto.isPositive ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {crypto.isPositive ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
-                    )}
-                    <span>{crypto.change}</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
       </div>
 
