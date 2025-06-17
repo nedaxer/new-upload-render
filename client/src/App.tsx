@@ -7,6 +7,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
+import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { lazy } from 'react';
 
 // Pages

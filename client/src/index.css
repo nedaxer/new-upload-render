@@ -20,6 +20,8 @@
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     overscroll-behavior: none;
+    /* Hide horizontal overflow */
+    overflow-x: hidden;
   }
 
   html {
@@ -36,6 +38,8 @@
     -ms-text-size-adjust: 100%;
     /* Prevent pull-to-refresh */
     overscroll-behavior-y: contain;
+    /* Hide horizontal overflow */
+    overflow-x: hidden;
   }
 
   /* Allow text selection for input fields */
