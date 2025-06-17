@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TransformerLogo } from './transformer-logo';
 import logoImage from '@assets/IMG-20250617-WA0042_1750199488699.png';
 
 interface SplashScreenProps {
@@ -226,106 +227,67 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Main Logo Container */}
           <div className="relative z-10 flex flex-col items-center space-y-8">
-            {/* Logo with Enhanced Pop Animation */}
+            {/* Transformer Logo Animation */}
             <motion.div
-              initial={{ scale: 0, rotate: -180, y: 50 }}
-              animate={{ 
-                scale: [0, 1.3, 0.9, 1.1, 1], 
-                rotate: [0, 15, -10, 5, 0],
-                y: [50, -10, 5, -5, 0]
-              }}
+              initial={{ scale: 0, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
               transition={{ 
-                duration: 2.5, 
+                duration: 1, 
                 ease: "easeOut",
-                times: [0, 0.4, 0.6, 0.8, 1]
+                delay: 1
               }}
               className="relative"
             >
-              <motion.img
-                src={logoImage}
-                alt="Nedaxer Logo"
-                className="w-48 h-48 md:w-56 md:h-56 object-contain filter drop-shadow-2xl"
+              <TransformerLogo 
+                autoStart={true}
+                className="scale-150 md:scale-[2]"
+              />
+              
+              {/* Enhanced Energy Rings Around Transformer Logo */}
+              <motion.div
+                className="absolute inset-0 rounded-full border-2 border-yellow-400/30"
                 animate={{
-                  filter: [
-                    'drop-shadow(0 0 25px rgba(251, 191, 36, 0.6))',
-                    'drop-shadow(0 0 40px rgba(251, 191, 36, 1))',
-                    'drop-shadow(0 0 30px rgba(16, 185, 129, 0.8))',
-                    'drop-shadow(0 0 35px rgba(139, 92, 246, 0.9))',
-                    'drop-shadow(0 0 25px rgba(251, 191, 36, 0.6))',
-                  ],
-                  scale: [1, 1.05, 0.98, 1.02, 1],
-                  rotate: [0, 2, -1, 1, 0]
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 0.8, 0.3],
+                  borderColor: ['rgba(251, 191, 36, 0.3)', 'rgba(16, 185, 129, 0.5)', 'rgba(251, 191, 36, 0.3)']
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  times: [0, 0.25, 0.5, 0.75, 1]
+                  delay: 2
                 }}
               />
               
-              {/* Multiple Pulsing Rings Around Logo */}
+              {/* Second Energy Ring */}
               <motion.div
-                className="absolute inset-0 rounded-full border-2 border-yellow-400/40"
+                className="absolute inset-0 rounded-full border border-green-400/20"
                 animate={{
-                  scale: [1, 1.4, 1],
-                  opacity: [0.4, 0.9, 0.4],
-                  borderColor: ['rgba(251, 191, 36, 0.4)', 'rgba(16, 185, 129, 0.6)', 'rgba(251, 191, 36, 0.4)']
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-              
-              {/* Second Ring */}
-              <motion.div
-                className="absolute inset-0 rounded-full border-2 border-green-400/30"
-                animate={{
-                  scale: [1.2, 1.6, 1.2],
-                  opacity: [0.2, 0.7, 0.2],
-                  borderColor: ['rgba(16, 185, 129, 0.3)', 'rgba(139, 92, 246, 0.5)', 'rgba(16, 185, 129, 0.3)']
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5
-                }}
-              />
-              
-              {/* Third Ring */}
-              <motion.div
-                className="absolute inset-0 rounded-full border border-purple-400/20"
-                animate={{
-                  scale: [1.4, 1.8, 1.4],
-                  opacity: [0.1, 0.5, 0.1],
-                  borderColor: ['rgba(139, 92, 246, 0.2)', 'rgba(239, 68, 68, 0.4)', 'rgba(139, 92, 246, 0.2)']
+                  scale: [1.3, 1.8, 1.3],
+                  opacity: [0.2, 0.6, 0.2],
+                  borderColor: ['rgba(16, 185, 129, 0.2)', 'rgba(139, 92, 246, 0.4)', 'rgba(16, 185, 129, 0.2)']
                 }}
                 transition={{
                   duration: 3.5,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 1
+                  delay: 2.5
                 }}
               />
               
-              {/* Energy Burst Effect */}
+              {/* Outer Energy Ring */}
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)'
-                }}
+                className="absolute inset-0 rounded-full border border-purple-400/15"
                 animate={{
-                  scale: [0.8, 2, 0.8],
-                  opacity: [0, 0.6, 0]
+                  scale: [1.6, 2.2, 1.6],
+                  opacity: [0.1, 0.4, 0.1],
+                  borderColor: ['rgba(139, 92, 246, 0.15)', 'rgba(239, 68, 68, 0.3)', 'rgba(139, 92, 246, 0.15)']
                 }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: 2
+                  delay: 3
                 }}
               />
             </motion.div>
