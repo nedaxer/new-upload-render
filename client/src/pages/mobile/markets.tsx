@@ -82,6 +82,8 @@ export default function MobileMarkets() {
   const [searchQuery, setSearchQuery] = useState('');
   const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState('Hot');
+  const [activeMarketType, setActiveMarketType] = useState('Spot');
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -143,13 +145,49 @@ export default function MobileMarkets() {
   }) || [];
 
   // Filter markets based on search query
-  const filteredMarkets = processedMarkets.filter(market =>
+  const searchFilteredMarkets = processedMarkets.filter(market =>
     market.displayPair.toLowerCase().includes(searchQuery.toLowerCase()) ||
     market.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Sort markets by volume (descending)
-  const sortedMarkets = filteredMarkets.sort((a, b) => b.volumeValue - a.volumeValue);
+  // Filter markets based on active tab
+  const getFilteredMarkets = () => {
+    let filtered = searchFilteredMarkets;
+    
+    switch (activeTab) {
+      case 'Favorites':
+        filtered = filtered.filter(market => market.favorite);
+        break;
+      case 'Gainers':
+        filtered = filtered.filter(market => market.sentiment === 'Bullish');
+        break;
+      case 'Losers':
+        filtered = filtered.filter(market => market.sentiment === 'Bearish');
+        break;
+      case 'Hot':
+        // Sort by volume for hot markets
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
+        break;
+      case 'New':
+        // Sort by price change for new/trending
+        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue));
+        break;
+      case 'Turnover':
+        // Sort by volume for turnover
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
+        break;
+      case 'Opportunities':
+        // Sort by highest price changes (both positive and negative)
+        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue));
+        break;
+      default:
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
+    }
+    
+    return filtered;
+  };
+
+  const sortedMarkets = getFilteredMarkets();
 
   const handleCoinClick = (symbol: string) => {
     navigate(`/mobile/trade?symbol=${symbol}`);
@@ -157,68 +195,64 @@ export default function MobileMarkets() {
 
   return (
     <MobileLayout>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
-        <h1 className="text-xl font-bold text-white">Markets</h1>
-        <div className="flex items-center space-x-3">
-          <button 
-            onClick={() => refetch()}
-            disabled={isLoading}
-            className="text-gray-400 hover:text-white"
-          >
-            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <Filter className="w-5 h-5 text-gray-400" />
-        </div>
-      </div>
-
-      {/* Market Stats */}
-      <div className="px-4 pb-4">
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-gray-800 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-white">{sortedMarkets.length}</div>
-            <div className="text-xs text-gray-400">Pairs</div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-green-500">
-              {sortedMarkets.filter(m => m.sentiment === 'Bullish').length}
-            </div>
-            <div className="text-xs text-gray-400">Bullish</div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-red-500">
-              {sortedMarkets.filter(m => m.sentiment === 'Bearish').length}
-            </div>
-            <div className="text-xs text-gray-400">Bearish</div>
-          </div>
-        </div>
-
-        {/* Search Bar */}
+      {/* Search Bar */}
+      <div className="p-4 bg-gray-900">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
-            placeholder="Search trading pairs (BTC, ETH, SOL...)"
-            className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+            placeholder="BDXN/USDT"
+            className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Last Update Info */}
-      <div className="px-4 pb-2">
-        <div className="text-xs text-gray-500">
-          Last updated: {lastUpdate.toLocaleTimeString()} • Auto-refresh: 10s
+      {/* Top Tabs */}
+      <div className="px-4 pb-4">
+        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
+          {['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover', 'Opportunities'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab 
+                  ? 'text-white border-b-2 border-yellow-500 pb-2' 
+                  : 'text-gray-400 hover:text-white pb-2'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Market Type Tabs */}
+      <div className="px-4 pb-4">
+        <div className="flex space-x-6">
+          {['Spot', 'Derivatives'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setActiveMarketType(type)}
+              className={`text-sm font-medium transition-colors ${
+                activeMarketType === type 
+                  ? 'text-white border-b-2 border-yellow-500 pb-2' 
+                  : 'text-gray-400 hover:text-white pb-2'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Market List Header */}
-      <div className="px-4 pb-2">
+      <div className="px-4 pb-3">
         <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>Pair / Sentiment</span>
-          <div className="flex space-x-6">
+          <span>Trading Pairs</span>
+          <div className="flex space-x-8">
             <span>Price</span>
-            <span>24h Change</span>
+            <span>24H Change</span>
           </div>
         </div>
       </div>
@@ -226,7 +260,7 @@ export default function MobileMarkets() {
 
 
       {/* Market List */}
-      <div className="px-4 space-y-1 pb-20">
+      <div className="px-4 space-y-0 pb-20">
         {isLoading && !marketData ? (
           <div className="text-center py-8">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-gray-400" />
@@ -234,13 +268,13 @@ export default function MobileMarkets() {
           </div>
         ) : sortedMarkets.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-400">No markets found matching your search.</p>
+            <p className="text-gray-400">No markets found.</p>
           </div>
         ) : (
-          sortedMarkets.slice(0, 50).map((market, index) => (
+          sortedMarkets.slice(0, 600).map((market, index) => (
             <div 
               key={`${market.pair}-${index}`} 
-              className="flex items-center justify-between py-3 bg-gray-800/50 rounded-lg px-3 hover:bg-gray-800 cursor-pointer transition-colors"
+              className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
               onClick={() => handleCoinClick(market.symbol)}
             >
               <div className="flex items-center space-x-3">
@@ -256,59 +290,31 @@ export default function MobileMarkets() {
                   />
                 </button>
                 <div>
-                  <div className="text-white font-medium">{market.displayPair}</div>
-                  <div className="flex items-center space-x-1 mt-1">
-                    <Badge 
-                      variant="outline" 
-                      className={`${getSentimentColor(market.sentiment)} text-xs py-0 px-1 h-4 flex items-center gap-1`}
-                    >
-                      {getSentimentIcon(market.sentiment)}
-                      {market.sentiment}
-                    </Badge>
+                  <div className="text-white font-medium text-base">{market.displayPair}</div>
+                  <div className="text-gray-400 text-sm mt-1">
+                    {market.volume}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 <div className="text-right">
-                  <div className="text-white font-medium">${market.price}</div>
-                  <div className="text-gray-400 text-xs">
-                    Vol {market.volume}
+                  <div className="text-white font-medium">{market.price}</div>
+                  <div className="text-gray-400 text-sm">
+                    {market.price} USD
                   </div>
                 </div>
 
-                <div className={`text-right min-w-[70px] ${
-                  market.isPositive ? 'text-green-500' : 'text-red-500'
+                <div className={`text-right min-w-[80px] px-2 py-1 rounded ${
+                  market.isPositive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
-                  <div className="flex items-center justify-end space-x-1">
-                    {market.isPositive ? (
-                      <TrendingUp className="w-3 h-3" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3" />
-                    )}
-                    <span className="font-medium text-sm">{market.change}</span>
-                  </div>
-                  <div className="text-xs mt-1">
-                    <span className="text-green-400">H: ${market.high24h}</span>
-                    <span className="text-red-400 ml-1">L: ${market.low24h}</span>
-                  </div>
+                  <div className="font-medium text-sm">{market.change}</div>
                 </div>
               </div>
             </div>
           ))
         )}
       </div>
-
-      {/* Footer Note */}
-      {sortedMarkets.length > 0 && (
-        <div className="fixed bottom-20 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 p-3">
-          <div className="text-center text-xs text-gray-500">
-            Showing {Math.min(sortedMarkets.length, 50)} of {sortedMarkets.length} trading pairs
-            <br />
-            Tap any coin to start trading • Data updates every 10 seconds
-          </div>
-        </div>
-      )}
     </MobileLayout>
   );
 }
