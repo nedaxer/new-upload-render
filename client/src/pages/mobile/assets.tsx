@@ -421,129 +421,123 @@ export default function MobileAssets() {
         <div className="relative flex flex-col items-center mb-8">
           {/* Donut Chart Container */}
           <div className="relative w-80 h-80 mb-6">
-            {/* Animated SVG Donut Chart */}
+            {/* Authentic Crypto Color Donut Chart */}
             <div className="absolute inset-0 flex items-center justify-center">
               <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 200 200">
                 <defs>
-                  {/* Gradients for better visual appeal */}
-                  <linearGradient id="bitcoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#d97706" />
+                  {/* Authentic crypto gradients */}
+                  <linearGradient id="bitcoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f7931a" />
+                    <stop offset="100%" stopColor="#ff8c00" />
                   </linearGradient>
-                  <linearGradient id="ethereumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6b7280" />
-                    <stop offset="100%" stopColor="#4b5563" />
+                  <linearGradient id="ethereumAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#627eea" />
+                    <stop offset="100%" stopColor="#4169e1" />
                   </linearGradient>
-                  <linearGradient id="litecoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#059669" />
+                  <linearGradient id="litecoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#bfbbbb" />
+                    <stop offset="100%" stopColor="#a6a6a6" />
+                  </linearGradient>
+                  <linearGradient id="iotaAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#131f37" />
+                    <stop offset="100%" stopColor="#1a2332" />
+                  </linearGradient>
+                  <linearGradient id="moneroAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ff6600" />
+                    <stop offset="100%" stopColor="#cc5500" />
                   </linearGradient>
                 </defs>
                 
-                {/* Background circle */}
-                <circle cx="100" cy="100" r="70" fill="none" stroke="#374151" strokeWidth="20" opacity="0.3" />
+                {/* Clean background */}
+                <circle cx="100" cy="100" r="70" fill="transparent" stroke="#1f2937" strokeWidth="20" opacity="0.3" />
                 
-                {/* Bitcoin segment (49.5%) - from 0° to 178° */}
+                {/* Bitcoin segment (49.5%) - Authentic Orange */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="url(#bitcoinGrad)"
+                  stroke="url(#bitcoinAuth)"
                   strokeWidth="20"
-                  strokeDasharray="217.5 222.5"
+                  strokeDasharray="217.8 222.2"
                   strokeDashoffset="0"
-                  className="animate-[drawSegment_2s_ease-out_0.2s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #f59e0b50)' }}
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_0.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #f7931a60)' }}
                 />
                 
-                {/* Ethereum segment (24.5%) - from 178° to 266° */}
+                {/* Ethereum segment (24.5%) - Authentic Blue */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="url(#ethereumGrad)"
+                  stroke="url(#ethereumAuth)"
                   strokeWidth="20"
-                  strokeDasharray="107.8 332.2"
-                  strokeDashoffset="-217.5"
-                  className="animate-[drawSegment_2s_ease-out_0.6s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #6b728050)' }}
+                  strokeDasharray="107.9 332.1"
+                  strokeDashoffset="-217.8"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #627eea60)' }}
                 />
                 
-                {/* Litecoin segment (4.7%) - from 266° to 283° */}
+                {/* Litecoin segment (4.7%) - Authentic Silver */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="url(#litecoinGrad)"
+                  stroke="url(#litecoinAuth)"
                   strokeWidth="20"
                   strokeDasharray="20.7 419.3"
-                  strokeDashoffset="-325.3"
-                  className="animate-[drawSegment_2s_ease-out_1.0s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #10b98150)' }}
+                  strokeDashoffset="-325.7"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #bfbbbb60)' }}
                 />
                 
-                {/* IOTA segment (4.3%) - from 283° to 298° */}
+                {/* IOTA segment (4.3%) - Authentic Dark Blue */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="#a855f7"
+                  stroke="url(#iotaAuth)"
                   strokeWidth="20"
                   strokeDasharray="18.9 421.1"
-                  strokeDashoffset="-346"
-                  className="animate-[drawSegment_2s_ease-out_1.4s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #a855f750)' }}
+                  strokeDashoffset="-346.4"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #131f3760)' }}
                 />
                 
-                {/* Monero segment (3.1%) - from 298° to 309° */}
+                {/* Monero segment (3.1%) - Authentic Orange-Red */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="#ef4444"
+                  stroke="url(#moneroAuth)"
                   strokeWidth="20"
-                  strokeDasharray="13.6 426.4"
-                  strokeDashoffset="-364.9"
-                  className="animate-[drawSegment_2s_ease-out_1.8s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #ef444450)' }}
+                  strokeDasharray="13.7 426.3"
+                  strokeDashoffset="-365.3"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #ff660060)' }}
                 />
                 
-                {/* Binance segment (2.1%) - from 309° to 317° */}
+                {/* Others combined (15.9%) - Mixed Colors */}
                 <circle
                   cx="100"
                   cy="100"
                   r="70"
                   fill="none"
-                  stroke="#eab308"
+                  stroke="#8b949e"
                   strokeWidth="20"
-                  strokeDasharray="9.2 430.8"
-                  strokeDashoffset="-378.5"
-                  className="animate-[drawSegment_2s_ease-out_2.2s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #eab30850)' }}
-                />
-                
-                {/* Cardano and others combined (8.8%) - from 317° to 360° */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="70"
-                  fill="none"
-                  stroke="#9ca3af"
-                  strokeWidth="20"
-                  strokeDasharray="38.7 401.3"
-                  strokeDashoffset="-387.7"
-                  className="animate-[drawSegment_2s_ease-out_2.6s_both]"
-                  style={{ filter: 'drop-shadow(0 0 8px #9ca3af50)' }}
+                  strokeDasharray="61.3 378.7"
+                  strokeDashoffset="-379"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_3s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #8b949e40)' }}
                 />
               </svg>
               
-              {/* Center content with animation */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center animate-[fadeInScale_1s_ease-out_3s_both]">
+              {/* Center content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 animate-[fadeIn_1s_ease-out_4s_forwards]">
                 <div className="text-xl font-bold text-white">
                   {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
                 </div>
@@ -551,106 +545,98 @@ export default function MobileAssets() {
               </div>
             </div>
             
-            {/* Connecting lines with proper mathematical positioning */}
+            {/* Enhanced connecting lines with authentic colors */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 320 320">
-              {/* Bitcoin line - Right side (89° midpoint of 0-178°) */}
+              {/* Bitcoin line - Authentic Orange */}
               <line 
-                x1="240" y1="160" x2="290" y2="160" 
-                stroke="#f59e0b" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_3.2s_both]"
+                x1="243" y1="160" x2="300" y2="160" 
+                stroke="#f7931a" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_4.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #f7931a80)' }}
               />
               
-              {/* Ethereum line - Bottom left (222° midpoint of 178-266°) */}
+              {/* Ethereum line - Authentic Blue */}
               <line 
-                x1="125" y1="235" x2="75" y2="285" 
-                stroke="#6b7280" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_3.4s_both]"
+                x1="118" y1="242" x2="65" y2="295" 
+                stroke="#627eea" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #627eea80)' }}
               />
               
-              {/* Litecoin line - Left side (274.5° midpoint of 266-283°) */}
+              {/* Litecoin line - Authentic Silver */}
               <line 
-                x1="80" y1="160" x2="30" y2="160" 
-                stroke="#10b981" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_3.6s_both]"
+                x1="77" y1="160" x2="20" y2="160" 
+                stroke="#bfbbbb" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_5.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #bfbbbb80)' }}
               />
               
-              {/* IOTA line - Top left (290.5° midpoint of 283-298°) */}
+              {/* IOTA line - Authentic Dark Blue */}
               <line 
-                x1="110" y1="110" x2="70" y2="70" 
-                stroke="#a855f7" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_3.8s_both]"
+                x1="105" y1="105" x2="60" y2="60" 
+                stroke="#131f37" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_6s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #131f3780)' }}
               />
               
-              {/* Monero line - Top (303.5° midpoint of 298-309°) */}
+              {/* Monero line - Authentic Orange-Red */}
               <line 
-                x1="160" y1="80" x2="160" y2="30" 
-                stroke="#ef4444" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_4.0s_both]"
+                x1="160" y1="77" x2="160" y2="20" 
+                stroke="#ff6600" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_6.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #ff660080)' }}
               />
               
-              {/* Binance line - Top right (313° midpoint of 309-317°) */}
+              {/* Others line - Mixed Gray */}
               <line 
-                x1="210" y1="110" x2="250" y2="70" 
-                stroke="#eab308" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_4.2s_both]"
-              />
-              
-              {/* Others line - Right top (338.5° midpoint of 317-360°) */}
-              <line 
-                x1="240" y1="125" x2="290" y2="100" 
-                stroke="#9ca3af" 
-                strokeWidth="2" 
-                strokeDasharray="4,2"
-                className="animate-[drawLine_0.6s_ease-out_4.4s_both]"
+                x1="225" y1="105" x2="280" y2="65" 
+                stroke="#8b949e" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_7s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #8b949e80)' }}
               />
             </svg>
             
-            {/* Labels positioned using mathematical angles */}
-            <div className="absolute right-1 top-1/2 transform -translate-y-1/2 text-right animate-[slideInRight_0.5s_ease-out_3.2s_both]">
-              <div className="text-orange-400 text-sm font-bold">Bitcoin</div>
-              <div className="text-white text-xs opacity-90">49.5%</div>
+            {/* Crypto labels with authentic colors */}
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_4.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#f7931a' }}>Bitcoin</div>
+              <div className="text-white text-xs">49.5%</div>
             </div>
             
-            <div className="absolute left-5 bottom-5 animate-[slideInUp_0.5s_ease-out_3.4s_both]">
-              <div className="text-gray-300 text-sm font-bold">Ethereum</div>
-              <div className="text-white text-xs opacity-90">24.5%</div>
+            <div className="absolute left-4 bottom-4 opacity-0 animate-[labelSlide_0.6s_ease-out_5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#627eea' }}>Ethereum</div>
+              <div className="text-white text-xs">24.5%</div>
             </div>
             
-            <div className="absolute left-1 top-1/2 transform -translate-y-1/2 animate-[slideInLeft_0.5s_ease-out_3.6s_both]">
-              <div className="text-green-400 text-sm font-bold">Litecoin</div>
-              <div className="text-white text-xs opacity-90">4.7%</div>
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 animate-[labelSlide_0.6s_ease-out_5.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#bfbbbb' }}>Litecoin</div>
+              <div className="text-white text-xs">4.7%</div>
             </div>
             
-            <div className="absolute left-5 top-5 animate-[slideInDown_0.5s_ease-out_3.8s_both]">
-              <div className="text-purple-400 text-sm font-bold">IOTA</div>
-              <div className="text-white text-xs opacity-90">4.3%</div>
+            <div className="absolute left-4 top-4 opacity-0 animate-[labelSlide_0.6s_ease-out_6s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#131f37' }}>IOTA</div>
+              <div className="text-white text-xs">4.3%</div>
             </div>
             
-            <div className="absolute top-1 left-1/2 transform -translate-x-1/2 text-center animate-[slideInDown_0.5s_ease-out_4.0s_both]">
-              <div className="text-red-400 text-sm font-bold">Monero</div>
-              <div className="text-white text-xs opacity-90">3.1%</div>
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center opacity-0 animate-[labelSlide_0.6s_ease-out_6.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#ff6600' }}>Monero</div>
+              <div className="text-white text-xs">3.1%</div>
             </div>
             
-            <div className="absolute right-5 top-5 text-right animate-[slideInDown_0.5s_ease-out_4.2s_both]">
-              <div className="text-yellow-400 text-sm font-bold">Binance</div>
-              <div className="text-white text-xs opacity-90">2.1%</div>
-            </div>
-            
-            <div className="absolute right-1 top-1/3 text-right animate-[slideInRight_0.5s_ease-out_4.4s_both]">
-              <div className="text-gray-400 text-sm font-bold">Others</div>
-              <div className="text-white text-xs opacity-90">11.8%</div>
+            <div className="absolute right-4 top-4 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_7s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#8b949e' }}>Others</div>
+              <div className="text-white text-xs">15.9%</div>
             </div>
           </div>
         </div>
