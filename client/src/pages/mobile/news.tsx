@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useHaptic } from '@/hooks/use-haptics';
 
 interface NewsArticle {
   title: string;
@@ -21,6 +22,7 @@ export default function MobileNews() {
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const { hapticLight } = useHaptic();
 
   const { data: newsData, isLoading, error, refetch } = useQuery<NewsArticle[]>({
     queryKey: ['/api/crypto/news', refreshKey],
@@ -43,21 +45,21 @@ export default function MobileNews() {
     const connectWebSocket = () => {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
+
       try {
         wsRef.current = new WebSocket(wsUrl);
-        
+
         wsRef.current.onopen = () => {
           console.log('WebSocket connected for news updates');
           setIsConnected(true);
           // Subscribe to news updates
           wsRef.current?.send(JSON.stringify({ type: 'subscribe_news' }));
         };
-        
+
         wsRef.current.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            
+
             if (data.type === 'news_update' && data.data) {
               setLiveNewsData(data.data);
               setLastUpdate(new Date());
@@ -67,14 +69,14 @@ export default function MobileNews() {
             console.error('Error parsing WebSocket message:', error);
           }
         };
-        
+
         wsRef.current.onclose = () => {
           console.log('WebSocket disconnected');
           setIsConnected(false);
           // Attempt to reconnect after 5 seconds
           setTimeout(connectWebSocket, 5000);
         };
-        
+
         wsRef.current.onerror = (error) => {
           console.error('WebSocket error:', error);
           setIsConnected(false);
@@ -198,6 +200,9 @@ export default function MobileNews() {
               target="_blank"
               rel="noopener noreferrer"
               className="block bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
+              onClick={() => {
+                hapticLight();
+              }}
             >
               {article.urlToImage && (
                 <div className="w-full h-32 overflow-hidden">
@@ -212,7 +217,7 @@ export default function MobileNews() {
                   />
                 </div>
               )}
-              
+
               <div className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
@@ -220,11 +225,11 @@ export default function MobileNews() {
                   </h3>
                   <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
                 </div>
-                
+
                 <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
                   {article.description}
                 </p>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-blue-400 text-xs font-medium">
                     {article.source?.name || 'Crypto News'}

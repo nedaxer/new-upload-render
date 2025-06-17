@@ -24,6 +24,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useHaptics } from '@/hooks/use-haptics';
 
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
@@ -36,7 +37,7 @@ export default function MobileAssets() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-
+  const { hapticMedium } = useHaptics();
   // Load currency from localStorage
   useEffect(() => {
     const savedCurrency = localStorage.getItem('selectedCurrency');
@@ -169,7 +170,7 @@ export default function MobileAssets() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    
+
     if (method === 'crypto') {
       setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
@@ -330,7 +331,7 @@ export default function MobileAssets() {
             )}
           </button>
         </div>
-        
+
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
@@ -363,13 +364,16 @@ export default function MobileAssets() {
           </div>
         </div>
 
-        
+
       </div>
 
       {/* Quick Actions */}
       <div className="px-4 pb-6">
         <div className="grid grid-cols-4 gap-4">
-          <button onClick={handleDepositClick}>
+          <button onClick={() => {
+                hapticMedium();
+                setDepositModalOpen(true);
+              }}>
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <Wallet className="w-7 h-7 text-orange-500" />
@@ -377,7 +381,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Deposit</span>
             </div>
           </button>
-          
+
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -386,7 +390,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Withdraw</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -395,7 +399,7 @@ export default function MobileAssets() {
               <span className="text-xs text-gray-300 text-center">Transfer</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/convert">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
@@ -410,7 +414,7 @@ export default function MobileAssets() {
       {/* Assets Section */}
       <div className="px-4">
         <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
-        
+
         {/* Bitcoin */}
         <div className="flex items-center justify-between py-3 border-b border-gray-800">
           <div className="flex items-center space-x-3">
