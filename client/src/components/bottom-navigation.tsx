@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
+import { hapticNavigation } from '@/lib/haptics';
 
 const navItems = [
   { 
@@ -32,6 +33,11 @@ const navItems = [
 export function BottomNavigation() {
   const [location] = useLocation();
 
+  const handleNavClick = (itemName: string) => {
+    // Trigger haptic feedback for navigation
+    hapticNavigation();
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 px-2 py-2">
       <div className="flex justify-around items-center">
@@ -41,11 +47,15 @@ export function BottomNavigation() {
           
           return (
             <Link key={item.name} href={item.path}>
-              <div className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-                isActive 
-                  ? 'text-orange-500' 
-                  : 'text-gray-400 hover:text-white'
-              }`}>
+              <div 
+                className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+                  isActive 
+                    ? 'text-orange-500' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+                onClick={() => handleNavClick(item.name)}
+                onTouchStart={() => handleNavClick(item.name)}
+              >
                 <Icon size={24} />
                 <span className="text-xs mt-1 font-medium">{item.name}</span>
               </div>

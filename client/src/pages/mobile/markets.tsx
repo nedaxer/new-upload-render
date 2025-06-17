@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import { hapticLight } from '@/lib/haptics';
 
 interface BybitTicker {
   symbol: string;
@@ -95,6 +96,7 @@ export default function MobileMarkets() {
 
   // Toggle favorite status
   const toggleFavorite = (symbol: string) => {
+    hapticLight();
     const newFavorites = favoriteCoins.includes(symbol)
       ? favoriteCoins.filter(id => id !== symbol)
       : [...favoriteCoins, symbol];
@@ -190,6 +192,7 @@ export default function MobileMarkets() {
   const sortedMarkets = getFilteredMarkets();
 
   const handleCoinClick = (symbol: string) => {
+    hapticLight();
     navigate(`/mobile/trade?symbol=${symbol}`);
   };
 
@@ -214,7 +217,11 @@ export default function MobileMarkets() {
           {['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover', 'Opportunities'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                hapticLight();
+                setActiveTab(tab);
+              }}
+              onTouchStart={() => hapticLight()}
               className={`text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab 
                   ? 'text-white border-b-2 border-yellow-500 pb-2' 
@@ -233,7 +240,11 @@ export default function MobileMarkets() {
           {['Spot', 'Derivatives'].map((type) => (
             <button
               key={type}
-              onClick={() => setActiveMarketType(type)}
+              onClick={() => {
+                hapticLight();
+                setActiveMarketType(type);
+              }}
+              onTouchStart={() => hapticLight()}
               className={`text-sm font-medium transition-colors ${
                 activeMarketType === type 
                   ? 'text-white border-b-2 border-yellow-500 pb-2' 
