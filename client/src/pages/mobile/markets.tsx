@@ -195,32 +195,8 @@ export default function MobileMarkets() {
 
   return (
     <MobileLayout>
-      {/* Desktop Header - Only show on desktop */}
-      <div className="hidden lg:block p-6 bg-gray-900 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-white mb-4">Markets</h1>
-        <div className="flex items-center justify-between">
-          <div className="relative w-96">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input 
-              placeholder="Search trading pairs (BTC, ETH, SOL...)"
-              className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button 
-            onClick={() => refetch()}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-800 rounded-lg text-gray-400 hover:text-white"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Search Bar - Only show on mobile */}
-      <div className="lg:hidden p-4 bg-gray-900">
+      {/* Search Bar */}
+      <div className="p-4 bg-gray-900">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
@@ -233,13 +209,13 @@ export default function MobileMarkets() {
       </div>
 
       {/* Top Tabs */}
-      <div className="px-4 lg:px-6 pb-4">
-        <div className="flex space-x-4 lg:space-x-6 overflow-x-auto scrollbar-hide">
+      <div className="px-4 pb-4">
+        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
           {['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover', 'Opportunities'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-sm lg:text-base font-medium whitespace-nowrap transition-colors ${
+              className={`text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab 
                   ? 'text-white border-b-2 border-yellow-500 pb-2' 
                   : 'text-gray-400 hover:text-white pb-2'
@@ -252,13 +228,13 @@ export default function MobileMarkets() {
       </div>
 
       {/* Market Type Tabs */}
-      <div className="px-4 lg:px-6 pb-4">
+      <div className="px-4 pb-4">
         <div className="flex space-x-6">
           {['Spot', 'Derivatives'].map((type) => (
             <button
               key={type}
               onClick={() => setActiveMarketType(type)}
-              className={`text-sm lg:text-base font-medium transition-colors ${
+              className={`text-sm font-medium transition-colors ${
                 activeMarketType === type 
                   ? 'text-white border-b-2 border-yellow-500 pb-2' 
                   : 'text-gray-400 hover:text-white pb-2'
@@ -270,19 +246,8 @@ export default function MobileMarkets() {
         </div>
       </div>
 
-      {/* Desktop Market List Header */}
-      <div className="hidden lg:block px-6 pb-4">
-        <div className="grid grid-cols-5 gap-4 text-sm text-gray-400 font-medium">
-          <span>Trading Pair</span>
-          <span>Price</span>
-          <span>24h Change</span>
-          <span>24h Volume</span>
-          <span>Actions</span>
-        </div>
-      </div>
-
-      {/* Mobile Market List Header */}
-      <div className="lg:hidden px-4 pb-3">
+      {/* Market List Header */}
+      <div className="px-4 pb-3">
         <div className="flex items-center justify-between text-xs text-gray-400">
           <span>Trading Pairs</span>
           <div className="flex space-x-8">
@@ -292,8 +257,10 @@ export default function MobileMarkets() {
         </div>
       </div>
 
+
+
       {/* Market List */}
-      <div className="px-4 lg:px-6 space-y-0 pb-20 lg:pb-6">
+      <div className="px-4 space-y-0 pb-20">
         {isLoading && !marketData ? (
           <div className="text-center py-8">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-gray-400" />
@@ -304,99 +271,48 @@ export default function MobileMarkets() {
             <p className="text-gray-400">No markets found.</p>
           </div>
         ) : (
-          <>
-            {/* Desktop Table View */}
-            <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
-              {sortedMarkets.slice(0, 600).map((market, index) => (
-                <div 
-                  key={`${market.pair}-${index}`} 
-                  className="grid grid-cols-5 gap-4 items-center p-4 border-b border-gray-700 last:border-b-0 hover:bg-gray-700/50 cursor-pointer transition-colors"
-                  onClick={() => handleCoinClick(market.symbol)}
+          sortedMarkets.slice(0, 600).map((market, index) => (
+            <div 
+              key={`${market.pair}-${index}`} 
+              className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
+              onClick={() => handleCoinClick(market.symbol)}
+            >
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(market.pair);
+                  }}
+                  className="text-gray-400 hover:text-yellow-500"
                 >
-                  <div className="flex items-center space-x-3">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(market.pair);
-                      }}
-                      className="text-gray-400 hover:text-yellow-500"
-                    >
-                      <Star 
-                        className={`w-4 h-4 ${market.favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} 
-                      />
-                    </button>
-                    <div>
-                      <div className="text-white font-medium">{market.displayPair}</div>
-                      <div className="text-gray-400 text-sm">{market.symbol}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-white font-medium">${market.price}</div>
-                  
-                  <div className={`font-medium ${market.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-                    {market.change}
-                  </div>
-                  
-                  <div className="text-gray-400">{market.volume}</div>
-                  
-                  <div className="flex space-x-2">
-                    <button className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
-                      Buy
-                    </button>
-                    <button className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors">
-                      Sell
-                    </button>
+                  <Star 
+                    className={`w-4 h-4 ${market.favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} 
+                  />
+                </button>
+                <div>
+                  <div className="text-white font-medium text-base">{market.displayPair}</div>
+                  <div className="text-gray-400 text-sm mt-1">
+                    {market.volume}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* Mobile List View */}
-            <div className="lg:hidden">
-              {sortedMarkets.slice(0, 600).map((market, index) => (
-                <div 
-                  key={`${market.pair}-${index}`} 
-                  className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
-                  onClick={() => handleCoinClick(market.symbol)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(market.pair);
-                      }}
-                      className="text-gray-400 hover:text-yellow-500"
-                    >
-                      <Star 
-                        className={`w-4 h-4 ${market.favorite ? 'fill-yellow-500 text-yellow-500' : ''}`} 
-                      />
-                    </button>
-                    <div>
-                      <div className="text-white font-medium text-base">{market.displayPair}</div>
-                      <div className="text-gray-400 text-sm mt-1">
-                        {market.volume}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-6">
-                    <div className="text-right">
-                      <div className="text-white font-medium">{market.price}</div>
-                      <div className="text-gray-400 text-sm">
-                        {market.price} USD
-                      </div>
-                    </div>
-
-                    <div className={`text-right min-w-[80px] px-2 py-1 rounded ${
-                      market.isPositive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                    }`}>
-                      <div className="font-medium text-sm">{market.change}</div>
-                    </div>
+              <div className="flex items-center space-x-6">
+                <div className="text-right">
+                  <div className="text-white font-medium">{market.price}</div>
+                  <div className="text-gray-400 text-sm">
+                    {market.price} USD
                   </div>
                 </div>
-              ))}
+
+                <div className={`text-right min-w-[80px] px-2 py-1 rounded ${
+                  market.isPositive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                  <div className="font-medium text-sm">{market.change}</div>
+                </div>
+              </div>
             </div>
-          </>
+          ))
         )}
       </div>
     </MobileLayout>
