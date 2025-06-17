@@ -254,6 +254,7 @@ export default function App() {
           </Switch>
         </Router>
         <Toaster />
+        <PWAInstallPrompt />
       </AuthProvider>
     </QueryClientProvider>
   );
