@@ -13,35 +13,45 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(onComplete, 500); // Wait for exit animation
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  // Generate random trading chart points for animation
-  const generateChartPoints = (count: number, width: number, height: number) => {
+  // Generate chart points that flow towards the center (logo position)
+  const generateFlowingPoints = (startX: number, startY: number, endX: number, endY: number, count: number) => {
     const points = [];
     for (let i = 0; i < count; i++) {
-      points.push({
-        x: (width / count) * i,
-        y: height * 0.3 + Math.random() * height * 0.4,
-      });
+      const progress = i / (count - 1);
+      const x = startX + (endX - startX) * progress;
+      const y = startY + (endY - startY) * progress + Math.sin(progress * Math.PI * 4) * 30;
+      points.push({ x, y });
     }
     return points;
   };
 
-  const chartPoints1 = generateChartPoints(20, 400, 200);
-  const chartPoints2 = generateChartPoints(25, 400, 200);
-  const chartPoints3 = generateChartPoints(18, 400, 200);
+  // Create flowing paths from each edge towards the center logo
+  const centerX = 200;
+  const centerY = 200;
+  
+  // Top to center
+  const topFlowPoints = generateFlowingPoints(50, 50, centerX, centerY, 15);
+  // Right to center  
+  const rightFlowPoints = generateFlowingPoints(350, 100, centerX, centerY, 15);
+  // Bottom to center
+  const bottomFlowPoints = generateFlowingPoints(300, 350, centerX, centerY, 15);
+  // Left to center
+  const leftFlowPoints = generateFlowingPoints(50, 300, centerX, centerY, 15);
 
-  const createPath = (points: { x: number; y: number }[]) => {
+  const createFlowingPath = (points: { x: number; y: number }[]) => {
     return points.reduce((path, point, index) => {
       if (index === 0) {
         return `M ${point.x} ${point.y}`;
       }
       const prevPoint = points[index - 1];
       const controlX = (prevPoint.x + point.x) / 2;
-      return `${path} Q ${controlX} ${prevPoint.y} ${point.x} ${point.y}`;
+      const controlY = (prevPoint.y + point.y) / 2;
+      return `${path} Q ${controlX} ${controlY} ${point.x} ${point.y}`;
     }, '');
   };
 
@@ -58,97 +68,137 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             background: 'linear-gradient(135deg, #0a1929 0%, #1e3a8a 25%, #1e40af 50%, #3b82f6 75%, #60a5fa 100%)'
           }}
         >
-          {/* Animated Trading Chart Lines */}
+          {/* Animated Trading Chart Lines Flowing Towards Logo */}
           <div className="absolute inset-0 overflow-hidden">
-            {/* Top Edge Charts */}
-            <svg className="absolute top-0 left-0 w-full h-32" viewBox="0 0 400 200">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 400">
+              {/* Top Flow Line */}
               <motion.path
-                d={createPath(chartPoints1)}
+                d={createFlowingPath(topFlowPoints)}
                 fill="none"
                 stroke="#fbbf24"
-                strokeWidth="2"
+                strokeWidth="3"
+                strokeLinecap="round"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ 
-                  pathLength: 1, 
-                  opacity: [0, 1, 0.7, 1, 0.5],
-                  stroke: ['#fbbf24', '#f59e0b', '#d97706', '#92400e', '#fbbf24']
+                  pathLength: [0, 1, 0], 
+                  opacity: [0, 1, 0.8, 1, 0.6],
+                  stroke: ['#fbbf24', '#f59e0b', '#d97706', '#fbbf24'],
+                  filter: [
+                    'drop-shadow(0 0 5px #fbbf24)',
+                    'drop-shadow(0 0 15px #f59e0b)',
+                    'drop-shadow(0 0 5px #fbbf24)'
+                  ]
                 }}
                 transition={{ 
-                  duration: 4, 
+                  duration: 6, 
                   repeat: Infinity, 
                   ease: "easeInOut",
-                  times: [0, 0.25, 0.5, 0.75, 1]
+                  times: [0, 0.3, 0.6, 1]
                 }}
               />
-            </svg>
-
-            {/* Right Edge Charts */}
-            <svg className="absolute top-1/4 right-0 w-32 h-full" viewBox="0 0 200 400">
+              
+              {/* Right Flow Line */}
               <motion.path
-                d={createPath(chartPoints2.map(p => ({ x: p.y, y: p.x })))}
+                d={createFlowingPath(rightFlowPoints)}
                 fill="none"
                 stroke="#10b981"
-                strokeWidth="2"
+                strokeWidth="3"
+                strokeLinecap="round"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ 
-                  pathLength: 1, 
-                  opacity: [0, 1, 0.6, 1, 0.4],
-                  stroke: ['#10b981', '#059669', '#047857', '#065f46', '#10b981']
+                  pathLength: [0, 1, 0], 
+                  opacity: [0, 1, 0.7, 1, 0.5],
+                  stroke: ['#10b981', '#059669', '#047857', '#10b981'],
+                  filter: [
+                    'drop-shadow(0 0 5px #10b981)',
+                    'drop-shadow(0 0 15px #059669)',
+                    'drop-shadow(0 0 5px #10b981)'
+                  ]
                 }}
                 transition={{ 
-                  duration: 3.5, 
-                  repeat: Infinity, 
-                  ease: "easeInOut",
-                  delay: 0.5,
-                  times: [0, 0.25, 0.5, 0.75, 1]
-                }}
-              />
-            </svg>
-
-            {/* Bottom Edge Charts */}
-            <svg className="absolute bottom-0 left-0 w-full h-32" viewBox="0 0 400 200">
-              <motion.path
-                d={createPath(chartPoints3)}
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="2"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ 
-                  pathLength: 1, 
-                  opacity: [0, 1, 0.8, 1, 0.6],
-                  stroke: ['#ef4444', '#dc2626', '#b91c1c', '#991b1b', '#ef4444']
-                }}
-                transition={{ 
-                  duration: 4.5, 
+                  duration: 5.5, 
                   repeat: Infinity, 
                   ease: "easeInOut",
                   delay: 1,
-                  times: [0, 0.25, 0.5, 0.75, 1]
+                  times: [0, 0.3, 0.6, 1]
                 }}
               />
-            </svg>
-
-            {/* Left Edge Charts */}
-            <svg className="absolute top-1/4 left-0 w-32 h-full" viewBox="0 0 200 400">
+              
+              {/* Bottom Flow Line */}
               <motion.path
-                d={createPath(chartPoints1.map(p => ({ x: p.y, y: p.x })))}
+                d={createFlowingPath(bottomFlowPoints)}
                 fill="none"
-                stroke="#8b5cf6"
-                strokeWidth="2"
+                stroke="#ef4444"
+                strokeWidth="3"
+                strokeLinecap="round"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ 
-                  pathLength: 1, 
-                  opacity: [0, 1, 0.7, 1, 0.3],
-                  stroke: ['#8b5cf6', '#7c3aed', '#6d28d9', '#5b21b6', '#8b5cf6']
+                  pathLength: [0, 1, 0], 
+                  opacity: [0, 1, 0.8, 1, 0.4],
+                  stroke: ['#ef4444', '#dc2626', '#b91c1c', '#ef4444'],
+                  filter: [
+                    'drop-shadow(0 0 5px #ef4444)',
+                    'drop-shadow(0 0 15px #dc2626)',
+                    'drop-shadow(0 0 5px #ef4444)'
+                  ]
                 }}
                 transition={{ 
-                  duration: 3.8, 
+                  duration: 7, 
                   repeat: Infinity, 
                   ease: "easeInOut",
-                  delay: 1.5,
-                  times: [0, 0.25, 0.5, 0.75, 1]
+                  delay: 2,
+                  times: [0, 0.3, 0.6, 1]
                 }}
               />
+              
+              {/* Left Flow Line */}
+              <motion.path
+                d={createFlowingPath(leftFlowPoints)}
+                fill="none"
+                stroke="#8b5cf6"
+                strokeWidth="3"
+                strokeLinecap="round"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ 
+                  pathLength: [0, 1, 0], 
+                  opacity: [0, 1, 0.9, 1, 0.3],
+                  stroke: ['#8b5cf6', '#7c3aed', '#6d28d9', '#8b5cf6'],
+                  filter: [
+                    'drop-shadow(0 0 5px #8b5cf6)',
+                    'drop-shadow(0 0 15px #7c3aed)',
+                    'drop-shadow(0 0 5px #8b5cf6)'
+                  ]
+                }}
+                transition={{ 
+                  duration: 6.5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut",
+                  delay: 3,
+                  times: [0, 0.3, 0.6, 1]
+                }}
+              />
+              
+              {/* Additional flowing particles along paths */}
+              {[...Array(8)].map((_, i) => (
+                <motion.circle
+                  key={i}
+                  r="2"
+                  fill={['#fbbf24', '#10b981', '#ef4444', '#8b5cf6'][i % 4]}
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    cx: [50 + (i * 40), centerX],
+                    cy: [50 + (i * 35), centerY],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1.5, 0.5]
+                  }}
+                  transition={{
+                    duration: 4 + (i * 0.3),
+                    repeat: Infinity,
+                    delay: i * 0.5,
+                    ease: "easeInOut"
+                  }}
+                />
+              ))}
             </svg>
           </div>
 
@@ -176,107 +226,193 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Main Logo Container */}
           <div className="relative z-10 flex flex-col items-center space-y-8">
-            {/* Logo with Pop Animation */}
+            {/* Logo with Enhanced Pop Animation */}
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
+              initial={{ scale: 0, rotate: -180, y: 50 }}
               animate={{ 
-                scale: [0, 1.2, 1], 
-                rotate: [0, 10, -10, 0],
+                scale: [0, 1.3, 0.9, 1.1, 1], 
+                rotate: [0, 15, -10, 5, 0],
+                y: [50, -10, 5, -5, 0]
               }}
               transition={{ 
-                duration: 1.5, 
+                duration: 2.5, 
                 ease: "easeOut",
-                times: [0, 0.6, 1]
+                times: [0, 0.4, 0.6, 0.8, 1]
               }}
               className="relative"
             >
               <motion.img
                 src={logoImage}
                 alt="Nedaxer Logo"
-                className="w-32 h-32 md:w-40 md:h-40 object-contain filter drop-shadow-2xl"
+                className="w-48 h-48 md:w-56 md:h-56 object-contain filter drop-shadow-2xl"
                 animate={{
                   filter: [
-                    'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))',
-                    'drop-shadow(0 0 30px rgba(251, 191, 36, 0.8))',
-                    'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))',
-                  ]
+                    'drop-shadow(0 0 25px rgba(251, 191, 36, 0.6))',
+                    'drop-shadow(0 0 40px rgba(251, 191, 36, 1))',
+                    'drop-shadow(0 0 30px rgba(16, 185, 129, 0.8))',
+                    'drop-shadow(0 0 35px rgba(139, 92, 246, 0.9))',
+                    'drop-shadow(0 0 25px rgba(251, 191, 36, 0.6))',
+                  ],
+                  scale: [1, 1.05, 0.98, 1.02, 1],
+                  rotate: [0, 2, -1, 1, 0]
                 }}
                 transition={{
-                  duration: 2,
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.25, 0.5, 0.75, 1]
+                }}
+              />
+              
+              {/* Multiple Pulsing Rings Around Logo */}
+              <motion.div
+                className="absolute inset-0 rounded-full border-2 border-yellow-400/40"
+                animate={{
+                  scale: [1, 1.4, 1],
+                  opacity: [0.4, 0.9, 0.4],
+                  borderColor: ['rgba(251, 191, 36, 0.4)', 'rgba(16, 185, 129, 0.6)', 'rgba(251, 191, 36, 0.4)']
+                }}
+                transition={{
+                  duration: 2.5,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               />
               
-              {/* Pulsing Ring Around Logo */}
+              {/* Second Ring */}
               <motion.div
-                className="absolute inset-0 rounded-full border-2 border-yellow-400/30"
+                className="absolute inset-0 rounded-full border-2 border-green-400/30"
                 animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.8, 0.3],
+                  scale: [1.2, 1.6, 1.2],
+                  opacity: [0.2, 0.7, 0.2],
+                  borderColor: ['rgba(16, 185, 129, 0.3)', 'rgba(139, 92, 246, 0.5)', 'rgba(16, 185, 129, 0.3)']
                 }}
                 transition={{
-                  duration: 2,
+                  duration: 3,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+              />
+              
+              {/* Third Ring */}
+              <motion.div
+                className="absolute inset-0 rounded-full border border-purple-400/20"
+                animate={{
+                  scale: [1.4, 1.8, 1.4],
+                  opacity: [0.1, 0.5, 0.1],
+                  borderColor: ['rgba(139, 92, 246, 0.2)', 'rgba(239, 68, 68, 0.4)', 'rgba(139, 92, 246, 0.2)']
+                }}
+                transition={{
+                  duration: 3.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+              />
+              
+              {/* Energy Burst Effect */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)'
+                }}
+                animate={{
+                  scale: [0.8, 2, 0.8],
+                  opacity: [0, 0.6, 0]
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 2
                 }}
               />
             </motion.div>
 
-            {/* Welcome Message */}
+            {/* Enhanced Welcome Message */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 1.5 }}
-              className="text-center space-y-2"
+              initial={{ opacity: 0, y: 50, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 1.5, delay: 3, ease: "easeOut" }}
+              className="text-center space-y-4"
             >
               <motion.h1
-                className="text-2xl md:text-3xl font-bold text-white"
+                className="text-3xl md:text-4xl font-bold text-white"
                 animate={{
                   textShadow: [
-                    '0 0 10px rgba(255,255,255,0.5)',
-                    '0 0 20px rgba(255,255,255,0.8)',
-                    '0 0 10px rgba(255,255,255,0.5)',
-                  ]
+                    '0 0 15px rgba(255,255,255,0.6)',
+                    '0 0 25px rgba(251, 191, 36, 0.8)',
+                    '0 0 20px rgba(16, 185, 129, 0.7)',
+                    '0 0 15px rgba(255,255,255,0.6)',
+                  ],
+                  scale: [1, 1.02, 0.98, 1]
                 }}
                 transition={{
-                  duration: 2,
+                  duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
+                  times: [0, 0.33, 0.66, 1]
                 }}
               >
                 Thanks for choosing us
               </motion.h1>
               
               <motion.p
-                className="text-lg text-blue-100"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 2 }}
+                className="text-xl text-blue-100 font-medium"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                  opacity: [0, 1, 0.8, 1], 
+                  y: 0,
+                  textShadow: [
+                    '0 0 5px rgba(96, 165, 250, 0.5)',
+                    '0 0 10px rgba(96, 165, 250, 0.8)',
+                    '0 0 5px rgba(96, 165, 250, 0.5)',
+                  ]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  delay: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
               >
                 Welcome to Nedaxer
               </motion.p>
+              
+              <motion.p
+                className="text-sm text-blue-200/80"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 0.7, 1] }}
+                transition={{ duration: 2, delay: 5, repeat: Infinity }}
+              >
+                Your Advanced Trading Platform
+              </motion.p>
             </motion.div>
 
-            {/* Loading Indicator */}
+            {/* Enhanced Loading Indicator */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 2.5 }}
-              className="flex space-x-2"
+              transition={{ duration: 1, delay: 6 }}
+              className="flex space-x-3"
             >
-              {[...Array(3)].map((_, i) => (
+              {[...Array(5)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="w-3 h-3 bg-white rounded-full"
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    background: ['#fbbf24', '#10b981', '#ef4444', '#8b5cf6', '#60a5fa'][i]
+                  }}
                   animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5],
+                    scale: [1, 1.8, 1],
+                    opacity: [0.4, 1, 0.4],
+                    y: [0, -10, 0]
                   }}
                   transition={{
-                    duration: 1,
+                    duration: 1.5,
                     repeat: Infinity,
-                    delay: i * 0.2,
+                    delay: i * 0.1,
                     ease: "easeInOut"
                   }}
                 />
@@ -284,19 +420,53 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             </motion.div>
           </div>
 
-          {/* Progress Bar */}
+          {/* Enhanced Progress Bar */}
           <motion.div
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden"
+            className="absolute bottom-16 left-1/2 transform -translate-x-1/2 w-80 space-y-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 3 }}
+            transition={{ delay: 7 }}
           >
+            <motion.p
+              className="text-center text-sm text-blue-200"
+              animate={{ opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Initializing your trading experience...
+            </motion.p>
+            
+            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+              <motion.div
+                className="h-full rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg, #fbbf24 0%, #10b981 25%, #ef4444 50%, #8b5cf6 75%, #60a5fa 100%)'
+                }}
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: '100%',
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+                }}
+                transition={{ 
+                  width: { duration: 3, ease: "easeOut", delay: 7 },
+                  backgroundPosition: { duration: 2, repeat: Infinity, ease: "linear" }
+                }}
+              />
+            </div>
+            
+            {/* Progress percentage */}
             <motion.div
-              className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 2, ease: "easeOut", delay: 3 }}
-            />
+              className="text-center text-xs text-blue-300"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 8 }}
+            >
+              <motion.span
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                Loading complete...
+              </motion.span>
+            </motion.div>
           </motion.div>
         </motion.div>
       )}
