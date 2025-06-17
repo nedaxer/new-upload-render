@@ -261,8 +261,9 @@ export default function MobileHome() {
       }
       return await response.json();
     },
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 5000, // Refresh every 5 seconds for more real-time updates
     retry: 3,
+    staleTime: 1000, // Consider data stale after 1 second
   });
 
   // Process market data from Bybit API
@@ -302,9 +303,15 @@ export default function MobileHome() {
       case 'Favorites':
         return filtered.filter(market => market.favorite);
       case 'Gainers':
-        return filtered.filter(market => market.sentiment === 'Bullish').slice(0, 5);
+        return filtered
+          .filter(market => market.changeValue > 0)
+          .sort((a, b) => b.changeValue - a.changeValue)
+          .slice(0, 5);
       case 'Losers':
-        return filtered.filter(market => market.sentiment === 'Bearish').slice(0, 5);
+        return filtered
+          .filter(market => market.changeValue < 0)
+          .sort((a, b) => a.changeValue - b.changeValue)
+          .slice(0, 5);
       case 'Hot':
         return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
       case 'New':
@@ -577,26 +584,31 @@ export default function MobileHome() {
           ) : (
             watchlistMarkets.map((market, index) => (
               <Link key={`${market.pair}-${index}`} href={`/mobile/trade?symbol=${market.symbol}`}>
-                <div className="flex items-center justify-between py-2 hover:bg-gray-800/30 rounded transition-colors">
+                <div className="flex items-center justify-between py-3 px-2 hover:bg-gray-800/30 rounded transition-colors">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2">
                       {market.favorite && (
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
                       )}
-                      <span className="text-white font-medium">{market.displayPair}</span>
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium">{market.displayPair}</span>
+                        <span className="text-gray-400 text-xs">Vol: {market.volume}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white font-medium">{market.price}</div>
-                    <div className={`text-sm flex items-center space-x-1 ${
-                      market.isPositive ? 'text-green-500' : 'text-red-500'
+                    <div className="text-white font-medium">
+                      ${market.price}
+                    </div>
+                    <div className={`text-sm flex items-center justify-end space-x-1 ${
+                      market.isPositive ? 'text-green-400' : 'text-red-400'
                     }`}>
                       {market.isPositive ? (
                         <TrendingUp className="w-3 h-3" />
                       ) : (
                         <TrendingDown className="w-3 h-3" />
                       )}
-                      <span>{market.change}</span>
+                      <span className="font-medium">{market.change}</span>
                     </div>
                   </div>
                 </div>
