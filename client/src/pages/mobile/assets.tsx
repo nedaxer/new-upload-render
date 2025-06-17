@@ -536,66 +536,90 @@ export default function MobileAssets() {
             </div>
             
             {/* Crypto Labels Around Donut - Positioned like pie chart */}
-            {/* Bitcoin - Right side (49.5% position) */}
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-right">
+            {/* Connecting lines from chart to labels */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 320 320">
+              {/* Bitcoin line - Right side (0° - 49.5% of circle) */}
+              <line x1="210" y1="160" x2="270" y2="160" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* Ethereum line - Bottom right (180° from start) */}
+              <line x1="160" y1="210" x2="160" y2="270" stroke="#374151" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* Litecoin line - Left side (270° from start) */}
+              <line x1="110" y1="160" x2="50" y2="160" stroke="#10b981" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* IOTA line - Left upper (315° from start) */}
+              <line x1="125" y1="125" x2="80" y2="80" stroke="#a855f7" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* Monero line - Top left (340° from start) */}
+              <line x1="145" y1="110" x2="120" y2="60" stroke="#ef4444" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* Binance line - Top (350° from start) */}
+              <line x1="155" y1="105" x2="160" y2="50" stroke="#eab308" strokeWidth="2" strokeDasharray="2,2" />
+              
+              {/* Cardano line - Top right (10° from start) */}
+              <line x1="175" y1="110" x2="200" y2="60" stroke="#6b7280" strokeWidth="2" strokeDasharray="2,2" />
+            </svg>
+            
+            {/* Bitcoin - Right side (largest segment 49.5%) */}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-right">
               <div className="text-orange-400 text-sm font-bold leading-tight">Bitcoin</div>
               <div className="text-white text-xs">49.5%</div>
             </div>
             
-            {/* Ethereum - Bottom left */}
-            <div className="absolute left-8 bottom-12">
-              <div className="text-blue-400 text-sm font-bold leading-tight">Ethereum</div>
+            {/* Ethereum - Bottom (24.5% segment) */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-gray-300 text-sm font-bold leading-tight">Ethereum</div>
               <div className="text-white text-xs">24.5%</div>
             </div>
             
-            {/* Cardano - Bottom */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center">
-              <div className="text-gray-400 text-sm font-bold leading-tight">Cardano</div>
-              <div className="text-white text-xs">1.9%</div>
-            </div>
-            
-            {/* IOTA - Left side */}
+            {/* Litecoin - Left side (4.7% segment) */}
             <div className="absolute left-2 top-1/2 transform -translate-y-1/2">
-              <div className="text-purple-400 text-sm font-bold leading-tight">IOTA</div>
-              <div className="text-white text-xs">4.3%</div>
-            </div>
-            
-            {/* Litecoin - Top left */}
-            <div className="absolute left-8 top-12">
               <div className="text-green-400 text-sm font-bold leading-tight">Litecoin</div>
               <div className="text-white text-xs">4.7%</div>
             </div>
             
-            {/* Binance - Top */}
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center">
-              <div className="text-yellow-400 text-sm font-bold leading-tight">Binance</div>
-              <div className="text-white text-xs">2.1%</div>
+            {/* IOTA - Top left diagonal (4.3% segment) */}
+            <div className="absolute left-6 top-6">
+              <div className="text-purple-400 text-sm font-bold leading-tight">IOTA</div>
+              <div className="text-white text-xs">4.3%</div>
             </div>
             
-            {/* Monero - Top right */}
-            <div className="absolute right-8 top-12 text-right">
+            {/* Monero - Top left (3.1% segment) */}
+            <div className="absolute left-12 top-2">
               <div className="text-red-400 text-sm font-bold leading-tight">Monero</div>
               <div className="text-white text-xs">3.1%</div>
             </div>
             
-            {/* Other smaller coins - positioned around */}
-            <div className="absolute right-2 top-20 text-right">
-              <div className="text-gray-300 text-xs font-medium">KuCoin: 1.7%</div>
+            {/* Binance - Top center (2.1% segment) */}
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-center">
+              <div className="text-yellow-400 text-sm font-bold leading-tight">Binance</div>
+              <div className="text-white text-xs">2.1%</div>
             </div>
             
-            <div className="absolute left-2 top-20">
+            {/* Cardano - Top right (1.9% segment) */}
+            <div className="absolute right-12 top-2 text-right">
+              <div className="text-gray-400 text-sm font-bold leading-tight">Cardano</div>
+              <div className="text-white text-xs">1.9%</div>
+            </div>
+            
+            {/* Smaller coins around the perimeter */}
+            <div className="absolute right-6 top-6 text-right">
               <div className="text-gray-300 text-xs font-medium">Wabi: 1.9%</div>
             </div>
             
-            <div className="absolute right-2 bottom-20 text-right">
-              <div className="text-gray-300 text-xs font-medium">EOS: 0.9%</div>
+            <div className="absolute right-2 top-1/3 text-right">
+              <div className="text-gray-300 text-xs font-medium">KuCoin: 1.7%</div>
             </div>
             
-            <div className="absolute left-2 bottom-20">
+            <div className="absolute right-6 bottom-6 text-right">
               <div className="text-gray-300 text-xs font-medium">OmiseGO: 1.4%</div>
             </div>
             
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+            <div className="absolute left-6 bottom-6">
+              <div className="text-gray-300 text-xs font-medium">EOS: 0.9%</div>
+            </div>
+            
+            <div className="absolute top-1 right-1/3 text-center">
               <div className="text-gray-300 text-xs font-medium">PotCoin: 0.8%</div>
             </div>
           </div>
