@@ -161,10 +161,14 @@ export default function MobileMarkets() {
         filtered = filtered.filter(market => market.favorite);
         break;
       case 'Gainers':
-        filtered = filtered.filter(market => market.sentiment === 'Bullish');
+        // Filter for positive price changes and sort by highest gains
+        filtered = filtered.filter(market => market.changeValue > 0)
+                          .sort((a, b) => b.changeValue - a.changeValue);
         break;
       case 'Losers':
-        filtered = filtered.filter(market => market.sentiment === 'Bearish');
+        // Filter for negative price changes and sort by biggest losses
+        filtered = filtered.filter(market => market.changeValue < 0)
+                          .sort((a, b) => a.changeValue - b.changeValue);
         break;
       case 'Hot':
         // Sort by volume for hot markets
