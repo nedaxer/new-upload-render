@@ -37,30 +37,6 @@ function registerServiceWorker() {
 // PWA Install Prompt
 let deferredPrompt: any;
 
-function showInstallPromotion() {
-  if (document.getElementById('pwa-install-banner')) return;
-  
-  const banner = document.createElement('div');
-  banner.id = 'pwa-install-banner';
-  banner.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #0033a0;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    z-index: 9999;
-    font-family: Arial, sans-serif;
-  `;
-  banner.innerHTML = `
-    <span>Install Nedaxer App for better experience</span>
-    <button id="pwa-install-btn" style="margin-left: 10px; padding: 5px 10px; background: #f59e0b; color: white; border: none; border-radius: 3px;">Install</button>
-    <button id="pwa-dismiss-btn" style="margin-left: 10px; padding: 5px 10px; background: transparent; color: white; border: 1px solid white; border-radius: 3px;">Later</button>
-  `;
-  document.body.appendChild(banner);
-
 function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', (e) => {
     // Prevent the mini-infobar from appearing on mobile
@@ -145,7 +121,6 @@ function showInstallPromotion() {
     });
   }
 }
-}
 
 function hideInstallPromotion() {
   const banner = document.getElementById('pwa-install-banner');
@@ -187,23 +162,7 @@ if (process.env.NODE_ENV === 'production') {
   clearServiceWorkerCache();
 }
 
-// Add no-cache headers for development environment
-if (process.env.NODE_ENV === 'development') {
-  const meta = document.createElement('meta');
-  meta.httpEquiv = 'Cache-Control';
-  meta.content = 'no-cache, no-store, must-revalidate';
-  document.head.appendChild(meta);
-
-  const pragma = document.createElement('meta');
-  pragma.httpEquiv = 'Pragma';
-  pragma.content = 'no-cache';
-  document.head.appendChild(pragma);
-
-  const expires = document.createElement('meta');
-  expires.httpEquiv = 'Expires';
-  expires.content = '0';
-  document.head.appendChild(expires);
-}s
+// Add no-cache headers for development environments
 function addNoCacheHeaders() {
   if (process.env.NODE_ENV === 'development') {
     const meta = document.createElement('meta');
