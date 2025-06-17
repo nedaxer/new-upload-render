@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Switch, Router, Redirect } from 'wouter';
 import { useHashLocation } from './hooks/use-hash-location';
 import { QueryClientProvider } from '@tanstack/react-query';
