@@ -418,137 +418,138 @@ export default function MobileAssets() {
         <h3 className="text-white font-medium mb-6 text-sm">Portfolio Distribution</h3>
         
         {/* Circular Portfolio Chart */}
-        <div className="flex flex-col items-center mb-8">
-          {/* Donut Chart */}
-          <div className="relative w-48 h-48 mb-6">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              {/* Background circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#374151"
-                strokeWidth="8"
-              />
+        <div className="relative flex flex-col items-center mb-8">
+          {/* Donut Chart Container */}
+          <div className="relative w-80 h-80 mb-6">
+            {/* SVG Donut Chart */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+                {/* Background circle */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#374151"
+                  strokeWidth="8"
+                />
+                
+                {/* Bitcoin segment (60%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="8"
+                  strokeDasharray="150.8 100.4"
+                  strokeDashoffset="0"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* USDT segment (25%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="8"
+                  strokeDasharray="62.8 188.4"
+                  strokeDashoffset="-150.8"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* ETH segment (10%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#3b82f6"
+                  strokeWidth="8"
+                  strokeDasharray="25.1 226.1"
+                  strokeDashoffset="-213.6"
+                  className="transition-all duration-1000"
+                />
+                
+                {/* BNB segment (5%) */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="#eab308"
+                  strokeWidth="8"
+                  strokeDasharray="12.6 238.6"
+                  strokeDashoffset="-238.7"
+                  className="transition-all duration-1000"
+                />
+              </svg>
               
-              {/* Bitcoin segment (60%) */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="8"
-                strokeDasharray="150.8 100.4"
-                strokeDashoffset="0"
-                className="transition-all duration-1000"
-              />
-              
-              {/* USDT segment (25%) */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="8"
-                strokeDasharray="62.8 188.4"
-                strokeDashoffset="-150.8"
-                className="transition-all duration-1000"
-              />
-              
-              {/* ETH segment (10%) */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="8"
-                strokeDasharray="25.1 226.1"
-                strokeDashoffset="-213.6"
-                className="transition-all duration-1000"
-              />
-              
-              {/* BNB segment (5%) */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#eab308"
-                strokeWidth="8"
-                strokeDasharray="12.6 238.6"
-                strokeDashoffset="-238.7"
-                className="transition-all duration-1000"
-              />
-            </svg>
-            
-            {/* Center content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold text-white">
-                {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
+              {/* Center content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="text-xl font-bold text-white">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
+                </div>
+                <div className="text-xs text-gray-400">Total Value</div>
               </div>
-              <div className="text-xs text-gray-400">Total Value</div>
             </div>
-          </div>
-          
-          {/* Professional Portfolio Labels */}
-          <div className="absolute inset-0">
+            
+            {/* Crypto Labels Around Donut */}
             {/* BTC Label - Top Right */}
-            <div className="absolute" style={{ top: '10%', right: '5%' }}>
+            <div className="absolute top-8 right-2">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
-                <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700">
-                  <div className="text-white text-sm font-semibold">BTC</div>
-                  <div className="text-orange-400 text-xs font-bold">60%</div>
+                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-orange-500/30">
+                  <div className="text-orange-400 text-sm font-bold">BTC</div>
+                  <div className="text-white text-xs font-semibold">60%</div>
                   <div className="text-gray-300 text-xs">
                     {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.31) : '***'}
                   </div>
                 </div>
+                <div className="w-4 h-1 bg-orange-500 rounded-full"></div>
               </div>
             </div>
             
             {/* USDT Label - Bottom Right */}
-            <div className="absolute" style={{ bottom: '10%', right: '5%' }}>
+            <div className="absolute bottom-8 right-2">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-6 bg-green-500 rounded-full"></div>
-                <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700">
-                  <div className="text-white text-sm font-semibold">USDT</div>
-                  <div className="text-green-400 text-xs font-bold">25%</div>
+                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-green-500/30">
+                  <div className="text-green-400 text-sm font-bold">USDT</div>
+                  <div className="text-white text-xs font-semibold">25%</div>
                   <div className="text-gray-300 text-xs">
                     {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.13) : '***'}
                   </div>
                 </div>
+                <div className="w-4 h-1 bg-green-500 rounded-full"></div>
               </div>
             </div>
             
             {/* ETH Label - Bottom Left */}
-            <div className="absolute" style={{ bottom: '10%', left: '5%' }}>
+            <div className="absolute bottom-8 left-2">
               <div className="flex items-center space-x-2 flex-row-reverse">
-                <div className="w-2 h-4 bg-blue-500 rounded-full"></div>
-                <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700 text-right">
-                  <div className="text-white text-sm font-semibold">ETH</div>
-                  <div className="text-blue-400 text-xs font-bold">10%</div>
+                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-blue-500/30 text-right">
+                  <div className="text-blue-400 text-sm font-bold">ETH</div>
+                  <div className="text-white text-xs font-semibold">10%</div>
                   <div className="text-gray-300 text-xs">
                     {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.05) : '***'}
                   </div>
                 </div>
+                <div className="w-4 h-1 bg-blue-500 rounded-full"></div>
               </div>
             </div>
             
             {/* BNB Label - Top Left */}
-            <div className="absolute" style={{ top: '10%', left: '5%' }}>
+            <div className="absolute top-8 left-2">
               <div className="flex items-center space-x-2 flex-row-reverse">
-                <div className="w-2 h-3 bg-yellow-500 rounded-full"></div>
-                <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700 text-right">
-                  <div className="text-white text-sm font-semibold">BNB</div>
-                  <div className="text-yellow-400 text-xs font-bold">5%</div>
+                <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-yellow-500/30 text-right">
+                  <div className="text-yellow-400 text-sm font-bold">BNB</div>
+                  <div className="text-white text-xs font-semibold">5%</div>
                   <div className="text-gray-300 text-xs">
                     {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.03) : '***'}
                   </div>
                 </div>
+                <div className="w-4 h-1 bg-yellow-500 rounded-full"></div>
               </div>
             </div>
           </div>

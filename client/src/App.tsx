@@ -106,6 +106,7 @@ import MobileSecurity from '@/pages/mobile/security';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
+import PortfolioDemo from '@/pages/portfolio-demo';
 
 
 
@@ -248,6 +249,7 @@ export default function App() {
 
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />
+            <Route path="/portfolio-demo" component={PortfolioDemo} />
 
             {/* 404 Route */}
             <Route component={NotFound} />
