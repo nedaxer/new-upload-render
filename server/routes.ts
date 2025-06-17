@@ -1566,27 +1566,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Live market data endpoints (using CoinGecko as data source)
+  
+  // Import Bybit API functions
+  const { getBybitTickers, getMarketSentiment } = await import('./bybit-api.js');
+
+  // Get Bybit market tickers
   app.get("/api/bybit/tickers", async (req: Request, res: Response) => {
     try {
-      const { getBybitTickers, getMarketSentiment } = await import('./bybit-api.js');
       const tickers = await getBybitTickers();
-      
-      // Process tickers to add sentiment
-      const processedTickers = tickers.map(ticker => ({
+
+      // Add sentiment analysis
+      const tickersWithSentiment = tickers.map(ticker => ({
         ...ticker,
         sentiment: getMarketSentiment(ticker.price24hPcnt)
       }));
-      
+
+      console.log(`Successfully fetched ${tickersWithSentiment.length} trading pairs`);
+
       res.json({
         success: true,
-        data: processedTickers,
-        timestamp: Date.now()
+        data: tickersWithSentiment,
+        timestamp: Date.now(),
+        count: tickersWithSentiment.length
       });
     } catch (error) {
-      console.error('Error fetching market tickers:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch market data',
+      console.error("Bybit tickers fetch error:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to fetch market tickers",
         message: error instanceof Error ? error.message : 'Unknown error'
       });
     }

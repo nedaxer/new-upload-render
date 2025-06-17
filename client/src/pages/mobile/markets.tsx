@@ -161,30 +161,31 @@ export default function MobileMarkets() {
         filtered = filtered.filter(market => market.favorite);
         break;
       case 'Gainers':
-        // Filter for positive price changes and sort by highest gains
+        // Filter for positive price changes and sort by highest gains - SHOW ALL
         filtered = filtered.filter(market => market.changeValue > 0)
                           .sort((a, b) => b.changeValue - a.changeValue);
+        console.log(`Gainers found: ${filtered.length} out of ${searchFilteredMarkets.length} total markets`);
         break;
       case 'Losers':
-        // Filter for negative price changes and sort by biggest losses
+        // Filter for negative price changes and sort by biggest losses - SHOW ALL
         filtered = filtered.filter(market => market.changeValue < 0)
                           .sort((a, b) => a.changeValue - b.changeValue);
         break;
       case 'Hot':
-        // Sort by volume for hot markets
-        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
+        // Sort by volume for hot markets - top 50
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 50);
         break;
       case 'New':
-        // Sort by price change for new/trending
-        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue));
+        // Sort by price change for new/trending - top 30
+        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 30);
         break;
       case 'Turnover':
-        // Sort by volume for turnover
-        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
+        // Sort by volume for turnover - top 50
+        filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 50);
         break;
       case 'Opportunities':
-        // Sort by highest price changes (both positive and negative)
-        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue));
+        // Sort by highest price changes (both positive and negative) - top 40
+        filtered = filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 40);
         break;
       default:
         filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
@@ -261,6 +262,20 @@ export default function MobileMarkets() {
         </div>
       </div>
 
+      {/* Market Statistics */}
+      <div className="px-4 pb-3">
+        <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+          <span>
+            {activeTab}: {sortedMarkets.length} pairs
+            {activeTab === 'Gainers' && ` (${processedMarkets.filter(m => m.changeValue > 0).length} total gainers)`}
+            {activeTab === 'Losers' && ` (${processedMarkets.filter(m => m.changeValue < 0).length} total losers)`}
+          </span>
+          <span className="text-xs">
+            Last update: {lastUpdate.toLocaleTimeString()}
+          </span>
+        </div>
+      </div>
+
       {/* Market List Header */}
       <div className="px-4 pb-3">
         <div className="flex items-center justify-between text-xs text-gray-400">
@@ -286,7 +301,7 @@ export default function MobileMarkets() {
             <p className="text-gray-400">No markets found.</p>
           </div>
         ) : (
-          sortedMarkets.slice(0, 600).map((market, index) => (
+          sortedMarkets.map((market, index) => (
             <div 
               key={`${market.pair}-${index}`} 
               className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
