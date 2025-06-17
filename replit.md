@@ -120,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 17, 2025. Implemented custom app logo for mobile installation: generated all required icon sizes from user's Nedaxer logo, created PWA manifest with installation shortcuts, configured Apple Touch icons, and set up service worker for native app-like experience
 - June 17, 2025. Enhanced mobile assets page with professional portfolio visualization: integrated advanced charts video as seamless backgrounds, replaced crypto coin cards with animated donut chart showing distribution percentages, implemented professional glass-morphism labeling system with color-coded indicators matching trading apps like Blossom
 - June 16, 2025. Updated mobile markets page with live cryptocurrency data from CoinGecko API, implemented 10-second auto-refresh, added Bullish/Bearish sentiment labels, click-to-trade functionality, and removed error states for better user experience when offline
 - June 16, 2025. Created comprehensive mobile settings page with profile photo upload, username editing, theme switching, language/currency selection, and account management options. Fixed profile image synchronization issues between settings and profile pages. Separated username (editable) from email (read-only) functionality.
