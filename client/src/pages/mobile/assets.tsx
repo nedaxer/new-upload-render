@@ -24,6 +24,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
@@ -45,14 +46,8 @@ export default function MobileAssets() {
     }
   }, []);
 
-  // Fetch currency conversion rates
-  const { data: conversionData } = useQuery({
-    queryKey: ['conversion-rates'],
-    queryFn: () => apiRequest('/api/market-data/conversion-rates'),
-    refetchInterval: 300000, // Refetch every 5 minutes
-  });
-
-  const conversionRates = conversionData?.data || {
+  // Default conversion rates - can be enhanced with real API later
+  const conversionRates = {
     'USD': 1,
     'EUR': 0.85,
     'GBP': 0.73,
@@ -349,17 +344,28 @@ export default function MobileAssets() {
           </div>
         </div>
 
-        {/* Chart Placeholder */}
-        <div className="h-20 bg-gray-800 rounded-lg mb-4 flex items-center justify-end pr-4">
-          <div className="text-orange-500">
-            <svg width="120" height="40" viewBox="0 0 120 40">
-              <path 
-                d="M10,30 Q30,10 50,20 T90,15 L110,25" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                fill="none"
-              />
-            </svg>
+        {/* Advanced Charts Video Background */}
+        <div className="relative h-32 bg-gray-900 rounded-lg mb-4 overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-70"
+            style={{ filter: 'brightness(0.8) contrast(1.2)' }}
+          >
+            <source src={advancedChartsVideo} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-transparent to-gray-900/60" />
+          <div className="absolute inset-0 flex items-center justify-between px-4">
+            <div className="text-white">
+              <div className="text-sm font-medium opacity-90">Advanced Trading</div>
+              <div className="text-xs text-gray-300">Live Market Analysis</div>
+            </div>
+            <div className="text-right">
+              <div className="text-orange-500 text-lg font-bold">+2.4%</div>
+              <div className="text-xs text-gray-300">24h Change</div>
+            </div>
           </div>
         </div>
 
@@ -409,80 +415,136 @@ export default function MobileAssets() {
 
       {/* Assets Section */}
       <div className="px-4">
-        <h3 className="text-white font-medium mb-4 text-sm">Most Popular</h3>
+        <h3 className="text-white font-medium mb-4 text-sm">Portfolio Assets</h3>
         
         {/* Bitcoin */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/btc-logo.svg" alt="BTC" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium text-sm">BTC</div>
-              <div className="text-gray-400 text-xs">Bitcoin</div>
+        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
+          >
+            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+          </video>
+          <div className="relative flex items-center justify-between py-4 px-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                ₿
+              </div>
+              <div>
+                <div className="text-white font-medium text-sm">BTC</div>
+                <div className="text-gray-300 text-xs">Bitcoin</div>
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-white font-medium text-sm">
-              {showBalance ? '0.00000484' : '****'}
-            </div>
-            <div className="text-gray-400 text-xs">
-              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.51) : '***'}
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00000484' : '****'}
+              </div>
+              <div className="text-gray-300 text-xs">
+                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.51) : '***'}
+              </div>
             </div>
           </div>
         </div>
 
         {/* USDT */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/usdt-logo.svg" alt="USDT" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium text-sm">USDT</div>
-              <div className="text-gray-400 text-xs">Tether</div>
+        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
+          >
+            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+          </video>
+          <div className="relative flex items-center justify-between py-4 px-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                ₮
+              </div>
+              <div>
+                <div className="text-white font-medium text-sm">USDT</div>
+                <div className="text-gray-300 text-xs">Tether</div>
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-white font-medium text-sm">
-              {showBalance ? '0.00' : '****'}
-            </div>
-            <div className="text-gray-400 text-xs">
-              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-300 text-xs">
+                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+              </div>
             </div>
           </div>
         </div>
 
         {/* ETH */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/eth-logo.svg" alt="ETH" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium text-sm">ETH</div>
-              <div className="text-gray-400 text-xs">Ethereum</div>
+        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
+          >
+            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+          </video>
+          <div className="relative flex items-center justify-between py-4 px-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                Ξ
+              </div>
+              <div>
+                <div className="text-white font-medium text-sm">ETH</div>
+                <div className="text-gray-300 text-xs">Ethereum</div>
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-white font-medium text-sm">
-              {showBalance ? '0.00' : '****'}
-            </div>
-            <div className="text-gray-400 text-xs">
-              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-300 text-xs">
+                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+              </div>
             </div>
           </div>
         </div>
 
         {/* BNB */}
-        <div className="flex items-center justify-between py-3 border-b border-gray-800">
-          <div className="flex items-center space-x-3">
-            <img src="/logos/bnb-logo.svg" alt="BNB" className="w-8 h-8 rounded-full" />
-            <div>
-              <div className="text-white font-medium text-sm">BNB</div>
-              <div className="text-gray-400 text-xs">BNB</div>
+        <div className="relative overflow-hidden rounded-lg mb-3 bg-gray-800">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+            style={{ filter: 'brightness(0.6) contrast(1.1)' }}
+          >
+            <source src="/src/assets/advanced-charts-video.mp4" type="video/mp4" />
+          </video>
+          <div className="relative flex items-center justify-between py-4 px-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                B
+              </div>
+              <div>
+                <div className="text-white font-medium text-sm">BNB</div>
+                <div className="text-gray-300 text-xs">BNB Chain</div>
+              </div>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-white font-medium text-sm">
-              {showBalance ? '0.00' : '****'}
-            </div>
-            <div className="text-gray-400 text-xs">
-              ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+            <div className="text-right">
+              <div className="text-white font-medium text-sm">
+                {showBalance ? '0.00' : '****'}
+              </div>
+              <div className="text-gray-300 text-xs">
+                ≈ {getCurrencySymbol(selectedCurrency)}{showBalance ? convertToSelectedCurrency(0.00) : '***'}
+              </div>
             </div>
           </div>
         </div>
