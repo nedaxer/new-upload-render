@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
+import { SplashScreen } from '@/components/splash-screen';
 import { lazy } from 'react';
 
 // Pages
@@ -120,9 +121,17 @@ function LoadingIndicator() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check if splash screen has been shown in this session
+    const splashShown = sessionStorage.getItem('splashShown');
+    
+    if (splashShown) {
+      setShowSplash(false);
+    }
+    
     // Just a small delay to ensure all routes are registered
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -130,6 +139,16 @@ export default function App() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('splashShown', 'true');
+    setShowSplash(false);
+  };
+
+  // Show splash screen on first load
+  if (showSplash && !isLoading) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
   // Show loading indicator while routes are being set up
   if (isLoading) {
@@ -241,7 +260,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/news" component={MobileNews} />
             <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
             <ProtectedRoute path="/mobile/security" component={MobileSecurity} />
-            <ProtectedRoute path="/mobile/currency-selection" component={lazy(() => import('./pages/mobile/currency-selection'))} />
+
 
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
