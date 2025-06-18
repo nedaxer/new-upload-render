@@ -40,15 +40,15 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     };
   }, []);
 
-  // Movie-style animation: letters come from all four corners
+  // Letters coming from side corners only
   const letters = [
-    { src: nLetter, alt: 'N', from: { x: -windowSize.width, y: -windowSize.height }, delay: 0 },
-    { src: eLetter1, alt: 'E', from: { x: windowSize.width, y: -windowSize.height }, delay: 0.3 },
-    { src: dLetter, alt: 'D', from: { x: -windowSize.width, y: windowSize.height }, delay: 0.6 },
-    { src: aLetter, alt: 'A', from: { x: windowSize.width, y: windowSize.height }, delay: 0.9 },
-    { src: xLetter, alt: 'X', from: { x: -windowSize.width, y: -windowSize.height }, delay: 1.2 },
-    { src: eLetter2, alt: 'E', from: { x: windowSize.width, y: -windowSize.height }, delay: 1.5 },
-    { src: rLetter, alt: 'R', from: { x: -windowSize.width, y: windowSize.height }, delay: 1.8 },
+    { src: nLetter, alt: 'N', from: { x: -windowSize.width, y: 0 }, delay: 0 },
+    { src: eLetter1, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 0.2 },
+    { src: dLetter, alt: 'D', from: { x: -windowSize.width, y: 0 }, delay: 0.4 },
+    { src: aLetter, alt: 'A', from: { x: windowSize.width, y: 0 }, delay: 0.6 },
+    { src: xLetter, alt: 'X', from: { x: -windowSize.width, y: 0 }, delay: 0.8 },
+    { src: eLetter2, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 1.0 },
+    { src: rLetter, alt: 'R', from: { x: -windowSize.width, y: 0 }, delay: 1.2 },
   ];
 
   useEffect(() => {
@@ -75,13 +75,6 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             backgroundRepeat: 'no-repeat'
           }}
         >
-          {/* Simplified corner light effects */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-br from-white to-transparent" />
-            <div className="absolute top-0 right-0 w-64 h-64 opacity-10 bg-gradient-to-bl from-white to-transparent" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-tr from-white to-transparent" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 opacity-10 bg-gradient-to-tl from-white to-transparent" />
-          </div>
 
           {/* Movie-style letter animation container */}
           <div className="relative flex items-center justify-center space-x-1 md:space-x-2 z-10">
@@ -92,82 +85,30 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   x: letter.from.x,
                   y: letter.from.y,
                   opacity: 0,
-                  scale: 0.2,
-                  rotate: 720,
-                  filter: 'blur(20px)',
+                  scale: 0.8,
                 }}
                 animate={{
                   x: 0,
                   y: 0,
                   opacity: 1,
-                  scale: [0.2, 1.2, 1],
-                  rotate: 0,
-                  filter: 'blur(0px)',
+                  scale: 1,
                 }}
                 transition={{
                   delay: letter.delay,
-                  duration: 2,
+                  duration: 1.5,
                   type: "spring",
-                  stiffness: 60,
-                  damping: 15,
-                  ease: [0.25, 0.46, 0.45, 0.94],
+                  stiffness: 100,
+                  damping: 20,
+                  ease: "easeOut",
                 }}
                 className="relative"
               >
-                {/* Cinema-style trailing effect */}
-                <motion.div
-                  className="absolute inset-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 0.5, 0] }}
-                  transition={{
-                    delay: letter.delay,
-                    duration: 2,
-                    ease: "easeOut",
-                  }}
-                >
-                  <motion.img
-                    src={letter.src}
-                    alt={`${letter.alt}-trail`}
-                    className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
-                    style={{
-                      filter: 'blur(8px) brightness(2)',
-                      opacity: 0.3,
-                    }}
-                  />
-                </motion.div>
-
-                {/* Main letter */}
                 <motion.img
                   src={letter.src}
                   alt={letter.alt}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain relative z-10"
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
                   style={{
-                    filter: 'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
-                  }}
-                  animate={{
-                    filter: [
-                      'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
-                      'drop-shadow(0 0 30px rgba(255,165,0,1)) drop-shadow(0 0 60px rgba(255,165,0,0.6))',
-                      'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
-                    ],
-                  }}
-                  transition={{
-                    delay: letter.delay + 2,
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-
-                {/* Impact flash effect */}
-                <motion.div
-                  className="absolute inset-0 bg-white rounded-full"
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: [0, 3, 0], opacity: [0, 0.8, 0] }}
-                  transition={{
-                    delay: letter.delay + 1.8,
-                    duration: 0.6,
-                    ease: "easeOut",
+                    filter: 'drop-shadow(0 0 10px rgba(255,165,0,0.6))',
                   }}
                 />
               </motion.div>
