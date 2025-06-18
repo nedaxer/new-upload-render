@@ -46,6 +46,7 @@ export default function MobileHome() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [showHelperTooltip, setShowHelperTooltip] = useState(false);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -326,6 +327,15 @@ export default function MobileHome() {
   const watchlistMarkets = getWatchlistMarkets();
   const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
 
+  const handleHelperClick = () => {
+    if (!showHelperTooltip) {
+      setShowHelperTooltip(true);
+      setTimeout(() => {
+        setShowHelperTooltip(false);
+      }, 3000);
+    }
+  };
+
   // Show different views based on current state
   if (currentView === 'crypto-selection') {
     return (
@@ -441,9 +451,19 @@ export default function MobileHome() {
           </Link>
         </div>
         <div className="flex items-center space-x-3">
-          <Link href="/mobile/chatbot">
-            <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
-          </Link>
+          <div className="relative">
+            <div onClick={handleHelperClick}>
+              <Link href="/mobile/chatbot">
+                <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+              </Link>
+            </div>
+            {showHelperTooltip && (
+              <div className="absolute -top-12 -right-4 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+                <div className="absolute -bottom-1 right-6 w-2 h-2 bg-orange-500 rotate-45"></div>
+                Hello! I am here to answer your questions
+              </div>
+            )}
+          </div>
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
