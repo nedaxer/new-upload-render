@@ -8,6 +8,7 @@ import xLetter from '@assets/20250618_001859_1750207793716.png';
 import eLetter2 from '@assets/20250618_001938_1750207793727.png';
 import rLetter from '@assets/20250618_002006_1750207793730.png';
 import backgroundImage from '@assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
+import nedaxerLogo from '@assets/generated-icon.png';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -17,6 +18,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showLogo, setShowLogo] = useState(true);
   const [showClones, setShowClones] = useState(false);
   const [hideOriginals, setHideOriginals] = useState(false);
+  const [showNedaxerLogo, setShowNedaxerLogo] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
 
   useEffect(() => {
@@ -36,7 +38,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       aLetter,
       xLetter,
       eLetter2,
-      rLetter
+      rLetter,
+      nedaxerLogo
     ];
     
     const preloadLinks = imagesToPreload.map(src => {
@@ -83,6 +86,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       setShowClones(true);
     }, 3500);
 
+    // Show NEDAXER logo after clones disappear
+    const nedaxerLogoTimer = setTimeout(() => {
+      setShowClones(false);
+      setShowNedaxerLogo(true);
+    }, 8000); // 8 seconds
+
     const timer = setTimeout(() => {
       setShowLogo(false);
       setTimeout(onComplete, 500); // Small delay for fade out
@@ -90,6 +99,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
     return () => {
       clearTimeout(clonesTimer);
+      clearTimeout(nedaxerLogoTimer);
       clearTimeout(timer);
     };
   }, [onComplete]);
@@ -182,6 +192,37 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
 
           </div>
+
+          {/* NEDAXER Logo Display */}
+          <AnimatePresence>
+            {showNedaxerLogo && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="absolute inset-0 flex items-center justify-center z-20"
+              >
+                <motion.img
+                  src={nedaxerLogo}
+                  alt="NEDAXER"
+                  className="w-80 h-32 object-contain"
+                  animate={{
+                    filter: [
+                      'drop-shadow(0 0 20px rgba(255,165,0,0.8))',
+                      'drop-shadow(0 0 40px rgba(255,215,0,1))',
+                      'drop-shadow(0 0 20px rgba(255,165,0,0.8))',
+                    ],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Subtle glowing effect behind letters */}
           <motion.div
