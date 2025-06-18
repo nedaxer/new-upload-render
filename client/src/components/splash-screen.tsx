@@ -25,18 +25,41 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     updateWindowSize();
     window.addEventListener('resize', updateWindowSize);
     
-    // Add preload link for faster background image loading
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = backgroundImage;
-    link.as = 'image';
-    document.head.appendChild(link);
+    // Preload background image and all letter images for instant display
+    const imagesToPreload = [
+      backgroundImage,
+      nLetter,
+      eLetter1,
+      dLetter,
+      aLetter,
+      xLetter,
+      eLetter2,
+      rLetter
+    ];
+    
+    const preloadLinks = imagesToPreload.map(src => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = src;
+      link.as = 'image';
+      document.head.appendChild(link);
+      return link;
+    });
+    
+    // Also create Image objects for immediate caching
+    const imageObjects = imagesToPreload.map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
     
     return () => {
       window.removeEventListener('resize', updateWindowSize);
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
+      preloadLinks.forEach(link => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      });
     };
   }, []);
 
@@ -55,7 +78,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const timer = setTimeout(() => {
       setShowLogo(false);
       setTimeout(onComplete, 500); // Small delay for fade out
-    }, 10000); // 10 seconds
+    }, 15000); // 15 seconds
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -67,13 +90,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900"
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 splash-background"
         >
 
           {/* Movie-style letter animation container */}

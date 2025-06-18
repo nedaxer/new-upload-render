@@ -43,7 +43,40 @@
   }
 }
 
+/* Preload critical splash screen images and optimize rendering */
 @layer base {
+  body::before {
+    content: '';
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    background-image: 
+      url('/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png'),
+      url('/src/assets/20250618_001640_1750207793691.png'),
+      url('/src/assets/20250618_001710_1750207793694.png'),
+      url('/src/assets/20250618_001748_1750207793698.png'),
+      url('/src/assets/20250618_001828_1750207793703.png'),
+      url('/src/assets/20250618_001859_1750207793716.png'),
+      url('/src/assets/20250618_001938_1750207793727.png'),
+      url('/src/assets/20250618_002006_1750207793730.png');
+  }
+  
+  /* Instant splash screen background */
+  .splash-background {
+    background-image: url('/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
   * {
     @apply border-border;
   }
