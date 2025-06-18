@@ -30,48 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   // Fetch the authenticated user
-  const {
-    data: authData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["/api/auth/user"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/auth/user", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        // Check if the response is JSON
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          console.log('Auth query: Non-JSON response received');
-          return { user: null };
-        }
-
-        const data = await res.json();
-        console.log('Auth query response:', data);
-
-        if (data.success && data.user) {
-          return { user: data.user };
-        } else {
-          return { user: null };
-        }
-      } catch (err) {
-        console.log('Auth query error:', err);
-        return { user: null };
-      }
-    },
-    refetchOnWindowFocus: true,
-    staleTime: 1 * 60 * 1000, // 1 minute
-    retry: (failureCount, error) => {
-      // Only retry if it's a network error, not auth errors
-      return failureCount < 2 && error?.message !== 'Not authenticated';
-    },
+  const { data: user, isLoading, error } = useQuery({
+    queryKey: ['/api/auth/user'],
+    queryFn: () => apiRequest('/api/auth/user'),
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   // Login mutation
@@ -86,16 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return data;
     },
-    onSuccess: async (data) => {
-      // Invalidate and refetch user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-
-      if (data.user) {
-        queryClient.setQueryData(['/api/auth/user'], data);
-      }
-
-      // Force a refetch to ensure we have the latest user data
-      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+    onSuccess: (data) => {
+      console.log('Login successful, updating cache with user:', data.user);
+      // Update the auth user data in the cache immediately
+      queryClient.setQueryData(["/api/auth/user"], { user: data.user });
+      // Force immediate cache invalidation and refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
@@ -136,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: authData?.user || null,
+        user: user?.data || null,
         isLoading,
         error: error as Error,
         loginMutation,

@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
 import { hapticNavigation } from '@/lib/haptics';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 const navItems = [
   { 
@@ -33,7 +32,6 @@ const navItems = [
 
 export function BottomNavigation() {
   const [location] = useLocation();
-  const { t } = useLanguage();
 
   const handleNavClick = (itemName: string) => {
     // Trigger haptic feedback for navigation
@@ -46,7 +44,7 @@ export function BottomNavigation() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path || (item.path !== '/mobile' && location.startsWith(item.path));
-
+          
           return (
             <Link key={item.name} href={item.path}>
               <div 

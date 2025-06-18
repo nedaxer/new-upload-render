@@ -13,7 +13,7 @@ import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-rea
 export default function Login() {
   // Check if we have a stored username from a recent registration
   const lastUsername = localStorage.getItem('lastUsername') || "";
-
+  
   const [username, setUsername] = useState(lastUsername);
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -21,15 +21,15 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, loginMutation } = useAuth();
-
-  // If user is already logged in, redirect to mobile home
+  
+  // If user is already logged in, redirect to dashboard
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to mobile home');
-      setLocation('/mobile');
+      console.log('User already logged in, redirecting to dashboard');
+      setLocation('/dashboard');
       return;
     }
-
+    
     // If we used the stored username, show a hint toast
     if (lastUsername) {
       toast({
@@ -41,7 +41,7 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Check if username and password are provided
     if (!username || !password) {
       toast({
@@ -51,43 +51,43 @@ export default function Login() {
       });
       return;
     }
-
+    
     try {
       await loginMutation.mutateAsync({ username, password });
-
+      
       // Save user data to localStorage if needed
       if (rememberMe) {
         localStorage.setItem('rememberLogin', 'true');
       }
-
+      
       // Show success message
       toast({
         title: "Logged in successfully",
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
-
-      // Force immediate redirect to mobile home
-      console.log('Login successful, redirecting to mobile home');
-      setLocation('/mobile');
-
+      
+      // Force immediate redirect to dashboard
+      console.log('Login successful, redirecting to dashboard');
+      setLocation('/dashboard');
+      
     } catch (error: any) {
       console.error('Login error:', error);
-
+      
       let errorMessage = error.message || "An unexpected error occurred. Please try again.";
       let errorDetail = "";
-
+      
       if (error.message?.includes('401')) {
         errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
       } else if (error.message?.includes('400')) {
         errorDetail = "Please make sure you've entered both your username and password correctly.";
       }
-
+      
       toast({
         title: "Login failed",
         description: errorMessage,
         variant: "destructive",
       });
-
+      
       // Show additional guidance if available
       if (errorDetail) {
         setTimeout(() => {

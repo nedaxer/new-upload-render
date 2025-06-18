@@ -28,12 +28,11 @@ import {
   User,
   QrCode
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function MobileHome() {
   const { user } = useAuth();
@@ -48,7 +47,6 @@ export default function MobileHome() {
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
-  const { t } = useLanguage();
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -70,7 +68,7 @@ export default function MobileHome() {
 
   // Show tooltip on login (when user data becomes available)
   useEffect(() => {
-    if (user && user.username) {
+    if (user && user.success && user.data && user.data.username) {
       // Check if this is a fresh login session
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
 
@@ -327,10 +325,6 @@ export default function MobileHome() {
     switch (activeWatchlistTab) {
       case 'Favorites':
         return filtered.filter(market => market.favorite);
-      case 'Hot':
-        return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
-      case 'New':
-        return filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 5);
       case 'Gainers':
         return filtered
           .filter(market => market.changeValue > 0)
@@ -341,6 +335,10 @@ export default function MobileHome() {
           .filter(market => market.changeValue < 0)
           .sort((a, b) => a.changeValue - b.changeValue)
           .slice(0, 5);
+      case 'Hot':
+        return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
+      case 'New':
+        return filtered.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue)).slice(0, 5);
       case 'Turnover':
         return filtered.sort((a, b) => b.volumeValue - a.volumeValue).slice(0, 5);
       default:
@@ -349,15 +347,7 @@ export default function MobileHome() {
   };
 
   const watchlistMarkets = getWatchlistMarkets();
-
-  const marketTabs = [
-    { key: 'Favorites', label: t('favorites') },
-    { key: 'Hot', label: t('hot') },
-    { key: 'New', label: t('new') },
-    { key: 'Gainers', label: t('gainers') },
-    { key: 'Losers', label: t('losers') },
-    { key: 'Turnover', label: t('turnover') }
-  ];
+  const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
 
   const handleHelperClick = () => {
     if (!showHelperTooltip) {
@@ -472,9 +462,9 @@ export default function MobileHome() {
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
-              {user?.profilePicture ? (
+              {user?.data?.profilePicture ? (
                 <img 
-                  src={user.profilePicture} 
+                  src={user.data.profilePicture} 
                   alt="Profile" 
                   className="w-full h-full rounded-full object-cover"
                 />
@@ -494,7 +484,7 @@ export default function MobileHome() {
             {showHelperTooltip && (
               <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
-                {t('welcome')} {user?.username || user?.firstName || 'there'}! {t('how_can_i_assist')}
+                Welcome {user?.data?.username || user?.data?.firstName || 'there'}! How can I assist you?
               </div>
             )}
           </div>
@@ -602,19 +592,18 @@ export default function MobileHome() {
       <div className="px-4">
         <h3 className="text-lg font-semibold text-white mb-4">Watchlist</h3>
 
-        
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
             <button 
-              key={tab.key}
-              onClick={() => setActiveWatchlistTab(tab.key)}
+              key={tab}
+              onClick={() => setActiveWatchlistTab(tab)}
               className={`whitespace-nowrap pb-2 transition-colors ${
-                activeWatchlistTab === tab.key 
+                activeWatchlistTab === tab 
                   ? 'text-orange-500 border-b-2 border-orange-500' 
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab.label}
+              {tab}
             </button>
           ))}
         </div>

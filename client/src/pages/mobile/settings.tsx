@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,22 +16,22 @@ interface UserSettings {
   nickname?: string;
   language: string;
   currency: string;
+  theme: string;
   screenLock: boolean;
 }
 
 export default function MobileSettings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  const { theme, changeTheme } = useTheme();
-  const { currentLanguage, t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
-    language: currentLanguage.name,
+    language: 'English',
     currency: 'USD',
+    theme: 'Dark Mode',
     screenLock: false
   });
   
@@ -81,7 +79,7 @@ export default function MobileSettings() {
     return { level: 'Low', color: 'text-red-500' };
   };
 
-  // Listen for profile updates and currency/language changes from other components
+  // Listen for profile updates and currency changes from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -98,24 +96,17 @@ export default function MobileSettings() {
       }
     };
 
-    const handleLanguageUpdate = () => {
-      setSettings(prev => ({ ...prev, language: currentLanguage.name }));
-    };
-
-    // Check for changes when component becomes visible
+    // Check for currency changes when component becomes visible
     handleCurrencyUpdate();
-    handleLanguageUpdate();
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('securityUpdated', handleSecurityUpdate);
     window.addEventListener('focus', handleCurrencyUpdate);
-    window.addEventListener('focus', handleLanguageUpdate);
     
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
       window.removeEventListener('focus', handleCurrencyUpdate);
-      window.removeEventListener('focus', handleLanguageUpdate);
     };
   }, [queryClient]);
 
@@ -213,12 +204,23 @@ export default function MobileSettings() {
     setIsEditingNickname(false);
   };
 
-  const handleThemeChange = (newTheme: 'Light Mode' | 'Dark Mode' | 'Auto') => {
-    changeTheme(newTheme);
+  const handleThemeChange = (theme: string) => {
+    setSettings(prev => ({ ...prev, theme }));
+    
+    // Apply theme to document
+    const root = document.documentElement;
+    if (theme === 'Dark Mode') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
+    // Save theme preference to localStorage
+    localStorage.setItem('theme', theme);
     
     toast({
-      title: t('theme_updated') || "Theme updated",
-      description: `${t('switched_to') || 'Switched to'} ${newTheme}`
+      title: "Theme updated",
+      description: `Switched to ${theme}`
     });
   };
 
@@ -252,14 +254,14 @@ export default function MobileSettings() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">{t('settings')}</h1>
+        <h1 className="text-lg font-semibold">Settings</h1>
         <div className="w-10" /> {/* Spacer */}
       </div>
 
       <div className="p-4 space-y-6">
         {/* Account Info Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">{t('account')}</h2>
+          <h2 className="text-lg font-semibold mb-4">Account Info</h2>
           
           {/* Profile Picture */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
@@ -414,22 +416,29 @@ export default function MobileSettings() {
 
         {/* Settings Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">{t('settings')}</h2>
+          <h2 className="text-lg font-semibold mb-4">Settings</h2>
           
           {/* Language */}
-          <Button
-            variant="ghost"
-            onClick={() => setLocation('/mobile/language-selection')}
-            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
-          >
-            <span>Language</span>
+          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+            <span className="text-gray-300">Language</span>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">
-                {settings.language}
-              </span>
-              <ChevronRight className="h-4 w-4" />
+              <Select
+                value={settings.language}
+                onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}
+              >
+                <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="Chinese">中文</SelectItem>
+                  <SelectItem value="Japanese">日本語</SelectItem>
+                  <SelectItem value="Korean">한국어</SelectItem>
+                </SelectContent>
+              </Select>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </div>
-          </Button>
+          </div>
 
           {/* Currency Display */}
           <Button
@@ -451,7 +460,7 @@ export default function MobileSettings() {
             <span className="text-gray-300">Color Theme</span>
             <div className="flex items-center gap-2">
               <Select
-                value={theme}
+                value={settings.theme}
                 onValueChange={handleThemeChange}
               >
                 <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">
