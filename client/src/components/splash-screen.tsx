@@ -16,6 +16,7 @@ interface SplashScreenProps {
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showLogo, setShowLogo] = useState(true);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -24,6 +25,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     
     updateWindowSize();
     window.addEventListener('resize', updateWindowSize);
+    
+    // Preload background image
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = backgroundImage;
+    
     return () => window.removeEventListener('resize', updateWindowSize);
   }, []);
 
@@ -57,75 +64,20 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{
             backgroundImage: `url(${backgroundImage})`,
+            backgroundColor: '#1e3a8a', // Fallback color that matches the background
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
           }}
         >
           {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black/40" />
-          {/* Cinematic light beams from corners */}
+          <div className="absolute inset-0 bg-black/30" />
+          {/* Simplified corner light effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <motion.div
-              className="absolute top-0 left-0 w-96 h-96 opacity-30"
-              style={{
-                background: 'conic-gradient(from 45deg at 0% 0%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              }}
-              animate={{
-                rotate: [0, 360],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <motion.div
-              className="absolute top-0 right-0 w-96 h-96 opacity-30"
-              style={{
-                background: 'conic-gradient(from 135deg at 100% 0%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              }}
-              animate={{
-                rotate: [0, -360],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <motion.div
-              className="absolute bottom-0 left-0 w-96 h-96 opacity-30"
-              style={{
-                background: 'conic-gradient(from -45deg at 0% 100%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              }}
-              animate={{
-                rotate: [0, 360],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <motion.div
-              className="absolute bottom-0 right-0 w-96 h-96 opacity-30"
-              style={{
-                background: 'conic-gradient(from -135deg at 100% 100%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              }}
-              animate={{
-                rotate: [0, -360],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
+            <div className="absolute top-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-br from-white to-transparent" />
+            <div className="absolute top-0 right-0 w-64 h-64 opacity-10 bg-gradient-to-bl from-white to-transparent" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-tr from-white to-transparent" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 opacity-10 bg-gradient-to-tl from-white to-transparent" />
           </div>
 
           {/* Movie-style letter animation container */}
@@ -219,7 +171,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             ))}
           </div>
 
-          {/* Glowing effect behind letters */}
+          {/* Subtle glowing effect behind letters */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
@@ -227,26 +179,11 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             transition={{ delay: 2, duration: 1 }}
           >
             <div
-              className="w-80 h-32 rounded-full blur-3xl opacity-30"
+              className="w-80 h-32 rounded-full blur-3xl opacity-20"
               style={{
-                background: 'radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse, rgba(255,165,0,0.3) 0%, transparent 70%)',
               }}
             />
-          </motion.div>
-
-          {/* Pulsing ring effect */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 1.5, 0], opacity: [0, 0.3, 0] }}
-            transition={{
-              delay: 3,
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
-          >
-            <div className="w-96 h-96 border-2 border-white rounded-full" />
           </motion.div>
 
           {/* Cinematic title card effect */}
