@@ -645,7 +645,7 @@ export default function MobileHome() {
                       )}
                       <div className="flex flex-col">
                         <span className="text-white font-medium">{market.displayPair}</span>
-                        <span className="text-gray-400 text-xs">Vol: {market.volume}</span>
+                        <span className="text-gray-400 text-xs">{t('vol')}: {market.volume}</span>
                       </div>
                     </div>
                   </div>

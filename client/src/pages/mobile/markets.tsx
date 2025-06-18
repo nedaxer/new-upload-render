@@ -81,6 +81,7 @@ const getSentimentIcon = (sentiment: string) => {
 
 export default function MobileMarkets() {
   const [, navigate] = useLocation();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
