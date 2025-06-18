@@ -261,8 +261,8 @@ export default function MobileHome() {
   };
 
   const quickActions = [
-    { name: 'Nedaxer Earn', icon: Gift, color: 'text-orange-500', href: '/mobile/earn' },
-    { name: 'Invite Friends', icon: Users, color: 'text-orange-500', href: '/mobile/invite-friends' }
+    { name: t('earn'), icon: Gift, color: 'text-orange-500', href: '/mobile/earn' },
+    { name: t('invite_friends'), icon: Users, color: 'text-orange-500', href: '/mobile/invite-friends' }
   ];
 
   // Load favorites from localStorage
@@ -424,7 +424,7 @@ export default function MobileHome() {
               </div>
               <button id="close-scanner" class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center">×</button>
               <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
-                Point camera at QR code
+                ${t('point_camera_qr')}
               </div>
             </div>
           `;
@@ -449,11 +449,11 @@ export default function MobileHome() {
           }, 30000);
         })
         .catch((error) => {
-          alert('Camera access denied or not available');
+          alert(t('camera_access_denied'));
           console.error('Camera error:', error);
         });
     } else {
-      alert('QR scanner not supported on this device');
+      alert(t('qr_scanner_not_supported'));
     }
   };
 
@@ -486,7 +486,7 @@ export default function MobileHome() {
             {showHelperTooltip && (
               <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
-                Welcome {user?.username || user?.firstName || 'there'}! How can I assist you?
+{t('welcome_helper').replace('Welcome!', `${t('welcome')} ${user?.username || user?.firstName || ''}!`)}
               </div>
             )}
           </div>
@@ -592,7 +592,7 @@ export default function MobileHome() {
 
       {/* Watchlist Section */}
       <div className="px-4">
-        <h3 className="text-lg font-semibold text-white mb-4">Watchlist</h3>
+        <h3 className="text-lg font-semibold text-white mb-4">{t('watchlist')}</h3>
 
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
