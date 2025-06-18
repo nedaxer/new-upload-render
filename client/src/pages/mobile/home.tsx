@@ -71,12 +71,12 @@ export default function MobileHome() {
     if (user && user.username) {
       // Check if this is a fresh login session
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
-      
+
       if (!hasShownTooltip) {
         const timer = setTimeout(() => {
           setShowHelperTooltip(true);
           sessionStorage.setItem('hasShownWelcomeTooltip', 'true');
-          
+
           // Auto-hide after 4 seconds
           setTimeout(() => {
             setShowHelperTooltip(false);
@@ -300,7 +300,7 @@ export default function MobileHome() {
       const price = parseFloat(ticker.lastPrice);
       const change = parseFloat(ticker.price24hPcnt);
       const volume = parseFloat(ticker.turnover24h);
-      
+
       return {
         symbol: baseSymbol,
         pair: ticker.symbol,
@@ -321,7 +321,7 @@ export default function MobileHome() {
   // Get filtered markets based on active tab
   const getWatchlistMarkets = () => {
     let filtered = processedMarkets;
-    
+
     switch (activeWatchlistTab) {
       case 'Favorites':
         return filtered.filter(market => market.favorite);
@@ -358,7 +358,7 @@ export default function MobileHome() {
     }
   };
 
-  
+
 
   // Show different views based on current state
   if (currentView === 'crypto-selection') {
@@ -484,7 +484,7 @@ export default function MobileHome() {
             {showHelperTooltip && (
               <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
-                Hello {user?.username || user?.firstName || 'there'}! How can I assist you?
+                Welcome {user?.username || user?.firstName || 'there'}! How can I assist you?
               </div>
             )}
           </div>
@@ -591,7 +591,7 @@ export default function MobileHome() {
       {/* Watchlist Section */}
       <div className="px-4">
         <h3 className="text-lg font-semibold text-white mb-4">Watchlist</h3>
-        
+
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
             <button 
