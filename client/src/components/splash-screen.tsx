@@ -123,13 +123,36 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <motion.img
                   src={letter.src}
                   alt={letter.alt}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
-                  style={{
-                    filter: 'drop-shadow(0 0 10px rgba(255,165,0,0.6))',
-                  }}
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain letter-shine"
                 />
               </motion.div>
             ))}
+            
+            {/* Sequential light sweep effect */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 3 }}
+            >
+              <motion.div
+                className="absolute top-0 left-0 w-full h-full"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                  width: '20%',
+                  height: '100%',
+                }}
+                animate={{
+                  x: ['-20%', '120%'],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: "easeInOut",
+                }}
+              />
+            </motion.div>
           </div>
 
           {/* Subtle glowing effect behind letters */}
