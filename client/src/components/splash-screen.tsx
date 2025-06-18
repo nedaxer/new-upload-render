@@ -136,49 +136,51 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   alt={letter.alt}
                   className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain letter-shine"
                 />
+                
+                {/* Clone letter positioned exactly over original */}
+                <AnimatePresence>
+                  {showClones && (
+                    <motion.div
+                      key={`clone-${index}`}
+                      initial={{
+                        opacity: 0,
+                        scale: 0.8,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                      }}
+                      transition={{
+                        delay: 0,
+                        duration: 0.5,
+                        ease: "easeOut",
+                      }}
+                      className="absolute inset-0"
+                    >
+                      <motion.img
+                        src={letter.src}
+                        alt={`${letter.alt}-clone`}
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
+                        animate={{
+                          filter: [
+                            'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
+                            'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
+                            'drop-shadow(0 0 12px rgba(255,165,0,0.5))',
+                          ],
+                        }}
+                        transition={{
+                          duration: 2.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
 
-            {/* Clone letters - replace original letters exactly in position */}
-            <AnimatePresence>
-              {showClones && letters.map((letter, index) => (
-                <motion.div
-                  key={`clone-${index}`}
-                  initial={{
-                    opacity: 0,
-                    scale: 0.8,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                  }}
-                  transition={{
-                    delay: 0,
-                    duration: 0.5,
-                    ease: "easeOut",
-                  }}
-                  className="relative"
-                >
-                  <motion.img
-                    src={letter.src}
-                    alt={`${letter.alt}-clone`}
-                    className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
-                    animate={{
-                      filter: [
-                        'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
-                        'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
-                        'drop-shadow(0 0 12px rgba(255,165,0,0.5))',
-                      ],
-                    }}
-                    transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+
           </div>
 
           {/* Subtle glowing effect behind letters */}
