@@ -418,26 +418,19 @@ export default function MobileSettings() {
           <h2 className="text-lg font-semibold mb-4">Settings</h2>
           
           {/* Language */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Language</span>
+          <Button
+            variant="ghost"
+            onClick={() => setLocation('/mobile/language-selection')}
+            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+          >
+            <span>Language</span>
             <div className="flex items-center gap-2">
-              <Select
-                value={settings.language}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}
-              >
-                <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Chinese">中文</SelectItem>
-                  <SelectItem value="Japanese">日本語</SelectItem>
-                  <SelectItem value="Korean">한국어</SelectItem>
-                </SelectContent>
-              </Select>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <span className="text-gray-400 text-sm">
+                {settings.language}
+              </span>
+              <ChevronRight className="h-4 w-4" />
             </div>
-          </div>
+          </Button>
 
           {/* Currency Display */}
           <Button
@@ -459,7 +452,7 @@ export default function MobileSettings() {
             <span className="text-gray-300">Color Theme</span>
             <div className="flex items-center gap-2">
               <Select
-                value={settings.theme}
+                value={theme}
                 onValueChange={handleThemeChange}
               >
                 <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">

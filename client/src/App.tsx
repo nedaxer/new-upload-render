@@ -104,6 +104,7 @@ import MobileKYC from '@/pages/mobile/kyc';
 import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
+import LanguageSelection from '@/pages/mobile/language-selection';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -262,6 +263,7 @@ export default function App() {
             <ProtectedRoute path="/mobile/news" component={MobileNews} />
             <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
             <ProtectedRoute path="/mobile/security" component={MobileSecurity} />
+            <ProtectedRoute path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
