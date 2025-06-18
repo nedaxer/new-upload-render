@@ -7,16 +7,75 @@ import aLetter from '@assets/20250618_001828_1750207793703.png';
 import xLetter from '@assets/20250618_001859_1750207793716.png';
 import eLetter2 from '@assets/20250618_001938_1750207793727.png';
 import rLetter from '@assets/20250618_002006_1750207793730.png';
-import backgroundImage from '@assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
 
 interface SplashScreenProps {
   onComplete: () => void;
 }
 
+// SVG Background Component - loads instantly without image files
+const TradingBackground = () => (
+  <svg
+    className="absolute inset-0 w-full h-full"
+    viewBox="0 0 1920 1080"
+    preserveAspectRatio="xMidYMid slice"
+  >
+    <defs>
+      <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#0c1426" />
+        <stop offset="25%" stopColor="#1a2332" />
+        <stop offset="50%" stopColor="#243040" />
+        <stop offset="75%" stopColor="#2d3d54" />
+        <stop offset="100%" stopColor="#364a68" />
+      </linearGradient>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" strokeWidth="0.5" opacity="0.3"/>
+      </pattern>
+    </defs>
+    
+    {/* Background */}
+    <rect width="100%" height="100%" fill="url(#bgGradient)" />
+    <rect width="100%" height="100%" fill="url(#grid)" />
+    
+    {/* Trading Chart Lines */}
+    <path
+      d="M 100 800 Q 200 700 300 750 T 500 680 T 700 620 T 900 580 T 1100 520 T 1300 480 T 1500 400 T 1700 350"
+      fill="none"
+      stroke="#00d4ff"
+      strokeWidth="3"
+      opacity="0.7"
+    />
+    
+    {/* Volume Bars */}
+    {Array.from({ length: 50 }, (_, i) => (
+      <rect
+        key={i}
+        x={100 + i * 30}
+        y={900 - Math.random() * 200}
+        width="20"
+        height={Math.random() * 200}
+        fill="#00d4ff"
+        opacity={0.4 + Math.random() * 0.3}
+      />
+    ))}
+    
+    {/* Circular Logo Background */}
+    <circle cx="960" cy="300" r="120" fill="none" stroke="#d97706" strokeWidth="8" opacity="0.6" />
+    <circle cx="960" cy="300" r="80" fill="none" stroke="#d97706" strokeWidth="4" opacity="0.4" />
+    
+    {/* Wave Pattern in Circle */}
+    <path
+      d="M 880 300 Q 920 280 960 300 T 1040 300"
+      fill="none"
+      stroke="#d97706"
+      strokeWidth="6"
+      opacity="0.8"
+    />
+  </svg>
+);
+
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showLogo, setShowLogo] = useState(true);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -25,11 +84,6 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     
     updateWindowSize();
     window.addEventListener('resize', updateWindowSize);
-    
-    // Preload background image
-    const img = new Image();
-    img.onload = () => setImageLoaded(true);
-    img.src = backgroundImage;
     
     return () => window.removeEventListener('resize', updateWindowSize);
   }, []);
@@ -61,17 +115,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundColor: '#1e3a8a', // Fallback color that matches the background
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900"
         >
+          {/* Instant-loading SVG Background */}
+          <TradingBackground />
+          
           {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-black/20" />
           {/* Simplified corner light effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-br from-white to-transparent" />
@@ -188,13 +238,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Cinematic title card effect */}
           <motion.div
-            className="absolute bottom-20 text-center z-20"
+            className="absolute bottom-16 md:bottom-20 left-4 right-4 text-center z-20"
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 3.5, duration: 1.2, ease: "easeOut" }}
           >
             <motion.div
-              className="relative"
+              className="relative px-4"
               animate={{
                 filter: [
                   'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
@@ -208,7 +258,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 ease: "easeInOut",
               }}
             >
-              <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-bold tracking-wider mb-2">
+              <h1 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tracking-wider mb-2 leading-tight">
                 CRYPTOCURRENCY TRADING PLATFORM
               </h1>
               <div className="w-full h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
@@ -252,14 +302,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Progress bar */}
           <motion.div
-            className="absolute bottom-8 left-8 right-8"
+            className="absolute bottom-4 md:bottom-8 left-4 right-4 md:left-8 md:right-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 3, duration: 0.5 }}
           >
             <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-white to-blue-200 rounded-full"
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-200 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{
