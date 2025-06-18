@@ -8,7 +8,7 @@ import xLetter from '@assets/20250618_001859_1750207793716.png';
 import eLetter2 from '@assets/20250618_001938_1750207793727.png';
 import rLetter from '@assets/20250618_002006_1750207793730.png';
 import backgroundImage from '@assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
-import nedaxerLogo from '@assets/generated-icon.png';
+import nedaxerLogo from '@assets/20250618_042459_1750217238332.png';
 
 interface SplashScreenProps {
   onComplete: () => void;
