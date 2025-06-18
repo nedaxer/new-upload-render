@@ -34,48 +34,48 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.classList.remove('dark');
     }
 
-    // Update CSS custom properties for immediate effect
-    if (resolvedTheme === 'dark') {
-      root.style.setProperty('--background', '0 0% 3.9%');
-      root.style.setProperty('--foreground', '0 0% 98%');
-      root.style.setProperty('--card', '0 0% 3.9%');
-      root.style.setProperty('--card-foreground', '0 0% 98%');
-      root.style.setProperty('--popover', '0 0% 3.9%');
-      root.style.setProperty('--popover-foreground', '0 0% 98%');
-      root.style.setProperty('--primary', '39 100% 50%');
-      root.style.setProperty('--primary-foreground', '0 0% 9%');
-      root.style.setProperty('--secondary', '0 0% 14.9%');
-      root.style.setProperty('--secondary-foreground', '0 0% 98%');
-      root.style.setProperty('--muted', '0 0% 14.9%');
-      root.style.setProperty('--muted-foreground', '0 0% 63.9%');
-      root.style.setProperty('--accent', '0 0% 14.9%');
-      root.style.setProperty('--accent-foreground', '0 0% 98%');
-      root.style.setProperty('--destructive', '0 62.8% 30.6%');
-      root.style.setProperty('--destructive-foreground', '0 0% 98%');
-      root.style.setProperty('--border', '0 0% 14.9%');
-      root.style.setProperty('--input', '0 0% 14.9%');
-      root.style.setProperty('--ring', '39 100% 50%');
-    } else {
-      root.style.setProperty('--background', '0 0% 100%');
-      root.style.setProperty('--foreground', '0 0% 3.9%');
-      root.style.setProperty('--card', '0 0% 100%');
-      root.style.setProperty('--card-foreground', '0 0% 3.9%');
-      root.style.setProperty('--popover', '0 0% 100%');
-      root.style.setProperty('--popover-foreground', '0 0% 3.9%');
-      root.style.setProperty('--primary', '39 100% 50%');
-      root.style.setProperty('--primary-foreground', '0 0% 98%');
-      root.style.setProperty('--secondary', '0 0% 96.1%');
-      root.style.setProperty('--secondary-foreground', '0 0% 9%');
-      root.style.setProperty('--muted', '0 0% 96.1%');
-      root.style.setProperty('--muted-foreground', '0 0% 45.1%');
-      root.style.setProperty('--accent', '0 0% 96.1%');
-      root.style.setProperty('--accent-foreground', '0 0% 9%');
-      root.style.setProperty('--destructive', '0 84.2% 60.2%');
-      root.style.setProperty('--destructive-foreground', '0 0% 98%');
-      root.style.setProperty('--border', '0 0% 89.8%');
-      root.style.setProperty('--input', '0 0% 89.8%');
-      root.style.setProperty('--ring', '39 100% 50%');
-    }
+    // Force background color changes for immediate visual feedback
+    document.body.style.backgroundColor = resolvedTheme === 'dark' ? '#0a0a0a' : '#ffffff';
+    document.body.style.color = resolvedTheme === 'dark' ? '#ffffff' : '#000000';
+    
+    // Apply theme to all page elements
+    const themeClasses = resolvedTheme === 'dark' 
+      ? ['bg-gray-900', 'text-white'] 
+      : ['bg-white', 'text-black'];
+    
+    // Update all existing gray-900/black backgrounds
+    const darkElements = document.querySelectorAll('.bg-gray-900, .bg-black');
+    darkElements.forEach(el => {
+      if (resolvedTheme === 'light') {
+        el.classList.remove('bg-gray-900', 'bg-black');
+        el.classList.add('bg-white');
+      }
+    });
+    
+    const lightElements = document.querySelectorAll('.bg-white');
+    lightElements.forEach(el => {
+      if (resolvedTheme === 'dark') {
+        el.classList.remove('bg-white');
+        el.classList.add('bg-gray-900');
+      }
+    });
+    
+    // Update text colors
+    const whiteText = document.querySelectorAll('.text-white');
+    whiteText.forEach(el => {
+      if (resolvedTheme === 'light') {
+        el.classList.remove('text-white');
+        el.classList.add('text-black');
+      }
+    });
+    
+    const blackText = document.querySelectorAll('.text-black');
+    blackText.forEach(el => {
+      if (resolvedTheme === 'dark') {
+        el.classList.remove('text-black');
+        el.classList.add('text-white');
+      }
+    });
 
     setActualTheme(resolvedTheme);
   };

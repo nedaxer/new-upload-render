@@ -32,7 +32,10 @@ const translations: Record<string, Record<string, string>> = {
     'trade': 'Trade',
     'markets': 'Markets',
     'earn': 'Earn',
-    'home': 'Home'
+    'home': 'Home',
+    'language_updated': 'Language updated',
+    'switched_to': 'Switched to',
+    'theme_updated': 'Theme updated'
   },
   'zh-CN': {
     'settings': '设置',

@@ -217,8 +217,8 @@ export default function MobileSettings() {
     changeTheme(newTheme);
     
     toast({
-      title: "Theme updated",
-      description: `Switched to ${newTheme}`
+      title: t('theme_updated') || "Theme updated",
+      description: `${t('switched_to') || 'Switched to'} ${newTheme}`
     });
   };
 
@@ -252,14 +252,14 @@ export default function MobileSettings() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">Settings</h1>
+        <h1 className="text-lg font-semibold">{t('settings')}</h1>
         <div className="w-10" /> {/* Spacer */}
       </div>
 
       <div className="p-4 space-y-6">
         {/* Account Info Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Account Info</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('account')}</h2>
           
           {/* Profile Picture */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
@@ -414,7 +414,7 @@ export default function MobileSettings() {
 
         {/* Settings Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Settings</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('settings')}</h2>
           
           {/* Language */}
           <Button
