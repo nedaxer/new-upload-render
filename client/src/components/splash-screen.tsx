@@ -16,7 +16,6 @@ interface SplashScreenProps {
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showLogo, setShowLogo] = useState(true);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -26,12 +25,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     updateWindowSize();
     window.addEventListener('resize', updateWindowSize);
     
-    // Preload background image
-    const img = new Image();
-    img.onload = () => setImageLoaded(true);
-    img.src = backgroundImage;
+    // Add preload link for faster background image loading
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = backgroundImage;
+    link.as = 'image';
+    document.head.appendChild(link);
     
-    return () => window.removeEventListener('resize', updateWindowSize);
+    return () => {
+      window.removeEventListener('resize', updateWindowSize);
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
   }, []);
 
   // Movie-style animation: letters come from all four corners
@@ -61,17 +67,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            backgroundColor: '#1e3a8a', // Fallback color that matches the background
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
           }}
         >
-          {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black/30" />
           {/* Simplified corner light effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-0 w-64 h-64 opacity-10 bg-gradient-to-br from-white to-transparent" />
@@ -188,7 +191,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
           {/* Cinematic title card effect */}
           <motion.div
-            className="absolute bottom-20 text-center z-20"
+            className="absolute bottom-16 sm:bottom-20 text-center z-20 px-4 max-w-full"
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 3.5, duration: 1.2, ease: "easeOut" }}
@@ -208,7 +211,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 ease: "easeInOut",
               }}
             >
-              <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-bold tracking-wider mb-2">
+              <h1 className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold tracking-wider mb-2 leading-tight">
                 CRYPTOCURRENCY TRADING PLATFORM
               </h1>
               <div className="w-full h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent" />

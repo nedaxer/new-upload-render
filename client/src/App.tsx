@@ -125,9 +125,11 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if splash screen has been shown in this session
-    const splashShown = sessionStorage.getItem('splashShown');
-    if (splashShown) {
+    // Check if splash screen has been shown recently (within 5 minutes)
+    const lastSplashTime = localStorage.getItem('lastSplashTime');
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    
+    if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
       setShowSplash(false);
     }
     
@@ -140,7 +142,7 @@ export default function App() {
   }, []);
 
   const handleSplashComplete = () => {
-    sessionStorage.setItem('splashShown', 'true');
+    localStorage.setItem('lastSplashTime', Date.now().toString());
     setShowSplash(false);
   };
 
