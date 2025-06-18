@@ -162,7 +162,7 @@ const LANGUAGES: Language[] = [
 ];
 
 // Translation keys for common UI elements
-const TRANSLATIONS: Record<string, Record<string, string>> = {
+const TRANSLATIONS: Record<string, any> = {
   en: {
     'settings': 'Settings',
     'language': 'Language',
@@ -389,33 +389,25 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'invalidFileType': 'Invalid File Type',
     'fileTooLarge': 'File Too Large',
     'uploadFailed': 'Upload Failed',
-    // Profile translations
-    'profile.updated': 'Profile Updated',
-    'profile.pictureUpdatedSuccess': 'Your profile picture has been updated successfully.',
-    'profile.pictureUpdateFailed': 'Failed to update profile picture. Please try again.',
-    'profile.selectImageFile': 'Please select an image file.',
-    'profile.selectSmallerImage': 'Please select an image smaller than 5MB.',
-    'profile.failedToReadImage': 'Failed to read the image file. Please try again.',
-    'profile.inviteFriends': 'Invite Friends',
-    'profile.identityVerification': 'Identity Verification',
-    'profile.lv1Verified': 'Lv.1 Verified',
-    'profile.processing': 'Processing',
-    'profile.notVerified': 'Not Verified',
-    'profile.security': 'Security',
-    'profile.notificationCenter': 'Notification Center',
-    'profile.helpContact': 'Help & Contact Support',
-    'profile.aboutUs': 'About Us',
-    'profile.mainAccount': 'Main Account',
-    'profile.uidCopied': 'UID copied to clipboard',
-    'profile.switchCreateAccount': 'Switch/Create Account',
-    // Auth translations
-    'auth.logout': 'Log Out',
-    // Common translations
-    'common.copied': 'Copied',
-    'common.updateFailed': 'Update Failed',
-    'common.invalidFileType': 'Invalid File Type',
-    'common.fileTooLarge': 'File Too Large',
-    'common.uploadFailed': 'Upload Failed'
+    'transfer': 'Transfer',
+    'convert': 'Convert',
+    'invite_friends': 'Invite Friends',
+    'identity_verification': 'Identity Verification',
+    'lv1_verified': 'Lv.1 Verified',
+    'not_verified': 'Not Verified',
+    'notification_center': 'Notification Center',
+    'help_contact': 'Help & Contact Support',
+    'about_us': 'About Us',
+    'main_account': 'Main Account',
+    'uid_copied': 'UID copied to clipboard',
+    'switch_create_account': 'Switch/Create Account',
+    'processing': 'Processing',
+    'picture_updated_success': 'Your profile picture has been updated successfully.',
+    'picture_update_failed': 'Failed to update profile picture. Please try again.',
+    'select_image_file': 'Please select an image file.',
+    'select_smaller_image': 'Please select an image smaller than 5MB.',
+    'failed_to_read_image': 'Failed to read the image file. Please try again.',
+    'profile_updated': 'Profile Updated'
   },
   zh: {
     'settings': '设置',
@@ -638,33 +630,30 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'connected': '已连接',
     'disconnected': '已断开',
     'last_updated': '最后更新',
-    // Profile translations
-    'profile.updated': '个人资料已更新',
-    'profile.pictureUpdatedSuccess': '您的头像已成功更新。',
-    'profile.pictureUpdateFailed': '更新头像失败。请重试。',
-    'profile.selectImageFile': '请选择图片文件。',
-    'profile.selectSmallerImage': '请选择小于5MB的图片。',
-    'profile.failedToReadImage': '读取图片文件失败。请重试。',
-    'profile.inviteFriends': '邀请朋友',
-    'profile.identityVerification': '身份验证',
-    'profile.lv1Verified': '一级认证',
-    'profile.processing': '处理中',
-    'profile.notVerified': '未验证',
-    'profile.security': '安全',
-    'profile.notificationCenter': '通知中心',
-    'profile.helpContact': '帮助和联系支持',
-    'profile.aboutUs': '关于我们',
-    'profile.mainAccount': '主账户',
-    'profile.uidCopied': 'UID已复制到剪贴板',
-    'profile.switchCreateAccount': '切换/创建账户',
-    // Auth translations
-    'auth.logout': '退出登录',
-    // Common translations
-    'common.copied': '已复制',
-    'common.updateFailed': '更新失败',
-    'common.invalidFileType': '无效文件类型',
-    'common.fileTooLarge': '文件过大',
-    'common.uploadFailed': '上传失败'
+    'copied': '已复制',
+    'updateFailed': '更新失败',
+    'invalidFileType': '无效文件类型',
+    'fileTooLarge': '文件过大',
+    'uploadFailed': '上传失败',
+    'transfer': '转账',
+    'convert': '兑换',
+    'invite_friends': '邀请朋友',
+    'identity_verification': '身份验证',
+    'lv1_verified': '一级认证',
+    'not_verified': '未验证',
+    'notification_center': '通知中心',
+    'help_contact': '帮助和联系支持',
+    'about_us': '关于我们',
+    'main_account': '主账户',
+    'uid_copied': 'UID已复制到剪贴板',
+    'switch_create_account': '切换/创建账户',
+    'processing': '处理中',
+    'picture_updated_success': '您的头像已成功更新。',
+    'picture_update_failed': '更新头像失败。请重试。',
+    'select_image_file': '请选择图片文件。',
+    'select_smaller_image': '请选择小于5MB的图片。',
+    'failed_to_read_image': '读取图片文件失败。请重试。',
+    'profile_updated': '个人资料已更新'
   },
   ja: {
     'settings': '設定',
@@ -902,6 +891,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = (key: string): string => {
     const languageCode = currentLanguage.code.split('-')[0]; // Handle variants like zh-TW
     const translations = TRANSLATIONS[languageCode] || TRANSLATIONS['en'];
+    
+    // Handle dotted notation keys like 'profile.inviteFriends'
+    if (key.includes('.')) {
+      const parts = key.split('.');
+      let result: any = translations;
+      
+      for (const part of parts) {
+        result = result?.[part];
+        if (!result) break;
+      }
+      
+      // If nested lookup fails, try the full key as-is
+      return result || translations[key] || key;
+    }
+    
     return translations[key] || key;
   };
 
