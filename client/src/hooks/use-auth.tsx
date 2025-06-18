@@ -30,13 +30,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   // Fetch the authenticated user
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['/api/auth/user'],
-    queryFn: () => apiRequest('/api/auth/user'),
-    retry: false,
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+  const {
+    data: authData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/auth/user", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        // Check if the response is JSON
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.log('Auth query: Non-JSON response received');
+          return { user: null };
+        }
+        
+        const data = await res.json();
+        console.log('Auth query response:', data);
+        
+        if (data.success && data.user) {
+          return { user: data.user };
+        } else {
+          return { user: null };
+        }
+      } catch (err) {
+        console.log('Auth query error:', err);
+        return { user: null };
+      }
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    retry: (failureCount, error) => {
+      // Only retry if it's a network error, not auth errors
+      return failureCount < 2 && error?.message !== 'Not authenticated';
+    },
   });
 
   // Login mutation
@@ -44,11 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/auth/login", credentials);
       const data = await res.json();
-
+      
       if (!data.success) {
         throw new Error(data.message || "Login failed");
       }
-
+      
       return data;
     },
     onSuccess: (data) => {
@@ -79,11 +114,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: InsertUser) => {
       const res = await apiRequest("POST", "/api/auth/register", userData);
       const data = await res.json();
-
+      
       if (!data.success) {
         throw new Error(data.message || "Registration failed");
       }
-
+      
       return data;
     },
     onSuccess: (data) => {
@@ -98,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user: user?.data || null,
+        user: authData?.user || null,
         isLoading,
         error: error as Error,
         loginMutation,
