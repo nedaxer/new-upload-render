@@ -9,8 +9,10 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileSpot() {
+  const { t } = useLanguage();
   const [orderType, setOrderType] = useState('Limit');
   const [marginEnabled, setMarginEnabled] = useState(false);
   const [price, setPrice] = useState('2573.59');
@@ -56,7 +58,7 @@ export default function MobileSpot() {
     <div className="h-full bg-gray-900">
       {/* Header */}
       <div className="p-4 bg-gray-900">
-        <h1 className="text-xl font-bold text-white text-center">Spot Trading</h1>
+        <h1 className="text-xl font-bold text-white text-center">{t('spot_trading')}</h1>
       </div>
 
       <div className="flex h-[calc(100vh-180px)]">
@@ -73,7 +75,7 @@ export default function MobileSpot() {
           {/* Margin Toggle */}
           <div className="mb-4">
             <div className="flex items-center space-x-2">
-              <span className="text-white text-sm">Margin</span>
+              <span className="text-white text-sm">{t('margin')}</span>
               <button 
                 onClick={() => setMarginEnabled(!marginEnabled)}
                 className={`w-12 h-6 rounded-full transition-colors ${
@@ -92,10 +94,10 @@ export default function MobileSpot() {
           <div className="mb-4">
             <div className="flex bg-gray-800 rounded p-1">
               <button className="flex-1 bg-green-600 text-white py-2 rounded font-medium">
-                Buy
+                {t('buy')}
               </button>
               <button className="flex-1 text-gray-400 py-2 font-medium">
-                Sell
+                {t('sell')}
               </button>
             </div>
           </div>
@@ -103,7 +105,7 @@ export default function MobileSpot() {
           {/* Available Balance */}
           <div className="mb-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">Available</span>
+              <span className="text-gray-400 text-sm">{t('available')}</span>
               <div className="flex items-center space-x-1">
                 <span className="text-white">0 USDT</span>
                 <Info className="w-4 h-4 text-gray-400" />
@@ -121,7 +123,7 @@ export default function MobileSpot() {
 
           {/* Price Input */}
           <div className="mb-4">
-            <div className="text-gray-400 text-sm mb-1">Price</div>
+            <div className="text-gray-400 text-sm mb-1">{t('price_label')}</div>
             <div className="flex items-center space-x-2">
               <Input
                 value={price}
@@ -135,7 +137,7 @@ export default function MobileSpot() {
 
           {/* Quantity Input */}
           <div className="mb-4">
-            <div className="text-gray-400 text-sm mb-1">Quantity</div>
+            <div className="text-gray-400 text-sm mb-1">{t('quantity')}</div>
             <div className="flex items-center space-x-2">
               <Input
                 value={quantity}
@@ -164,7 +166,7 @@ export default function MobileSpot() {
 
           {/* Order Value */}
           <div className="mb-4">
-            <div className="text-gray-400 text-sm mb-1">Order Value</div>
+            <div className="text-gray-400 text-sm mb-1">{t('order_value')}</div>
             <div className="flex items-center space-x-2">
               <Input
                 value={orderValue}
@@ -178,7 +180,7 @@ export default function MobileSpot() {
           {/* Max Buy */}
           <div className="mb-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">Max. Buy</span>
+              <span className="text-gray-400 text-sm">{t('max_buy')}</span>
               <span className="text-white text-sm">{maxBuy}</span>
             </div>
           </div>
@@ -193,7 +195,7 @@ export default function MobileSpot() {
                 onChange={(e) => setTpSlEnabled(e.target.checked)}
                 className="w-4 h-4"
               />
-              <label htmlFor="tpsl-spot" className="text-white text-sm">TP/SL</label>
+              <label htmlFor="tpsl-spot" className="text-white text-sm">{t('tp_sl')}</label>
             </div>
             <div className="flex items-center space-x-2">
               <input 
@@ -203,17 +205,17 @@ export default function MobileSpot() {
                 onChange={(e) => setPostOnlyEnabled(e.target.checked)}
                 className="w-4 h-4"
               />
-              <label htmlFor="postonly-spot" className="text-white text-sm">Post-Only</label>
+              <label htmlFor="postonly-spot" className="text-white text-sm">{t('post_only')}</label>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-gray-400 text-sm">GTC</span>
+              <span className="text-gray-400 text-sm">{t('gtc')}</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </div>
           </div>
 
           {/* Buy Button */}
           <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold mb-6">
-            Buy
+            {t('buy')}
           </Button>
 
           {/* Trading Pairs */}
@@ -240,10 +242,10 @@ export default function MobileSpot() {
         <div className="w-1/2 bg-gray-900 p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <span className="text-gray-400 text-sm">Price</span>
+              <span className="text-gray-400 text-sm">{t('price')}</span>
               <span className="text-gray-400 text-sm">(USDT)</span>
             </div>
-            <div className="text-gray-400 text-sm">Qty</div>
+            <div className="text-gray-400 text-sm">{t('quantity')}</div>
           </div>
 
           {/* Sell Orders */}
@@ -295,19 +297,19 @@ export default function MobileSpot() {
       <div className="bg-gray-800 border-t border-gray-700">
         <div className="flex">
           <button className="flex-1 py-3 text-orange-500 border-b-2 border-orange-500 text-sm font-medium">
-            Orders(0)
+            {t('orders')}(0)
           </button>
           <button className="flex-1 py-3 text-gray-400 text-sm">
-            Positions(0)
+            {t('positions')}(0)
           </button>
           <button className="flex-1 py-3 text-gray-400 text-sm">
-            Assets
+            {t('assets')}
           </button>
           <button className="flex-1 py-3 text-gray-400 text-sm">
-            Borrowings(0)
+            {t('borrowings')}(0)
           </button>
           <button className="flex-1 py-3 text-gray-400 text-sm">
-            Tools(0)
+            {t('tools')}(0)
           </button>
         </div>
       </div>
