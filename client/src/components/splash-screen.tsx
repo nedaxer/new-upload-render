@@ -7,23 +7,36 @@ import aLetter from '@assets/20250618_001828_1750207793703.png';
 import xLetter from '@assets/20250618_001859_1750207793716.png';
 import eLetter2 from '@assets/20250618_001938_1750207793727.png';
 import rLetter from '@assets/20250618_002006_1750207793730.png';
+import backgroundImage from '@assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
 
 interface SplashScreenProps {
   onComplete: () => void;
 }
 
-const letters = [
-  { src: nLetter, alt: 'N', from: { x: -200, y: -200 }, delay: 0 },
-  { src: eLetter1, alt: 'E', from: { x: 200, y: -200 }, delay: 0.2 },
-  { src: dLetter, alt: 'D', from: { x: -200, y: 200 }, delay: 0.4 },
-  { src: aLetter, alt: 'A', from: { x: 200, y: 200 }, delay: 0.6 },
-  { src: xLetter, alt: 'X', from: { x: 0, y: -300 }, delay: 0.8 },
-  { src: eLetter2, alt: 'E', from: { x: 0, y: 300 }, delay: 1.0 },
-  { src: rLetter, alt: 'R', from: { x: 300, y: 0 }, delay: 1.2 },
-];
-
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showLogo, setShowLogo] = useState(true);
+  const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
+
+  useEffect(() => {
+    const updateWindowSize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    
+    updateWindowSize();
+    window.addEventListener('resize', updateWindowSize);
+    return () => window.removeEventListener('resize', updateWindowSize);
+  }, []);
+
+  // Movie-style animation: letters come from all four corners
+  const letters = [
+    { src: nLetter, alt: 'N', from: { x: -windowSize.width, y: -windowSize.height }, delay: 0 },
+    { src: eLetter1, alt: 'E', from: { x: windowSize.width, y: -windowSize.height }, delay: 0.3 },
+    { src: dLetter, alt: 'D', from: { x: -windowSize.width, y: windowSize.height }, delay: 0.6 },
+    { src: aLetter, alt: 'A', from: { x: windowSize.width, y: windowSize.height }, delay: 0.9 },
+    { src: xLetter, alt: 'X', from: { x: -windowSize.width, y: -windowSize.height }, delay: 1.2 },
+    { src: eLetter2, alt: 'E', from: { x: windowSize.width, y: -windowSize.height }, delay: 1.5 },
+    { src: rLetter, alt: 'R', from: { x: -windowSize.width, y: windowSize.height }, delay: 1.8 },
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,34 +56,80 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           transition={{ duration: 0.5 }}
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{
-            background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 25%, #2563eb  50%, #3b82f6 75%, #60a5fa 100%)'
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
           }}
         >
-          {/* Animated background particles */}
-          <div className="absolute inset-0 overflow-hidden">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 bg-white rounded-full opacity-20"
-                initial={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight,
-                }}
-                animate={{
-                  y: [null, Math.random() * window.innerHeight],
-                  opacity: [0.2, 0.8, 0.2],
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
+          {/* Dark overlay for better text visibility */}
+          <div className="absolute inset-0 bg-black/40" />
+          {/* Cinematic light beams from corners */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <motion.div
+              className="absolute top-0 left-0 w-96 h-96 opacity-30"
+              style={{
+                background: 'conic-gradient(from 45deg at 0% 0%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              }}
+              animate={{
+                rotate: [0, 360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute top-0 right-0 w-96 h-96 opacity-30"
+              style={{
+                background: 'conic-gradient(from 135deg at 100% 0%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              }}
+              animate={{
+                rotate: [0, -360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 w-96 h-96 opacity-30"
+              style={{
+                background: 'conic-gradient(from -45deg at 0% 100%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              }}
+              animate={{
+                rotate: [0, 360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 right-0 w-96 h-96 opacity-30"
+              style={{
+                background: 'conic-gradient(from -135deg at 100% 100%, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              }}
+              animate={{
+                rotate: [0, -360],
+                opacity: [0.1, 0.3, 0.1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
           </div>
 
-          {/* Letter animation container */}
-          <div className="relative flex items-center justify-center space-x-2">
+          {/* Movie-style letter animation container */}
+          <div className="relative flex items-center justify-center space-x-1 md:space-x-2 z-10">
             {letters.map((letter, index) => (
               <motion.div
                 key={index}
@@ -78,42 +137,82 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   x: letter.from.x,
                   y: letter.from.y,
                   opacity: 0,
-                  scale: 0.3,
-                  rotate: Math.random() * 360,
+                  scale: 0.2,
+                  rotate: 720,
+                  filter: 'blur(20px)',
                 }}
                 animate={{
                   x: 0,
                   y: 0,
                   opacity: 1,
-                  scale: 1,
+                  scale: [0.2, 1.2, 1],
                   rotate: 0,
+                  filter: 'blur(0px)',
                 }}
                 transition={{
                   delay: letter.delay,
-                  duration: 1.2,
+                  duration: 2,
                   type: "spring",
-                  stiffness: 100,
-                  damping: 12,
+                  stiffness: 60,
+                  damping: 15,
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
                 className="relative"
               >
+                {/* Cinema-style trailing effect */}
+                <motion.div
+                  className="absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 0.5, 0] }}
+                  transition={{
+                    delay: letter.delay,
+                    duration: 2,
+                    ease: "easeOut",
+                  }}
+                >
+                  <motion.img
+                    src={letter.src}
+                    alt={`${letter.alt}-trail`}
+                    className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
+                    style={{
+                      filter: 'blur(8px) brightness(2)',
+                      opacity: 0.3,
+                    }}
+                  />
+                </motion.div>
+
+                {/* Main letter */}
                 <motion.img
                   src={letter.src}
                   alt={letter.alt}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain drop-shadow-2xl"
-                  whileHover={{ scale: 1.1 }}
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain relative z-10"
+                  style={{
+                    filter: 'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
+                  }}
                   animate={{
                     filter: [
-                      'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
-                      'drop-shadow(0 0 20px rgba(255,255,255,0.6))',
-                      'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                      'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
+                      'drop-shadow(0 0 30px rgba(255,165,0,1)) drop-shadow(0 0 60px rgba(255,165,0,0.6))',
+                      'drop-shadow(0 0 20px rgba(255,165,0,0.8)) drop-shadow(0 0 40px rgba(255,165,0,0.4))',
                     ],
                   }}
                   transition={{
-                    delay: letter.delay + 1.5,
-                    duration: 2,
+                    delay: letter.delay + 2,
+                    duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut",
+                  }}
+                />
+
+                {/* Impact flash effect */}
+                <motion.div
+                  className="absolute inset-0 bg-white rounded-full"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: [0, 3, 0], opacity: [0, 0.8, 0] }}
+                  transition={{
+                    delay: letter.delay + 1.8,
+                    duration: 0.6,
+                    ease: "easeOut",
                   }}
                 />
               </motion.div>
@@ -150,40 +249,62 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             <div className="w-96 h-96 border-2 border-white rounded-full" />
           </motion.div>
 
-          {/* Loading text */}
+          {/* Cinematic title card effect */}
           <motion.div
-            className="absolute bottom-20 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.5, duration: 0.8 }}
+            className="absolute bottom-20 text-center z-20"
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 3.5, duration: 1.2, ease: "easeOut" }}
           >
-            <motion.p
-              className="text-white text-lg font-light tracking-wider"
+            <motion.div
+              className="relative"
               animate={{
-                opacity: [0.7, 1, 0.7],
+                filter: [
+                  'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                  'drop-shadow(0 0 20px rgba(255,255,255,0.6))',
+                  'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                ],
               }}
               transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-bold tracking-wider mb-2">
+                CRYPTOCURRENCY TRADING PLATFORM
+              </h1>
+              <div className="w-full h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
+            </motion.div>
+            
+            <motion.p
+              className="text-orange-300 text-sm md:text-base font-light tracking-wider mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0.7] }}
+              transition={{
+                delay: 4,
                 duration: 2,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
             >
-              Loading your trading platform...
+              Initializing secure trading environment...
             </motion.p>
             
-            {/* Loading dots */}
-            <div className="flex justify-center space-x-1 mt-4">
-              {[0, 1, 2].map((i) => (
+            {/* Cinematic loading bars */}
+            <div className="flex justify-center space-x-2 mt-6">
+              {[0, 1, 2, 3, 4].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-2 h-2 bg-white rounded-full"
+                  className="w-1 bg-orange-400 rounded-full"
+                  initial={{ height: 4 }}
                   animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5],
+                    height: [4, 20, 4],
+                    opacity: [0.3, 1, 0.3],
                   }}
                   transition={{
-                    delay: i * 0.2,
-                    duration: 1.5,
+                    delay: i * 0.15,
+                    duration: 1.2,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
