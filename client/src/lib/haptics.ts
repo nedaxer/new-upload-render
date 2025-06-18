@@ -33,47 +33,47 @@ export function vibrate(pattern: number | number[] = 50, fallback: boolean = tru
  * Light tap feedback for UI interactions
  */
 export function hapticLight(): void {
-  vibrate(2);
+  vibrate(1);
 }
 
 /**
  * Medium tap feedback for button presses
  */
 export function hapticMedium(): void {
-  vibrate(3);
+  vibrate(1);
 }
 
 /**
  * Heavy feedback for important actions
  */
 export function hapticHeavy(): void {
-  vibrate(5);
+  vibrate(2);
 }
 
 /**
  * Double tap feedback pattern
  */
 export function hapticDoubleTap(): void {
-  vibrate([2, 5, 2]);
+  vibrate([1, 2, 1]);
 }
 
 /**
  * Success feedback pattern
  */
 export function hapticSuccess(): void {
-  vibrate([2, 3, 3]);
+  vibrate([1, 1, 1]);
 }
 
 /**
  * Error feedback pattern
  */
 export function hapticError(): void {
-  vibrate([5, 4, 5]);
+  vibrate([2, 1, 2]);
 }
 
 /**
  * Navigation feedback for tab switches
  */
 export function hapticNavigation(): void {
-  vibrate(2);
+  vibrate(1);
 }
