@@ -1,37 +1,39 @@
 import { Link, useLocation } from 'wouter';
 import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
 import { hapticNavigation } from '@/lib/haptics';
-
-const navItems = [
-  { 
-    name: 'Home', 
-    icon: Home, 
-    path: '/mobile' 
-  },
-  { 
-    name: 'Markets', 
-    icon: BarChart3, 
-    path: '/mobile/markets' 
-  },
-  { 
-    name: 'Trade', 
-    icon: TrendingUp, 
-    path: '/mobile/trade' 
-  },
-  { 
-    name: 'News', 
-    icon: Newspaper, 
-    path: '/mobile/news' 
-  },
-  { 
-    name: 'Assets', 
-    icon: Wallet, 
-    path: '/mobile/assets' 
-  }
-];
+import { useLanguage } from '@/contexts/language-context';
 
 export function BottomNavigation() {
   const [location] = useLocation();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { 
+      nameKey: 'dashboard', 
+      icon: Home, 
+      path: '/mobile' 
+    },
+    { 
+      nameKey: 'markets', 
+      icon: BarChart3, 
+      path: '/mobile/markets' 
+    },
+    { 
+      nameKey: 'trade', 
+      icon: TrendingUp, 
+      path: '/mobile/trade' 
+    },
+    { 
+      nameKey: 'notifications', 
+      icon: Newspaper, 
+      path: '/mobile/news' 
+    },
+    { 
+      nameKey: 'assets', 
+      icon: Wallet, 
+      path: '/mobile/assets' 
+    }
+  ];
 
   const handleNavClick = (itemName: string) => {
     // Trigger haptic feedback for navigation
@@ -46,18 +48,18 @@ export function BottomNavigation() {
           const isActive = location === item.path || (item.path !== '/mobile' && location.startsWith(item.path));
           
           return (
-            <Link key={item.name} href={item.path}>
+            <Link key={item.nameKey} href={item.path}>
               <div 
                 className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
                   isActive 
                     ? 'text-orange-500' 
                     : 'text-gray-400 hover:text-white'
                 }`}
-                onClick={() => handleNavClick(item.name)}
-                onTouchStart={() => handleNavClick(item.name)}
+                onClick={() => handleNavClick(item.nameKey)}
+                onTouchStart={() => handleNavClick(item.nameKey)}
               >
                 <Icon size={24} />
-                <span className="text-xs mt-1 font-medium">{item.name}</span>
+                <span className="text-xs mt-1 font-medium">{t(item.nameKey)}</span>
               </div>
             </Link>
           );
