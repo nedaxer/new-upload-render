@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Search } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile-layout';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { useLanguage } from '@/contexts/language-context';
 
 const btcLogo = '/logos/btc-logo.svg';
 const ethLogo = '/logos/eth-logo.svg';
@@ -15,6 +16,7 @@ interface CryptoSelectionProps {
 }
 
 export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: CryptoSelectionProps) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('crypto');
   const [searchQuery, setSearchQuery] = useState('');
   const [comingSoonOpen, setComingSoonOpen] = useState(false);

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/language-context';
 
 interface Message {
   id: string;
@@ -141,6 +142,7 @@ export default function Chatbot() {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(languages[0]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Initialize with welcome message
   useEffect(() => {

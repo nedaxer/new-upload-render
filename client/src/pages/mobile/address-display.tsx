@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { MobileLayout } from '@/components/mobile-layout';
+import { useLanguage } from '@/contexts/language-context';
 
 const btcLogo = '/logos/btc-logo.svg';
 const ethLogo = '/logos/eth-logo.svg';
@@ -41,6 +42,7 @@ const minimumAmounts = {
 };
 
 export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: AddressDisplayProps) {
+  const { t } = useLanguage();
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [copied, setCopied] = useState(false);
 

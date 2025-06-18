@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
+import { useLanguage } from '@/contexts/language-context';
 
 interface CurrencySelectionProps {
   onSelectCurrency?: (currency: string) => void;
@@ -12,6 +13,7 @@ interface CurrencySelectionProps {
 
 export default function CurrencySelection({ onSelectCurrency, currentCurrency = 'USD' }: CurrencySelectionProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(currentCurrency);
+  const { t } = useLanguage();
 
   // Most used currencies
   const mostUsedCurrencies = [

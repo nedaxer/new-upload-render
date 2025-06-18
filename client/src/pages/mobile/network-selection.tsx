@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile-layout';
+import { useLanguage } from '@/contexts/language-context';
 
 const btcLogo = '/logos/btc-logo.svg';
 const ethLogo = '/logos/eth-logo.svg';
@@ -13,6 +14,7 @@ interface NetworkSelectionProps {
 }
 
 export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: NetworkSelectionProps) {
+  const { t } = useLanguage();
   const getCryptoInfo = (crypto: string) => {
     switch (crypto) {
       case 'BTC':
