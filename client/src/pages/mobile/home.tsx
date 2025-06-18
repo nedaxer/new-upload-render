@@ -46,12 +46,6 @@ export default function MobileHome() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [showHelperTooltip, setShowHelperTooltip] = useState(false); // Add tooltip state
-  const helperMessages = [
-    "Hello! I'm here to answer your questions.",
-    "Tap here for help with Nedax!",
-    "Need assistance? Just ask!",
-  ];
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -283,7 +277,7 @@ export default function MobileHome() {
       const price = parseFloat(ticker.lastPrice);
       const change = parseFloat(ticker.price24hPcnt);
       const volume = parseFloat(ticker.turnover24h);
-
+      
       return {
         symbol: baseSymbol,
         pair: ticker.symbol,
@@ -304,7 +298,7 @@ export default function MobileHome() {
   // Get filtered markets based on active tab
   const getWatchlistMarkets = () => {
     let filtered = processedMarkets;
-
+    
     switch (activeWatchlistTab) {
       case 'Favorites':
         return filtered.filter(market => market.favorite);
@@ -427,18 +421,6 @@ export default function MobileHome() {
     }
   };
 
-    const handleHelperClick = () => {
-    // Only show tooltip if not already showing
-    if (!showHelperTooltip) {
-      setShowHelperTooltip(true);
-
-      // Hide tooltip after 3 seconds
-      setTimeout(() => {
-        setShowHelperTooltip(false);
-      }, 3000);
-    }
-  };
-
   return (
     <MobileLayout>
       {/* Header */}
@@ -459,22 +441,9 @@ export default function MobileHome() {
           </Link>
         </div>
         <div className="flex items-center space-x-3">
-          <div className="relative">
-            <div 
-              onClick={handleHelperClick}
-              className="cursor-pointer"
-            >
-              <Link href="/mobile/chatbot">
-                <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
-              </Link>
-            </div>
-            {showHelperTooltip && (
-              <div className="absolute top-8 right-0 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <div className="absolute -top-1 right-3 w-2 h-2 bg-orange-500 rotate-45"></div>
-                {helperMessages[Math.floor(Math.random() * helperMessages.length)]}
-              </div>
-            )}
-          </div>
+          <Link href="/mobile/chatbot">
+            <Headphones className="w-6 h-6 text-gray-400 hover:text-white transition-colors cursor-pointer" />
+          </Link>
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
@@ -578,7 +547,7 @@ export default function MobileHome() {
       {/* Watchlist Section */}
       <div className="px-4">
         <h3 className="text-lg font-semibold text-white mb-4">Watchlist</h3>
-
+        
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
             <button 
