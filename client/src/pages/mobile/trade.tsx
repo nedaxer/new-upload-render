@@ -28,8 +28,10 @@ import MobileFutures from './futures';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileTrade() {
+  const { t } = useLanguage();
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
@@ -216,7 +218,7 @@ export default function MobileTrade() {
               }`}
               onClick={() => handleTradingTypeChange(tab)}
             >
-              {tab}
+              {t(tab.toLowerCase())}
             </button>
           ))}
         </div>
@@ -233,7 +235,7 @@ export default function MobileTrade() {
             }`}
             onClick={() => handleTabChange('Charts')}
           >
-            Charts
+            {t('charts')}
           </button>
           <button 
             className={`flex-1 py-3 font-medium ${
@@ -243,7 +245,7 @@ export default function MobileTrade() {
             }`}
             onClick={() => handleTabChange('Trade')}
           >
-            Trade
+            {t('trade')}
           </button>
         </div>
       </div>
@@ -278,7 +280,7 @@ export default function MobileTrade() {
                 }`}
               >
                 <Bell className="w-5 h-5" />
-                <span className="text-sm">Alerts</span>
+                <span className="text-sm">{t('alerts')}</span>
               </button>
 
               <button 
@@ -288,7 +290,7 @@ export default function MobileTrade() {
                 }`}
               >
                 <MessageSquare className="w-5 h-5" />
-                <span className="text-sm">Tools</span>
+                <span className="text-sm">{t('tools')}</span>
               </button>
 
               <button 
@@ -296,19 +298,19 @@ export default function MobileTrade() {
                 className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
               >
                 <BarChart3 className="w-5 h-5" />
-                <span className="text-sm">Perp</span>
+                <span className="text-sm">{t('perp')}</span>
               </button>
             </div>
 
             {/* Alerts Panel */}
             {showAlerts && (
               <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-white font-medium mb-3">Price Alerts</h3>
+                <h3 className="text-white font-medium mb-3">{t('price_alerts')}</h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">No active alerts</span>
+                    <span className="text-gray-400 text-sm">{t('no_active_alerts')}</span>
                     <Button size="sm" variant="outline" className="text-orange-500 border-orange-500">
-                      Create Alert
+                      {t('create_alert')}
                     </Button>
                   </div>
                 </div>
@@ -318,23 +320,23 @@ export default function MobileTrade() {
             {/* Tools Panel */}
             {showTools && (
               <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-white font-medium mb-3">Trading Tools</h3>
+                <h3 className="text-white font-medium mb-3">{t('trading_tools')}</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">Order Book</div>
-                    <div className="text-gray-400 text-xs">View market depth</div>
+                    <div className="text-white font-medium text-sm">{t('order_book')}</div>
+                    <div className="text-gray-400 text-xs">{t('view_market_depth')}</div>
                   </button>
                   <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">Recent Trades</div>
-                    <div className="text-gray-400 text-xs">Latest transactions</div>
+                    <div className="text-white font-medium text-sm">{t('recent_trades')}</div>
+                    <div className="text-gray-400 text-xs">{t('latest_transactions')}</div>
                   </button>
                   <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">Calculator</div>
-                    <div className="text-gray-400 text-xs">P&L calculator</div>
+                    <div className="text-white font-medium text-sm">{t('calculator')}</div>
+                    <div className="text-gray-400 text-xs">{t('pnl_calculator')}</div>
                   </button>
                   <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">Analysis</div>
-                    <div className="text-gray-400 text-xs">Technical analysis</div>
+                    <div className="text-white font-medium text-sm">{t('analysis')}</div>
+                    <div className="text-gray-400 text-xs">{t('technical_analysis')}</div>
                   </button>
                 </div>
               </div>
@@ -345,13 +347,13 @@ export default function MobileTrade() {
                 onClick={handleBuyClick}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
               >
-                Buy {selectedPair.symbol}
+                {t('buy')} {selectedPair.symbol}
               </Button>
               <Button 
                 onClick={handleSellClick}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
               >
-                Sell {selectedPair.symbol}
+                {t('sell')} {selectedPair.symbol}
               </Button>
             </div>
           </div>
@@ -396,7 +398,7 @@ export default function MobileTrade() {
                     }`}
                     onClick={() => setTradeMode('Buy')}
                   >
-                    Buy {selectedPair.symbol}
+                    {t('buy')} {selectedPair.symbol}
                   </button>
                   <button 
                     className={`flex-1 py-3 font-medium transition-colors ${
@@ -406,7 +408,7 @@ export default function MobileTrade() {
                     }`}
                     onClick={() => setTradeMode('Sell')}
                   >
-                    Sell {selectedPair.symbol}
+                    {t('sell')} {selectedPair.symbol}
                   </button>
                 </div>
               </div>
@@ -416,15 +418,15 @@ export default function MobileTrade() {
                 {/* Order Type */}
                 <div className="bg-gray-900 rounded-lg p-4">
                   <div className="flex space-x-2 mb-4">
-                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">Market</button>
-                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">Limit</button>
-                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">Stop</button>
+                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
                   </div>
 
                   {/* Quantity Input */}
                   <div className="mb-4">
                     <label className="block text-gray-400 text-sm mb-2">
-                      Quantity ({tradeMode === 'Buy' ? 'USDT' : selectedPair.symbol})
+                      {t('quantity')} ({tradeMode === 'Buy' ? 'USDT' : selectedPair.symbol})
                     </label>
                     <div className="flex items-center space-x-2">
                       <button 
