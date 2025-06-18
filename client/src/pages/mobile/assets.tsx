@@ -396,7 +396,7 @@ export default function MobileAssets() {
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
-                <ArrowDownUp className="w-7 h-7 text-green-500" />
+                <ArrowDownUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Transfer</span>
             </div>
@@ -405,7 +405,7 @@ export default function MobileAssets() {
           <Link href="/mobile/convert">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
-                <ArrowDownUp className="w-7 h-7 text-purple-500 transform rotate-45" />
+                <ArrowDownUp className="w-7 h-7 text-orange-500 transform rotate-45" />
               </div>
               <span className="text-xs text-gray-300 text-center">Convert</span>
             </div>

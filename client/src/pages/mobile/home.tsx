@@ -236,8 +236,8 @@ export default function MobileHome() {
   };
 
   const quickActions = [
-    { name: 'Nedaxer Earn', icon: Gift, color: 'text-yellow-500', href: '/mobile/earn' },
-    { name: 'Invite Friends', icon: Users, color: 'text-green-500', href: '/mobile/invite-friends' }
+    { name: 'Nedaxer Earn', icon: Gift, color: 'text-orange-500', href: '/mobile/earn' },
+    { name: 'Invite Friends', icon: Users, color: 'text-orange-500', href: '/mobile/invite-friends' }
   ];
 
   // Load favorites from localStorage
