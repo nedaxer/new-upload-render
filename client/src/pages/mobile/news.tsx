@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/language-context';
 
 interface NewsArticle {
   title: string;
@@ -16,6 +17,7 @@ interface NewsArticle {
 }
 
 export default function MobileNews() {
+  const { t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
   const [liveNewsData, setLiveNewsData] = useState<NewsArticle[]>([]);
   const [isConnected, setIsConnected] = useState(false);

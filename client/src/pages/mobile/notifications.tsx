@@ -5,10 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   // Fetch notifications
   const { data: notifications, isLoading } = useQuery({

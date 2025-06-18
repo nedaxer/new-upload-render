@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/language-context';
 
 interface KYCData {
   personalInfo: {
@@ -46,6 +47,7 @@ interface KYCData {
 export default function MobileKYC() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Fetch KYC status
   const { data: kycStatus } = useQuery({

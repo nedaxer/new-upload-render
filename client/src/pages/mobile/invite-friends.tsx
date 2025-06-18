@@ -4,6 +4,7 @@ import { ArrowLeft, Copy, Share, Users, Gift, TrendingUp, Clock } from 'lucide-r
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { useLanguage } from '@/contexts/language-context';
 
 interface ReferralStats {
   totalEarnings: number;
@@ -23,6 +24,7 @@ interface ReferralStats {
 export default function InviteFriends() {
   const [copySuccess, setCopySuccess] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Fetch referral stats
   const { data: referralStats } = useQuery<ReferralStats>({

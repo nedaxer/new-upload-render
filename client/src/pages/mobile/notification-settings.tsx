@@ -3,8 +3,10 @@ import { Link } from 'wouter';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function NotificationSettings() {
+  const { t } = useLanguage();
   const [settings, setSettings] = useState({
     latestEvents: true,
     announcement: true,
