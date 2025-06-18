@@ -162,13 +162,13 @@ export default function MobileProfile() {
   const menuItems = [
     {
       icon: Users,
-      label: t('profile.inviteFriends'),
+      label: t('invite_friends'),
       href: '/mobile/invite-friends',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Shield,
-      label: t('profile.identityVerification'),
+      label: t('identity_verification'),
       href: '/mobile/kyc',
       rightElement: (
         <div className="flex items-center space-x-2">
@@ -180,10 +180,10 @@ export default function MobileProfile() {
                 : 'text-red-500'
           }`}>
             {kycStatus?.isVerified 
-              ? t('profile.lv1Verified')
+              ? t('lv1_verified')
               : kycStatus?.status === 'processing'
-                ? t('profile.processing')
-                : t('profile.notVerified')
+                ? t('processing')
+                : t('not_verified')
             }
           </span>
           <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -192,25 +192,25 @@ export default function MobileProfile() {
     },
     {
       icon: Settings,
-      label: t('profile.security'),
+      label: t('security'),
       href: '/mobile/security',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Bell,
-      label: t('profile.notificationCenter'),
+      label: t('notification_center'),
       href: '/mobile/notifications',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Headphones,
-      label: t('profile.helpContact'),
+      label: t('help_contact'),
       href: '/company/contact',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Info,
-      label: t('profile.aboutUs'),
+      label: t('about_us'),
       href: '/company/about',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     }
