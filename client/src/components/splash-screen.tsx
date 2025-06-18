@@ -90,7 +90,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const nedaxerLogoTimer = setTimeout(() => {
       setShowClones(false);
       setShowNedaxerLogo(true);
-    }, 8000); // 8 seconds
+    }, 6500); // 6.5 seconds
 
     const timer = setTimeout(() => {
       setShowLogo(false);
@@ -207,18 +207,6 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   src={nedaxerLogo}
                   alt="NEDAXER"
                   className="w-80 h-32 object-contain"
-                  animate={{
-                    filter: [
-                      'drop-shadow(0 0 20px rgba(255,165,0,0.8))',
-                      'drop-shadow(0 0 40px rgba(255,215,0,1))',
-                      'drop-shadow(0 0 20px rgba(255,165,0,0.8))',
-                    ],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
                 />
               </motion.div>
             )}
