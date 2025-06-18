@@ -160,14 +160,14 @@ export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: Addres
             className="bg-gray-700 hover:bg-gray-600 text-white text-sm py-2"
           >
             <Copy className="w-4 h-4 mr-2" />
-            Copy Address
+            {t('copy_address')}
           </Button>
           <Button 
             onClick={saveQRCode}
             className="bg-gray-700 hover:bg-gray-600 text-white text-sm py-2"
           >
             <Save className="w-4 h-4 mr-2" />
-            Save QR Code
+            {t('save_image')}
           </Button>
         </div>
 

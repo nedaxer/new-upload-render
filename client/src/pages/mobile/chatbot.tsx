@@ -269,7 +269,7 @@ export default function Chatbot() {
           <button onClick={() => setShowChatHistory(false)}>
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h1 className="text-lg font-semibold">Chat History</h1>
+          <h1 className="text-lg font-semibold">{t('chat_history')}</h1>
           <div className="w-6 h-6" />
         </div>
 
