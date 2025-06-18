@@ -29,14 +29,12 @@ export default function MobileProfile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch KYC status
-  const { data: kycResponse } = useQuery({
-    queryKey: ['kyc', 'status'],
-    queryFn: () => apiRequest('/api/users/kyc/status'),
+  // Fetch KYC status from API
+  const { data: kycStatus } = useQuery({
+    queryKey: ['/api/users/kyc/status'],
     enabled: !!user?.id,
+    select: (data: any) => data?.data || { isVerified: false, status: 'not_verified' }
   });
-
-  const kycStatus = kycResponse?.data;
 
   // Generate a realistic UID based on user ID with mixed numbers
   const generateUID = () => {
