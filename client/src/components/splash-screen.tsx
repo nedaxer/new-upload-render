@@ -139,147 +139,48 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               </motion.div>
             ))}
 
-            {/* Clone letters - appear after original arrangement */}
+            {/* Clone letters - replace original letters exactly in position */}
             <AnimatePresence>
               {showClones && letters.map((letter, index) => (
-                <React.Fragment key={`clone-group-${index}`}>
-                  {/* Primary clone replacing original */}
-                  <motion.div
-                    key={`clone-${index}`}
-                    initial={{
-                      x: 0,
-                      y: 0,
-                      opacity: 0,
-                      scale: 0.8,
-                    }}
+                <motion.div
+                  key={`clone-${index}`}
+                  initial={{
+                    x: 0,
+                    y: 0,
+                    opacity: 0,
+                    scale: 0.8,
+                  }}
+                  animate={{
+                    x: 0,
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                  }}
+                  transition={{
+                    delay: 0,
+                    duration: 0.5,
+                    ease: "easeOut",
+                  }}
+                  className="absolute pointer-events-none"
+                >
+                  <motion.img
+                    src={letter.src}
+                    alt={`${letter.alt}-clone`}
+                    className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
                     animate={{
-                      x: 0,
-                      y: 0,
-                      opacity: 1,
-                      scale: 1,
+                      filter: [
+                        'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
+                        'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
+                        'drop-shadow(0 0 12px rgba(255,165,0,0.5))',
+                      ],
                     }}
                     transition={{
-                      delay: 0,
-                      duration: 0.5,
-                      ease: "easeOut",
-                    }}
-                    className="absolute pointer-events-none"
-                  >
-                    <motion.img
-                      src={letter.src}
-                      alt={`${letter.alt}-clone`}
-                      className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
-                      animate={{
-                        filter: [
-                          'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
-                          'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
-                          'drop-shadow(0 0 12px rgba(255,165,0,0.5))',
-                        ],
-                      }}
-                      transition={{
-                        duration: 2.5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  </motion.div>
-
-                  {/* Floating ghost clones */}
-                  <motion.div
-                    key={`ghost-${index}`}
-                    initial={{
-                      x: 0,
-                      y: 0,
-                      opacity: 0,
-                      scale: 0.8,
-                    }}
-                    animate={{
-                      x: [0, (Math.random() - 0.5) * 300, (Math.random() - 0.5) * 400],
-                      y: [0, (Math.random() - 0.5) * 200, (Math.random() - 0.5) * 250],
-                      opacity: [0, 0.6, 0.3, 0],
-                      scale: [0.8, 1.2, 0.7, 0.4],
-                      rotate: [0, (Math.random() - 0.5) * 540],
-                    }}
-                    transition={{
-                      delay: index * 0.1 + 0.5,
-                      duration: 4,
+                      duration: 2.5,
                       repeat: Infinity,
-                      repeatDelay: 1.5,
                       ease: "easeInOut",
                     }}
-                    className="absolute pointer-events-none"
-                    style={{
-                      filter: 'blur(0.8px) brightness(1.1)',
-                    }}
-                  >
-                    <motion.img
-                      src={letter.src}
-                      alt={`${letter.alt}-ghost`}
-                      className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-18 lg:h-18 object-contain"
-                      animate={{
-                        filter: [
-                          'drop-shadow(0 0 6px rgba(135,206,235,0.5))',
-                          'drop-shadow(0 0 15px rgba(135,206,235,0.8))',
-                          'drop-shadow(0 0 10px rgba(135,206,235,0.4))',
-                        ],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  </motion.div>
-
-                  {/* Sparkling particles */}
-                  {[0, 1].map((particleIndex) => (
-                    <motion.div
-                      key={`particle-${index}-${particleIndex}`}
-                      initial={{
-                        x: 0,
-                        y: 0,
-                        opacity: 0,
-                        scale: 0.4,
-                      }}
-                      animate={{
-                        x: [0, (Math.random() - 0.5) * 200],
-                        y: [0, (Math.random() - 0.5) * 150],
-                        opacity: [0, 0.9, 0.4, 0],
-                        scale: [0.4, 0.8, 0.3],
-                        rotate: [0, 360],
-                      }}
-                      transition={{
-                        delay: index * 0.15 + particleIndex * 0.4 + 1,
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatDelay: 2,
-                        ease: "easeOut",
-                      }}
-                      className="absolute pointer-events-none"
-                    >
-                      <motion.img
-                        src={letter.src}
-                        alt={`${letter.alt}-particle`}
-                        className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 object-contain"
-                        style={{
-                          filter: 'blur(0.5px) brightness(1.4)',
-                        }}
-                        animate={{
-                          filter: [
-                            'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-                            'drop-shadow(0 0 8px rgba(255,255,255,0.9))',
-                            'drop-shadow(0 0 6px rgba(255,255,255,0.5))',
-                          ],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </React.Fragment>
+                  />
+                </motion.div>
               ))}
             </AnimatePresence>
           </div>
