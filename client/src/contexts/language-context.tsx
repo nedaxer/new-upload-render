@@ -383,7 +383,39 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'connection_status': 'Connection Status',
     'connected': 'Connected',
     'disconnected': 'Disconnected',
-    'last_updated': 'Last Updated'
+    'last_updated': 'Last Updated',
+    'copied': 'Copied',
+    'updateFailed': 'Update Failed',
+    'invalidFileType': 'Invalid File Type',
+    'fileTooLarge': 'File Too Large',
+    'uploadFailed': 'Upload Failed',
+    // Profile translations
+    'profile.updated': 'Profile Updated',
+    'profile.pictureUpdatedSuccess': 'Your profile picture has been updated successfully.',
+    'profile.pictureUpdateFailed': 'Failed to update profile picture. Please try again.',
+    'profile.selectImageFile': 'Please select an image file.',
+    'profile.selectSmallerImage': 'Please select an image smaller than 5MB.',
+    'profile.failedToReadImage': 'Failed to read the image file. Please try again.',
+    'profile.inviteFriends': 'Invite Friends',
+    'profile.identityVerification': 'Identity Verification',
+    'profile.lv1Verified': 'Lv.1 Verified',
+    'profile.processing': 'Processing',
+    'profile.notVerified': 'Not Verified',
+    'profile.security': 'Security',
+    'profile.notificationCenter': 'Notification Center',
+    'profile.helpContact': 'Help & Contact Support',
+    'profile.aboutUs': 'About Us',
+    'profile.mainAccount': 'Main Account',
+    'profile.uidCopied': 'UID copied to clipboard',
+    'profile.switchCreateAccount': 'Switch/Create Account',
+    // Auth translations
+    'auth.logout': 'Log Out',
+    // Common translations
+    'common.copied': 'Copied',
+    'common.updateFailed': 'Update Failed',
+    'common.invalidFileType': 'Invalid File Type',
+    'common.fileTooLarge': 'File Too Large',
+    'common.uploadFailed': 'Upload Failed'
   },
   zh: {
     'settings': '设置',
@@ -605,7 +637,34 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'connection_status': '连接状态',
     'connected': '已连接',
     'disconnected': '已断开',
-    'last_updated': '最后更新'
+    'last_updated': '最后更新',
+    // Profile translations
+    'profile.updated': '个人资料已更新',
+    'profile.pictureUpdatedSuccess': '您的头像已成功更新。',
+    'profile.pictureUpdateFailed': '更新头像失败。请重试。',
+    'profile.selectImageFile': '请选择图片文件。',
+    'profile.selectSmallerImage': '请选择小于5MB的图片。',
+    'profile.failedToReadImage': '读取图片文件失败。请重试。',
+    'profile.inviteFriends': '邀请朋友',
+    'profile.identityVerification': '身份验证',
+    'profile.lv1Verified': '一级认证',
+    'profile.processing': '处理中',
+    'profile.notVerified': '未验证',
+    'profile.security': '安全',
+    'profile.notificationCenter': '通知中心',
+    'profile.helpContact': '帮助和联系支持',
+    'profile.aboutUs': '关于我们',
+    'profile.mainAccount': '主账户',
+    'profile.uidCopied': 'UID已复制到剪贴板',
+    'profile.switchCreateAccount': '切换/创建账户',
+    // Auth translations
+    'auth.logout': '退出登录',
+    // Common translations
+    'common.copied': '已复制',
+    'common.updateFailed': '更新失败',
+    'common.invalidFileType': '无效文件类型',
+    'common.fileTooLarge': '文件过大',
+    'common.uploadFailed': '上传失败'
   },
   ja: {
     'settings': '設定',
@@ -791,7 +850,34 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     'theme': 'Tema',
     'dark_mode': 'Modo escuro',
     'light_mode': 'Modo claro',
-    'auto': 'Automático'
+    'auto': 'Automático',
+    // Profile translations
+    'profile.updated': 'Perfil Atualizado',
+    'profile.pictureUpdatedSuccess': 'Sua foto de perfil foi atualizada com sucesso.',
+    'profile.pictureUpdateFailed': 'Falha ao atualizar foto de perfil. Tente novamente.',
+    'profile.selectImageFile': 'Por favor, selecione um arquivo de imagem.',
+    'profile.selectSmallerImage': 'Por favor, selecione uma imagem menor que 5MB.',
+    'profile.failedToReadImage': 'Falha ao ler o arquivo de imagem. Tente novamente.',
+    'profile.inviteFriends': 'Convidar Amigos',
+    'profile.identityVerification': 'Verificação de Identidade',
+    'profile.lv1Verified': 'Nível 1 Verificado',
+    'profile.processing': 'Processando',
+    'profile.notVerified': 'Não Verificado',
+    'profile.security': 'Segurança',
+    'profile.notificationCenter': 'Central de Notificações',
+    'profile.helpContact': 'Ajuda e Suporte',
+    'profile.aboutUs': 'Sobre Nós',
+    'profile.mainAccount': 'Conta Principal',
+    'profile.uidCopied': 'UID copiado para a área de transferência',
+    'profile.switchCreateAccount': 'Trocar/Criar Conta',
+    // Auth translations
+    'auth.logout': 'Sair',
+    // Common translations
+    'common.copied': 'Copiado',
+    'common.updateFailed': 'Falha na Atualização',
+    'common.invalidFileType': 'Tipo de Arquivo Inválido',
+    'common.fileTooLarge': 'Arquivo Muito Grande',
+    'common.uploadFailed': 'Falha no Upload'
   }
 };
 

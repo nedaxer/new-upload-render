@@ -317,7 +317,7 @@ export default function MobileProfile() {
           variant="outline" 
           className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
         >
-          Switch/Create Account
+          {t('profile.switchCreateAccount')}
         </Button>
 
         <Button 
@@ -325,7 +325,7 @@ export default function MobileProfile() {
           className="w-full bg-red-900 hover:bg-red-800 text-white"
           onClick={() => logoutMutation.mutate()}
         >
-          Log Out
+          {t('auth.logout')}
         </Button>
       </div>
 
