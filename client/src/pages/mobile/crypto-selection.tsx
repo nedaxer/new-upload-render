@@ -61,7 +61,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
         <button onClick={onBack} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-base font-semibold text-white">Select Cryptocurrency</h2>
+        <h2 className="text-base font-semibold text-white">{t('select_crypto')}</h2>
         <div className="w-6 h-6" />
       </div>
 
@@ -94,7 +94,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search cryptocurrency"
+            placeholder={t('search') + ' cryptocurrency'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500"

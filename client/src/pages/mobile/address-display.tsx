@@ -103,7 +103,7 @@ export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: Addres
         <button onClick={onBack} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-base font-semibold text-white">Deposit Address</h2>
+        <h2 className="text-base font-semibold text-white">{t('deposit_address')}</h2>
         <div className="w-6 h-6" />
       </div>
 

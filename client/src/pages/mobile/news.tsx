@@ -128,7 +128,7 @@ export default function MobileNews() {
       <div className="bg-gray-900 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h1 className="text-white text-2xl font-bold">News</h1>
+            <h1 className="text-white text-2xl font-bold">{t('news')}</h1>
             {isConnected && (
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             )}

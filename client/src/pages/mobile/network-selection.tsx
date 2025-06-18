@@ -101,7 +101,7 @@ export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: Netw
         <button onClick={onBack} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-base font-semibold text-white">Select Network</h2>
+        <h2 className="text-base font-semibold text-white">{t('select_network')}</h2>
         <div className="w-6 h-6" />
       </div>
 

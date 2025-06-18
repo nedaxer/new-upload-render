@@ -66,7 +66,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
         <button onClick={() => window.history.back()}>
           <ArrowLeft className="w-6 h-6 text-white" />
         </button>
-        <h1 className="text-lg font-semibold text-white">Select a Currency</h1>
+        <h1 className="text-lg font-semibold text-white">{t('currency_selection')}</h1>
         <div className="w-6 h-6" /> {/* Spacer */}
       </div>
 
