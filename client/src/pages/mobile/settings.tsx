@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,13 +17,13 @@ interface UserSettings {
   nickname?: string;
   language: string;
   currency: string;
-  theme: string;
   screenLock: boolean;
 }
 
 export default function MobileSettings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const { theme, changeTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +32,6 @@ export default function MobileSettings() {
     nickname: user?.username || '',
     language: 'English',
     currency: 'USD',
-    theme: 'Dark Mode',
     screenLock: false
   });
   
@@ -79,7 +79,7 @@ export default function MobileSettings() {
     return { level: 'Low', color: 'text-red-500' };
   };
 
-  // Listen for profile updates and currency changes from other components
+  // Listen for profile updates and currency/language changes from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -96,17 +96,27 @@ export default function MobileSettings() {
       }
     };
 
-    // Check for currency changes when component becomes visible
+    const handleLanguageUpdate = () => {
+      const savedLanguage = localStorage.getItem('selectedLanguage');
+      if (savedLanguage) {
+        setSettings(prev => ({ ...prev, language: savedLanguage }));
+      }
+    };
+
+    // Check for changes when component becomes visible
     handleCurrencyUpdate();
+    handleLanguageUpdate();
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('securityUpdated', handleSecurityUpdate);
     window.addEventListener('focus', handleCurrencyUpdate);
+    window.addEventListener('focus', handleLanguageUpdate);
     
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
       window.removeEventListener('focus', handleCurrencyUpdate);
+      window.removeEventListener('focus', handleLanguageUpdate);
     };
   }, [queryClient]);
 
@@ -204,23 +214,12 @@ export default function MobileSettings() {
     setIsEditingNickname(false);
   };
 
-  const handleThemeChange = (theme: string) => {
-    setSettings(prev => ({ ...prev, theme }));
-    
-    // Apply theme to document
-    const root = document.documentElement;
-    if (theme === 'Dark Mode') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', theme);
+  const handleThemeChange = (newTheme: 'Light Mode' | 'Dark Mode' | 'Auto') => {
+    changeTheme(newTheme);
     
     toast({
       title: "Theme updated",
-      description: `Switched to ${theme}`
+      description: `Switched to ${newTheme}`
     });
   };
 
