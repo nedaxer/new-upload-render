@@ -84,7 +84,7 @@ export default function InviteFriends() {
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">Invite Friends</h1>
+        <h1 className="text-lg font-semibold">{t('invite_friends')}</h1>
         <div className="w-6 h-6" />
       </div>
 
@@ -93,9 +93,9 @@ export default function InviteFriends() {
         <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
           <Gift className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Earn with Every Referral</h2>
+        <h2 className="text-2xl font-bold mb-2">{t('referral_program')}</h2>
         <p className="text-gray-400 text-sm mb-6">
-          Invite friends and earn up to 25% commission on their trading activities
+          {t('invite_friends')} and earn up to 25% commission on their trading activities
         </p>
       </div>
 

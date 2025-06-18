@@ -32,10 +32,10 @@ export default function MobileNotifications() {
 
   const notificationTabs = [
     'All',
-    'System Notification',
-    'Latest Events',
-    'Announcement',
-    'Rewards'
+    t('system_notification'),
+    t('latest_events'),
+    t('announcement'),
+    t('rewards')
   ];
 
   const handleReadAll = async () => {
@@ -54,7 +54,7 @@ export default function MobileNotifications() {
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">Notification</h1>
+        <h1 className="text-lg font-semibold">{t('notifications')}</h1>
         <div className="flex items-center space-x-3">
           <button onClick={handleReadAll}>
             <CheckCheck className="w-6 h-6 text-gray-400" />
