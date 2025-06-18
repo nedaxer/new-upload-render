@@ -25,20 +25,20 @@
     <link rel="apple-touch-icon" sizes="114x114" href="/icons/icon-128x128.png" />
     
     <!-- Preload critical splash screen images for instant display -->
-    <link rel="preload" as="image" href="/images/splash-background.png" />
-    <link rel="preload" as="image" href="/images/letter-n.png" />
-    <link rel="preload" as="image" href="/images/letter-e1.png" />
-    <link rel="preload" as="image" href="/images/letter-d.png" />
-    <link rel="preload" as="image" href="/images/letter-a.png" />
-    <link rel="preload" as="image" href="/images/letter-x.png" />
-    <link rel="preload" as="image" href="/images/letter-e2.png" />
-    <link rel="preload" as="image" href="/images/letter-r.png" />
+    <link rel="preload" as="image" href="/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001640_1750207793691.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001710_1750207793694.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001748_1750207793698.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001828_1750207793703.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001859_1750207793716.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_001938_1750207793727.png" />
+    <link rel="preload" as="image" href="/src/assets/20250618_002006_1750207793730.png" />
     <link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-72x72.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-72x72.png" />
     <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-72x72.png" />
     
-    <!-- Prevent zoom on iOS Safari and preload splash background -->
+    <!-- Prevent zoom on iOS Safari -->
     <style>
       @media screen and (-webkit-min-device-pixel-ratio:0) {
         select:focus,
@@ -46,34 +46,6 @@
         input:focus {
           font-size: 16px !important;
         }
-      }
-      
-      /* Instant splash screen background - loads immediately */
-      .splash-background {
-        background-image: url('/images/splash-background.png') !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-repeat: no-repeat !important;
-        background-attachment: fixed !important;
-      }
-      
-      /* Force preload all splash images */
-      body::after {
-        content: '';
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        background-image: 
-          url('/images/splash-background.png'),
-          url('/images/letter-n.png'),
-          url('/images/letter-e1.png'),
-          url('/images/letter-d.png'),
-          url('/images/letter-a.png'),
-          url('/images/letter-x.png'),
-          url('/images/letter-e2.png'),
-          url('/images/letter-r.png');
       }
     </style>
   </head>
