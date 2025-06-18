@@ -4,22 +4,15 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Search, Check } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { languages, searchLanguages, Language } from '@/data/languages';
 
 export default function LanguageSelection() {
   const [, setLocation] = useLocation();
+  const { currentLanguage, changeLanguage, t } = useLanguage();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [filteredLanguages, setFilteredLanguages] = useState<Language[]>(languages);
-
-  // Load current language from localStorage
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('selectedLanguage');
-    if (savedLanguage) {
-      setSelectedLanguage(savedLanguage);
-    }
-  }, []);
 
   // Filter languages based on search query
   useEffect(() => {
@@ -28,16 +21,12 @@ export default function LanguageSelection() {
   }, [searchQuery]);
 
   const handleLanguageSelect = (language: Language) => {
-    setSelectedLanguage(language.name);
-    
-    // Save to localStorage
-    localStorage.setItem('selectedLanguage', language.name);
-    localStorage.setItem('selectedLanguageCode', language.code);
+    changeLanguage(language);
     
     // Show success message
     toast({
-      title: "Language updated",
-      description: `Switched to ${language.name} (${language.nativeName})`
+      title: t("language_updated") || "Language updated",
+      description: `${t("switched_to") || "Switched to"} ${language.name} (${language.nativeName})`
     });
 
     // Navigate back to settings
@@ -58,7 +47,7 @@ export default function LanguageSelection() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold">Select Language</h1>
+        <h1 className="text-lg font-semibold">{t('select_language')}</h1>
         <div className="w-10" /> {/* Spacer */}
       </div>
 
@@ -68,7 +57,7 @@ export default function LanguageSelection() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search languages..."
+            placeholder={t('search') + ' languages...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500"
@@ -98,7 +87,7 @@ export default function LanguageSelection() {
                     <div className="text-gray-400 text-sm">{language.nativeName}</div>
                   </div>
                 </div>
-                {selectedLanguage === language.name && (
+                {currentLanguage.code === language.code && (
                   <Check className="h-5 w-5 text-orange-500" />
                 )}
               </button>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,13 +25,14 @@ export default function MobileSettings() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { theme, changeTheme } = useTheme();
+  const { currentLanguage, t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
-    language: 'English',
+    language: currentLanguage.name,
     currency: 'USD',
     screenLock: false
   });
@@ -97,10 +99,7 @@ export default function MobileSettings() {
     };
 
     const handleLanguageUpdate = () => {
-      const savedLanguage = localStorage.getItem('selectedLanguage');
-      if (savedLanguage) {
-        setSettings(prev => ({ ...prev, language: savedLanguage }));
-      }
+      setSettings(prev => ({ ...prev, language: currentLanguage.name }));
     };
 
     // Check for changes when component becomes visible

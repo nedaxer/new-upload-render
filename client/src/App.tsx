@@ -282,11 +282,11 @@ export default function App() {
             <Route component={NotFound} />
             </Switch>
           </Router>
-            <Toaster />
-            <PWAInstallPrompt />
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+          <Toaster />
+          <PWAInstallPrompt />
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
   );
 }
