@@ -68,7 +68,7 @@ export default function MobileHome() {
 
   // Show tooltip on login (when user data becomes available)
   useEffect(() => {
-    if (user && user.success && user.data && user.data.username) {
+    if (user && user.username) {
       // Check if this is a fresh login session
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
 
@@ -462,9 +462,9 @@ export default function MobileHome() {
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
-              {user?.data?.profilePicture ? (
+              {user?.profilePicture ? (
                 <img 
-                  src={user.data.profilePicture} 
+                  src={user.profilePicture} 
                   alt="Profile" 
                   className="w-full h-full rounded-full object-cover"
                 />
@@ -484,7 +484,7 @@ export default function MobileHome() {
             {showHelperTooltip && (
               <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
-                Welcome {user?.data?.username || user?.data?.firstName || 'there'}! How can I assist you?
+                Welcome {user?.username || user?.firstName || 'there'}! How can I assist you?
               </div>
             )}
           </div>

@@ -27,16 +27,16 @@ const requireAuth = (req: Request, res: Response, next: Function) => {
 userRouter.get("/dashboard", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Get user balances
     const balances = await tradingService.getAllUserBalances(userId);
-
+    
     // Get recent transactions
     const transactions = await tradingService.getUserTransactionsDetailed(userId, 10);
-
+    
     // Get active staking positions
     const stakingPositions = await stakingService.getUserStakingPositions(userId);
-
+    
     // Calculate total portfolio value in USD
     let totalPortfolioValue = 0;
     for (const balance of balances) {
@@ -52,13 +52,13 @@ userRouter.get("/dashboard", requireAuth, async (req, res) => {
         }
       }
     }
-
+    
     // Calculate staking earnings
     let totalStakingEarnings = 0;
     for (const position of stakingPositions) {
       totalStakingEarnings += position.accumulatedRewards;
     }
-
+    
     return res.status(200).json({
       success: true,
       data: {
@@ -83,7 +83,7 @@ userRouter.get("/balances", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
     const balances = await tradingService.getAllUserBalances(userId);
-
+    
     return res.status(200).json({
       success: true,
       data: balances
@@ -101,13 +101,13 @@ userRouter.get("/balances", requireAuth, async (req, res) => {
 userRouter.get("/transactions", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Parse limit and offset from query parameters
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-
+    
     const transactions = await tradingService.getUserTransactionsDetailed(userId, limit, offset);
-
+    
     return res.status(200).json({
       success: true,
       data: transactions
@@ -126,7 +126,7 @@ userRouter.get("/staking", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
     const stakingPositions = await stakingService.getUserStakingPositions(userId);
-
+    
     return res.status(200).json({
       success: true,
       data: stakingPositions
@@ -144,7 +144,7 @@ userRouter.get("/staking", requireAuth, async (req, res) => {
 userRouter.get("/staking/rates", requireAuth, async (req, res) => {
   try {
     const rates = await stakingService.getAvailableStakingRates();
-
+    
     return res.status(200).json({
       success: true,
       data: rates
@@ -162,7 +162,7 @@ userRouter.get("/staking/rates", requireAuth, async (req, res) => {
 userRouter.get("/notifications", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Mock notifications - in production, you'd fetch from database
     const notifications = [
       {
@@ -182,7 +182,7 @@ userRouter.get("/notifications", requireAuth, async (req, res) => {
         read: false
       }
     ];
-
+    
     return res.status(200).json({
       success: true,
       data: notifications
@@ -200,10 +200,10 @@ userRouter.get("/notifications", requireAuth, async (req, res) => {
 userRouter.put("/notifications/:id/read", requireAuth, async (req, res) => {
   try {
     const notificationId = req.params.id;
-
+    
     // In production, update notification in database
     console.log(`Marking notification ${notificationId} as read`);
-
+    
     return res.status(200).json({
       success: true,
       message: "Notification marked as read"
@@ -222,7 +222,7 @@ userRouter.get("/notifications/count", requireAuth, async (req, res) => {
   try {
     // Mock unread count - in production, count from database
     const unreadCount = 2;
-
+    
     return res.status(200).json({
       success: true,
       data: { unreadCount }
@@ -240,11 +240,11 @@ userRouter.get("/notifications/count", requireAuth, async (req, res) => {
 userRouter.get("/profile-picture", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Mock profile picture storage - in production, you'd store this in database or file storage
     // For now, we'll use a simple in-memory storage or database field
     const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-
+    
     if (!user[0]) {
       return res.status(404).json({
         success: false,
@@ -323,7 +323,7 @@ userRouter.post("/profile-picture", requireAuth, async (req, res) => {
 userRouter.get("/kyc/status", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Mock KYC status - in production, fetch from database
     const kycStatus = {
       isVerified: false,
@@ -332,7 +332,7 @@ userRouter.get("/kyc/status", requireAuth, async (req, res) => {
       submittedAt: null,
       verifiedAt: null
     };
-
+    
     return res.status(200).json({
       success: true,
       data: kycStatus
@@ -350,7 +350,7 @@ userRouter.get("/kyc/status", requireAuth, async (req, res) => {
 userRouter.get("/kyc/status", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-
+    
     // Mock KYC status - in production this would come from database
     const mockKycStatus = {
       verification: {
@@ -359,7 +359,7 @@ userRouter.get("/kyc/status", requireAuth, async (req, res) => {
         issues: []
       }
     };
-
+    
     return res.status(200).json({
       success: true,
       data: mockKycStatus,
@@ -379,7 +379,7 @@ userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
     const { documents, personalInfo } = req.body;
-
+    
     // Validate required documents
     if (!documents.idFront || !documents.idBack || !documents.selfie) {
       return res.status(400).json({
@@ -387,13 +387,13 @@ userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
         message: "All documents are required"
       });
     }
-
+    
     // In production, save to database and trigger verification process
     console.log(`KYC submission for user ${userId}:`, {
       documentsReceived: Object.keys(documents),
       personalInfo
     });
-
+    
     // Mock processing result
     const submissionResult = {
       submissionId: `KYC_${Date.now()}`,
@@ -401,7 +401,7 @@ userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
       estimatedProcessingTime: '24-48 hours',
       submittedAt: new Date()
     };
-
+    
     return res.status(200).json({
       success: true,
       data: submissionResult,
@@ -413,29 +413,6 @@ userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
       success: false,
       message: "Failed to submit KYC verification"
     });
-  }
-});
-
-// Get current user
-userRouter.get('/user', requireAuth, async (req, res) => {
-  try {
-    const userId = req.session.userId;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Not authenticated' });
-    }
-
-    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-
-    if (user.length === 0) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    const { password, ...userWithoutPassword } = user[0];
-    res.json({ success: true, data: userWithoutPassword });
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
