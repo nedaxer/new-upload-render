@@ -336,6 +336,18 @@ export default function MobileHome() {
     }
   };
 
+  // Show tooltip automatically on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowHelperTooltip(true);
+      setTimeout(() => {
+        setShowHelperTooltip(false);
+      }, 3000);
+    }, 1000); // Show after 1 second of page load
+
+    return () => clearTimeout(timer);
+  }, []); // Only run once on component mount
+
   // Show different views based on current state
   if (currentView === 'crypto-selection') {
     return (
