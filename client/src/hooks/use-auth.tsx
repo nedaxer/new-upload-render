@@ -45,17 +45,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             "Content-Type": "application/json",
           },
         });
-        
+
         // Check if the response is JSON
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           console.log('Auth query: Non-JSON response received');
           return { user: null };
         }
-        
+
         const data = await res.json();
         console.log('Auth query response:', data);
-        
+
         if (data.success && data.user) {
           return { user: data.user };
         } else {
@@ -79,20 +79,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/auth/login", credentials);
       const data = await res.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || "Login failed");
       }
-      
+
       return data;
     },
-    onSuccess: (data) => {
-      console.log('Login successful, updating cache with user:', data.user);
-      // Update the auth user data in the cache immediately
-      queryClient.setQueryData(["/api/auth/user"], { user: data.user });
-      // Force immediate cache invalidation and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async (data) => {
+      // Invalidate and refetch user data
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+
+      if (data.user) {
+        queryClient.setQueryData(['/api/auth/user'], data);
+      }
+
+      // Force a refetch to ensure we have the latest user data
+      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
     },
   });
 
@@ -114,11 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: InsertUser) => {
       const res = await apiRequest("POST", "/api/auth/register", userData);
       const data = await res.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || "Registration failed");
       }
-      
+
       return data;
     },
     onSuccess: (data) => {
