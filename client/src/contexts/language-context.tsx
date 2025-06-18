@@ -632,18 +632,10 @@ const TRANSLATIONS: Record<string, any> = {
     'fileTooLarge': '文件过大',
     'uploadFailed': '上传失败',
     'transfer': '转账',
-    'convert': '兑换',
-    'invite_friends': '邀请朋友',
-    'identity_verification': '身份验证',
-    'lv1_verified': '一级认证',
-    'not_verified': '未验证',
-    'notification_center': '通知中心',
-    'help_contact': '帮助和联系支持',
     'about_us': '关于我们',
     'main_account': '主账户',
     'uid_copied': 'UID已复制到剪贴板',
     'switch_create_account': '切换/创建账户',
-    'processing': '处理中',
     'picture_updated_success': '您的头像已成功更新。',
     'picture_update_failed': '更新头像失败。请重试。',
     'select_image_file': '请选择图片文件。',
@@ -743,6 +735,182 @@ const TRANSLATIONS: Record<string, any> = {
     'dark_mode': 'Modo oscuro',
     'light_mode': 'Modo claro',
     'auto': 'Automático'
+  },
+  ja: {
+    'settings': '設定',
+    'language': '言語',
+    'search_languages': '言語を検索...',
+    'select_language': '言語を選択',
+    'save': '保存',
+    'cancel': 'キャンセル',
+    'dashboard': 'ダッシュボード',
+    'assets': '資産',
+    'trade': '取引',
+    'markets': '市場',
+    'earn': '収益',
+    'profile': 'プロフィール',
+    'balance': '残高',
+    'portfolio': 'ポートフォリオ',
+    'notifications': '通知',
+    'security': 'セキュリティ',
+    'help': 'ヘルプ',
+    'logout': 'ログアウト',
+    'welcome': 'ようこそ',
+    'total_balance': '総残高',
+    'buy': '購入',
+    'sell': '売却',
+    'deposit': '入金',
+    'withdraw': '出金',
+    'currency': '通貨',
+    'theme': 'テーマ',
+    'dark_mode': 'ダークモード',
+    'light_mode': 'ライトモード',
+    'auto': '自動',
+    'loading': '読み込み中...',
+    'error': 'エラー',
+    'try_again': '再試行',
+    'no_data': 'データなし',
+    'search': '検索',
+    'price': '価格',
+    'change': '変動',
+    'volume': '出来高',
+    'high': '高値',
+    'low': '安値',
+    'copied': 'コピー済み',
+    'transfer': '送金',
+    'about_us': '私たちについて'
+  },
+  ko: {
+    'settings': '설정',
+    'language': '언어',
+    'search_languages': '언어 검색...',
+    'select_language': '언어 선택',
+    'save': '저장',
+    'cancel': '취소',
+    'dashboard': '대시보드',
+    'assets': '자산',
+    'trade': '거래',
+    'markets': '마켓',
+    'earn': '수익',
+    'profile': '프로필',
+    'balance': '잔액',
+    'portfolio': '포트폴리오',
+    'notifications': '알림',
+    'security': '보안',
+    'help': '도움말',
+    'logout': '로그아웃',
+    'welcome': '환영합니다',
+    'total_balance': '총 잔액',
+    'buy': '매수',
+    'sell': '매도',
+    'deposit': '입금',
+    'withdraw': '출금',
+    'currency': '통화',
+    'theme': '테마',
+    'dark_mode': '다크 모드',
+    'light_mode': '라이트 모드',
+    'auto': '자동',
+    'loading': '로딩 중...',
+    'error': '오류',
+    'try_again': '다시 시도',
+    'no_data': '데이터 없음',
+    'search': '검색',
+    'price': '가격',
+    'change': '변동',
+    'volume': '거래량',
+    'high': '고가',
+    'low': '저가',
+    'copied': '복사됨',
+    'transfer': '전송',
+    'about_us': '회사 소개'
+  },
+  ar: {
+    'settings': 'الإعدادات',
+    'language': 'اللغة',
+    'search_languages': 'البحث عن اللغات...',
+    'select_language': 'اختر اللغة',
+    'save': 'حفظ',
+    'cancel': 'إلغاء',
+    'dashboard': 'لوحة القيادة',
+    'assets': 'الأصول',
+    'trade': 'التداول',
+    'markets': 'الأسواق',
+    'earn': 'الربح',
+    'profile': 'الملف الشخصي',
+    'balance': 'الرصيد',
+    'portfolio': 'المحفظة',
+    'notifications': 'الإشعارات',
+    'security': 'الأمان',
+    'help': 'المساعدة',
+    'logout': 'تسجيل الخروج',
+    'welcome': 'أهلاً وسهلاً',
+    'total_balance': 'إجمالي الرصيد',
+    'buy': 'شراء',
+    'sell': 'بيع',
+    'deposit': 'إيداع',
+    'withdraw': 'سحب',
+    'currency': 'العملة',
+    'theme': 'المظهر',
+    'dark_mode': 'الوضع المظلم',
+    'light_mode': 'الوضع الفاتح',
+    'auto': 'تلقائي',
+    'loading': 'جاري التحميل...',
+    'error': 'خطأ',
+    'try_again': 'حاول مرة أخرى',
+    'no_data': 'لا توجد بيانات',
+    'search': 'بحث',
+    'price': 'السعر',
+    'change': 'التغيير',
+    'volume': 'الحجم',
+    'high': 'أعلى',
+    'low': 'أدنى',
+    'copied': 'تم النسخ',
+    'transfer': 'تحويل',
+    'about_us': 'من نحن'
+  },
+  ru: {
+    'settings': 'Настройки',
+    'language': 'Язык',
+    'search_languages': 'Поиск языков...',
+    'select_language': 'Выберите язык',
+    'save': 'Сохранить',
+    'cancel': 'Отмена',
+    'dashboard': 'Панель управления',
+    'assets': 'Активы',
+    'trade': 'Торговля',
+    'markets': 'Рынки',
+    'earn': 'Заработок',
+    'profile': 'Профиль',
+    'balance': 'Баланс',
+    'portfolio': 'Портфель',
+    'notifications': 'Уведомления',
+    'security': 'Безопасность',
+    'help': 'Помощь',
+    'logout': 'Выйти',
+    'welcome': 'Добро пожаловать',
+    'total_balance': 'Общий баланс',
+    'buy': 'Купить',
+    'sell': 'Продать',
+    'deposit': 'Пополнить',
+    'withdraw': 'Вывести',
+    'currency': 'Валюта',
+    'theme': 'Тема',
+    'dark_mode': 'Темная тема',
+    'light_mode': 'Светлая тема',
+    'auto': 'Авто',
+    'loading': 'Загрузка...',
+    'error': 'Ошибка',
+    'try_again': 'Попробовать снова',
+    'no_data': 'Нет данных',
+    'search': 'Поиск',
+    'price': 'Цена',
+    'change': 'Изменение',
+    'volume': 'Объем',
+    'high': 'Максимум',
+    'low': 'Минимум',
+    'copied': 'Скопировано',
+    'transfer': 'Перевод',
+    'about_us': 'О нас'
   },
   fr: {
     'settings': 'Paramètres',
@@ -866,6 +1034,35 @@ const TRANSLATIONS: Record<string, any> = {
   }
 };
 
+// Function to detect browser/device language and find the best match
+function detectDeviceLanguage(): Language {
+  // Get browser language preferences
+  const browserLanguages = [
+    navigator.language,
+    ...(navigator.languages || [])
+  ];
+
+  // Try to find exact match first
+  for (const browserLang of browserLanguages) {
+    const exactMatch = LANGUAGES.find(lang => 
+      lang.code.toLowerCase() === browserLang.toLowerCase()
+    );
+    if (exactMatch) return exactMatch;
+  }
+
+  // Try to find language code match (ignore region)
+  for (const browserLang of browserLanguages) {
+    const langCode = browserLang.split('-')[0].toLowerCase();
+    const codeMatch = LANGUAGES.find(lang => 
+      lang.code.split('-')[0].toLowerCase() === langCode
+    );
+    if (codeMatch) return codeMatch;
+  }
+
+  // Default to English if no match found
+  return LANGUAGES[0];
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('selectedLanguage');
@@ -873,16 +1070,31 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       try {
         return JSON.parse(saved);
       } catch {
-        return LANGUAGES[0]; // Default to English
+        // If parsing fails, detect device language
+        return detectDeviceLanguage();
       }
     }
-    return LANGUAGES[0]; // Default to English
+    // First time user - detect their device language automatically
+    return detectDeviceLanguage();
   });
 
   const setLanguage = (language: Language) => {
     setCurrentLanguage(language);
     localStorage.setItem('selectedLanguage', JSON.stringify(language));
+    
+    // Force immediate UI update by updating the document language attribute
+    document.documentElement.lang = language.code;
+    
+    // Dispatch a custom event to notify other components of language change
+    window.dispatchEvent(new CustomEvent('languageChanged', { 
+      detail: { language } 
+    }));
   };
+
+  // Set document language on mount and when language changes
+  useEffect(() => {
+    document.documentElement.lang = currentLanguage.code;
+  }, [currentLanguage]);
 
   const t = (key: string): string => {
     const languageCode = currentLanguage.code.split('-')[0]; // Handle variants like zh-TW
