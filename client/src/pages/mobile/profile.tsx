@@ -20,10 +20,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileProfile() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,14 +99,14 @@ export default function MobileProfile() {
       // Trigger global profile update event for synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       toast({
-        title: "Profile updated",
-        description: "Your profile picture has been updated successfully."
+        title: t('profile.updated'),
+        description: t('profile.pictureUpdatedSuccess')
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Update failed",
-        description: error.message || "Failed to update profile picture. Please try again.",
+        title: t('common.updateFailed'),
+        description: error.message || t('profile.pictureUpdateFailed'),
         variant: "destructive"
       });
     }
@@ -115,8 +117,8 @@ export default function MobileProfile() {
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast({
-          title: "Invalid file type",
-          description: "Please select an image file.",
+          title: t('common.invalidFileType'),
+          description: t('profile.selectImageFile'),
           variant: "destructive"
         });
         return;
@@ -124,8 +126,8 @@ export default function MobileProfile() {
 
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
-          title: "File too large",
-          description: "Please select an image smaller than 5MB.",
+          title: t('common.fileTooLarge'),
+          description: t('profile.selectSmallerImage'),
           variant: "destructive"
         });
         return;
@@ -138,8 +140,8 @@ export default function MobileProfile() {
       };
       reader.onerror = () => {
         toast({
-          title: "Upload failed",
-          description: "Failed to read the image file. Please try again.",
+          title: t('common.uploadFailed'),
+          description: t('profile.failedToReadImage'),
           variant: "destructive"
         });
       };
@@ -162,13 +164,13 @@ export default function MobileProfile() {
   const menuItems = [
     {
       icon: Users,
-      label: 'Invite Friends',
+      label: t('profile.inviteFriends'),
       href: '/mobile/invite-friends',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Shield,
-      label: 'Identity Verification',
+      label: t('profile.identityVerification'),
       href: '/mobile/kyc',
       rightElement: (
         <div className="flex items-center space-x-2">
@@ -180,10 +182,10 @@ export default function MobileProfile() {
                 : 'text-red-500'
           }`}>
             {kycStatus?.isVerified 
-              ? 'Lv.1 Verified' 
+              ? t('profile.lv1Verified')
               : kycStatus?.status === 'processing'
-                ? 'Processing'
-                : 'Not Verified'
+                ? t('profile.processing')
+                : t('profile.notVerified')
             }
           </span>
           <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -192,25 +194,25 @@ export default function MobileProfile() {
     },
     {
       icon: Settings,
-      label: 'Security',
+      label: t('profile.security'),
       href: '/mobile/security',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Bell,
-      label: 'Notification Center',
+      label: t('profile.notificationCenter'),
       href: '/mobile/notifications',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Headphones,
-      label: 'Help & Contact Support',
+      label: t('profile.helpContact'),
       href: '/company/contact',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Info,
-      label: 'About Us',
+      label: t('profile.aboutUs'),
       href: '/company/about',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     }
@@ -269,7 +271,7 @@ export default function MobileProfile() {
             </div>
             <div className="flex items-center space-x-2 mt-1">
               <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium">
-                Main Account
+                {t('profile.mainAccount')}
               </span>
               <div className="flex items-center space-x-1">
                 <span className="text-gray-400 text-sm">
@@ -282,8 +284,8 @@ export default function MobileProfile() {
                 onClick={() => {
                   navigator.clipboard.writeText(generateUID());
                   toast({
-                    title: "Copied",
-                    description: "UID copied to clipboard",
+                    title: t('common.copied'),
+                    description: t('profile.uidCopied'),
                   });
                 }}
               />
