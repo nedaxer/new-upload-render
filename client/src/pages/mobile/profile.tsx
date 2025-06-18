@@ -97,14 +97,14 @@ export default function MobileProfile() {
       // Trigger global profile update event for synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       toast({
-        title: t('profile.updated'),
-        description: t('profile.pictureUpdatedSuccess')
+        title: t('profile_updated'),
+        description: t('picture_updated_success')
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('common.updateFailed'),
-        description: error.message || t('profile.pictureUpdateFailed'),
+        title: t('updateFailed'),
+        description: error.message || t('picture_update_failed'),
         variant: "destructive"
       });
     }
@@ -115,8 +115,8 @@ export default function MobileProfile() {
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast({
-          title: t('common.invalidFileType'),
-          description: t('profile.selectImageFile'),
+          title: t('invalidFileType'),
+          description: t('select_image_file'),
           variant: "destructive"
         });
         return;
@@ -124,8 +124,8 @@ export default function MobileProfile() {
 
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
-          title: t('common.fileTooLarge'),
-          description: t('profile.selectSmallerImage'),
+          title: t('fileTooLarge'),
+          description: t('select_smaller_image'),
           variant: "destructive"
         });
         return;
@@ -138,8 +138,8 @@ export default function MobileProfile() {
       };
       reader.onerror = () => {
         toast({
-          title: t('common.uploadFailed'),
-          description: t('profile.failedToReadImage'),
+          title: t('uploadFailed'),
+          description: t('failed_to_read_image'),
           variant: "destructive"
         });
       };
