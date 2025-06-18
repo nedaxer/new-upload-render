@@ -66,6 +66,28 @@ export default function MobileHome() {
     };
   }, [queryClient]);
 
+  // Show tooltip on login (when user data becomes available)
+  useEffect(() => {
+    if (user && user.username) {
+      // Check if this is a fresh login session
+      const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
+      
+      if (!hasShownTooltip) {
+        const timer = setTimeout(() => {
+          setShowHelperTooltip(true);
+          sessionStorage.setItem('hasShownWelcomeTooltip', 'true');
+          
+          // Auto-hide after 4 seconds
+          setTimeout(() => {
+            setShowHelperTooltip(false);
+          }, 4000);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
   // Fetch real-time price data
   const { data: priceData } = useQuery({
     queryKey: ['/api/crypto/prices'],
@@ -336,17 +358,7 @@ export default function MobileHome() {
     }
   };
 
-  // Show tooltip automatically on page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowHelperTooltip(true);
-      setTimeout(() => {
-        setShowHelperTooltip(false);
-      }, 3000);
-    }, 1000); // Show after 1 second of page load
-
-    return () => clearTimeout(timer);
-  }, []); // Only run once on component mount
+  
 
   // Show different views based on current state
   if (currentView === 'crypto-selection') {
@@ -470,11 +482,14 @@ export default function MobileHome() {
               </Link>
             </div>
             {showHelperTooltip && (
-              <div className="absolute top-12 -right-4 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-                <div className="absolute -top-1 right-6 w-2 h-2 bg-orange-500 rotate-45"></div>
-                Hello! I am here to answer your questions
+              <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+                <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
+                Hello {user?.username || user?.firstName || 'there'}! How can I assist you?
               </div>
-            )}
+            )}</div>
+          </div>
+        </div>
+      </div>
           </div>
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
