@@ -145,14 +145,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <motion.div
                   key={`clone-${index}`}
                   initial={{
-                    x: 0,
-                    y: 0,
                     opacity: 0,
                     scale: 0.8,
                   }}
                   animate={{
-                    x: 0,
-                    y: 0,
                     opacity: 1,
                     scale: 1,
                   }}
@@ -161,7 +157,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                     duration: 0.5,
                     ease: "easeOut",
                   }}
-                  className="absolute pointer-events-none"
+                  className="relative"
                 >
                   <motion.img
                     src={letter.src}
