@@ -24,6 +24,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/language-context';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
