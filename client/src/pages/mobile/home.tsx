@@ -349,7 +349,14 @@ export default function MobileHome() {
   };
 
   const watchlistMarkets = getWatchlistMarkets();
-  const marketTabs = ['Favorites', 'Hot', 'New', 'Gainers', 'Losers', 'Turnover'];
+  const marketTabs = [
+    { key: 'Favorites', label: t('favorites') },
+    { key: 'Hot', label: t('hot') },
+    { key: 'New', label: t('new') },
+    { key: 'Gainers', label: t('gainers') },
+    { key: 'Losers', label: t('losers') },
+    { key: 'Turnover', label: t('turnover') }
+  ];
 
   const handleHelperClick = () => {
     if (!showHelperTooltip) {
@@ -565,7 +572,7 @@ export default function MobileHome() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CreditCard className="w-6 h-6 text-orange-500" />
-              <span className="text-white">Apply Now!</span>
+              <span className="text-white">{t('apply_now')}</span>
             </div>
             <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
               <ArrowUp className="w-4 h-4" />
@@ -597,25 +604,25 @@ export default function MobileHome() {
         <div className="flex space-x-4 mb-4 overflow-x-auto scrollbar-hide">
           {marketTabs.map((tab) => (
             <button 
-              key={tab}
-              onClick={() => setActiveWatchlistTab(tab)}
+              key={tab.key}
+              onClick={() => setActiveWatchlistTab(tab.key)}
               className={`whitespace-nowrap pb-2 transition-colors ${
-                activeWatchlistTab === tab 
+                activeWatchlistTab === tab.key 
                   ? 'text-orange-500 border-b-2 border-orange-500' 
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
 
         <div className="flex space-x-4 mb-4">
           <button className="text-orange-500 border-b-2 border-orange-500 pb-2 font-medium">
-            Spot
+            {t('spot')}
           </button>
           <button className="text-gray-400 pb-2">
-            Derivatives
+            {t('derivatives')}
           </button>
         </div>
 
@@ -624,7 +631,7 @@ export default function MobileHome() {
           {watchlistMarkets.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-400">
-                {activeWatchlistTab === 'Favorites' ? 'No favorites selected' : 'Loading market data...'}
+                {activeWatchlistTab === 'Favorites' ? t('no_favorites_selected') : t('loading_market_data')}
               </p>
             </div>
           ) : (

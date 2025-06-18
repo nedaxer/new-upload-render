@@ -247,7 +247,12 @@ const TRANSLATIONS: Record<string, any> = {
     'open': 'Open',
     'filled_order': 'Filled',
     'cancelled': 'Cancelled',
-    'partially_filled': 'Partially Filled'
+    'partially_filled': 'Partially Filled',
+    'apply_now': 'Apply Now!',
+    'derivatives': 'Derivatives',
+    'no_favorites_selected': 'No favorites selected',
+    'loading_market_data': 'Loading market data...',
+    'vol': 'Vol'
   },
   zh: {
     'settings': '设置',
@@ -333,7 +338,12 @@ const TRANSLATIONS: Record<string, any> = {
     'open': '开放',
     'filled_order': '已成交',
     'cancelled': '已取消',
-    'partially_filled': '部分成交'
+    'partially_filled': '部分成交',
+    'apply_now': '立即申请！',
+    'derivatives': '衍生品',
+    'no_favorites_selected': '未选择收藏',
+    'loading_market_data': '加载市场数据中...',
+    'vol': '成交量'
   },
   ja: {
     'settings': '設定',
