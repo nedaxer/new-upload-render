@@ -25,6 +25,7 @@ import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function MobileAssets() {
   const [showBalance, setShowBalance] = useState(true);
@@ -37,6 +38,7 @@ export default function MobileAssets() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const { t } = useLanguage();
 
   // Load currency from localStorage
   useEffect(() => {
@@ -164,7 +166,7 @@ export default function MobileAssets() {
 
   const handlePaymentMethodSelect = (method: string) => {
     setDepositModalOpen(false);
-    
+
     if (method === 'crypto') {
       setCurrentView('crypto-selection');
     } else if (method === 'buy-usd') {
@@ -305,7 +307,7 @@ export default function MobileAssets() {
     <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900">
-        <h1 className="text-xl font-bold text-white">My Assets</h1>
+        <h1 className="text-xl font-bold text-white">{t('assets')}</h1>
         <button onClick={handleQRScan} className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
           <QrCode className="w-4 h-4 text-gray-400" />
         </button>
@@ -316,7 +318,7 @@ export default function MobileAssets() {
       {/* Total Assets */}
       <div className="px-4 pb-6">
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-400 text-sm">Total Assets</span>
+          <span className="text-gray-400 text-sm">{t('totalAssets')}</span>
           <button onClick={() => setShowBalance(!showBalance)}>
             {showBalance ? (
               <Eye className="w-4 h-4 text-gray-400" />
@@ -325,7 +327,7 @@ export default function MobileAssets() {
             )}
           </button>
         </div>
-        
+
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
@@ -359,8 +361,8 @@ export default function MobileAssets() {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-transparent to-gray-900/60" />
           <div className="absolute inset-0 flex items-center justify-between px-4">
             <div className="text-white">
-              <div className="text-sm font-medium opacity-90">Advanced Trading</div>
-              <div className="text-xs text-gray-300">Live Market Analysis</div>
+              <div className="text-sm font-medium opacity-90">{t('advancedTrading')}</div>
+              <div className="text-xs text-gray-300">{t('liveMarketAnalysis')}</div>
             </div>
             <div className="text-right">
               <div className="text-orange-500 text-lg font-bold">+2.4%</div>
@@ -369,7 +371,7 @@ export default function MobileAssets() {
           </div>
         </div>
 
-        
+
       </div>
 
       {/* Quick Actions */}
@@ -380,34 +382,34 @@ export default function MobileAssets() {
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <Wallet className="w-7 h-7 text-orange-500" />
               </div>
-              <span className="text-xs text-gray-300 text-center">Deposit</span>
+              <span className="text-xs text-gray-300 text-center">{t('deposit')}</span>
             </div>
           </button>
-          
+
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <ArrowUp className="w-7 h-7 text-orange-500" />
               </div>
-              <span className="text-xs text-gray-300 text-center">Withdraw</span>
+              <span className="text-xs text-gray-300 text-center">{t('withdraw')}</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="w-7 h-7 text-orange-500" />
               </div>
-              <span className="text-xs text-gray-300 text-center">Transfer</span>
+              <span className="text-xs text-gray-300 text-center">{t('transfer')}</span>
             </div>
           </Link>
-          
+
           <Link href="/mobile/convert">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="w-7 h-7 text-orange-500 transform rotate-45" />
               </div>
-              <span className="text-xs text-gray-300 text-center">Convert</span>
+              <span className="text-xs text-gray-300 text-center">{t('convert')}</span>
             </div>
           </Link>
         </div>
@@ -415,8 +417,8 @@ export default function MobileAssets() {
 
       {/* Portfolio Circle Chart */}
       <div className="px-4">
-        <h3 className="text-white font-medium mb-6 text-sm">Portfolio Distribution</h3>
-        
+        <h3 className="text-white font-medium mb-6 text-sm">{t('portfolioDistribution')}</h3>
+
         {/* Circular Portfolio Chart */}
         <div className="relative flex flex-col items-center mb-8">
           {/* Donut Chart Container */}
@@ -447,10 +449,10 @@ export default function MobileAssets() {
                     <stop offset="100%" stopColor="#cc5500" />
                   </linearGradient>
                 </defs>
-                
+
                 {/* Clean background */}
                 <circle cx="100" cy="100" r="70" fill="transparent" stroke="#1f2937" strokeWidth="20" opacity="0.3" />
-                
+
                 {/* Bitcoin segment (49.5%) - Authentic Orange */}
                 <circle
                   cx="100"
@@ -464,7 +466,7 @@ export default function MobileAssets() {
                   className="opacity-0 animate-[segmentDraw_1.5s_ease-out_0.5s_forwards]"
                   style={{ filter: 'drop-shadow(0 0 8px #f7931a60)' }}
                 />
-                
+
                 {/* Ethereum segment (24.5%) - Authentic Blue */}
                 <circle
                   cx="100"
@@ -478,7 +480,7 @@ export default function MobileAssets() {
                   className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1s_forwards]"
                   style={{ filter: 'drop-shadow(0 0 8px #627eea60)' }}
                 />
-                
+
                 {/* Litecoin segment (4.7%) - Authentic Silver */}
                 <circle
                   cx="100"
@@ -492,7 +494,7 @@ export default function MobileAssets() {
                   className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1.5s_forwards]"
                   style={{ filter: 'drop-shadow(0 0 8px #bfbbbb60)' }}
                 />
-                
+
                 {/* IOTA segment (4.3%) - Authentic Dark Blue */}
                 <circle
                   cx="100"
@@ -506,7 +508,7 @@ export default function MobileAssets() {
                   className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2s_forwards]"
                   style={{ filter: 'drop-shadow(0 0 8px #131f3760)' }}
                 />
-                
+
                 {/* Monero segment (3.1%) - Authentic Orange-Red */}
                 <circle
                   cx="100"
@@ -520,7 +522,7 @@ export default function MobileAssets() {
                   className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2.5s_forwards]"
                   style={{ filter: 'drop-shadow(0 0 8px #ff660060)' }}
                 />
-                
+
                 {/* Others combined (15.9%) - Mixed Colors */}
                 <circle
                   cx="100"
@@ -535,16 +537,16 @@ export default function MobileAssets() {
                   style={{ filter: 'drop-shadow(0 0 8px #8b949e40)' }}
                 />
               </svg>
-              
+
               {/* Center content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 animate-[fadeIn_1s_ease-out_4s_forwards]">
                 <div className="text-xl font-bold text-white">
                   {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
                 </div>
-                <div className="text-xs text-gray-400">Total Value</div>
+                <div className="text-xs text-gray-400">{t('totalValue')}</div>
               </div>
             </div>
-            
+
             {/* Enhanced connecting lines with authentic colors */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 320 320">
               {/* Bitcoin line - Authentic Orange */}
@@ -556,7 +558,7 @@ export default function MobileAssets() {
                 className="opacity-0 animate-[lineAppear_0.8s_ease-out_4.5s_forwards]"
                 style={{ filter: 'drop-shadow(0 0 4px #f7931a80)' }}
               />
-              
+
               {/* Ethereum line - Authentic Blue */}
               <line 
                 x1="118" y1="242" x2="65" y2="295" 
@@ -566,7 +568,7 @@ export default function MobileAssets() {
                 className="opacity-0 animate-[lineAppear_0.8s_ease-out_5s_forwards]"
                 style={{ filter: 'drop-shadow(0 0 4px #627eea80)' }}
               />
-              
+
               {/* Litecoin line - Authentic Silver */}
               <line 
                 x1="77" y1="160" x2="20" y2="160" 
@@ -576,7 +578,7 @@ export default function MobileAssets() {
                 className="opacity-0 animate-[lineAppear_0.8s_ease-out_5.5s_forwards]"
                 style={{ filter: 'drop-shadow(0 0 4px #bfbbbb80)' }}
               />
-              
+
               {/* IOTA line - Authentic Dark Blue */}
               <line 
                 x1="105" y1="105" x2="60" y2="60" 
@@ -586,7 +588,7 @@ export default function MobileAssets() {
                 className="opacity-0 animate-[lineAppear_0.8s_ease-out_6s_forwards]"
                 style={{ filter: 'drop-shadow(0 0 4px #131f3780)' }}
               />
-              
+
               {/* Monero line - Authentic Orange-Red */}
               <line 
                 x1="160" y1="77" x2="160" y2="20" 
@@ -596,7 +598,7 @@ export default function MobileAssets() {
                 className="opacity-0 animate-[lineAppear_0.8s_ease-out_6.5s_forwards]"
                 style={{ filter: 'drop-shadow(0 0 4px #ff660080)' }}
               />
-              
+
               {/* Others line - Mixed Gray */}
               <line 
                 x1="225" y1="105" x2="280" y2="65" 
@@ -607,40 +609,40 @@ export default function MobileAssets() {
                 style={{ filter: 'drop-shadow(0 0 4px #8b949e80)' }}
               />
             </svg>
-            
+
             {/* Crypto labels with authentic colors */}
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_4.5s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#f7931a' }}>Bitcoin</div>
               <div className="text-white text-xs">49.5%</div>
             </div>
-            
+
             <div className="absolute left-4 bottom-4 opacity-0 animate-[labelSlide_0.6s_ease-out_5s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#627eea' }}>Ethereum</div>
               <div className="text-white text-xs">24.5%</div>
             </div>
-            
+
             <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 animate-[labelSlide_0.6s_ease-out_5.5s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#bfbbbb' }}>Litecoin</div>
               <div className="text-white text-xs">4.7%</div>
             </div>
-            
+
             <div className="absolute left-4 top-4 opacity-0 animate-[labelSlide_0.6s_ease-out_6s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#131f37' }}>IOTA</div>
               <div className="text-white text-xs">4.3%</div>
             </div>
-            
+
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center opacity-0 animate-[labelSlide_0.6s_ease-out_6.5s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#ff6600' }}>Monero</div>
               <div className="text-white text-xs">3.1%</div>
             </div>
-            
+
             <div className="absolute right-4 top-4 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_7s_forwards]">
               <div className="text-sm font-bold" style={{ color: '#8b949e' }}>Others</div>
               <div className="text-white text-xs">15.9%</div>
             </div>
           </div>
         </div>
-        
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gray-800 rounded-lg p-4">
@@ -648,7 +650,7 @@ export default function MobileAssets() {
             <div className="text-green-500 text-lg font-bold">+2.4%</div>
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-gray-400 text-xs mb-1">Total Profit</div>
+            <div className="text-gray-400 text-xs mb-1">{t('totalProfit')}</div>
             <div className="text-orange-500 text-lg font-bold">
               {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.12) : '+***'}
             </div>

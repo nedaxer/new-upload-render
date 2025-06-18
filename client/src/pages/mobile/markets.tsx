@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { hapticLight } from '@/lib/haptics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BybitTicker {
   symbol: string;
@@ -85,6 +86,7 @@ export default function MobileMarkets() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState('Hot');
   const [activeMarketType, setActiveMarketType] = useState('Spot');
+  const { t } = useLanguage();
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -100,7 +102,7 @@ export default function MobileMarkets() {
     const newFavorites = favoriteCoins.includes(symbol)
       ? favoriteCoins.filter(id => id !== symbol)
       : [...favoriteCoins, symbol];
-    
+
     setFavoriteCoins(newFavorites);
     localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
   };
@@ -127,7 +129,7 @@ export default function MobileMarkets() {
     const price = parseFloat(ticker.lastPrice);
     const change = parseFloat(ticker.price24hPcnt);
     const volume = parseFloat(ticker.turnover24h);
-    
+
     return {
       symbol: baseSymbol,
       pair: ticker.symbol,
@@ -155,7 +157,7 @@ export default function MobileMarkets() {
   // Filter markets based on active tab
   const getFilteredMarkets = () => {
     let filtered = searchFilteredMarkets;
-    
+
     switch (activeTab) {
       case 'Favorites':
         filtered = filtered.filter(market => market.favorite);
@@ -182,7 +184,7 @@ export default function MobileMarkets() {
       default:
         filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
     }
-    
+
     return filtered;
   };
 
@@ -200,7 +202,7 @@ export default function MobileMarkets() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
-            placeholder="BDXN/USDT"
+            placeholder={`${t('search')} ${t('markets').toLowerCase()}...`}
             className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
