@@ -53,19 +53,19 @@
     width: 1px;
     height: 1px;
     background-image: 
-      url('/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png'),
-      url('/src/assets/20250618_001640_1750207793691.png'),
-      url('/src/assets/20250618_001710_1750207793694.png'),
-      url('/src/assets/20250618_001748_1750207793698.png'),
-      url('/src/assets/20250618_001828_1750207793703.png'),
-      url('/src/assets/20250618_001859_1750207793716.png'),
-      url('/src/assets/20250618_001938_1750207793727.png'),
-      url('/src/assets/20250618_002006_1750207793730.png');
+      url('/images/splash-background.png'),
+      url('/images/letter-n.png'),
+      url('/images/letter-e1.png'),
+      url('/images/letter-d.png'),
+      url('/images/letter-a.png'),
+      url('/images/letter-x.png'),
+      url('/images/letter-e2.png'),
+      url('/images/letter-r.png');
   }
   
   /* Instant splash screen background */
   .splash-background {
-    background-image: url('/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png');
+    background-image: url('/images/splash-background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
