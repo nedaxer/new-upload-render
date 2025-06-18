@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { hapticLight } from '@/lib/haptics';
+import { useLanguage } from '@/contexts/language-context';
 
 interface BybitTicker {
   symbol: string;

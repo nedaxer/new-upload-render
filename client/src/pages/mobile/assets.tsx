@@ -28,6 +28,7 @@ import { useLanguage } from '@/contexts/language-context';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
+  const { t } = useLanguage();
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'

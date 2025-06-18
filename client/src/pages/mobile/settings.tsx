@@ -263,11 +263,11 @@ export default function MobileSettings() {
       <div className="p-4 space-y-6">
         {/* Account Info Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Account Info</h2>
+          <h2 className="text-lg font-semibold mb-4">{t('account_info')}</h2>
           
           {/* Profile Picture */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Profile Picture</span>
+            <span className="text-gray-300">{t('profile_picture')}</span>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.profilePicture || ''} />
@@ -442,7 +442,7 @@ export default function MobileSettings() {
             onClick={() => setLocation('/mobile/currency-selection')}
             className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
           >
-            <span>Currency Display</span>
+            <span>{t('currency_display')}</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">
                 {settings.currency}
@@ -453,7 +453,7 @@ export default function MobileSettings() {
 
           {/* Color Theme */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Color Theme</span>
+            <span className="text-gray-300">{t('color_theme')}</span>
             <div className="flex items-center gap-2">
               <Select
                 value={settings.theme}
@@ -463,9 +463,9 @@ export default function MobileSettings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Light Mode">Light</SelectItem>
-                  <SelectItem value="Dark Mode">Dark</SelectItem>
-                  <SelectItem value="Auto">Auto</SelectItem>
+                  <SelectItem value="Light Mode">{t('light_mode')}</SelectItem>
+                  <SelectItem value="Dark Mode">{t('dark_mode')}</SelectItem>
+                  <SelectItem value="Auto">{t('auto')}</SelectItem>
                 </SelectContent>
               </Select>
               <ChevronRight className="h-4 w-4 text-gray-400" />
