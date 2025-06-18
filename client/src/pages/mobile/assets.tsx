@@ -387,7 +387,7 @@ export default function MobileAssets() {
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
-                <ArrowUp className="w-7 h-7 text-blue-500" />
+                <ArrowUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Withdraw</span>
             </div>
