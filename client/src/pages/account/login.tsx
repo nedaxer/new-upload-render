@@ -22,11 +22,11 @@ export default function Login() {
   const { toast } = useToast();
   const { user, loginMutation } = useAuth();
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect to mobile home
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to dashboard');
-      setLocation('/dashboard');
+      console.log('User already logged in, redirecting to mobile home');
+      setLocation('/mobile');
       return;
     }
 
@@ -66,9 +66,9 @@ export default function Login() {
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
 
-      // Force immediate redirect to dashboard
-      console.log('Login successful, redirecting to dashboard');
-      setLocation('/dashboard');
+      // Force immediate redirect to mobile home
+      console.log('Login successful, redirecting to mobile home');
+      setLocation('/mobile');
 
     } catch (error: any) {
       console.error('Login error:', error);
