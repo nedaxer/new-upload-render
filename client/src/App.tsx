@@ -4,6 +4,8 @@ import { useHashLocation } from './hooks/use-hash-location';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/hooks/use-auth';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
@@ -160,9 +162,11 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router hook={useHashLocation}>
-          <Switch>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Router hook={useHashLocation}>
+              <Switch>
             {/* Home route with auth redirect */}
             <Route path="/">
               {(params) => (
@@ -276,11 +280,13 @@ export default function App() {
 
             {/* 404 Route */}
             <Route component={NotFound} />
-          </Switch>
-        </Router>
-        <Toaster />
-        <PWAInstallPrompt />
-      </AuthProvider>
+            </Switch>
+          </Router>
+            <Toaster />
+            <PWAInstallPrompt />
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
