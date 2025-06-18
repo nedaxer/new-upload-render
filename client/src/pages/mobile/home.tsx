@@ -486,10 +486,9 @@ export default function MobileHome() {
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
                 Hello {user?.username || user?.firstName || 'there'}! How can I assist you?
               </div>
-            )}</div>
+            )}
           </div>
-        </div>
-        <Link href="/mobile/notifications">
+          <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
               {notificationData?.data?.unreadCount > 0 && (
