@@ -50,6 +50,8 @@ export default function MobileTrade() {
   
   // Chart state
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
+  const [currentPrice, setCurrentPrice] = useState<string>('');
+  const [currentTicker, setCurrentTicker] = useState<any>(null);
   const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -171,32 +173,18 @@ export default function MobileTrade() {
 
   const updatePrice = async (symbol: string) => {
     try {
-      const res = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol}`);
-      const data = await res.json();
+      const response = await fetch('/api/bybit/tickers');
+      const data = await response.json();
       
-      if (data.result && data.result.list && data.result.list[0]) {
-        const tickerData = data.result.list[0];
-        const price = parseFloat(tickerData.lastPrice).toFixed(2);
-        const high = parseFloat(tickerData.highPrice24h).toFixed(2);
-        const low = parseFloat(tickerData.lowPrice24h).toFixed(2);
-        const turnover = (parseFloat(tickerData.turnover24h) / 1e6).toFixed(2);
-
-        const coinSymbolEl = document.getElementById("coin-symbol");
-        const coinPriceEl = document.getElementById("coin-price");
-        const coinPriceUsdEl = document.getElementById("coin-price-usd");
-        const highEl = document.getElementById("high");
-        const lowEl = document.getElementById("low");
-        const turnoverEl = document.getElementById("turnover");
-
-        if (coinSymbolEl) coinSymbolEl.textContent = symbol.replace("USDT", "/USDT");
-        if (coinPriceEl) coinPriceEl.textContent = price;
-        if (coinPriceUsdEl) coinPriceUsdEl.textContent = price;
-        if (highEl) highEl.textContent = high;
-        if (lowEl) lowEl.textContent = low;
-        if (turnoverEl) turnoverEl.textContent = turnover + "M";
+      if (data.success && data.data) {
+        const ticker = data.data.find((t: any) => t.symbol === symbol);
+        if (ticker) {
+          setCurrentTicker(ticker);
+          setCurrentPrice(parseFloat(ticker.lastPrice).toFixed(2));
+        }
       }
-    } catch (e) {
-      console.error("Price fetch error:", e);
+    } catch (error) {
+      console.error('Price update error:', error);
     }
   };
 
@@ -464,9 +452,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="flex-1 flex flex-col bg-gray-900">
+        <div className="flex-1 overflow-y-auto bg-gray-900">
           {/* Coin Header - Positioned under chart/trade tabs */}
-          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
+          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
             <div className="flex items-center space-x-4">
               <div 
                 id="coin-symbol" 
@@ -474,16 +462,16 @@ export default function MobileTrade() {
                 onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
                   document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
               >
-                BTC/USDT
+                {currentSymbol}
               </div>
               <div className="text-lg font-bold text-green-400">
-                $<span id="coin-price">--</span>
+                $<span id="coin-price">{currentPrice || '--'}</span>
               </div>
             </div>
             <div className="text-right text-xs leading-relaxed text-gray-300">
-              <div>24h High: <span id="high" className="text-white">--</span></div>
-              <div>24h Low: <span id="low" className="text-white">--</span></div>
-              <div>Vol: <span id="turnover" className="text-white">--</span>M</div>
+              <div>24h High: <span id="high" className="text-white">{currentTicker?.highPrice24h || '--'}</span></div>
+              <div>24h Low: <span id="low" className="text-white">{currentTicker?.lowPrice24h || '--'}</span></div>
+              <div>Vol: <span id="turnover" className="text-white">{currentTicker?.volume24h ? (parseFloat(currentTicker.volume24h) / 1000000).toFixed(1) : '--'}M</span></div>
             </div>
           </div>
 
@@ -493,15 +481,11 @@ export default function MobileTrade() {
             className="absolute bg-gray-800 border border-gray-600 top-20 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Improved display */}
-          <div className="flex-1 relative bg-gray-900 mb-16">
+          {/* Chart Container - Fixed height for proper display */}
+          <div className="relative bg-gray-900" style={{ height: '500px' }}>
             <div 
               id="chart" 
               className="w-full h-full"
-              style={{
-                minHeight: '400px',
-                height: 'calc(100vh - 280px)'
-              }}
             ></div>
             <div 
               className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
@@ -522,8 +506,8 @@ export default function MobileTrade() {
             ></div>
           </div>
 
-          {/* Buy/Sell Panel - Within trade page only */}
-          <div className="bg-gray-800 border-t border-gray-700 p-3">
+          {/* Buy/Sell Panel - Scrollable within content */}
+          <div className="bg-gray-800 border-t border-gray-700 p-3 mt-4">
             <div className="flex gap-2">
               <button 
                 onClick={handleBuyClick}
@@ -539,6 +523,9 @@ export default function MobileTrade() {
               </button>
             </div>
           </div>
+
+          {/* Extra space to ensure content is scrollable */}
+          <div className="h-20"></div>
         </div>
       )}
 
