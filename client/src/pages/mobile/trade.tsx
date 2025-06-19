@@ -496,16 +496,26 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            {/* TradingView Logo Cover */}
+            {/* TradingView Logo Cover - Positioned to cover TradingView branding */}
             <div 
-              className="absolute bottom-2 right-2 w-16 h-8 bg-gray-900 z-50 pointer-events-none"
+              id="branding-cover"
+              className="absolute w-12 h-12 bg-gray-900 z-50 pointer-events-auto shadow-md"
               style={{
+                bottom: '28px',
+                left: '12px',
+                borderRadius: '8px',
                 backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
-                backgroundSize: 'cover',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
-                borderRadius: '4px'
+                boxShadow: '0 0 4px #000'
               }}
-            ></div>
+            >
+              <div 
+                className="absolute inset-0 z-50 bg-transparent pointer-events-auto"
+                style={{ zIndex: 10000 }}
+              ></div>
+            </div>
           </div>
 
           {/* Buy/Sell Panel - Scrollable within content */}
