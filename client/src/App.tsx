@@ -127,14 +127,13 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Always show splash screen for testing the optimizations
-    // Comment out the cache check temporarily to test the improvements
-    // const lastSplashTime = localStorage.getItem('lastSplashTime');
-    // const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    // 
-    // if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
-    //   setShowSplash(false);
-    // }
+    // Check if splash was shown recently
+    const lastSplashTime = localStorage.getItem('lastSplashTime');
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    
+    if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
+      setShowSplash(false);
+    }
     
     // Just a small delay to ensure all routes are registered
     const timer = setTimeout(() => {
