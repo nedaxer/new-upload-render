@@ -62,7 +62,9 @@ export default function MobileTrade() {
     if (typeof window !== 'undefined' && (window as any).TradingView) {
       chartWidget.current = new (window as any).TradingView.widget({
         container_id: "chart",
-        autosize: true,
+        autosize: false,
+        width: "100%",
+        height: "100%",
         symbol: symbol,
         interval: "15",
         timezone: "Etc/UTC",
@@ -81,6 +83,7 @@ export default function MobileTrade() {
         studies: [],
         drawings_access: { type: 'black', tools: [] },
         crosshair: { mode: 1 },
+        save_image: false,
         overrides: {
           // Background colors to match site theme - remove all transparency
           "paneProperties.background": "#111827",
@@ -463,77 +466,79 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="fixed top-32 left-0 right-0 bottom-0 bg-gray-900 flex flex-col">
-          {/* Custom Trading Chart */}
-          <div className="flex-1 flex flex-col">
-            {/* Coin Header */}
-            <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
-              <div className="flex flex-col">
-                <div 
-                  id="coin-symbol" 
-                  className="text-base font-bold text-white cursor-pointer"
-                  onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
-                    document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
-                >
-                  BTC/USDT
-                </div>
-                <div className="text-xs mt-1 text-gray-400">
-                  Price: <span id="coin-price" className="text-white">--</span> USD
-                </div>
-                <div className="text-xs text-gray-500">
-                  ≈ <span id="coin-price-usd">--</span> USD
-                </div>
+        <div className="flex-1 flex flex-col bg-gray-900">
+          {/* Coin Header - Positioned under chart/trade tabs */}
+          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
+            <div className="flex items-center space-x-4">
+              <div 
+                id="coin-symbol" 
+                className="text-lg font-bold text-white cursor-pointer"
+                onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
+                  document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
+              >
+                BTC/USDT
               </div>
-              <div className="text-right text-xs leading-relaxed text-gray-300">
-                <div>24h High: <span id="high">--</span></div>
-                <div>24h Low: <span id="low">--</span></div>
-                <div>Turnover: <span id="turnover">--</span></div>
+              <div className="text-lg font-bold text-green-400">
+                $<span id="coin-price">--</span>
               </div>
             </div>
+            <div className="text-right text-xs leading-relaxed text-gray-300">
+              <div>24h High: <span id="high" className="text-white">--</span></div>
+              <div>24h Low: <span id="low" className="text-white">--</span></div>
+              <div>Vol: <span id="turnover" className="text-white">--</span>M</div>
+            </div>
+          </div>
 
-            {/* Coin Menu */}
+          {/* Coin Menu */}
+          <div 
+            id="coin-menu" 
+            className="absolute bg-gray-800 border border-gray-600 top-20 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
+          ></div>
+
+          {/* Chart Container - Fixed height with horizontal scrolling */}
+          <div className="flex-1 relative bg-gray-900" style={{ paddingBottom: '60px' }}>
             <div 
-              id="coin-menu" 
-              className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
+              id="chart" 
+              className="w-full h-full"
+              style={{ 
+                minWidth: '100%',
+                overflowX: 'auto',
+                overflowY: 'hidden'
+              }}
             ></div>
+            <div 
+              className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
+              style={{
+                backgroundImage: "url('https://i.imgur.com/F9ljfzP.png')",
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center'
+              }}
+            ></div>
+            <div 
+              className="absolute bottom-16 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
+              style={{
+                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            ></div>
+          </div>
 
-            {/* Chart Container - Full Height */}
-            <div className="flex-1 relative bg-gray-900">
-              <div id="chart" className="w-full" style={{ height: 'calc(100% - 60px)' }}></div>
-              <div 
-                className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
-                style={{
-                  backgroundImage: "url('https://i.imgur.com/F9ljfzP.png')",
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center'
-                }}
-              ></div>
-              <div 
-                className="absolute bottom-16 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
-                style={{
-                  backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              ></div>
-              
-              {/* Buy/Sell Buttons */}
-              <div className="absolute bottom-0 left-0 right-0 flex gap-2 p-3 bg-gray-900">
-                <button 
-                  onClick={handleBuyClick}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
-                >
-                  Buy
-                </button>
-                <button 
-                  onClick={handleSellClick}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
-                >
-                  Sell
-                </button>
-              </div>
-            </div>
+          {/* Fixed Buy/Sell Panel - Cannot be scrolled */}
+          <div className="fixed bottom-0 left-0 right-0 flex gap-2 p-3 bg-gray-800 border-t border-gray-700 z-50">
+            <button 
+              onClick={handleBuyClick}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+            >
+              Buy {currentSymbol.replace('USDT', '')}
+            </button>
+            <button 
+              onClick={handleSellClick}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+            >
+              Sell {currentSymbol.replace('USDT', '')}
+            </button>
           </div>
         </div>
       )}
