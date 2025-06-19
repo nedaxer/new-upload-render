@@ -23,7 +23,7 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-20'} ${className}`}>
+      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
         {children}
       </div>
       {!shouldHideBottomNav && <BottomNavigation />}

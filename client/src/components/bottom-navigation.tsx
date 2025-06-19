@@ -41,7 +41,7 @@ export function BottomNavigation() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 px-2 py-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 px-1 py-1" style={{ zIndex: 10001 }}>
       <div className="flex justify-around items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -50,7 +50,7 @@ export function BottomNavigation() {
           return (
             <Link key={item.nameKey} href={item.path}>
               <div 
-                className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+                className={`flex flex-col items-center py-1 px-2 rounded-lg transition-colors ${
                   isActive 
                     ? 'text-orange-500' 
                     : 'text-gray-400 hover:text-white'
@@ -58,8 +58,8 @@ export function BottomNavigation() {
                 onClick={() => handleNavClick(item.nameKey)}
                 onTouchStart={() => handleNavClick(item.nameKey)}
               >
-                <Icon size={24} />
-                <span className="text-xs mt-1 font-medium">{t(item.nameKey)}</span>
+                <Icon size={18} />
+                <span className="text-xs mt-0.5 font-medium">{t(item.nameKey)}</span>
               </div>
             </Link>
           );

@@ -405,13 +405,13 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
-      {/* Trading Tabs */}
-      <div className="bg-gray-900 px-4 py-2">
+      {/* Trading Tabs - Smaller font and padding */}
+      <div className="bg-gray-900 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {tradingTabs.map((tab) => (
             <button 
               key={tab}
-              className={`whitespace-nowrap px-3 py-2 rounded text-sm ${
+              className={`whitespace-nowrap px-2 py-1 rounded text-xs ${
                 selectedTradingType === tab 
                   ? 'bg-gray-700 text-white' 
                   : 'text-gray-400'
@@ -424,11 +424,11 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Chart/Trade Toggle */}
-      <div className="bg-gray-800 mx-4 rounded-lg overflow-hidden">
+      {/* Chart/Trade Toggle - Smaller */}
+      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
-            className={`flex-1 py-2 text-sm font-medium ${
+            className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Charts' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -438,7 +438,7 @@ export default function MobileTrade() {
             {t('charts')}
           </button>
           <button 
-            className={`flex-1 py-2 text-sm font-medium ${
+            className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Trade' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -452,23 +452,23 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="flex-1 overflow-y-auto bg-gray-900">
-          {/* Coin Header - Positioned under chart/trade tabs */}
-          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
-            <div className="flex items-center space-x-4">
+        <div className="flex-1 flex flex-col bg-gray-900 relative">
+          {/* Coin Header - Smaller and compact */}
+          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 z-40">
+            <div className="flex flex-col">
               <div 
                 id="coin-symbol" 
-                className="text-lg font-bold text-white cursor-pointer"
+                className="text-sm font-bold text-white cursor-pointer"
                 onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
                   document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
               >
                 {currentSymbol}
               </div>
-              <div className="text-lg font-bold text-green-400">
+              <div className="text-sm font-bold text-green-400">
                 $<span id="coin-price">{currentPrice || '--'}</span>
               </div>
             </div>
-            <div className="text-right text-xs leading-relaxed text-gray-300">
+            <div className="text-right text-xs leading-tight text-gray-300">
               <div>24h High: <span id="high" className="text-white">{currentTicker?.highPrice24h || '--'}</span></div>
               <div>24h Low: <span id="low" className="text-white">{currentTicker?.lowPrice24h || '--'}</span></div>
               <div>Vol: <span id="turnover" className="text-white">{currentTicker?.volume24h ? (parseFloat(currentTicker.volume24h) / 1000000).toFixed(1) : '--'}M</span></div>
@@ -478,11 +478,11 @@ export default function MobileTrade() {
           {/* Coin Menu */}
           <div 
             id="coin-menu" 
-            className="absolute bg-gray-800 border border-gray-600 top-20 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
+            className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Fixed height for proper display */}
-          <div className="relative bg-gray-900" style={{ height: '500px' }}>
+          {/* Chart Container - Takes remaining space minus button height */}
+          <div className="flex-1 relative bg-gray-900 overflow-hidden" style={{ paddingBottom: '50px' }}>
             <div 
               id="chart" 
               className="w-full h-full"
@@ -496,48 +496,47 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            {/* TradingView Logo Cover - Positioned to cover TradingView branding */}
+            {/* TradingView Logo Cover - Fixed positioning for all devices */}
             <div 
               id="branding-cover"
-              className="absolute w-12 h-12 bg-gray-900 z-50 pointer-events-auto shadow-md"
+              className="fixed w-12 h-12 bg-gray-900 shadow-md"
               style={{
-                bottom: '28px',
+                bottom: '85px',
                 left: '12px',
                 borderRadius: '8px',
                 backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
-                boxShadow: '0 0 4px #000'
+                boxShadow: '0 0 4px #000',
+                zIndex: 9998,
+                pointerEvents: 'auto'
               }}
             >
               <div 
-                className="absolute inset-0 z-50 bg-transparent pointer-events-auto"
-                style={{ zIndex: 10000 }}
+                className="absolute inset-0 bg-transparent"
+                style={{ zIndex: 9999, pointerEvents: 'auto' }}
               ></div>
             </div>
           </div>
 
-          {/* Buy/Sell Panel - Scrollable within content */}
-          <div className="bg-gray-800 border-t border-gray-700 p-3 mt-4">
+          {/* Fixed Buy/Sell Panel at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-2 z-50">
             <div className="flex gap-2">
               <button 
                 onClick={handleBuyClick}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
               >
-                Buy {currentSymbol.replace('USDT', '')}
+                Buy
               </button>
               <button 
                 onClick={handleSellClick}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
               >
-                Sell {currentSymbol.replace('USDT', '')}
+                Sell
               </button>
             </div>
           </div>
-
-          {/* Extra space to ensure content is scrollable */}
-          <div className="h-20"></div>
         </div>
       )}
 
