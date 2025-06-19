@@ -62,16 +62,14 @@ export default function MobileTrade() {
     if (typeof window !== 'undefined' && (window as any).TradingView) {
       chartWidget.current = new (window as any).TradingView.widget({
         container_id: "chart",
-        autosize: false,
-        width: "100%",
-        height: "100%",
+        autosize: true,
         symbol: symbol,
         interval: "15",
         timezone: "Etc/UTC",
         theme: "dark",
         style: "1",
         locale: "en",
-        backgroundColor: "#111827", // gray-900 to match site
+        backgroundColor: "#111827",
         toolbar_bg: "#111827",
         hide_top_toolbar: true,
         hide_side_toolbar: true,
@@ -495,15 +493,14 @@ export default function MobileTrade() {
             className="absolute bg-gray-800 border border-gray-600 top-20 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Fixed height with horizontal scrolling */}
-          <div className="flex-1 relative bg-gray-900" style={{ paddingBottom: '60px' }}>
+          {/* Chart Container - Improved display */}
+          <div className="flex-1 relative bg-gray-900 mb-16">
             <div 
               id="chart" 
               className="w-full h-full"
-              style={{ 
-                minWidth: '100%',
-                overflowX: 'auto',
-                overflowY: 'hidden'
+              style={{
+                minHeight: '400px',
+                height: 'calc(100vh - 280px)'
               }}
             ></div>
             <div 
@@ -516,7 +513,7 @@ export default function MobileTrade() {
               }}
             ></div>
             <div 
-              className="absolute bottom-16 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
+              className="absolute bottom-3 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
               style={{
                 backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
                 backgroundSize: 'cover',
@@ -525,20 +522,22 @@ export default function MobileTrade() {
             ></div>
           </div>
 
-          {/* Fixed Buy/Sell Panel - Cannot be scrolled */}
-          <div className="fixed bottom-0 left-0 right-0 flex gap-2 p-3 bg-gray-800 border-t border-gray-700 z-50">
-            <button 
-              onClick={handleBuyClick}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
-            >
-              Buy {currentSymbol.replace('USDT', '')}
-            </button>
-            <button 
-              onClick={handleSellClick}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
-            >
-              Sell {currentSymbol.replace('USDT', '')}
-            </button>
+          {/* Buy/Sell Panel - Within trade page only */}
+          <div className="bg-gray-800 border-t border-gray-700 p-3">
+            <div className="flex gap-2">
+              <button 
+                onClick={handleBuyClick}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+              >
+                Buy {currentSymbol.replace('USDT', '')}
+              </button>
+              <button 
+                onClick={handleSellClick}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
+              >
+                Sell {currentSymbol.replace('USDT', '')}
+              </button>
+            </div>
           </div>
         </div>
       )}
