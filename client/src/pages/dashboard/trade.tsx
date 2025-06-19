@@ -42,7 +42,6 @@ import {
   RefreshCcw,
   Wallet,
   ChevronRight,
-  CircleAlert,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { CryptoChart, bitcoinData } from "@/components/crypto-chart";
@@ -56,14 +55,14 @@ export default function TradePage() {
   const queryClient = useQueryClient();
   const [prices, setPrices] = useState<{[key: string]: number}>({});
   const [connected, setConnected] = useState(false);
-  
+
   // Trading state
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
   const [selectedFromCurrency, setSelectedFromCurrency] = useState<string | null>(null);
   const [selectedToCurrency, setSelectedToCurrency] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("");
   const [estimatedResult, setEstimatedResult] = useState<number | null>(null);
-  
+
   // User balances query
   const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ["/api/user/balances"],
@@ -81,7 +80,7 @@ export default function TradePage() {
       return res.json();
     },
   });
-  
+
   // Transactions query
   const { data: transactionData, isLoading: transactionLoading } = useQuery({
     queryKey: ["/api/user/transactions"],
@@ -90,7 +89,7 @@ export default function TradePage() {
       return res.json();
     },
   });
-  
+
   // Buy crypto mutation
   const buyMutation = useMutation({
     mutationFn: async (data: { fromCurrencyId: number, toCurrencyId: number, amount: number }) => {
@@ -102,12 +101,12 @@ export default function TradePage() {
       queryClient.invalidateQueries({ queryKey: ["/api/user/balances"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
-      
+
       toast({
         title: "Success",
         description: `Successfully bought ${selectedToCurrency}`,
       });
-      
+
       // Reset form
       setAmount("");
       setEstimatedResult(null);
@@ -120,7 +119,7 @@ export default function TradePage() {
       });
     },
   });
-  
+
   // Sell crypto mutation
   const sellMutation = useMutation({
     mutationFn: async (data: { fromCurrencyId: number, toCurrencyId: number, amount: number }) => {
@@ -132,12 +131,12 @@ export default function TradePage() {
       queryClient.invalidateQueries({ queryKey: ["/api/user/balances"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/transactions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user/dashboard"] });
-      
+
       toast({
         title: "Success",
         description: `Successfully sold ${selectedFromCurrency}`,
       });
-      
+
       // Reset form
       setAmount("");
       setEstimatedResult(null);
@@ -150,7 +149,7 @@ export default function TradePage() {
       });
     },
   });
-  
+
   // Format currency value
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -167,7 +166,7 @@ export default function TradePage() {
     if (marketCap >= 1e6) return `$${(marketCap / 1e6).toFixed(2)}M`;
     return `$${marketCap.toFixed(2)}`;
   };
-  
+
   // Format crypto amount with appropriate precision
   const formatCrypto = (value: number, symbol: string) => {
     let precision = 8;
@@ -175,35 +174,35 @@ export default function TradePage() {
     if (symbol === 'ETH') precision = 6;
     if (symbol === 'BNB') precision = 4;
     if (symbol === 'USDT') precision = 2;
-    
+
     return value.toFixed(precision);
   };
-  
+
   // Setup WebSocket connection for real-time updates
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     ws = new WebSocket(wsUrl);
-    
+
     ws.onopen = () => {
       console.log('WebSocket connected');
       setConnected(true);
-      
+
       // Send ping to keep connection alive
       const pingInterval = setInterval(() => {
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'ping' }));
         }
       }, 30000);
-      
+
       return () => clearInterval(pingInterval);
     };
-    
+
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        
+
         if (data.type === 'prices') {
           // Update price data
           const newPrices: {[key: string]: number} = {};
@@ -211,7 +210,7 @@ export default function TradePage() {
             newPrices[price.currency.symbol] = price.price;
           });
           setPrices(newPrices);
-          
+
           // Update estimated result if we have an amount and selected currencies
           if (amount && selectedFromCurrency && selectedToCurrency) {
             updateEstimatedResult(amount, selectedFromCurrency, selectedToCurrency, newPrices);
@@ -221,19 +220,19 @@ export default function TradePage() {
         console.error('WebSocket message error:', error);
       }
     };
-    
+
     ws.onclose = () => {
       console.log('WebSocket disconnected');
       setConnected(false);
     };
-    
+
     return () => {
       if (ws) {
         ws.close();
       }
     };
   }, [amount, selectedFromCurrency, selectedToCurrency]);
-  
+
   // Set default currencies when data loads
   useEffect(() => {
     if (currencyData?.data && currencyData.data.length > 0 && balanceData?.data) {
@@ -241,7 +240,7 @@ export default function TradePage() {
         // Default buy: USD to BTC
         const usdCurrency = currencyData.data.find((c: any) => c.symbol === "USD");
         const btcCurrency = currencyData.data.find((c: any) => c.symbol === "BTC");
-        
+
         if (usdCurrency && btcCurrency) {
           setSelectedFromCurrency(usdCurrency.symbol);
           setSelectedToCurrency(btcCurrency.symbol);
@@ -250,7 +249,7 @@ export default function TradePage() {
         // Default sell: BTC to USD
         const usdCurrency = currencyData.data.find((c: any) => c.symbol === "USD");
         const btcCurrency = currencyData.data.find((c: any) => c.symbol === "BTC");
-        
+
         if (usdCurrency && btcCurrency) {
           setSelectedFromCurrency(btcCurrency.symbol);
           setSelectedToCurrency(usdCurrency.symbol);
@@ -258,7 +257,7 @@ export default function TradePage() {
       }
     }
   }, [currencyData, balanceData, tradeType]);
-  
+
   // Update estimated result when amount or currencies change
   const updateEstimatedResult = (
     amountStr: string, 
@@ -270,29 +269,29 @@ export default function TradePage() {
       setEstimatedResult(null);
       return;
     }
-    
+
     const parsedAmount = parseFloat(amountStr);
-    
+
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       setEstimatedResult(null);
       return;
     }
-    
+
     // Get prices
     const fromPrice = fromCurrency === "USD" ? 1 : priceData[fromCurrency] || 0;
     const toPrice = toCurrency === "USD" ? 1 : priceData[toCurrency] || 0;
-    
+
     if (fromPrice <= 0 || toPrice <= 0) {
       setEstimatedResult(null);
       return;
     }
-    
+
     // Calculate estimated result
     // If selling crypto for USD: amount * price
     // If buying crypto with USD: amount / price
     // If trading crypto to crypto: (amount * fromPrice) / toPrice
     let result;
-    
+
     if (fromCurrency === "USD") {
       result = parsedAmount / toPrice;
     } else if (toCurrency === "USD") {
@@ -300,48 +299,48 @@ export default function TradePage() {
     } else {
       result = (parsedAmount * fromPrice) / toPrice;
     }
-    
+
     setEstimatedResult(result);
   };
-  
+
   // Handle amount change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAmount = e.target.value;
     setAmount(newAmount);
     updateEstimatedResult(newAmount, selectedFromCurrency, selectedToCurrency);
   };
-  
+
   // Handle from currency change
   const handleFromCurrencyChange = (currency: string) => {
     // Don't allow same currency for from and to
     if (currency === selectedToCurrency) {
       return;
     }
-    
+
     setSelectedFromCurrency(currency);
     updateEstimatedResult(amount, currency, selectedToCurrency);
   };
-  
+
   // Handle to currency change
   const handleToCurrencyChange = (currency: string) => {
     // Don't allow same currency for from and to
     if (currency === selectedFromCurrency) {
       return;
     }
-    
+
     setSelectedToCurrency(currency);
     updateEstimatedResult(amount, selectedFromCurrency, currency);
   };
-  
+
   // Handle trade tab change
   const handleTradeTypeChange = (type: string) => {
     const newType = type as "buy" | "sell";
     setTradeType(newType);
-    
+
     // Reset form
     setAmount("");
     setEstimatedResult(null);
-    
+
     // Swap currencies for buy/sell
     if (selectedFromCurrency && selectedToCurrency) {
       if (newType === "buy" && selectedFromCurrency !== "USD") {
@@ -353,7 +352,7 @@ export default function TradePage() {
       }
     }
   };
-  
+
   // Handle trade submission
   const handleTradeSubmit = () => {
     if (!selectedFromCurrency || !selectedToCurrency || !amount) {
@@ -364,9 +363,9 @@ export default function TradePage() {
       });
       return;
     }
-    
+
     const parsedAmount = parseFloat(amount);
-    
+
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: "Error",
@@ -375,7 +374,7 @@ export default function TradePage() {
       });
       return;
     }
-    
+
     // Get currency IDs
     const fromCurrency = currencyData?.data.find(
       (c: any) => c.symbol === selectedFromCurrency
@@ -383,7 +382,7 @@ export default function TradePage() {
     const toCurrency = currencyData?.data.find(
       (c: any) => c.symbol === selectedToCurrency
     );
-    
+
     if (!fromCurrency || !toCurrency) {
       toast({
         title: "Error",
@@ -392,12 +391,12 @@ export default function TradePage() {
       });
       return;
     }
-    
+
     // Check if user has enough balance
     const userBalance = balanceData?.data.find(
       (b: any) => b.currency.symbol === selectedFromCurrency
     );
-    
+
     if (!userBalance || userBalance.balance < parsedAmount) {
       toast({
         title: "Error",
@@ -406,20 +405,20 @@ export default function TradePage() {
       });
       return;
     }
-    
+
     const tradeData = {
       fromCurrencyId: fromCurrency.id,
       toCurrencyId: toCurrency.id,
       amount: parsedAmount,
     };
-    
+
     if (tradeType === "buy") {
       buyMutation.mutate(tradeData);
     } else {
       sellMutation.mutate(tradeData);
     }
   };
-  
+
   // Loading state
   if (balanceLoading || currencyLoading) {
     return (
@@ -428,14 +427,14 @@ export default function TradePage() {
       </div>
     );
   }
-  
+
   // Get balances and currencies
   const balances = balanceData?.data || [];
   const currencies = currencyData?.data || [];
   const transactions = transactionData?.data || [];
-  
+
   const usdBalance = balances.find((b: any) => b.currency.symbol === "USD")?.balance || 0;
-  
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Top navigation */}
@@ -464,7 +463,7 @@ export default function TradePage() {
           </div>
         </div>
       </header>
-      
+
       <div className="container flex-1 py-8 px-4 md:px-6">
         <div className="grid gap-6 md:grid-cols-2 lg:gap-10">
           <div className="space-y-6">
@@ -474,7 +473,7 @@ export default function TradePage() {
                 Buy and sell cryptocurrencies with low fees
               </p>
             </div>
-            
+
             {/* Trading card */}
             <Card>
               <CardHeader>
@@ -486,10 +485,8 @@ export default function TradePage() {
               <CardContent>
                 <Tabs defaultValue="buy" onValueChange={handleTradeTypeChange} className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="buy">Buy</TabsTrigger>
-                    <TabsTrigger value="sell">Sell</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="buy" className="space-y-4 pt-4">
                     <div className="space-y-4">
                       <div>
@@ -517,7 +514,7 @@ export default function TradePage() {
                           </Select>
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="amount">Amount</Label>
                         <div className="relative mt-1.5">
@@ -539,7 +536,7 @@ export default function TradePage() {
                           Available: {formatCurrency(usdBalance)}
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="toCurrency">To</Label>
                         <div className="flex mt-1.5">
@@ -565,7 +562,7 @@ export default function TradePage() {
                           </Select>
                         </div>
                       </div>
-                      
+
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-700">You will receive:</span>
@@ -586,7 +583,7 @@ export default function TradePage() {
                       </div>
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="sell" className="space-y-4 pt-4">
                     <div className="space-y-4">
                       <div>
@@ -614,7 +611,7 @@ export default function TradePage() {
                           </Select>
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="amount">Amount</Label>
                         <div className="relative mt-1.5">
@@ -639,7 +636,7 @@ export default function TradePage() {
                           }
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="toCurrency">To</Label>
                         <div className="flex mt-1.5">
@@ -665,7 +662,7 @@ export default function TradePage() {
                           </Select>
                         </div>
                       </div>
-                      
+
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-700">You will receive:</span>
@@ -716,7 +713,7 @@ export default function TradePage() {
                 </Button>
               </CardFooter>
             </Card>
-            
+
             {/* Recent transactions */}
             <Card>
               <CardHeader>
@@ -745,13 +742,13 @@ export default function TradePage() {
                           hour: '2-digit',
                           minute: '2-digit'
                         }).format(date);
-                        
+
                         // Format transaction type
                         let txType = tx.type === 'trade_buy' ? 'Buy' : 'Sell';
                         let txIcon = tx.type === 'trade_buy' 
                           ? <ArrowDown className="h-4 w-4 text-green-500" />
                           : <ArrowUp className="h-4 w-4 text-red-500" />;
-                        
+
                         return (
                           <TableRow key={tx.id}>
                             <TableCell className="flex items-center gap-2">
@@ -782,7 +779,7 @@ export default function TradePage() {
               </CardContent>
             </Card>
           </div>
-          
+
           <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Market Overview</h2>
@@ -790,7 +787,7 @@ export default function TradePage() {
                 Real-time cryptocurrency prices and charts
               </p>
             </div>
-            
+
             {/* Market price chart */}
             <Card>
               <CardHeader>
@@ -816,7 +813,7 @@ export default function TradePage() {
                 </div>
               </CardFooter>
             </Card>
-            
+
             {/* Price list */}
             <Card>
               <CardHeader>
@@ -841,13 +838,13 @@ export default function TradePage() {
                       .map((currency: any) => {
                         const symbol = currency.symbol;
                         const price = prices[symbol] || 0;
-                        
+
                         // Mock 24h change for demo
                         const changePercent = symbol === "BTC" ? 2.4 :
                                             symbol === "ETH" ? -1.2 :
                                             symbol === "BNB" ? 3.8 :
                                             0.5;
-                        
+
                         return (
                           <TableRow key={currency.id}>
                             <TableCell className="font-medium">
@@ -891,10 +888,6 @@ export default function TradePage() {
                 </Table>
               </CardContent>
               <CardFooter className="text-xs text-gray-500">
-                <div className="flex items-center">
-                  <CircleAlert className="h-3 w-3 mr-1" />
-                  <span>Prices update in real-time via WebSocket connection</span>
-                </div>
               </CardFooter>
             </Card>
           </div>
