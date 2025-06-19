@@ -86,14 +86,17 @@
     }
     #branding-cover {
       position: absolute;
-      bottom: 5px;
-      right: 5px;
-      width: 100px;
-      height: 25px;
-      border-radius: 3px;
+      bottom: 8px;
+      right: 8px;
+      width: 64px;
+      height: 32px;
+      background-color: #111827;
       z-index: 9999;
       pointer-events: none;
-      object-fit: cover;
+      background-image: url('https://i.imgur.com/1yZtbuJ.jpeg');
+      background-size: cover;
+      background-position: center;
+      border-radius: 4px;
     }
     #branding-cover::after {
       content: "";
@@ -168,7 +171,7 @@
     <div id="chart-container">
       <div id="chart"></div>
       <div id="watermark-overlay"></div>
-      <img id="branding-cover" src="https://i.imgur.com/1yZtbuJ.jpeg" alt="Nedaxer Logo" />
+      <div id="branding-cover"></div>
       <div id="trade-buttons">
         <button class="btn buy-btn" onclick="demoTrade('buy')">Buy</button>
         <button class="btn sell-btn" onclick="demoTrade('sell')">Sell</button>
