@@ -82,53 +82,58 @@ export default function MobileTrade() {
         drawings_access: { type: 'black', tools: [] },
         crosshair: { mode: 1 },
         overrides: {
-          // Background colors to match site theme
+          // Background colors to match site theme - remove all transparency
           "paneProperties.background": "#111827",
           "paneProperties.backgroundType": "solid",
-          "paneProperties.backgroundGradientStartColor": "#111827",
+          "paneProperties.backgroundGradientStartColor": "#111827", 
           "paneProperties.backgroundGradientEndColor": "#111827",
           "paneProperties.vertGridProperties.color": "#374151",
           "paneProperties.horzGridProperties.color": "#374151",
           "paneProperties.crossHairProperties.color": "#6B7280",
           "paneProperties.crossHairProperties.width": 1,
           "paneProperties.crossHairProperties.style": 2,
-          "paneProperties.crossHairProperties.transparency": 50,
+          "paneProperties.crossHairProperties.transparency": 0,
           
           // Axis styling
-          "scalesProperties.backgroundColor": "#1F2937",
-          "scalesProperties.lineColor": "#374151",
+          "scalesProperties.backgroundColor": "#111827",
+          "scalesProperties.lineColor": "#374151", 
           "scalesProperties.textColor": "#9CA3AF",
           "paneProperties.leftAxisProperties.showSeriesLastValue": false,
           "paneProperties.rightAxisProperties.showSeriesLastValue": false,
           "scalesProperties.showLeftScale": false,
           "scalesProperties.showRightScale": true,
           
-          // Candlestick colors
+          // Remove any white overlays or backgrounds
+          "mainSeriesProperties.style": 1,
           "mainSeriesProperties.candleStyle.upColor": "#10B981",
           "mainSeriesProperties.candleStyle.downColor": "#EF4444",
           "mainSeriesProperties.candleStyle.drawWick": true,
-          "mainSeriesProperties.candleStyle.drawBorder": true,
-          "mainSeriesProperties.candleStyle.borderColor": "#374151",
-          "mainSeriesProperties.candleStyle.borderUpColor": "#10B981",
-          "mainSeriesProperties.candleStyle.borderDownColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.drawBorder": false,
           "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
           "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
           
-          // Volume
+          // Volume styling - remove transparency
           "volumePaneSize": "small",
-          "volume.volume.color.0": "#EF444450",
-          "volume.volume.color.1": "#10B98150",
+          "volume.volume.color.0": "#EF4444",
+          "volume.volume.color.1": "#10B981",
+          "volume.volume.transparency": 0,
           
-          // Legend
+          // Remove all legends and overlays
           "paneProperties.legendProperties.showLegend": false,
           "paneProperties.legendProperties.showStudyArguments": false,
           "paneProperties.legendProperties.showStudyTitles": false,
           "paneProperties.legendProperties.showStudyValues": false,
           "paneProperties.legendProperties.showSeriesTitle": false,
+          
+          // Remove watermarks and branding overlays
+          "paneProperties.topMargin": 0,
+          "paneProperties.bottomMargin": 0,
+          "paneProperties.leftMargin": 0,
+          "paneProperties.rightMargin": 0,
         },
         disabled_features: [
           "header_symbol_search",
-          "timeframes_toolbar",
+          "timeframes_toolbar", 
           "use_localstorage_for_settings",
           "volume_force_overlay",
           "left_toolbar",
@@ -150,7 +155,14 @@ export default function MobileTrade() {
           "chart_property_page_trading",
           "border_around_the_chart",
           "chart_crosshair_menu",
-          "snapshot_trading_drawings"
+          "snapshot_trading_drawings",
+          "show_logo_on_all_charts",
+          "remove_library_container_border",
+          "chart_hide_close_button",
+          "header_saveload",
+          "header_undo_redo",
+          "show_chart_property_page",
+          "popup_hints"
         ]
       });
     }
@@ -424,10 +436,10 @@ export default function MobileTrade() {
       </div>
 
       {/* Chart/Trade Toggle */}
-      <div className="bg-gray-800 mx-4 mt-4 rounded-lg overflow-hidden">
+      <div className="bg-gray-800 mx-4 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
-            className={`flex-1 py-3 font-medium ${
+            className={`flex-1 py-2 text-sm font-medium ${
               selectedTab === 'Charts' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -437,7 +449,7 @@ export default function MobileTrade() {
             {t('charts')}
           </button>
           <button 
-            className={`flex-1 py-3 font-medium ${
+            className={`flex-1 py-2 text-sm font-medium ${
               selectedTab === 'Trade' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -451,7 +463,7 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="fixed top-36 left-0 right-0 bottom-0 bg-gray-900 flex flex-col">
+        <div className="fixed top-32 left-0 right-0 bottom-0 bg-gray-900 flex flex-col">
           {/* Custom Trading Chart */}
           <div className="flex-1 flex flex-col">
             {/* Coin Header */}
@@ -487,7 +499,7 @@ export default function MobileTrade() {
 
             {/* Chart Container - Full Height */}
             <div className="flex-1 relative bg-gray-900">
-              <div id="chart" className="w-full h-full"></div>
+              <div id="chart" className="w-full" style={{ height: 'calc(100% - 60px)' }}></div>
               <div 
                 className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
                 style={{
@@ -498,13 +510,29 @@ export default function MobileTrade() {
                 }}
               ></div>
               <div 
-                className="absolute bottom-7 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
+                className="absolute bottom-16 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
                 style={{
                   backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
               ></div>
+              
+              {/* Buy/Sell Buttons */}
+              <div className="absolute bottom-0 left-0 right-0 flex gap-2 p-3 bg-gray-900">
+                <button 
+                  onClick={handleBuyClick}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
+                >
+                  Buy
+                </button>
+                <button 
+                  onClick={handleSellClick}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
+                >
+                  Sell
+                </button>
+              </div>
             </div>
           </div>
         </div>
