@@ -128,11 +128,11 @@ export default function MobileTrade() {
           "paneProperties.legendProperties.showStudyValues": false,
           "paneProperties.legendProperties.showSeriesTitle": false,
           
-          // Remove watermarks and branding overlays
-          "paneProperties.topMargin": 0,
-          "paneProperties.bottomMargin": 0,
-          "paneProperties.leftMargin": 0,
-          "paneProperties.rightMargin": 0,
+          // Remove watermarks and branding overlays - set to full chart area
+          "paneProperties.topMargin": 5,
+          "paneProperties.bottomMargin": 15,
+          "paneProperties.leftMargin": 5,
+          "paneProperties.rightMargin": 5,
         },
         disabled_features: [
           "header_symbol_search",
@@ -496,28 +496,56 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            {/* TradingView Logo Cover - Fixed positioning for all devices */}
+            {/* TradingView Logo Cover - Multiple positions to ensure coverage */}
             <div 
-              id="branding-cover"
-              className="fixed w-12 h-12 bg-gray-900 shadow-md"
+              id="branding-cover-bottom-left"
+              className="absolute w-16 h-6 bg-gray-900 shadow-md"
               style={{
-                bottom: '85px',
-                left: '12px',
-                borderRadius: '8px',
+                bottom: '8px',
+                left: '8px',
+                borderRadius: '4px',
                 backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
                 boxShadow: '0 0 4px #000',
-                zIndex: 9998,
+                zIndex: 9999,
                 pointerEvents: 'auto'
               }}
-            >
-              <div 
-                className="absolute inset-0 bg-transparent"
-                style={{ zIndex: 9999, pointerEvents: 'auto' }}
-              ></div>
-            </div>
+            ></div>
+            <div 
+              id="branding-cover-bottom-right"
+              className="absolute w-16 h-6 bg-gray-900 shadow-md"
+              style={{
+                bottom: '8px',
+                right: '8px',
+                borderRadius: '4px',
+                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                boxShadow: '0 0 4px #000',
+                zIndex: 9999,
+                pointerEvents: 'auto'
+              }}
+            ></div>
+            <div 
+              id="branding-cover-center"
+              className="absolute w-20 h-8 bg-gray-900 shadow-md"
+              style={{
+                bottom: '15px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                borderRadius: '4px',
+                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                boxShadow: '0 0 4px #000',
+                zIndex: 9999,
+                pointerEvents: 'auto'
+              }}
+            ></div>
           </div>
 
           {/* Extra scrollable content for testing */}
