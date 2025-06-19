@@ -452,9 +452,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="flex-1 flex flex-col bg-gray-900 relative">
+        <div className="flex-1 overflow-y-auto bg-gray-900">
           {/* Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 z-40">
+          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
             <div className="flex flex-col">
               <div 
                 id="coin-symbol" 
@@ -481,8 +481,8 @@ export default function MobileTrade() {
             className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Takes remaining space minus button height */}
-          <div className="flex-1 relative bg-gray-900 overflow-hidden" style={{ paddingBottom: '50px' }}>
+          {/* Chart Container - Full height for scrolling */}
+          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
             <div 
               id="chart" 
               className="w-full h-full"
@@ -520,22 +520,31 @@ export default function MobileTrade() {
             </div>
           </div>
 
-          {/* Fixed Buy/Sell Panel at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-2 z-50">
-            <div className="flex gap-2">
-              <button 
-                onClick={handleBuyClick}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-              >
-                Buy
-              </button>
-              <button 
-                onClick={handleSellClick}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-              >
-                Sell
-              </button>
+          {/* Extra scrollable content for testing */}
+          <div className="h-96 p-4">
+            <div className="text-gray-400 text-sm">
+              Scrollable content area - scroll down to test the fixed buy/sell buttons
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
+      {selectedTab === 'Charts' && (
+        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleBuyClick}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+            >
+              Buy
+            </button>
+            <button 
+              onClick={handleSellClick}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+            >
+              Sell
+            </button>
           </div>
         </div>
       )}
