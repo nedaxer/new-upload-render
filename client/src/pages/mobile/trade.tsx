@@ -496,12 +496,14 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
+            {/* TradingView Logo Cover */}
             <div 
-              className="absolute bottom-3 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
+              className="absolute bottom-2 right-2 w-16 h-8 bg-gray-900 z-50 pointer-events-none"
               style={{
                 backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
                 backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundPosition: 'center',
+                borderRadius: '4px'
               }}
             ></div>
           </div>
