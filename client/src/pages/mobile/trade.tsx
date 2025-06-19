@@ -20,7 +20,7 @@ import {
   RefreshCw,
   X
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
@@ -47,6 +47,163 @@ export default function MobileTrade() {
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
+  
+  // Chart state
+  const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
+  const chartWidget = useRef<any>(null);
+  const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Chart functions
+  const loadChart = (symbol: string) => {
+    if (chartWidget.current) {
+      chartWidget.current.remove();
+    }
+    
+    if (typeof window !== 'undefined' && (window as any).TradingView) {
+      chartWidget.current = new (window as any).TradingView.widget({
+        container_id: "chart",
+        autosize: true,
+        symbol: symbol,
+        interval: "15",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        backgroundColor: "rgba(14,14,14,1)",
+        toolbar_bg: "rgba(14,14,14,1)",
+        hide_top_toolbar: true,
+        hide_side_toolbar: true,
+        allow_symbol_change: false,
+        enable_publishing: false,
+        details: false,
+        withdateranges: false,
+        calendar: false,
+        studies: [],
+        drawings_access: { type: 'black', tools: [] },
+        crosshair: { mode: 1 },
+        overrides: {
+          "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+          "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+          "scalesProperties.showLeftScale": false,
+          "scalesProperties.showRightScale": false,
+          "paneProperties.crossHairProperties.color": "#FFA500",
+          "paneProperties.crossHairProperties.width": 1,
+          "paneProperties.crossHairProperties.style": 2,
+          "paneProperties.crossHairProperties.transparency": 0,
+          "volumePaneSize": "small"
+        },
+        disabled_features: [
+          "header_symbol_search",
+          "timeframes_toolbar",
+          "use_localstorage_for_settings",
+          "volume_force_overlay",
+          "left_toolbar",
+          "legend_context_menu",
+          "display_market_status",
+          "go_to_date",
+          "header_compare",
+          "header_chart_type",
+          "header_resolutions",
+          "header_screenshot",
+          "header_fullscreen_button",
+          "header_settings",
+          "header_indicators",
+          "context_menus",
+          "control_bar",
+          "edit_buttons_in_legend",
+          "main_series_scale_menu",
+          "chart_property_page_legend",
+          "chart_property_page_trading",
+          "border_around_the_chart"
+        ]
+      });
+    }
+  };
+
+  const updatePrice = async (symbol: string) => {
+    try {
+      const res = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol}`);
+      const data = await res.json();
+      
+      if (data.result && data.result.list && data.result.list[0]) {
+        const tickerData = data.result.list[0];
+        const price = parseFloat(tickerData.lastPrice).toFixed(2);
+        const high = parseFloat(tickerData.highPrice24h).toFixed(2);
+        const low = parseFloat(tickerData.lowPrice24h).toFixed(2);
+        const turnover = (parseFloat(tickerData.turnover24h) / 1e6).toFixed(2);
+
+        const coinSymbolEl = document.getElementById("coin-symbol");
+        const coinPriceEl = document.getElementById("coin-price");
+        const coinPriceUsdEl = document.getElementById("coin-price-usd");
+        const highEl = document.getElementById("high");
+        const lowEl = document.getElementById("low");
+        const turnoverEl = document.getElementById("turnover");
+
+        if (coinSymbolEl) coinSymbolEl.textContent = symbol.replace("USDT", "/USDT");
+        if (coinPriceEl) coinPriceEl.textContent = price;
+        if (coinPriceUsdEl) coinPriceUsdEl.textContent = price;
+        if (highEl) highEl.textContent = high;
+        if (lowEl) lowEl.textContent = low;
+        if (turnoverEl) turnoverEl.textContent = turnover + "M";
+      }
+    } catch (e) {
+      console.error("Price fetch error:", e);
+    }
+  };
+
+  const initializeCoinMenu = () => {
+    const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
+    const menu = document.getElementById("coin-menu");
+    
+    if (menu) {
+      menu.innerHTML = '';
+      coinList.forEach(symbol => {
+        const div = document.createElement("div");
+        div.className = "p-2 cursor-pointer text-white hover:bg-gray-700";
+        div.textContent = symbol.replace("USDT", "/USDT");
+        div.onclick = () => {
+          setCurrentSymbol(symbol);
+          loadChart(`BYBIT:${symbol}`);
+          updatePrice(symbol);
+          menu.style.display = "none";
+        };
+        menu.appendChild(div);
+      });
+    }
+  };
+
+  // Load TradingView script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.onload = () => {
+      // Initialize chart when script loads
+      loadChart('BYBIT:BTCUSDT');
+      initializeCoinMenu();
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+
+  // Price update interval
+  useEffect(() => {
+    updatePrice(currentSymbol);
+    priceUpdateInterval.current = setInterval(() => {
+      updatePrice(currentSymbol);
+    }, 1000);
+
+    return () => {
+      if (priceUpdateInterval.current) {
+        clearInterval(priceUpdateInterval.current);
+      }
+    };
+  }, [currentSymbol]);
 
   // Read symbol from URL parameters
   useEffect(() => {
@@ -57,6 +214,7 @@ export default function MobileTrade() {
       // Update trading view symbol for Bybit
       const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
       setTradingViewSymbol(tradingViewSymbol);
+      setCurrentSymbol(`${symbolParam}USDT`);
       
       // Update selected pair
       setSelectedPair({
@@ -156,7 +314,12 @@ export default function MobileTrade() {
 
   const handlePairSelection = (cryptoId: string, symbol: string) => {
     setSelectedCrypto(cryptoId);
-    setSelectedPair(`${symbol}/USDT`);
+    setSelectedPair({
+      symbol: symbol,
+      name: getCryptoName(symbol),
+      price: 0,
+      change: 0
+    });
     const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || `BINANCE:${symbol}USDT`;
     setTradingViewSymbol(tradingViewSymbol);
     setShowPairSelector(false);
@@ -252,112 +415,63 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <>
-          {/* TradingView Chart Area */}
-          <div className="px-4 pb-4">
-            <div className="bg-gray-900 rounded-lg overflow-hidden">
-              <TradingViewWidget
-                symbol={tradingViewSymbol}
-                width="100%"
-                height="400"
-                theme="dark"
-                locale="en"
-                toolbar_bg="#1a1a1a"
-                enable_publishing={false}
-                allow_symbol_change={true}
-                autosize={false}
-              />
-                        </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="px-4 pb-4">
-            <div className="flex items-center space-x-6 mb-4">
-              <button 
-                onClick={handleAlertsClick}
-                className={`flex items-center space-x-1 transition-colors ${
-                  showAlerts ? 'text-orange-500' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Bell className="w-5 h-5" />
-                <span className="text-sm">{t('alerts')}</span>
-              </button>
-
-              <button 
-                onClick={handleToolsClick}
-                className={`flex items-center space-x-1 transition-colors ${
-                  showTools ? 'text-orange-500' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <MessageSquare className="w-5 h-5" />
-                <span className="text-sm">{t('tools')}</span>
-              </button>
-
-              <button 
-                onClick={handlePerpClick}
-                className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
-              >
-                <BarChart3 className="w-5 h-5" />
-                <span className="text-sm">{t('perp')}</span>
-              </button>
-            </div>
-
-            {/* Alerts Panel */}
-            {showAlerts && (
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-white font-medium mb-3">{t('price_alerts')}</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('no_active_alerts')}</span>
-                    <Button size="sm" variant="outline" className="text-orange-500 border-orange-500">
-                      {t('create_alert')}
-                    </Button>
-                  </div>
+        <div className="flex-1 flex flex-col bg-gray-900" style={{ height: 'calc(100vh - 200px)' }}>
+          {/* Custom Trading Chart */}
+          <div className="flex-1 relative">
+            {/* Coin Header */}
+            <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
+              <div className="flex flex-col">
+                <div 
+                  id="coin-symbol" 
+                  className="text-base font-bold text-white cursor-pointer"
+                  onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
+                    document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
+                >
+                  BTC/USDT
+                </div>
+                <div className="text-xs mt-1 text-gray-400">
+                  Price: <span id="coin-price" className="text-white">--</span> USD
+                </div>
+                <div className="text-xs text-gray-500">
+                  ≈ <span id="coin-price-usd">--</span> USD
                 </div>
               </div>
-            )}
-
-            {/* Tools Panel */}
-            {showTools && (
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-white font-medium mb-3">{t('trading_tools')}</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">{t('order_book')}</div>
-                    <div className="text-gray-400 text-xs">{t('view_market_depth')}</div>
-                  </button>
-                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">{t('recent_trades')}</div>
-                    <div className="text-gray-400 text-xs">{t('latest_transactions')}</div>
-                  </button>
-                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">{t('calculator')}</div>
-                    <div className="text-gray-400 text-xs">{t('pnl_calculator')}</div>
-                  </button>
-                  <button className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 text-left transition-colors">
-                    <div className="text-white font-medium text-sm">{t('analysis')}</div>
-                    <div className="text-gray-400 text-xs">{t('technical_analysis')}</div>
-                  </button>
-                </div>
+              <div className="text-right text-xs leading-relaxed text-gray-300">
+                <div>24h High: <span id="high">--</span></div>
+                <div>24h Low: <span id="low">--</span></div>
+                <div>Turnover: <span id="turnover">--</span></div>
               </div>
-            )}
+            </div>
 
-            <div className="flex space-x-3">
-              <Button 
-                onClick={handleBuyClick}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
-              >
-                {t('buy')} {selectedPair.symbol}
-              </Button>
-              <Button 
-                onClick={handleSellClick}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold transition-all active:scale-95"
-              >
-                {t('sell')} {selectedPair.symbol}
-              </Button>
+            {/* Coin Menu */}
+            <div 
+              id="coin-menu" 
+              className="absolute bg-gray-800 border border-gray-600 top-12 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
+            ></div>
+
+            {/* Chart Container */}
+            <div className="flex-1 relative bg-gray-900">
+              <div id="chart" className="w-full h-full"></div>
+              <div 
+                className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
+                style={{
+                  backgroundImage: "url('https://i.imgur.com/F9ljfzP.png')",
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center'
+                }}
+              ></div>
+              <div 
+                className="absolute bottom-7 left-3 w-12 h-12 rounded-lg bg-gray-900 z-50 pointer-events-auto shadow-lg"
+                style={{
+                  backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              ></div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {selectedTab === 'Charts' && selectedTradingType === 'Futures' && (
