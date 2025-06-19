@@ -69,8 +69,8 @@ export default function MobileTrade() {
         theme: "dark",
         style: "1",
         locale: "en",
-        backgroundColor: "rgba(14,14,14,1)",
-        toolbar_bg: "rgba(14,14,14,1)",
+        backgroundColor: "#111827", // gray-900 to match site
+        toolbar_bg: "#111827",
         hide_top_toolbar: true,
         hide_side_toolbar: true,
         allow_symbol_change: false,
@@ -82,15 +82,49 @@ export default function MobileTrade() {
         drawings_access: { type: 'black', tools: [] },
         crosshair: { mode: 1 },
         overrides: {
+          // Background colors to match site theme
+          "paneProperties.background": "#111827",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.backgroundGradientStartColor": "#111827",
+          "paneProperties.backgroundGradientEndColor": "#111827",
+          "paneProperties.vertGridProperties.color": "#374151",
+          "paneProperties.horzGridProperties.color": "#374151",
+          "paneProperties.crossHairProperties.color": "#6B7280",
+          "paneProperties.crossHairProperties.width": 1,
+          "paneProperties.crossHairProperties.style": 2,
+          "paneProperties.crossHairProperties.transparency": 50,
+          
+          // Axis styling
+          "scalesProperties.backgroundColor": "#1F2937",
+          "scalesProperties.lineColor": "#374151",
+          "scalesProperties.textColor": "#9CA3AF",
           "paneProperties.leftAxisProperties.showSeriesLastValue": false,
           "paneProperties.rightAxisProperties.showSeriesLastValue": false,
           "scalesProperties.showLeftScale": false,
-          "scalesProperties.showRightScale": false,
-          "paneProperties.crossHairProperties.color": "#FFA500",
-          "paneProperties.crossHairProperties.width": 1,
-          "paneProperties.crossHairProperties.style": 2,
-          "paneProperties.crossHairProperties.transparency": 0,
-          "volumePaneSize": "small"
+          "scalesProperties.showRightScale": true,
+          
+          // Candlestick colors
+          "mainSeriesProperties.candleStyle.upColor": "#10B981",
+          "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.drawWick": true,
+          "mainSeriesProperties.candleStyle.drawBorder": true,
+          "mainSeriesProperties.candleStyle.borderColor": "#374151",
+          "mainSeriesProperties.candleStyle.borderUpColor": "#10B981",
+          "mainSeriesProperties.candleStyle.borderDownColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
+          "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
+          
+          // Volume
+          "volumePaneSize": "small",
+          "volume.volume.color.0": "#EF444450",
+          "volume.volume.color.1": "#10B98150",
+          
+          // Legend
+          "paneProperties.legendProperties.showLegend": false,
+          "paneProperties.legendProperties.showStudyArguments": false,
+          "paneProperties.legendProperties.showStudyTitles": false,
+          "paneProperties.legendProperties.showStudyValues": false,
+          "paneProperties.legendProperties.showSeriesTitle": false,
         },
         disabled_features: [
           "header_symbol_search",
@@ -114,7 +148,9 @@ export default function MobileTrade() {
           "main_series_scale_menu",
           "chart_property_page_legend",
           "chart_property_page_trading",
-          "border_around_the_chart"
+          "border_around_the_chart",
+          "chart_crosshair_menu",
+          "snapshot_trading_drawings"
         ]
       });
     }
@@ -415,11 +451,11 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
-        <div className="flex-1 flex flex-col bg-gray-900" style={{ height: 'calc(100vh - 200px)' }}>
+        <div className="fixed top-36 left-0 right-0 bottom-0 bg-gray-900 flex flex-col">
           {/* Custom Trading Chart */}
-          <div className="flex-1 relative">
+          <div className="flex-1 flex flex-col">
             {/* Coin Header */}
-            <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
+            <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700 flex-shrink-0">
               <div className="flex flex-col">
                 <div 
                   id="coin-symbol" 
@@ -446,10 +482,10 @@ export default function MobileTrade() {
             {/* Coin Menu */}
             <div 
               id="coin-menu" 
-              className="absolute bg-gray-800 border border-gray-600 top-12 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
+              className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
             ></div>
 
-            {/* Chart Container */}
+            {/* Chart Container - Full Height */}
             <div className="flex-1 relative bg-gray-900">
               <div id="chart" className="w-full h-full"></div>
               <div 
