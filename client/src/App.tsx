@@ -10,7 +10,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
-import { GlobalChartProvider } from '@/contexts/global-chart-context';
 import { lazy } from 'react';
 
 // Pages
@@ -164,8 +163,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
-          <GlobalChartProvider>
-            <Router hook={useHashLocation}>
+          <Router hook={useHashLocation}>
             <Switch>
             {/* Home route with auth redirect */}
             <Route path="/">
@@ -280,13 +278,12 @@ export default function App() {
 
             {/* 404 Route */}
             <Route component={NotFound} />
-            </Switch>
-            </Router>
-            <Toaster />
-            <PWAInstallPrompt />
-          </GlobalChartProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+          </Switch>
+        </Router>
+        <Toaster />
+        <PWAInstallPrompt />
+      </AuthProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
   );
 }
