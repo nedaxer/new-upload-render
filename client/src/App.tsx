@@ -90,7 +90,7 @@ import AdminStaking from '@/pages/admin/staking';
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
 import MobileAssets from '@/pages/mobile/assets';
-import MobileTradeSimple from '@/pages/mobile/trade-simple';
+import MobileTrade from '@/pages/mobile/trade';
 import MobileMarkets from '@/pages/mobile/markets';
 import MobileEarn from '@/pages/mobile/earn';
 import MobileProfile from '@/pages/mobile/profile';
@@ -250,7 +250,7 @@ export default function App() {
             {/* Mobile App Routes - Protected */}
             <ProtectedRoute path="/mobile" component={MobileHome} />
             <ProtectedRoute path="/mobile/assets" component={MobileAssets} />
-            <ProtectedRoute path="/mobile/trade" component={MobileTradeSimple} />
+            <ProtectedRoute path="/mobile/trade" component={MobileTrade} />
             <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
             <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
             <ProtectedRoute path="/mobile/profile" component={MobileProfile} />

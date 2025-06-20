@@ -19,7 +19,7 @@ export function BottomNavigation() {
       path: '/mobile/markets' 
     },
     { 
-      nameKey: 'trade', 
+      nameKey: 'chart', 
       icon: TrendingUp, 
       path: '/mobile/trade' 
     },
