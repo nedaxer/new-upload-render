@@ -1,4 +1,12 @@
 import { useEffect, useRef, memo } from 'react';
+import { usePersistentChart } from './persistent-chart-manager';
+
+declare global {
+  interface Window {
+    TradingView: any;
+    tradingViewChartsLoaded: Set<string>;
+  }
+}
 
 interface TradingViewWidgetProps {
   symbol?: string;

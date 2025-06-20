@@ -65,17 +65,33 @@ export default function MobileTrade() {
     if (!(window as any).nedaxerChartWidget) {
       (window as any).nedaxerChartWidget = null;
     }
+    if (!(window as any).tradingViewChartsLoaded) {
+      (window as any).tradingViewChartsLoaded = new Set();
+    }
     return (window as any).nedaxerChartWidget;
   }, []);
 
   const setGlobalChartWidget = useCallback((widget: any) => {
     (window as any).nedaxerChartWidget = widget;
     chartWidget.current = widget;
-  }, []);
+    // Mark chart as loaded to prevent reinitialization
+    (window as any).tradingViewChartsLoaded.add(`nedaxer-chart-${currentSymbol}`);
+  }, [currentSymbol]);
 
   // Enhanced chart loading with persistent widget caching
   const loadChart = useCallback((symbol: string, forceReload = false) => {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
+
+    const chartKey = `nedaxer-chart-${symbol}`;
+    
+    // Check if chart is already loaded to prevent reloading
+    if (!forceReload && (window as any).tradingViewChartsLoaded && (window as any).tradingViewChartsLoaded.has(chartKey)) {
+      const existingWidget = getGlobalChartWidget();
+      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+        console.log('Chart already loaded, skipping initialization');
+        return;
+      }
+    }
 
     // Check if we have a cached widget for this symbol
     const existingWidget = getGlobalChartWidget();
