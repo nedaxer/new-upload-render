@@ -63,70 +63,47 @@ export default function MobileTrade() {
   const [chartError, setChartError] = useState(false);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Simple persistent chart
-  const initializeChart = useCallback(() => {
-    if (!window.TradingView) return;
-    
-    // Only create if not already loaded
-    if (!window.tradingViewChartLoaded) {
-      console.log('Creating persistent chart');
-      
-      try {
-        const widget = new window.TradingView.widget({
-          container_id: "trading-chart-container",
-          autosize: true,
-          symbol: "BYBIT:BTCUSDT",
-          interval: "15",
-          timezone: "Etc/UTC",
-          theme: "dark",
-          style: "1",
-          locale: "en",
-          hide_top_toolbar: true,
-          hide_side_toolbar: true,
-          allow_symbol_change: false,
-          enable_publishing: false,
-          withdateranges: false,
-          calendar: false,
-          onChartReady: () => {
-            console.log('Chart ready');
-            setIsChartLoading(false);
-            window.tradingViewChartLoaded = true;
-          }
-        });
-        
-        window.persistentTradingViewWidget = widget;
-        
-      } catch (error) {
-        console.error('Chart creation failed:', error);
-        setChartError(true);
-        setIsChartLoading(false);
-      }
-    } else {
-      console.log('Chart already loaded');
-      setIsChartLoading(false);
-    }
-  }, []);
-
-  // Load TradingView script
+  // Direct embed chart implementation
   useEffect(() => {
-    if (window.TradingView) {
-      initializeChart();
-      return;
-    }
+    const container = document.getElementById("trading-chart-container");
+    if (!container) return;
 
+    // Use TradingView's embed widget approach
     const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.async = true;
-    script.onload = () => {
-      setTimeout(initializeChart, 100);
-    };
-    script.onerror = () => {
-      setChartError(true);
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: "BINANCE:BTCUSDT",
+      interval: "15",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      enable_publishing: false,
+      backgroundColor: "rgba(17, 24, 39, 1)",
+      gridColor: "rgba(55, 65, 81, 1)",
+      hide_top_toolbar: true,
+      hide_legend: true,
+      save_image: false,
+      container_id: "trading-chart-container"
+    });
+
+    // Clear container and add script
+    container.innerHTML = '';
+    container.appendChild(script);
+
+    // Set loading to false after a delay
+    const timer = setTimeout(() => {
       setIsChartLoading(false);
+      console.log('Chart should be loaded');
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
     };
-    
-    document.head.appendChild(script);
-  }, [initializeChart]);
+  }, []);
 
   // Update price
   const updatePrice = async (symbol: string) => {
