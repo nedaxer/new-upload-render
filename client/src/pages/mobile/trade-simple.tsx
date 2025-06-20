@@ -28,14 +28,9 @@ import MobileFutures from './futures';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import { useLanguage } from '@/contexts/language-context';
+import { PersistentTradingViewChart } from '@/components/persistent-tradingview-chart';
 
-declare global {
-  interface Window {
-    TradingView: any;
-    tradingViewChartLoaded: boolean;
-    persistentTradingViewWidget: any;
-  }
-}
+
 
 export default function MobileTrade() {
   const { t } = useLanguage();
@@ -56,86 +51,7 @@ export default function MobileTrade() {
   const [location, navigate] = useLocation();
   
   // Chart state
-  const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
-  const [currentPrice, setCurrentPrice] = useState<string>('');
-  const [currentTicker, setCurrentTicker] = useState<any>(null);
-  const [isChartLoading, setIsChartLoading] = useState(true);
-  const [chartError, setChartError] = useState(false);
-  const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
-
-  // Direct embed chart implementation
-  useEffect(() => {
-    const container = document.getElementById("trading-chart-container");
-    if (!container) return;
-
-    // Use TradingView's embed widget approach
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-    script.async = true;
-    script.innerHTML = JSON.stringify({
-      autosize: true,
-      symbol: "BINANCE:BTCUSDT",
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      enable_publishing: false,
-      backgroundColor: "rgba(17, 24, 39, 1)",
-      gridColor: "rgba(55, 65, 81, 1)",
-      hide_top_toolbar: true,
-      hide_legend: true,
-      save_image: false,
-      container_id: "trading-chart-container"
-    });
-
-    // Clear container and add script
-    container.innerHTML = '';
-    container.appendChild(script);
-
-    // Set loading to false after a delay
-    const timer = setTimeout(() => {
-      setIsChartLoading(false);
-      console.log('Chart should be loaded');
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
-  // Update price
-  const updatePrice = async (symbol: string) => {
-    try {
-      const response = await fetch('/api/bybit/tickers');
-      const data = await response.json();
-      
-      if (data.success && data.data) {
-        const ticker = data.data.find((t: any) => t.symbol === symbol);
-        if (ticker) {
-          setCurrentTicker(ticker);
-          setCurrentPrice(parseFloat(ticker.lastPrice).toFixed(2));
-        }
-      }
-    } catch (error) {
-      console.error('Price update error:', error);
-    }
-  };
-
-  // Price updates
-  useEffect(() => {
-    updatePrice(currentSymbol);
-    priceUpdateInterval.current = setInterval(() => {
-      updatePrice(currentSymbol);
-    }, 1000);
-
-    return () => {
-      if (priceUpdateInterval.current) {
-        clearInterval(priceUpdateInterval.current);
-      }
-    };
-  }, [currentSymbol]);
+  const [currentSymbol, setCurrentSymbol] = useState('BYBIT:BTCUSDT');
 
   const handleTabChange = (tab: string) => {
     hapticLight();
@@ -211,44 +127,12 @@ export default function MobileTrade() {
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && (
         <div className="flex-1 overflow-hidden bg-gray-900">
-          {/* Chart Container */}
-          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
-            {isChartLoading && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="mb-4">
-                    <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
-                  </div>
-                  <p className="text-lg font-medium">Loading Chart...</p>
-                  <p className="text-sm mt-2">Initializing TradingView</p>
-                </div>
-              </div>
-            )}
-            
-            {chartError && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="mb-4">
-                    <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
-                  </div>
-                  <p className="text-lg font-medium">Chart Unavailable</p>
-                  <p className="text-sm mt-2">Unable to load chart data</p>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* TradingView Chart Container */}
-            <div 
-              id="trading-chart-container"
-              className="w-full h-full"
-            ></div>
-          </div>
+          <PersistentTradingViewChart 
+            symbol={currentSymbol}
+            interval="15"
+            theme="dark"
+            onReady={() => console.log('Chart ready')}
+          />
         </div>
       )}
 
