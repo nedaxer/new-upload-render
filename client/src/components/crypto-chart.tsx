@@ -199,6 +199,7 @@ export function CryptoChart({ data, coinSymbol, coinName, className = "" }: Cryp
           chartType={chartType === "candlestick" ? "candlestick" : "line"}
           showVolume={showVolume}
           theme="light"
+          persistentId={`crypto-chart-${coinSymbol}`}
         />
       </div>
       

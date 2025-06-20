@@ -47,7 +47,7 @@ export default function MobileTrade() {
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
-  
+
   // Chart state
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
@@ -83,7 +83,7 @@ export default function MobileTrade() {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
 
     const chartKey = `nedaxer-chart-${symbol}`;
-    
+
     // Check if chart is already loaded to prevent reloading
     if (!forceReload && (window as any).tradingViewChartsLoaded && (window as any).tradingViewChartsLoaded.has(chartKey)) {
       const existingWidget = getGlobalChartWidget();
@@ -95,7 +95,7 @@ export default function MobileTrade() {
 
     // Check if we have a cached widget for this symbol
     const existingWidget = getGlobalChartWidget();
-    
+
     // If force reload is requested or no existing widget, create new one
     if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
       // Remove existing widget if present
@@ -107,20 +107,20 @@ export default function MobileTrade() {
         }
         setGlobalChartWidget(null);
       }
-      
+
       // Clear the chart container
       const chartContainer = document.getElementById('chart');
       if (chartContainer) {
         chartContainer.innerHTML = '';
       }
-      
+
       // Create new widget
       setTimeout(() => {
         createNewWidget(symbol);
       }, 50);
       return;
     }
-    
+
     // Try to change symbol on existing widget
     if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
       try {
@@ -188,7 +188,7 @@ export default function MobileTrade() {
         "paneProperties.crossHairProperties.transparency": 0,
         "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
         "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
-        
+
         // Bollinger Bands styling
         "BB@tv-basicstudies.upper.color": "#0066FF", // Blue upper band
         "BB@tv-basicstudies.lower.color": "#0066FF", // Blue lower band
@@ -198,7 +198,7 @@ export default function MobileTrade() {
         "BB@tv-basicstudies.median.linewidth": 2,
         "BB@tv-basicstudies.fillBackground": true,
         "BB@tv-basicstudies.transparency": 90,
-        
+
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
         "scalesProperties.textColor": "#9CA3AF",
@@ -206,7 +206,7 @@ export default function MobileTrade() {
         "paneProperties.rightAxisProperties.showSeriesLastValue": false,
         "scalesProperties.showLeftScale": false,
         "scalesProperties.showRightScale": true,
-        
+
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
         "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -214,18 +214,18 @@ export default function MobileTrade() {
         "mainSeriesProperties.candleStyle.drawBorder": false,
         "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
         "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
-        
+
         "volumePaneSize": "small",
         "volume.volume.color.0": "#EF4444",
         "volume.volume.color.1": "#10B981",
         "volume.volume.transparency": 0,
-        
+
         "paneProperties.legendProperties.showLegend": false,
         "paneProperties.legendProperties.showStudyArguments": false,
         "paneProperties.legendProperties.showStudyTitles": false,
         "paneProperties.legendProperties.showStudyValues": false,
         "paneProperties.legendProperties.showSeriesTitle": false,
-        
+
         "paneProperties.topMargin": 5,
         "paneProperties.bottomMargin": 15,
         "paneProperties.leftMargin": 5,
@@ -251,7 +251,7 @@ export default function MobileTrade() {
         // Chart ready - no loading state changes needed
       }
     });
-    
+
     setGlobalChartWidget(widget);
   }, [getGlobalChartWidget, setGlobalChartWidget]);
 
@@ -259,7 +259,7 @@ export default function MobileTrade() {
     try {
       const response = await fetch('/api/bybit/tickers');
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         const ticker = data.data.find((t: any) => t.symbol === symbol);
         if (ticker) {
@@ -275,7 +275,7 @@ export default function MobileTrade() {
   const initializeCoinMenu = useCallback(() => {
     const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
     const menu = document.getElementById("coin-menu");
-    
+
     if (menu) {
       menu.innerHTML = '';
       coinList.forEach(symbol => {
@@ -286,7 +286,7 @@ export default function MobileTrade() {
           // Instant UI feedback
           setCurrentSymbol(symbol);
           menu.style.display = "none";
-          
+
           // Load chart and update price without delay
           if (isTradingViewReady) {
             loadChart(`BYBIT:${symbol}`);
@@ -307,7 +307,7 @@ export default function MobileTrade() {
         { rel: 'preconnect', href: 'https://s3.tradingview.com' },
         { rel: 'preload', href: 'https://s3.tradingview.com/tv.js', as: 'script' }
       ];
-      
+
       hints.forEach(hint => {
         const existingHint = document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`);
         if (!existingHint) {
@@ -317,13 +317,13 @@ export default function MobileTrade() {
         }
       });
     };
-    
+
     addPreloadHints();
 
     // Check if script is already loaded and widget exists
     if ((window as any).TradingView) {
       setIsTradingViewReady(true);
-      
+
       // Check for existing widget first
       const existingWidget = getGlobalChartWidget();
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
@@ -356,13 +356,13 @@ export default function MobileTrade() {
     script.async = true;
     script.defer = true;
     script.crossOrigin = 'anonymous';
-    
+
     script.onload = () => {
       setIsTradingViewReady(true);
       loadChart('BYBIT:BTCUSDT');
       initializeCoinMenu();
     };
-    
+
     script.onerror = () => {
       console.error('Failed to load TradingView script');
       setIsChartLoading(false);
@@ -396,13 +396,13 @@ export default function MobileTrade() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const symbolParam = urlParams.get('symbol');
-    
+
     if (symbolParam) {
       // Update trading view symbol for Bybit
       const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
       setTradingViewSymbol(tradingViewSymbol);
       setCurrentSymbol(`${symbolParam}USDT`);
-      
+
       // Update selected pair
       setSelectedPair({
         symbol: symbolParam,
@@ -410,7 +410,7 @@ export default function MobileTrade() {
         price: 0,
         change: 0
       });
-      
+
       // Update crypto selection
       const cryptoId = getCryptoIdFromSymbol(symbolParam);
       setSelectedCrypto(cryptoId);
@@ -486,7 +486,7 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-    
+
     // Force chart reload when switching trading types and on Charts tab
     if (selectedTab === 'Charts') {
       setTimeout(() => {
@@ -497,19 +497,27 @@ export default function MobileTrade() {
     }
   };
 
-  const handleTabChange = (tab: string) => {
-    hapticLight();
+  // Handle tab changes with chart persistence
+  const handleTabChange = useCallback((tab: 'Charts' | 'Trade') => {
     setSelectedTab(tab);
-    
-    // Force chart reload when switching to Charts tab
+
     if (tab === 'Charts') {
+      // Only load chart if it's not already loaded or if container is empty
       setTimeout(() => {
-        if (isTradingViewReady) {
-          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
+        const chartContainer = document.getElementById('chart');
+        const hasChart = chartContainer && (
+          chartContainer.querySelector('iframe') || 
+          chartContainer.querySelector('.tv-lightweight-charts')
+        );
+
+        if (!hasChart) {
+          loadChart(currentSymbol);
+        } else {
+          console.log('Chart already exists, skipping reload');
         }
-      }, 150);
+      }, 50);
     }
-  };
+  }, [currentSymbol, loadChart]);
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);
@@ -663,7 +671,7 @@ export default function MobileTrade() {
                 </div>
               </div>
             )}
-            
+
             {/* Only show error state if chart fails to load */}
             {chartError && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
@@ -690,13 +698,14 @@ export default function MobileTrade() {
                 </div>
               </div>
             )}
-            
+
             {/* TradingView Chart */}
             <div 
               id="chart" 
               className="w-full h-full"
+              data-chart-symbol={currentSymbol}
             ></div>
-            
+
             {/* Background watermark */}
             <div 
               className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
@@ -707,7 +716,7 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            
+
             {/* TradingView Logo Cover */}
             <img 
               id="branding-cover"
@@ -728,7 +737,7 @@ export default function MobileTrade() {
             />
           </div>
 
-          
+
         </div>
       )}
 
@@ -755,7 +764,7 @@ export default function MobileTrade() {
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
         <div className="flex-1 overflow-hidden">
-          
+
           {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}

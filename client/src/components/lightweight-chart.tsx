@@ -2,6 +2,9 @@
 import { useEffect, useRef, memo } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, LineData } from 'lightweight-charts';
 
+// Global chart instances cache to persist across re-renders
+const chartInstancesCache = new Map<string, IChartApi>();
+
 export interface ChartDataPoint {
   time: string;
   open: number;
@@ -18,6 +21,7 @@ interface LightweightChartProps {
   chartType?: 'candlestick' | 'line';
   showVolume?: boolean;
   theme?: 'light' | 'dark';
+  persistentId?: string; // Add optional persistent ID
 }
 
 export const LightweightChart = memo(({
@@ -26,16 +30,39 @@ export const LightweightChart = memo(({
   height = 400,
   chartType = 'candlestick',
   showVolume = true,
-  theme = 'dark'
+  theme = 'dark',
+  persistentId
 }: LightweightChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+  const chartKey = persistentId || `${symbol}-${chartType}`;
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return;
+
+    // Check if we have a cached chart instance
+    const cachedChart = chartInstancesCache.get(chartKey);
+    if (cachedChart && persistentId) {
+      // Reuse existing chart
+      chartRef.current = cachedChart;
+      
+      // Move chart to current container
+      const chartDiv = chartContainerRef.current.querySelector('.tv-lightweight-charts');
+      if (!chartDiv && cachedChart.chartElement) {
+        chartContainerRef.current.appendChild(cachedChart.chartElement());
+      }
+      
+      // Update chart size
+      cachedChart.applyOptions({
+        width: chartContainerRef.current.clientWidth,
+        height,
+      });
+      
+      return;
+    }
 
     // Chart configuration
     const chartOptions = {
@@ -68,6 +95,11 @@ export const LightweightChart = memo(({
     });
 
     chartRef.current = chart;
+    
+    // Cache chart instance if persistent ID is provided
+    if (persistentId) {
+      chartInstancesCache.set(chartKey, chart);
+    }
 
     // Prepare data
     const chartData = data.map(item => ({
@@ -143,11 +175,15 @@ export const LightweightChart = memo(({
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      chart.remove();
-      chartRef.current = null;
-      candlestickSeriesRef.current = null;
-      lineSeriesRef.current = null;
-      volumeSeriesRef.current = null;
+      
+      // Only remove chart if not persistent
+      if (!persistentId) {
+        chart.remove();
+        chartRef.current = null;
+        candlestickSeriesRef.current = null;
+        lineSeriesRef.current = null;
+        volumeSeriesRef.current = null;
+      }
     };
   }, [data, height, chartType, showVolume, theme]);
 

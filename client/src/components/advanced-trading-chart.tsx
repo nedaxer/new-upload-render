@@ -211,6 +211,7 @@ export function AdvancedTradingChart({
         chartType={chartType === "line" ? "line" : "candlestick"}
         showVolume={showVolume}
         theme="light"
+        persistentId={`advanced-chart-${coinSymbol}`}
       />
     );
   };
