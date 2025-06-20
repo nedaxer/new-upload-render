@@ -715,12 +715,7 @@ export default function MobileTrade() {
             />
           </div>
 
-          {/* Extra scrollable content for testing */}
-          <div className="h-96 p-4">
-            <div className="text-gray-400 text-sm">
-              Scrollable content area - scroll down to test the fixed buy/sell buttons
-            </div>
-          </div>
+          
         </div>
       )}
 
