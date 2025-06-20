@@ -59,7 +59,8 @@ export default function MobileTrade() {
   // Chart state
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [widget, setWidget] = useState<any>(null);
-  const chartInitialized = useRef(false);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const isChartReady = useRef(false);
 
   const handleTabChange = (tab: string) => {
     hapticLight();
@@ -81,80 +82,80 @@ export default function MobileTrade() {
     setSelectedTab('Trade');
   };
 
-  // Load TradingView chart with persistence
-  const loadChart = useCallback((symbol: string) => {
-    if (!window.TradingView) return;
+  // Auto-loading chart that always works
+  const initializeChart = useCallback(() => {
+    if (!chartContainerRef.current || !window.TradingView || isChartReady.current) return;
     
-    // Check if widget already exists globally
-    if (window.persistentTradingViewWidget && !window.persistentTradingViewWidget._destroyed) {
-      console.log('Reusing existing persistent chart');
-      setWidget(window.persistentTradingViewWidget);
-      return;
-    }
+    console.log('Initializing auto-loading chart');
     
-    console.log('Creating new persistent chart');
-    const newWidget = new window.TradingView.widget({
-      container_id: "tradingview-chart",
-      autosize: true,
-      symbol: `BYBIT:${symbol}`,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "rgba(0,0,0,0)",
-      toolbar_bg: "rgba(0,0,0,0)",
-      hide_top_toolbar: true,
-      hide_side_toolbar: true,
-      allow_symbol_change: false,
-      enable_publishing: false,
-      details: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [],
-      drawings_access: { type: 'black', tools: [] },
-      crosshair: { mode: 1 },
-      overrides: {
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
-        "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": false,
-        "paneProperties.crossHairProperties.color": "#FFA500",
-        "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,
-        "paneProperties.crossHairProperties.transparency": 0,
-        "volumePaneSize": "small"
-      },
-      disabled_features: [
-        "header_symbol_search",
-        "timeframes_toolbar",
-        "use_localstorage_for_settings",
-        "volume_force_overlay",
-        "left_toolbar",
-        "legend_context_menu",
-        "display_market_status",
-        "go_to_date",
-        "header_compare",
-        "header_chart_type",
-        "header_resolutions",
-        "header_screenshot",
-        "header_fullscreen_button",
-        "header_settings",
-        "header_indicators",
-        "context_menus",
-        "control_bar",
-        "edit_buttons_in_legend",
-        "main_series_scale_menu",
-        "chart_property_page_legend",
-        "chart_property_page_trading",
-        "border_around_the_chart"
-      ]
-    });
+    try {
+      const container = chartContainerRef.current;
+      container.innerHTML = ''; // Clear any existing content
+      
+      const newWidget = new window.TradingView.widget({
+        container: container,
+        autosize: true,
+        symbol: `BYBIT:${currentSymbol}`,
+        interval: "15",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        backgroundColor: "rgba(14, 14, 14, 1)",
+        toolbar_bg: "rgba(14, 14, 14, 1)",
+        hide_top_toolbar: true,
+        hide_side_toolbar: true,
+        allow_symbol_change: false,
+        enable_publishing: false,
+        details: false,
+        withdateranges: false,
+        calendar: false,
+        studies: [],
+        drawings_access: { type: 'black', tools: [] },
+        crosshair: { mode: 1 },
+        overrides: {
+          "paneProperties.background": "#0e0e0e",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.gridProperties.color": "rgba(42, 46, 57, 0.06)",
+          "scalesProperties.textColor": "#787b86",
+          "scalesProperties.lineColor": "rgba(42, 46, 57, 0.06)",
+          "paneProperties.crossHairProperties.color": "#FFA500",
+          "paneProperties.crossHairProperties.width": 1,
+          "paneProperties.crossHairProperties.style": 2,
+          "volumePaneSize": "medium"
+        },
+        disabled_features: [
+          "header_symbol_search",
+          "header_resolutions", 
+          "header_chart_type",
+          "header_compare",
+          "header_screenshot",
+          "header_fullscreen_button",
+          "header_settings",
+          "timeframes_toolbar",
+          "control_bar",
+          "left_toolbar"
+        ],
+        enabled_features: ["study_templates"],
+        charts_storage_url: 'https://saveload.tradingview.com',
+        charts_storage_api_version: "1.1",
+        client_id: 'tradingview.com',
+        user_id: 'public_user_id'
+      });
 
-    // Store globally for persistence
-    window.persistentTradingViewWidget = newWidget;
-    setWidget(newWidget);
-  }, [widget]);
+      setWidget(newWidget);
+      isChartReady.current = true;
+      console.log('Chart initialized successfully');
+      
+    } catch (error) {
+      console.error('Chart initialization failed:', error);
+      // Retry after a short delay
+      setTimeout(() => {
+        isChartReady.current = false;
+        initializeChart();
+      }, 1000);
+    }
+  }, [currentSymbol]);
 
   // Update price data
   const updatePrice = useCallback(async (symbol: string) => {
@@ -184,32 +185,31 @@ export default function MobileTrade() {
     }
   }, []);
 
-  // Initialize chart when Charts tab is selected
+  // Auto-initialize chart on component mount (background loading)
   useEffect(() => {
-    if (selectedTab === 'Charts') {
-      // Load TradingView script if not already loaded
+    const loadTradingViewScript = () => {
       if (!window.TradingView) {
         const script = document.createElement('script');
         script.src = 'https://s3.tradingview.com/tv.js';
         script.async = true;
         script.onload = () => {
-          console.log('TradingView script loaded');
-          setTimeout(() => {
-            loadChart(currentSymbol);
-          }, 100);
+          console.log('TradingView loaded, initializing chart');
+          setTimeout(initializeChart, 500);
         };
         script.onerror = () => {
-          console.error('Failed to load TradingView script');
+          console.error('TradingView script failed to load');
+          // Retry loading
+          setTimeout(loadTradingViewScript, 2000);
         };
         document.head.appendChild(script);
       } else {
-        // TradingView already loaded, create chart
-        setTimeout(() => {
-          loadChart(currentSymbol);
-        }, 100);
+        initializeChart();
       }
-    }
-  }, [selectedTab, currentSymbol, loadChart]);
+    };
+
+    // Always load chart in background when component mounts
+    loadTradingViewScript();
+  }, [initializeChart]);
 
   // Price updates
   useEffect(() => {
@@ -295,7 +295,7 @@ export default function MobileTrade() {
           {/* Chart Container */}
           <div className="flex-1 relative bg-gray-900">
             <div 
-              id="tradingview-chart" 
+              ref={chartContainerRef}
               className="w-full h-full"
               style={{ height: 'calc(100vh - 200px)' }}
             />
