@@ -21,7 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
@@ -485,6 +485,29 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
+      {/* Header with Navigation Tabs */}
+      <div className="bg-gray-900 px-4 py-3">
+        <h1 className="text-xl font-bold text-white text-center mb-4">Chart View</h1>
+        
+        {/* Trade Type Tabs */}
+        <div className="flex bg-gray-800 rounded-lg p-1">
+          <Link href="/mobile/spot" className="flex-1">
+            <div className="text-gray-400 py-2 px-4 text-center text-sm font-medium hover:text-white transition-colors">
+              Spot
+            </div>
+          </Link>
+          <Link href="/mobile/futures" className="flex-1">
+            <div className="text-gray-400 py-2 px-4 text-center text-sm font-medium hover:text-white transition-colors">
+              Futures
+            </div>
+          </Link>
+          <div className="flex-1 bg-orange-600 text-white py-2 px-4 rounded-md text-center text-sm font-medium flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 mr-1" />
+            Chart
+          </div>
+        </div>
+      </div>
+
       {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-gray-900 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
