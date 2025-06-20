@@ -143,7 +143,16 @@ export default function MobileTrade() {
       details: false,
       withdateranges: false,
       calendar: false,
-      studies: [],
+      studies: [
+        {
+          id: "BB@tv-basicstudies-1",
+          inputs: {
+            length: 20,
+            mult: 2,
+            source: "close"
+          }
+        }
+      ],
       drawings_access: { type: 'black', tools: [] },
       crosshair: {
         mode: 1  // Normal crosshair mode that follows your finger/mouse
@@ -163,6 +172,16 @@ export default function MobileTrade() {
         "paneProperties.crossHairProperties.transparency": 0,
         "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
         "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
+        
+        // Bollinger Bands styling
+        "BB@tv-basicstudies.upper.color": "#0066FF", // Blue upper band
+        "BB@tv-basicstudies.lower.color": "#0066FF", // Blue lower band
+        "BB@tv-basicstudies.median.color": "#FFFF00", // Yellow middle line
+        "BB@tv-basicstudies.upper.linewidth": 1,
+        "BB@tv-basicstudies.lower.linewidth": 1,
+        "BB@tv-basicstudies.median.linewidth": 2,
+        "BB@tv-basicstudies.fillBackground": true,
+        "BB@tv-basicstudies.transparency": 90,
         
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
