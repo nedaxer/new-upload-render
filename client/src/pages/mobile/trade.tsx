@@ -145,7 +145,25 @@ export default function MobileTrade() {
       calendar: false,
       studies: [],
       drawings_access: { type: 'black', tools: [] },
-      crosshair: { mode: 1 },
+      crosshair: { 
+        mode: 2, // Real-time tracking crosshair
+        vertLine: {
+          visible: true,
+          color: "#F59E0B",
+          width: 1,
+          style: 0,
+          labelVisible: true,
+          labelBackgroundColor: "#F59E0B"
+        },
+        horzLine: {
+          visible: true,
+          color: "#F59E0B", 
+          width: 1,
+          style: 0,
+          labelVisible: true,
+          labelBackgroundColor: "#F59E0B"
+        }
+      },
       save_image: false,
       loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
       overrides: {
@@ -155,10 +173,18 @@ export default function MobileTrade() {
         "paneProperties.backgroundGradientEndColor": "#111827",
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#6B7280",
+        "paneProperties.crossHairProperties.color": "#F59E0B",
         "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,
-        "paneProperties.crossHairProperties.transparency": 0,
+        "paneProperties.crossHairProperties.style": 0,
+        "paneProperties.crossHairProperties.transparency": 20,
+        "paneProperties.crossHairProperties.horzLine.visible": true,
+        "paneProperties.crossHairProperties.horzLine.color": "#F59E0B",
+        "paneProperties.crossHairProperties.horzLine.width": 1,
+        "paneProperties.crossHairProperties.horzLine.style": 0,
+        "paneProperties.crossHairProperties.vertLine.visible": true,
+        "paneProperties.crossHairProperties.vertLine.color": "#F59E0B",
+        "paneProperties.crossHairProperties.vertLine.width": 1,
+        "paneProperties.crossHairProperties.vertLine.style": 0,
         
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
@@ -199,9 +225,14 @@ export default function MobileTrade() {
         "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
         "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
         "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
-        "chart_crosshair_menu", "snapshot_trading_drawings", "show_logo_on_all_charts",
+        "snapshot_trading_drawings", "show_logo_on_all_charts",
         "remove_library_container_border", "chart_hide_close_button", "header_saveload",
         "header_undo_redo", "show_chart_property_page", "popup_hints"
+      ],
+      enabled_features: [
+        "show_crosshair_labels",
+        "crosshair_tooltip",
+        "crosshair_cursor"
       ],
       onChartReady: () => {
         // Chart ready - no loading state changes needed
