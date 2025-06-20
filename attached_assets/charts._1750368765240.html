@@ -202,21 +202,46 @@
     calendar: false,
     studies: [],
     drawings_access: { type: 'black', tools: [] },
-    crosshair: { mode: 1 },
+    crosshair: { 
+      mode: 2, // Real-time tracking crosshair
+      vertLine: {
+        visible: true,
+        color: "#FFA500",
+        width: 2,
+        style: 0,
+        labelVisible: true,
+        labelBackgroundColor: "#FFA500"
+      },
+      horzLine: {
+        visible: true,
+        color: "#FFA500", 
+        width: 2,
+        style: 0,
+        labelVisible: true,
+        labelBackgroundColor: "#FFA500"
+      }
+    },
     overrides: {
       "paneProperties.leftAxisProperties.showSeriesLastValue": false,
       "paneProperties.rightAxisProperties.showSeriesLastValue": false,
       "scalesProperties.showLeftScale": false,
       "scalesProperties.showRightScale": false,
-      
-      // Hide the price axis completely
-      "paneProperties.rightAxisProperties.visible": false,
-      "paneProperties.leftAxisProperties.visible": false,
-      
       "paneProperties.crossHairProperties.color": "#FFA500",
-      "paneProperties.crossHairProperties.width": 1,
-      "paneProperties.crossHairProperties.style": 2,
+      "paneProperties.crossHairProperties.width": 2,
+      "paneProperties.crossHairProperties.style": 0,
       "paneProperties.crossHairProperties.transparency": 0,
+      "paneProperties.crossHairProperties.horzLine.visible": true,
+      "paneProperties.crossHairProperties.horzLine.color": "#FFA500",
+      "paneProperties.crossHairProperties.horzLine.width": 2,
+      "paneProperties.crossHairProperties.horzLine.style": 0,
+      "paneProperties.crossHairProperties.horzLine.labelVisible": true,
+      "paneProperties.crossHairProperties.horzLine.labelBackgroundColor": "#FFA500",
+      "paneProperties.crossHairProperties.vertLine.visible": true,
+      "paneProperties.crossHairProperties.vertLine.color": "#FFA500",
+      "paneProperties.crossHairProperties.vertLine.width": 2,
+      "paneProperties.crossHairProperties.vertLine.style": 0,
+      "paneProperties.crossHairProperties.vertLine.labelVisible": true,
+      "paneProperties.crossHairProperties.vertLine.labelBackgroundColor": "#FFA500",
       "volumePaneSize": "small"
     },
     disabled_features: [
@@ -242,11 +267,6 @@
       "chart_property_page_legend",
       "chart_property_page_trading",
       "border_around_the_chart"
-    ],
-    enabled_features: [
-      "show_crosshair_labels",
-      "crosshair_tooltip",
-      "crosshair_cursor"
     ]
   });
 }
@@ -275,6 +295,52 @@ async function updatePrice(symbol) {
 loadChart("BYBIT:BTCUSDT");
 updatePrice("BTCUSDT");
 setInterval(() => updatePrice(currentSymbol), 1000);
+
+// Add haptic feedback for crosshair movement
+function setupCrosshairHaptics() {
+  const chartContainer = document.getElementById("chart");
+  if (chartContainer) {
+    let lastCrosshairPosition = { x: 0, y: 0 };
+    let hapticThrottle = false;
+    
+    const handleCrosshairMove = (event) => {
+      if (hapticThrottle) return;
+      
+      let currentX = 0, currentY = 0;
+      
+      if (event.type === 'touchmove' && event.touches.length > 0) {
+        currentX = event.touches[0].clientX;
+        currentY = event.touches[0].clientY;
+      } else if (event.type === 'mousemove') {
+        currentX = event.clientX;
+        currentY = event.clientY;
+      }
+      
+      const deltaX = Math.abs(currentX - lastCrosshairPosition.x);
+      const deltaY = Math.abs(currentY - lastCrosshairPosition.y);
+      
+      if (deltaX > 5 || deltaY > 5) {
+        // Trigger haptic feedback if available
+        if (navigator.vibrate) {
+          navigator.vibrate(10); // Short 10ms vibration
+        }
+        
+        lastCrosshairPosition = { x: currentX, y: currentY };
+        
+        hapticThrottle = true;
+        setTimeout(() => {
+          hapticThrottle = false;
+        }, 50);
+      }
+    };
+    
+    chartContainer.addEventListener('mousemove', handleCrosshairMove, { passive: true });
+    chartContainer.addEventListener('touchmove', handleCrosshairMove, { passive: true });
+  }
+}
+
+// Setup haptic feedback after a short delay to ensure chart is loaded
+setTimeout(setupCrosshairHaptics, 1000);
 
 const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
 const menu = document.getElementById("coin-menu");

@@ -150,7 +150,7 @@ export default function MobileTrade() {
         vertLine: {
           visible: true,
           color: "#F59E0B",
-          width: 1,
+          width: 2,
           style: 0,
           labelVisible: true,
           labelBackgroundColor: "#F59E0B"
@@ -158,7 +158,7 @@ export default function MobileTrade() {
         horzLine: {
           visible: true,
           color: "#F59E0B", 
-          width: 1,
+          width: 2,
           style: 0,
           labelVisible: true,
           labelBackgroundColor: "#F59E0B"
@@ -174,17 +174,21 @@ export default function MobileTrade() {
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
         "paneProperties.crossHairProperties.color": "#F59E0B",
-        "paneProperties.crossHairProperties.width": 1,
+        "paneProperties.crossHairProperties.width": 2,
         "paneProperties.crossHairProperties.style": 0,
-        "paneProperties.crossHairProperties.transparency": 20,
+        "paneProperties.crossHairProperties.transparency": 0,
         "paneProperties.crossHairProperties.horzLine.visible": true,
         "paneProperties.crossHairProperties.horzLine.color": "#F59E0B",
-        "paneProperties.crossHairProperties.horzLine.width": 1,
+        "paneProperties.crossHairProperties.horzLine.width": 2,
         "paneProperties.crossHairProperties.horzLine.style": 0,
+        "paneProperties.crossHairProperties.horzLine.labelVisible": true,
+        "paneProperties.crossHairProperties.horzLine.labelBackgroundColor": "#F59E0B",
         "paneProperties.crossHairProperties.vertLine.visible": true,
         "paneProperties.crossHairProperties.vertLine.color": "#F59E0B",
-        "paneProperties.crossHairProperties.vertLine.width": 1,
+        "paneProperties.crossHairProperties.vertLine.width": 2,
         "paneProperties.crossHairProperties.vertLine.style": 0,
+        "paneProperties.crossHairProperties.vertLine.labelVisible": true,
+        "paneProperties.crossHairProperties.vertLine.labelBackgroundColor": "#F59E0B",
 
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
@@ -192,11 +196,7 @@ export default function MobileTrade() {
         "paneProperties.leftAxisProperties.showSeriesLastValue": false,
         "paneProperties.rightAxisProperties.showSeriesLastValue": false,
         "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": false,
-        
-        // Hide the price axis completely
-        "paneProperties.rightAxisProperties.visible": false,
-        "paneProperties.leftAxisProperties.visible": false,
+        "scalesProperties.showRightScale": true,
 
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
@@ -236,11 +236,57 @@ export default function MobileTrade() {
       enabled_features: [
         "show_crosshair_labels",
         "crosshair_tooltip",
-        "crosshair_cursor",
-        "move_logo_to_main_pane"
+        "crosshair_cursor"
       ],
       onChartReady: () => {
-        // Chart ready - no loading state changes needed
+        // Chart ready - add crosshair movement listeners for haptic feedback
+        try {
+          // Add event listener to the chart container for mouse/touch movement
+          const chartContainer = document.getElementById('chart');
+          if (chartContainer) {
+            let lastCrosshairPosition = { x: 0, y: 0 };
+            let hapticThrottle = false;
+            
+            const handleCrosshairMove = (event: MouseEvent | TouchEvent) => {
+              // Prevent excessive haptic feedback
+              if (hapticThrottle) return;
+              
+              let currentX = 0, currentY = 0;
+              
+              if (event instanceof TouchEvent && event.touches.length > 0) {
+                currentX = event.touches[0].clientX;
+                currentY = event.touches[0].clientY;
+              } else if (event instanceof MouseEvent) {
+                currentX = event.clientX;
+                currentY = event.clientY;
+              }
+              
+              // Check if crosshair position actually changed significantly
+              const deltaX = Math.abs(currentX - lastCrosshairPosition.x);
+              const deltaY = Math.abs(currentY - lastCrosshairPosition.y);
+              
+              if (deltaX > 5 || deltaY > 5) {
+                // Trigger light haptic feedback
+                hapticLight();
+                
+                // Update last position
+                lastCrosshairPosition = { x: currentX, y: currentY };
+                
+                // Throttle haptic feedback to prevent overuse
+                hapticThrottle = true;
+                setTimeout(() => {
+                  hapticThrottle = false;
+                }, 50); // 50ms throttle
+              }
+            };
+            
+            // Add event listeners for both mouse and touch
+            chartContainer.addEventListener('mousemove', handleCrosshairMove, { passive: true });
+            chartContainer.addEventListener('touchmove', handleCrosshairMove, { passive: true });
+          }
+        } catch (error) {
+          console.log('Crosshair haptic setup error:', error);
+        }
       }
     });
 
