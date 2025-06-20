@@ -2,6 +2,7 @@ import { MobileLayout } from '@/components/mobile-layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LightweightChart } from '@/components/lightweight-chart';
 import { 
   TrendingUp,
   TrendingDown,
@@ -61,6 +62,7 @@ export default function MobileTrade() {
   const [widget, setWidget] = useState<any>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const isChartReady = useRef(false);
+  const [useLocalChart, setUseLocalChart] = useState(false);
 
   const handleTabChange = (tab: string) => {
     hapticLight();
@@ -185,21 +187,20 @@ export default function MobileTrade() {
     }
   }, []);
 
-  // Auto-initialize chart on component mount (background loading)
+  // Load TradingView with fallback to local chart
   useEffect(() => {
-    const loadTradingViewScript = () => {
+    const loadTradingView = () => {
       if (!window.TradingView) {
         const script = document.createElement('script');
-        script.src = 'https://s3.tradingview.com/tv.js';
-        script.async = true;
+        script.src = '/tradingview/tv.js';
+        script.async = false;
         script.onload = () => {
-          console.log('TradingView loaded, initializing chart');
-          setTimeout(initializeChart, 500);
+          console.log('Local TradingView loaded');
+          setTimeout(initializeChart, 200);
         };
         script.onerror = () => {
-          console.error('TradingView script failed to load');
-          // Retry loading
-          setTimeout(loadTradingViewScript, 2000);
+          console.log('TradingView failed, using local chart');
+          setUseLocalChart(true);
         };
         document.head.appendChild(script);
       } else {
@@ -207,8 +208,17 @@ export default function MobileTrade() {
       }
     };
 
-    // Always load chart in background when component mounts
-    loadTradingViewScript();
+    // Try TradingView first, fallback to local chart if it fails
+    const timeoutId = setTimeout(() => {
+      if (!isChartReady.current) {
+        console.log('TradingView timeout, switching to local chart');
+        setUseLocalChart(true);
+      }
+    }, 3000);
+
+    loadTradingView();
+    
+    return () => clearTimeout(timeoutId);
   }, [initializeChart]);
 
   // Price updates
@@ -294,11 +304,18 @@ export default function MobileTrade() {
 
           {/* Chart Container */}
           <div className="flex-1 relative bg-gray-900">
-            <div 
-              ref={chartContainerRef}
-              className="w-full h-full"
-              style={{ height: 'calc(100vh - 200px)' }}
-            />
+            {useLocalChart ? (
+              <LightweightChart 
+                symbol={currentSymbol} 
+                className="w-full h-full"
+              />
+            ) : (
+              <div 
+                ref={chartContainerRef}
+                className="w-full h-full"
+                style={{ height: 'calc(100vh - 200px)' }}
+              />
+            )}
             
             {/* Watermark */}
             <div 
