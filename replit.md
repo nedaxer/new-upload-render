@@ -120,6 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Changelog
 
 Changelog:
+- June 20, 2025. Fixed mobile trade page navigation to work like Bybit: implemented proper Spot/Futures main tabs with Chart overlay, removed confusing Trade tab, fixed chart state management when switching between views, updated Buy/Sell button navigation, cleaned up legacy code causing conflicts
 - June 18, 2025. Enhanced global language support system: implemented automatic device language detection on first launch, added comprehensive translations for 160+ languages including Japanese, Korean, Arabic, Russian, French, German, Spanish, and Portuguese, enabled immediate UI updates when language changes, fixed duplicate translation keys, and systematically updated hardcoded text throughout mobile application to use proper translation functions
 - June 17, 2025. Implemented custom app logo for mobile installation: generated all required icon sizes from user's Nedaxer logo, created PWA manifest with installation shortcuts, configured Apple Touch icons, and set up service worker for native app-like experience
 - June 17, 2025. Enhanced mobile assets page with professional portfolio visualization: integrated advanced charts video as seamless backgrounds, replaced crypto coin cards with animated donut chart showing distribution percentages, implemented professional glass-morphism labeling system with color-coded indicators matching trading apps like Blossom

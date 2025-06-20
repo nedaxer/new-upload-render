@@ -6,12 +6,10 @@ import {
   ChevronDown,
   Info,
   TrendingUp,
-  TrendingDown,
-  BarChart3
+  TrendingDown
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
-import { Link } from 'wouter';
 
 export default function MobileSpot() {
   const { t } = useLanguage();
@@ -61,24 +59,6 @@ export default function MobileSpot() {
       {/* Header */}
       <div className="p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white text-center">{t('spot_trading')}</h1>
-        
-        {/* Trade Type Tabs */}
-        <div className="flex bg-gray-800 rounded-lg p-1 mt-4">
-          <div className="flex-1 bg-orange-600 text-white py-2 px-4 rounded-md text-center text-sm font-medium">
-            Spot
-          </div>
-          <Link href="/mobile/futures" className="flex-1">
-            <div className="text-gray-400 py-2 px-4 text-center text-sm font-medium hover:text-white transition-colors">
-              Futures
-            </div>
-          </Link>
-          <Link href="/mobile/trade" className="flex-1">
-            <div className="text-gray-400 py-2 px-4 text-center text-sm font-medium hover:text-white transition-colors flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 mr-1" />
-              Chart
-            </div>
-          </Link>
-        </div>
       </div>
 
       <div className="flex h-[calc(100vh-180px)]">

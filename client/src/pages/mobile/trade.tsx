@@ -21,7 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation, Link } from 'wouter';
+import { useLocation } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
@@ -52,7 +52,7 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
-  const [isChartLoading, setIsChartLoading] = useState(false);
+  const [isChartLoading, setIsChartLoading] = useState(true);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState(false);
   const chartWidget = useRef<any>(null);
@@ -60,130 +60,101 @@ export default function MobileTrade() {
   const tradingViewScript = useRef<HTMLScriptElement | null>(null);
   const chartCache = useRef<Map<string, any>>(new Map());
 
-  // Global chart widget cache to persist across page navigation
-  const getGlobalChartWidget = useCallback(() => {
-    if (!(window as any).nedaxerChartWidget) {
-      (window as any).nedaxerChartWidget = null;
-    }
-    return (window as any).nedaxerChartWidget;
-  }, []);
-
-  const setGlobalChartWidget = useCallback((widget: any) => {
-    (window as any).nedaxerChartWidget = widget;
-    chartWidget.current = widget;
-  }, []);
-
-  // Enhanced chart loading with persistent widget caching
+  // Enhanced chart loading with caching and optimization
   const loadChart = useCallback((symbol: string) => {
-    if (typeof window === 'undefined' || !(window as any).TradingView) return;
-
-    // Check if we have a cached widget for this symbol
-    const existingWidget = getGlobalChartWidget();
+    setIsChartLoading(true);
     
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      try {
-        // Try to change symbol on existing widget instead of recreating
-        existingWidget.setSymbol(symbol, "15", () => {
-          // Symbol changed successfully, no reload needed - don't trigger loading state
-        });
-        chartWidget.current = existingWidget;
-        return;
-      } catch (error) {
-        // If changing symbol fails, remove the old widget
-        try {
-          existingWidget.remove();
-        } catch (removeError) {
-          // Ignore removal errors
-        }
-      }
+    if (chartWidget.current) {
+      chartWidget.current.remove();
     }
-
-    // Create new widget only if necessary - don't set loading state
-    const widget = new (window as any).TradingView.widget({
-      container_id: "chart",
-      autosize: true,
-      symbol: symbol,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "#111827",
-      toolbar_bg: "#111827",
-      hide_top_toolbar: true,
-      hide_side_toolbar: true,
-      allow_symbol_change: false,
-      enable_publishing: false,
-      details: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [],
-      drawings_access: { type: 'black', tools: [] },
-      crosshair: { mode: 1 },
-      save_image: false,
-      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
-      overrides: {
-        "paneProperties.background": "#111827",
-        "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#111827", 
-        "paneProperties.backgroundGradientEndColor": "#111827",
-        "paneProperties.vertGridProperties.color": "#374151",
-        "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#6B7280",
-        "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,
-        "paneProperties.crossHairProperties.transparency": 0,
-        
-        "scalesProperties.backgroundColor": "#111827",
-        "scalesProperties.lineColor": "#374151", 
-        "scalesProperties.textColor": "#9CA3AF",
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
-        "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": true,
-        
-        "mainSeriesProperties.style": 1,
-        "mainSeriesProperties.candleStyle.upColor": "#10B981",
-        "mainSeriesProperties.candleStyle.downColor": "#EF4444",
-        "mainSeriesProperties.candleStyle.drawWick": true,
-        "mainSeriesProperties.candleStyle.drawBorder": false,
-        "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
-        "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
-        
-        "volumePaneSize": "small",
-        "volume.volume.color.0": "#EF4444",
-        "volume.volume.color.1": "#10B981",
-        "volume.volume.transparency": 0,
-        
-        "paneProperties.legendProperties.showLegend": false,
-        "paneProperties.legendProperties.showStudyArguments": false,
-        "paneProperties.legendProperties.showStudyTitles": false,
-        "paneProperties.legendProperties.showStudyValues": false,
-        "paneProperties.legendProperties.showSeriesTitle": false,
-        
-        "paneProperties.topMargin": 5,
-        "paneProperties.bottomMargin": 15,
-        "paneProperties.leftMargin": 5,
-        "paneProperties.rightMargin": 5,
-      },
-      disabled_features: [
-        "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
-        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
-        "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
-        "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
-        "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
-        "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
-        "chart_crosshair_menu", "snapshot_trading_drawings", "show_logo_on_all_charts",
-        "remove_library_container_border", "chart_hide_close_button", "header_saveload",
-        "header_undo_redo", "show_chart_property_page", "popup_hints"
-      ],
-      onChartReady: () => {
-        // Chart ready - no loading state changes needed
-      }
-    });
     
-    setGlobalChartWidget(widget);
-  }, [getGlobalChartWidget, setGlobalChartWidget]);
+    if (typeof window !== 'undefined' && (window as any).TradingView) {
+      const widget = new (window as any).TradingView.widget({
+        container_id: "chart",
+        autosize: true,
+        symbol: symbol,
+        interval: "15",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        backgroundColor: "#111827",
+        toolbar_bg: "#111827",
+        hide_top_toolbar: true,
+        hide_side_toolbar: true,
+        allow_symbol_change: false,
+        enable_publishing: false,
+        details: false,
+        withdateranges: false,
+        calendar: false,
+        studies: [],
+        drawings_access: { type: 'black', tools: [] },
+        crosshair: { mode: 1 },
+        save_image: false,
+        loading_screen: { backgroundColor: "#111827", foregroundColor: "#374151" },
+        overrides: {
+          "paneProperties.background": "#111827",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.backgroundGradientStartColor": "#111827", 
+          "paneProperties.backgroundGradientEndColor": "#111827",
+          "paneProperties.vertGridProperties.color": "#374151",
+          "paneProperties.horzGridProperties.color": "#374151",
+          "paneProperties.crossHairProperties.color": "#6B7280",
+          "paneProperties.crossHairProperties.width": 1,
+          "paneProperties.crossHairProperties.style": 2,
+          "paneProperties.crossHairProperties.transparency": 0,
+          
+          "scalesProperties.backgroundColor": "#111827",
+          "scalesProperties.lineColor": "#374151", 
+          "scalesProperties.textColor": "#9CA3AF",
+          "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+          "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+          "scalesProperties.showLeftScale": false,
+          "scalesProperties.showRightScale": true,
+          
+          "mainSeriesProperties.style": 1,
+          "mainSeriesProperties.candleStyle.upColor": "#10B981",
+          "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+          "mainSeriesProperties.candleStyle.drawWick": true,
+          "mainSeriesProperties.candleStyle.drawBorder": false,
+          "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
+          "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
+          
+          "volumePaneSize": "small",
+          "volume.volume.color.0": "#EF4444",
+          "volume.volume.color.1": "#10B981",
+          "volume.volume.transparency": 0,
+          
+          "paneProperties.legendProperties.showLegend": false,
+          "paneProperties.legendProperties.showStudyArguments": false,
+          "paneProperties.legendProperties.showStudyTitles": false,
+          "paneProperties.legendProperties.showStudyValues": false,
+          "paneProperties.legendProperties.showSeriesTitle": false,
+          
+          "paneProperties.topMargin": 5,
+          "paneProperties.bottomMargin": 15,
+          "paneProperties.leftMargin": 5,
+          "paneProperties.rightMargin": 5,
+        },
+        disabled_features: [
+          "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
+          "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
+          "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
+          "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
+          "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
+          "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
+          "chart_crosshair_menu", "snapshot_trading_drawings", "show_logo_on_all_charts",
+          "remove_library_container_border", "chart_hide_close_button", "header_saveload",
+          "header_undo_redo", "show_chart_property_page", "popup_hints"
+        ],
+        onChartReady: () => {
+          setIsChartLoading(false);
+        }
+      });
+      
+      chartWidget.current = widget;
+    }
+  }, []);
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -250,22 +221,11 @@ export default function MobileTrade() {
     
     addPreloadHints();
 
-    // Check if script is already loaded and widget exists
+    // Check if script is already loaded
     if ((window as any).TradingView) {
       setIsTradingViewReady(true);
-      
-      // Check for existing widget first
-      const existingWidget = getGlobalChartWidget();
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        // Widget exists and is functional, just update state
-        chartWidget.current = existingWidget;
-        setIsChartLoading(false);
-        initializeCoinMenu();
-      } else {
-        // No existing widget, create new one
-        loadChart('BYBIT:BTCUSDT');
-        initializeCoinMenu();
-      }
+      loadChart('BYBIT:BTCUSDT');
+      initializeCoinMenu();
       return;
     }
 
@@ -303,10 +263,11 @@ export default function MobileTrade() {
     tradingViewScript.current = script;
 
     return () => {
-      // Don't remove the script or widget when component unmounts
-      // Keep them cached for instant access when returning
+      if (tradingViewScript.current && tradingViewScript.current.parentNode) {
+        tradingViewScript.current.parentNode.removeChild(tradingViewScript.current);
+      }
     };
-  }, [loadChart, getGlobalChartWidget]);
+  }, [loadChart]);
 
   // Price update interval
   useEffect(() => {
@@ -392,7 +353,7 @@ export default function MobileTrade() {
   };
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
-  // Removed tradingTabs as we now use selectedTab directly
+  const tradingTabs = ['Spot', 'Futures'];
   const cryptoPairs = [
     { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
     { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
@@ -413,6 +374,8 @@ export default function MobileTrade() {
     'polygon': 'BINANCE:MATICUSDT'
   };
 
+  // Removed handleTradingTypeChange as we now use selectedTab directly
+
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
@@ -422,6 +385,12 @@ export default function MobileTrade() {
   const handleChartClick = () => {
     hapticLight();
     setShowChart(!showChart);
+    // When showing chart, ensure TradingView is loaded and ready
+    if (!showChart && isTradingViewReady) {
+      setTimeout(() => {
+        loadChart(`BYBIT:${currentSymbol}`);
+      }, 100);
+    }
   };
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
@@ -457,12 +426,12 @@ export default function MobileTrade() {
 
   const handleBuyClick = () => {
     setTradeMode('Buy');
-    setSelectedTab('Trade');
+    setShowChart(false); // Hide chart and show the current trading interface
   };
 
   const handleSellClick = () => {
     setTradeMode('Sell');
-    setSelectedTab('Trade');
+    setShowChart(false); // Hide chart and show the current trading interface
   };
 
   const handleQuantityChange = (value: number) => {
@@ -527,8 +496,6 @@ export default function MobileTrade() {
           </button>
         </div>
       </div>
-
-
 
       {/* Chart Content - Shows when showChart is true */}
       {showChart && (
@@ -652,7 +619,7 @@ export default function MobileTrade() {
       {selectedTab === 'Spot' && !showChart && (
         <div className="flex-1 overflow-hidden">
           <div className="h-full p-4">
-            {/* Spot trading interface will go here */}
+            {/* Spot trading interface */}
             <MobileSpot />
           </div>
         </div>
@@ -667,27 +634,7 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
-      {showChart && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleBuyClick}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-            >
-              Buy
-            </button>
-            <button 
-              onClick={handleSellClick}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-            >
-              Sell
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* This section is now properly structured with the new navigation - removing legacy content */}
+      {/* Legacy content to be removed */}
       {false && (
         <div className="flex-1 overflow-hidden">
           
@@ -848,7 +795,7 @@ export default function MobileTrade() {
               </div>
             </div>
           )}
-          {/* This section is now handled above in the main content areas */}
+          {/* This is now handled in the main content areas above */}
 
         </div>
       )}
