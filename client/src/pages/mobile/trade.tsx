@@ -84,20 +84,38 @@ export default function MobileTrade() {
 
     const chartKey = `nedaxer-chart-${symbol}`;
 
-    // Check if chart is already loaded to prevent reloading
-    if (!forceReload && (window as any).tradingViewChartsLoaded && (window as any).tradingViewChartsLoaded.has(chartKey)) {
-      const existingWidget = getGlobalChartWidget();
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Chart already loaded, skipping initialization');
+    // Check if chart is already loaded and functional
+    const existingWidget = getGlobalChartWidget();
+    if (!forceReload && existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+      console.log('Chart already exists and is functional, reusing existing widget');
+      
+      // Ensure chart is in the correct container
+      const chartContainer = document.getElementById('chart');
+      if (chartContainer && !chartContainer.querySelector('iframe')) {
+        // Chart container is empty, move existing chart there
+        if (existingWidget.iframe && existingWidget.iframe.parentNode) {
+          chartContainer.appendChild(existingWidget.iframe);
+        }
+      }
+      
+      // Try to change symbol on existing widget
+      try {
+        existingWidget.setSymbol(symbol, "15", () => {
+          console.log('Symbol changed successfully');
+        });
+        chartWidget.current = existingWidget;
+        return;
+      } catch (error) {
+        console.log('Failed to change symbol, keeping current chart');
+        chartWidget.current = existingWidget;
         return;
       }
     }
 
-    // Check if we have a cached widget for this symbol
-    const existingWidget = getGlobalChartWidget();
-
-    // If force reload is requested or no existing widget, create new one
+    // Only create new widget if no existing widget or force reload
     if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
+      console.log('Creating new chart widget');
+      
       // Remove existing widget if present
       if (existingWidget) {
         try {
@@ -114,26 +132,10 @@ export default function MobileTrade() {
         chartContainer.innerHTML = '';
       }
 
-      // Create new widget
+      // Create new widget after a short delay
       setTimeout(() => {
         createNewWidget(symbol);
-      }, 50);
-      return;
-    }
-
-    // Try to change symbol on existing widget
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      try {
-        existingWidget.setSymbol(symbol, "15", () => {
-          // Symbol changed successfully
-        });
-        chartWidget.current = existingWidget;
-        return;
-      } catch (error) {
-        // If changing symbol fails, force reload
-        loadChart(symbol, true);
-        return;
-      }
+      }, 100);
     }
   }, [getGlobalChartWidget, setGlobalChartWidget]);
 
@@ -287,16 +289,28 @@ export default function MobileTrade() {
           setCurrentSymbol(symbol);
           menu.style.display = "none";
 
-          // Load chart and update price without delay
+          // Update chart symbol without reloading if possible
           if (isTradingViewReady) {
-            loadChart(`BYBIT:${symbol}`);
+            const existingWidget = getGlobalChartWidget();
+            if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+              try {
+                existingWidget.setSymbol(`BYBIT:${symbol}`, "15", () => {
+                  console.log('Symbol changed to', symbol);
+                });
+              } catch (error) {
+                // If changing symbol fails, load new chart
+                loadChart(`BYBIT:${symbol}`, false);
+              }
+            } else {
+              loadChart(`BYBIT:${symbol}`, false);
+            }
           }
           updatePrice(symbol);
         };
         menu.appendChild(div);
       });
     }
-  }, [isTradingViewReady, loadChart]);
+  }, [isTradingViewReady, loadChart, getGlobalChartWidget]);
 
   // Add preload hints and load TradingView script with maximum optimization
   useEffect(() => {
@@ -323,19 +337,28 @@ export default function MobileTrade() {
     // Check if script is already loaded and widget exists
     if ((window as any).TradingView) {
       setIsTradingViewReady(true);
+      setIsChartLoading(false);
 
-      // Check for existing widget first
+      // Always check for existing widget first
       const existingWidget = getGlobalChartWidget();
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        // Widget exists and is functional, just update state
+        console.log('Reusing existing chart widget');
         chartWidget.current = existingWidget;
-        setIsChartLoading(false);
-        initializeCoinMenu();
-      } else {
-        // No existing widget, create new one
-        loadChart('BYBIT:BTCUSDT');
-        initializeCoinMenu();
+        
+        // Ensure chart is in the correct container
+        const chartContainer = document.getElementById('chart');
+        if (chartContainer && !chartContainer.querySelector('iframe')) {
+          if (existingWidget.iframe && existingWidget.iframe.parentNode) {
+            chartContainer.appendChild(existingWidget.iframe);
+          }
+        }
+      } else if (selectedTab === 'Charts') {
+        // Only create new widget if we're on Charts tab and no existing widget
+        console.log('Creating initial chart widget');
+        loadChart('BYBIT:BTCUSDT', false);
       }
+      
+      initializeCoinMenu();
       return;
     }
 
@@ -344,7 +367,10 @@ export default function MobileTrade() {
     if (existingScript) {
       existingScript.addEventListener('load', () => {
         setIsTradingViewReady(true);
-        loadChart('BYBIT:BTCUSDT');
+        setIsChartLoading(false);
+        if (selectedTab === 'Charts') {
+          loadChart('BYBIT:BTCUSDT', false);
+        }
         initializeCoinMenu();
       });
       return;
@@ -359,7 +385,10 @@ export default function MobileTrade() {
 
     script.onload = () => {
       setIsTradingViewReady(true);
-      loadChart('BYBIT:BTCUSDT');
+      setIsChartLoading(false);
+      if (selectedTab === 'Charts') {
+        loadChart('BYBIT:BTCUSDT', false);
+      }
       initializeCoinMenu();
     };
 
@@ -376,7 +405,7 @@ export default function MobileTrade() {
       // Don't remove the script or widget when component unmounts
       // Keep them cached for instant access when returning
     };
-  }, [loadChart, getGlobalChartWidget]);
+  }, [loadChart, getGlobalChartWidget, selectedTab]);
 
   // Price update interval
   useEffect(() => {
@@ -486,15 +515,7 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-
-    // Force chart reload when switching trading types and on Charts tab
-    if (selectedTab === 'Charts') {
-      setTimeout(() => {
-        if (isTradingViewReady) {
-          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
-        }
-      }, 150);
-    }
+    // Don't reload chart when switching trading types - keep it persistent
   };
 
   // Handle tab changes with chart persistence
@@ -502,22 +523,29 @@ export default function MobileTrade() {
     setSelectedTab(tab);
 
     if (tab === 'Charts') {
-      // Only load chart if it's not already loaded or if container is empty
-      setTimeout(() => {
+      // Check if chart already exists and is functional
+      const existingWidget = getGlobalChartWidget();
+      
+      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+        console.log('Chart widget exists, ensuring it\'s in the correct container');
+        
+        // Ensure chart is visible in the container
         const chartContainer = document.getElementById('chart');
-        const hasChart = chartContainer && (
-          chartContainer.querySelector('iframe') || 
-          chartContainer.querySelector('.tv-lightweight-charts')
-        );
-
-        if (!hasChart) {
-          loadChart(currentSymbol);
-        } else {
-          console.log('Chart already exists, skipping reload');
+        if (chartContainer && !chartContainer.querySelector('iframe')) {
+          // Move existing chart to container
+          if (existingWidget.iframe && existingWidget.iframe.parentNode) {
+            chartContainer.appendChild(existingWidget.iframe);
+          }
         }
-      }, 50);
+        chartWidget.current = existingWidget;
+      } else {
+        // Only load new chart if no existing widget
+        setTimeout(() => {
+          loadChart(`BYBIT:${currentSymbol}`, false); // Don't force reload
+        }, 100);
+      }
     }
-  }, [currentSymbol, loadChart]);
+  }, [currentSymbol, loadChart, getGlobalChartWidget]);
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);
