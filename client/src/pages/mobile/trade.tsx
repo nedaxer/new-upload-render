@@ -496,56 +496,24 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            {/* TradingView Logo Cover - Multiple positions to ensure coverage */}
-            <div 
-              id="branding-cover-bottom-left"
-              className="absolute w-16 h-6 bg-gray-900 shadow-md"
+            {/* TradingView Logo Cover - Exact positioning from HTML example */}
+            <img 
+              id="branding-cover"
+              src="https://i.imgur.com/1yZtbuJ.jpeg" 
+              alt="Nedaxer Logo"
+              className="absolute"
               style={{
-                bottom: '8px',
-                left: '8px',
-                borderRadius: '4px',
-                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                boxShadow: '0 0 4px #000',
+                bottom: '28px',
+                left: '12px',
+                width: '50px',
+                height: '50px',
+                borderRadius: '8px',
+                backgroundColor: '#0e0e0e',
                 zIndex: 9999,
-                pointerEvents: 'auto'
+                pointerEvents: 'auto',
+                boxShadow: '0 0 4px #000'
               }}
-            ></div>
-            <div 
-              id="branding-cover-bottom-right"
-              className="absolute w-16 h-6 bg-gray-900 shadow-md"
-              style={{
-                bottom: '8px',
-                right: '8px',
-                borderRadius: '4px',
-                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                boxShadow: '0 0 4px #000',
-                zIndex: 9999,
-                pointerEvents: 'auto'
-              }}
-            ></div>
-            <div 
-              id="branding-cover-center"
-              className="absolute w-20 h-8 bg-gray-900 shadow-md"
-              style={{
-                bottom: '15px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                borderRadius: '4px',
-                backgroundImage: "url('https://i.imgur.com/1yZtbuJ.jpeg')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-                boxShadow: '0 0 4px #000',
-                zIndex: 9999,
-                pointerEvents: 'auto'
-              }}
-            ></div>
+            />
           </div>
 
           {/* Extra scrollable content for testing */}
