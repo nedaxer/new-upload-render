@@ -90,7 +90,7 @@ import AdminStaking from '@/pages/admin/staking';
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
 import MobileAssets from '@/pages/mobile/assets';
-import MobileTrade from '@/pages/mobile/trade-simple';
+import MobileTrade from '@/pages/mobile/trade';
 import MobileMarkets from '@/pages/mobile/markets';
 import MobileEarn from '@/pages/mobile/earn';
 import MobileProfile from '@/pages/mobile/profile';
