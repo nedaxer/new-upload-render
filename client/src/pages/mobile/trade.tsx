@@ -25,7 +25,7 @@ import { useLocation } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
-import TradingViewWidget from '@/components/tradingview-widget';
+import { usePersistentChart } from '@/components/persistent-chart-manager';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import { useLanguage } from '@/contexts/language-context';
@@ -52,208 +52,27 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
-  const [isChartLoading, setIsChartLoading] = useState(false);
-  const [isTradingViewReady, setIsTradingViewReady] = useState(false);
-  const [chartError, setChartError] = useState(false);
-  const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
-  const tradingViewScript = useRef<HTMLScriptElement | null>(null);
-  const chartCache = useRef<Map<string, any>>(new Map());
+  
+  // Use persistent chart manager
+  const { 
+    containerRef, 
+    isReady: isChartReady, 
+    isLoading: isChartLoading, 
+    error: chartError, 
+    showChart, 
+    hideChart, 
+    changeSymbol 
+  } = usePersistentChart();
 
-  // Global chart widget cache to persist across page navigation
-  const getGlobalChartWidget = useCallback(() => {
-    if (!(window as any).nedaxerChartWidget) {
-      (window as any).nedaxerChartWidget = null;
+  // Handle symbol changes with persistent chart
+  const handleSymbolChange = useCallback((symbol: string) => {
+    setCurrentSymbol(symbol);
+    if (isChartReady) {
+      changeSymbol(`BYBIT:${symbol}`);
     }
-    if (!(window as any).tradingViewChartsLoaded) {
-      (window as any).tradingViewChartsLoaded = new Set();
-    }
-    return (window as any).nedaxerChartWidget;
-  }, []);
-
-  const setGlobalChartWidget = useCallback((widget: any) => {
-    (window as any).nedaxerChartWidget = widget;
-    chartWidget.current = widget;
-    // Mark chart as loaded to prevent reinitialization
-    (window as any).tradingViewChartsLoaded.add(`nedaxer-chart-${currentSymbol}`);
-  }, [currentSymbol]);
-
-  // Enhanced chart loading with persistent widget caching
-  const loadChart = useCallback((symbol: string, forceReload = false) => {
-    if (typeof window === 'undefined' || !(window as any).TradingView) return;
-
-    const chartKey = `nedaxer-chart-${symbol}`;
-    
-    // Check if chart is already loaded to prevent reloading
-    if (!forceReload && (window as any).tradingViewChartsLoaded && (window as any).tradingViewChartsLoaded.has(chartKey)) {
-      const existingWidget = getGlobalChartWidget();
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Chart already loaded, skipping initialization');
-        return;
-      }
-    }
-
-    // Check if we have a cached widget for this symbol
-    const existingWidget = getGlobalChartWidget();
-    
-    // If force reload is requested or no existing widget, create new one
-    if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
-      // Remove existing widget if present
-      if (existingWidget) {
-        try {
-          existingWidget.remove();
-        } catch (removeError) {
-          // Ignore removal errors
-        }
-        setGlobalChartWidget(null);
-      }
-      
-      // Clear the chart container
-      const chartContainer = document.getElementById('chart');
-      if (chartContainer) {
-        chartContainer.innerHTML = '';
-      }
-      
-      // Create new widget
-      setTimeout(() => {
-        createNewWidget(symbol);
-      }, 50);
-      return;
-    }
-    
-    // Try to change symbol on existing widget
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      try {
-        existingWidget.setSymbol(symbol, "15", () => {
-          // Symbol changed successfully
-        });
-        chartWidget.current = existingWidget;
-        return;
-      } catch (error) {
-        // If changing symbol fails, force reload
-        loadChart(symbol, true);
-        return;
-      }
-    }
-  }, [getGlobalChartWidget, setGlobalChartWidget]);
-
-  // Helper function to create new widget
-  const createNewWidget = useCallback((symbol: string) => {
-    if (typeof window === 'undefined' || !(window as any).TradingView) return;
-
-    const widget = new (window as any).TradingView.widget({
-      container_id: "chart",
-      autosize: true,
-      symbol: symbol,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "#111827",
-      toolbar_bg: "#111827",
-      hide_top_toolbar: true,
-      hide_side_toolbar: true,
-      allow_symbol_change: false,
-      enable_publishing: false,
-      details: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [
-        {
-          id: "BB@tv-basicstudies-1",
-          inputs: {
-            length: 20,
-            mult: 2,
-            source: "close"
-          }
-        }
-      ],
-      drawings_access: { type: 'black', tools: [] },
-      crosshair: {
-        mode: 1  // Normal crosshair mode that follows your finger/mouse
-      },
-      save_image: false,
-      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
-      overrides: {
-        "paneProperties.background": "#111827",
-        "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#111827", 
-        "paneProperties.backgroundGradientEndColor": "#111827",
-        "paneProperties.vertGridProperties.color": "#374151",
-        "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#FFA500", // orange line
-        "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,  // Dashed
-        "paneProperties.crossHairProperties.transparency": 0,
-        "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
-        "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
-        
-        // Bollinger Bands styling
-        "BB@tv-basicstudies.upper.color": "#0066FF", // Blue upper band
-        "BB@tv-basicstudies.lower.color": "#0066FF", // Blue lower band
-        "BB@tv-basicstudies.median.color": "#FFFF00", // Yellow middle line
-        "BB@tv-basicstudies.upper.linewidth": 1,
-        "BB@tv-basicstudies.lower.linewidth": 1,
-        "BB@tv-basicstudies.median.linewidth": 2,
-        "BB@tv-basicstudies.fillBackground": true,
-        "BB@tv-basicstudies.transparency": 90,
-        
-        "scalesProperties.backgroundColor": "#111827",
-        "scalesProperties.lineColor": "#374151", 
-        "scalesProperties.textColor": "#9CA3AF",
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
-        "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": true,
-        
-        "mainSeriesProperties.style": 1,
-        "mainSeriesProperties.candleStyle.upColor": "#10B981",
-        "mainSeriesProperties.candleStyle.downColor": "#EF4444",
-        "mainSeriesProperties.candleStyle.drawWick": true,
-        "mainSeriesProperties.candleStyle.drawBorder": false,
-        "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
-        "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
-        
-        "volumePaneSize": "small",
-        "volume.volume.color.0": "#EF4444",
-        "volume.volume.color.1": "#10B981",
-        "volume.volume.transparency": 0,
-        
-        "paneProperties.legendProperties.showLegend": false,
-        "paneProperties.legendProperties.showStudyArguments": false,
-        "paneProperties.legendProperties.showStudyTitles": false,
-        "paneProperties.legendProperties.showStudyValues": false,
-        "paneProperties.legendProperties.showSeriesTitle": false,
-        
-        "paneProperties.topMargin": 5,
-        "paneProperties.bottomMargin": 15,
-        "paneProperties.leftMargin": 5,
-        "paneProperties.rightMargin": 5,
-      },
-      disabled_features: [
-        "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
-        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
-        "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
-        "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
-        "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
-        "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
-        "snapshot_trading_drawings", "show_logo_on_all_charts",
-        "remove_library_container_border", "chart_hide_close_button", "header_saveload",
-        "header_undo_redo", "show_chart_property_page", "popup_hints"
-      ],
-      enabled_features: [
-        "show_crosshair_labels",
-        "crosshair_tooltip",
-        "crosshair_cursor"
-      ],
-      onChartReady: () => {
-        // Chart ready - no loading state changes needed
-      }
-    });
-    
-    setGlobalChartWidget(widget);
-  }, [getGlobalChartWidget, setGlobalChartWidget]);
+    updatePrice(symbol);
+  }, [changeSymbol, isChartReady]);
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -283,100 +102,29 @@ export default function MobileTrade() {
         div.className = "p-2 cursor-pointer text-white hover:bg-gray-700 transition-colors";
         div.textContent = symbol.replace("USDT", "/USDT");
         div.onclick = () => {
-          // Instant UI feedback
-          setCurrentSymbol(symbol);
+          // Use persistent chart system
+          handleSymbolChange(symbol);
           menu.style.display = "none";
-          
-          // Load chart and update price without delay
-          if (isTradingViewReady) {
-            loadChart(`BYBIT:${symbol}`);
-          }
-          updatePrice(symbol);
         };
         menu.appendChild(div);
       });
     }
-  }, [isTradingViewReady, loadChart]);
+  }, [handleSymbolChange]);
 
-  // Add preload hints and load TradingView script with maximum optimization
+  // Show chart when component mounts and ready
   useEffect(() => {
-    // Add DNS prefetch and preconnect for faster loading
-    const addPreloadHints = () => {
-      const hints = [
-        { rel: 'dns-prefetch', href: 'https://s3.tradingview.com' },
-        { rel: 'preconnect', href: 'https://s3.tradingview.com' },
-        { rel: 'preload', href: 'https://s3.tradingview.com/tv.js', as: 'script' }
-      ];
-      
-      hints.forEach(hint => {
-        const existingHint = document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`);
-        if (!existingHint) {
-          const link = document.createElement('link');
-          Object.assign(link, hint);
-          document.head.appendChild(link);
-        }
-      });
-    };
-    
-    addPreloadHints();
-
-    // Check if script is already loaded and widget exists
-    if ((window as any).TradingView) {
-      setIsTradingViewReady(true);
-      
-      // Check for existing widget first
-      const existingWidget = getGlobalChartWidget();
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        // Widget exists and is functional, just update state
-        chartWidget.current = existingWidget;
-        setIsChartLoading(false);
-        initializeCoinMenu();
-      } else {
-        // No existing widget, create new one
-        loadChart('BYBIT:BTCUSDT');
-        initializeCoinMenu();
-      }
-      return;
-    }
-
-    // Check if script is already in DOM
-    const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        setIsTradingViewReady(true);
-        loadChart('BYBIT:BTCUSDT');
-        initializeCoinMenu();
-      });
-      return;
-    }
-
-    // Create and load script with maximum optimization
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.defer = true;
-    script.crossOrigin = 'anonymous';
-    
-    script.onload = () => {
-      setIsTradingViewReady(true);
-      loadChart('BYBIT:BTCUSDT');
+    if (isChartReady) {
+      showChart();
       initializeCoinMenu();
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load TradingView script');
-      setIsChartLoading(false);
-      setChartError(true);
-    };
+    }
+  }, [isChartReady, showChart, initializeCoinMenu]);
 
-    document.head.appendChild(script);
-    tradingViewScript.current = script;
-
+  // Hide chart when component unmounts to keep it persistent
+  useEffect(() => {
     return () => {
-      // Don't remove the script or widget when component unmounts
-      // Keep them cached for instant access when returning
+      hideChart();
     };
-  }, [loadChart, getGlobalChartWidget]);
+  }, [hideChart]);
 
   // Price update interval
   useEffect(() => {
@@ -398,10 +146,8 @@ export default function MobileTrade() {
     const symbolParam = urlParams.get('symbol');
     
     if (symbolParam) {
-      // Update trading view symbol for Bybit
-      const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
-      setTradingViewSymbol(tradingViewSymbol);
-      setCurrentSymbol(`${symbolParam}USDT`);
+      const fullSymbol = `${symbolParam}USDT`;
+      handleSymbolChange(fullSymbol);
       
       // Update selected pair
       setSelectedPair({
@@ -415,7 +161,7 @@ export default function MobileTrade() {
       const cryptoId = getCryptoIdFromSymbol(symbolParam);
       setSelectedCrypto(cryptoId);
     }
-  }, [location]);
+  }, [location, handleSymbolChange]);
 
   // Helper function to get crypto name from symbol
   const getCryptoName = (symbol: string): string => {
@@ -486,28 +232,15 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-    
-    // Force chart reload when switching trading types and on Charts tab
-    if (selectedTab === 'Charts') {
-      setTimeout(() => {
-        if (isTradingViewReady) {
-          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
-        }
-      }, 150);
-    }
   };
 
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
     
-    // Force chart reload when switching to Charts tab
-    if (tab === 'Charts') {
-      setTimeout(() => {
-        if (isTradingViewReady) {
-          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
-        }
-      }, 150);
+    // Show chart when switching to Charts tab
+    if (tab === 'Charts' && isChartReady) {
+      showChart();
     }
   };
 
@@ -525,8 +258,8 @@ export default function MobileTrade() {
       price: 0,
       change: 0
     });
-    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || `BINANCE:${symbol}USDT`;
-    setTradingViewSymbol(tradingViewSymbol);
+    const fullSymbol = `${symbol}USDT`;
+    handleSymbolChange(fullSymbol);
     setShowPairSelector(false);
   };
 
@@ -652,7 +385,7 @@ export default function MobileTrade() {
           {/* Chart Container - Clean without loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
-            {!isTradingViewReady && (
+            {isChartLoading && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
@@ -675,13 +408,7 @@ export default function MobileTrade() {
                   <p className="text-sm mt-2">Unable to load chart data</p>
                   <button 
                     onClick={() => {
-                      setChartError(false);
-                      setIsTradingViewReady(false);
-                      setTimeout(() => {
-                        if ((window as any).TradingView) {
-                          loadChart(`BYBIT:${currentSymbol}`, true);
-                        }
-                      }, 100);
+                      window.location.reload();
                     }}
                     className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
                   >
@@ -691,9 +418,9 @@ export default function MobileTrade() {
               </div>
             )}
             
-            {/* TradingView Chart */}
+            {/* Persistent TradingView Chart Container */}
             <div 
-              id="chart" 
+              ref={containerRef}
               className="w-full h-full"
             ></div>
             
