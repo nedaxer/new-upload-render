@@ -1,64 +1,45 @@
-
 import { useCallback } from 'react';
 
-// Global chart state management
+// Simplified persistent chart hook that works with the global system
 export const usePersistentChart = () => {
-  
+
   const showChart = useCallback(() => {
-    const existingWidget = (window as any).nedaxerGlobalChartWidget;
-    const chartState = (window as any).nedaxerChartState;
-    
-    if (existingWidget && existingWidget.iframe) {
-      // Find current chart container
-      const chartContainer = document.getElementById('chart');
-      if (chartContainer && !chartContainer.querySelector('iframe')) {
-        // Move chart to current container
-        chartContainer.appendChild(existingWidget.iframe);
-      }
-      
-      // Make chart visible
-      existingWidget.iframe.style.display = 'block';
-      existingWidget.iframe.style.visibility = 'visible';
-      
-      // Update state
-      if (chartState) {
-        chartState.isVisible = true;
-      }
-      
+    if (window.nedaxerGlobalChart) {
+      window.nedaxerGlobalChart.isVisible = true;
       return true;
     }
     return false;
   }, []);
 
   const hideChart = useCallback(() => {
-    const existingWidget = (window as any).nedaxerGlobalChartWidget;
-    const chartState = (window as any).nedaxerChartState;
-    
-    if (existingWidget && existingWidget.iframe) {
-      // Keep chart in DOM but hidden
-      existingWidget.iframe.style.display = 'none';
-      existingWidget.iframe.style.visibility = 'hidden';
-      
-      // Update state
-      if (chartState) {
-        chartState.isVisible = false;
-      }
+    if (window.nedaxerGlobalChart) {
+      window.nedaxerGlobalChart.isVisible = false;
     }
   }, []);
 
   const isChartReady = useCallback(() => {
-    const chartState = (window as any).nedaxerChartState;
-    return chartState && chartState.isReady;
+    return window.nedaxerGlobalChart?.isReady || false;
   }, []);
 
   const isChartVisible = useCallback(() => {
-    const chartState = (window as any).nedaxerChartState;
-    return chartState && chartState.isVisible;
+    return window.nedaxerGlobalChart?.isVisible || false;
   }, []);
 
   const getChartSymbol = useCallback(() => {
-    const chartState = (window as any).nedaxerChartState;
-    return chartState ? chartState.currentSymbol : 'BTCUSDT';
+    return window.nedaxerGlobalChart?.currentSymbol || 'BTCUSDT';
+  }, []);
+
+  const updateChartSymbol = useCallback((symbol: string) => {
+    if (window.nedaxerGlobalChart && window.nedaxerGlobalChart.widget && window.nedaxerGlobalChart.isReady) {
+      try {
+        window.nedaxerGlobalChart.widget.setSymbol(symbol, "15");
+        window.nedaxerGlobalChart.currentSymbol = symbol;
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    return false;
   }, []);
 
   return {
@@ -66,6 +47,7 @@ export const usePersistentChart = () => {
     hideChart,
     isChartReady,
     isChartVisible,
-    getChartSymbol
+    getChartSymbol,
+    updateChartSymbol
   };
 };
