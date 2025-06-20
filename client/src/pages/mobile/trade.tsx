@@ -76,29 +76,50 @@ export default function MobileTrade() {
   // Enhanced chart loading with persistent widget caching
   const loadChart = useCallback((symbol: string) => {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
+    
+    // Ensure chart container exists
+    const chartContainer = document.getElementById("chart");
+    if (!chartContainer) {
+      console.error('Chart container not found');
+      return;
+    }
 
     // Check if we have a cached widget for this symbol
     const existingWidget = getGlobalChartWidget();
     
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+    // If widget exists and container is empty, we need to recreate
+    if (existingWidget && chartContainer.children.length === 0) {
       try {
-        // Try to change symbol on existing widget instead of recreating
+        existingWidget.remove();
+        setGlobalChartWidget(null);
+      } catch (error) {
+        console.log('Error removing existing widget:', error);
+      }
+    }
+    
+    // If widget exists and is in the container, try to change symbol
+    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow && chartContainer.children.length > 0) {
+      try {
         existingWidget.setSymbol(symbol, "15", () => {
-          // Symbol changed successfully, no reload needed - don't trigger loading state
+          console.log('Symbol changed successfully');
         });
         chartWidget.current = existingWidget;
         return;
       } catch (error) {
-        // If changing symbol fails, remove the old widget
+        console.log('Error changing symbol, recreating widget:', error);
         try {
           existingWidget.remove();
+          setGlobalChartWidget(null);
         } catch (removeError) {
-          // Ignore removal errors
+          console.log('Error removing widget:', removeError);
         }
       }
     }
 
-    // Create new widget only if necessary - don't set loading state
+    // Clear container before creating new widget
+    chartContainer.innerHTML = '';
+
+    // Create new widget
     const widget = new (window as any).TradingView.widget({
       container_id: "chart",
       autosize: true,
@@ -178,11 +199,14 @@ export default function MobileTrade() {
         "header_undo_redo", "show_chart_property_page", "popup_hints"
       ],
       onChartReady: () => {
-        // Chart ready - no loading state changes needed
+        console.log('Chart ready and loaded');
+        setIsChartLoading(false);
+        setChartError(false);
       }
     });
     
     setGlobalChartWidget(widget);
+    chartWidget.current = widget;
   }, [getGlobalChartWidget, setGlobalChartWidget]);
 
   const updatePrice = async (symbol: string) => {
@@ -321,6 +345,17 @@ export default function MobileTrade() {
       }
     };
   }, [currentSymbol]);
+
+  // Reinitialize chart when showChart becomes true
+  useEffect(() => {
+    if (showChart && isTradingViewReady) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        loadChart(`BYBIT:${currentSymbol}`);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showChart, isTradingViewReady, currentSymbol, loadChart]);
 
   // Read symbol from URL parameters
   useEffect(() => {
