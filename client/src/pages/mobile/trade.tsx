@@ -74,31 +74,57 @@ export default function MobileTrade() {
   }, []);
 
   // Enhanced chart loading with persistent widget caching
-  const loadChart = useCallback((symbol: string) => {
+  const loadChart = useCallback((symbol: string, forceReload = false) => {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
 
     // Check if we have a cached widget for this symbol
     const existingWidget = getGlobalChartWidget();
     
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      try {
-        // Try to change symbol on existing widget instead of recreating
-        existingWidget.setSymbol(symbol, "15", () => {
-          // Symbol changed successfully, no reload needed - don't trigger loading state
-        });
-        chartWidget.current = existingWidget;
-        return;
-      } catch (error) {
-        // If changing symbol fails, remove the old widget
+    // If force reload is requested or no existing widget, create new one
+    if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
+      // Remove existing widget if present
+      if (existingWidget) {
         try {
           existingWidget.remove();
         } catch (removeError) {
           // Ignore removal errors
         }
+        setGlobalChartWidget(null);
+      }
+      
+      // Clear the chart container
+      const chartContainer = document.getElementById('chart');
+      if (chartContainer) {
+        chartContainer.innerHTML = '';
+      }
+      
+      // Create new widget
+      setTimeout(() => {
+        createNewWidget(symbol);
+      }, 50);
+      return;
+    }
+    
+    // Try to change symbol on existing widget
+    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+      try {
+        existingWidget.setSymbol(symbol, "15", () => {
+          // Symbol changed successfully
+        });
+        chartWidget.current = existingWidget;
+        return;
+      } catch (error) {
+        // If changing symbol fails, force reload
+        loadChart(symbol, true);
+        return;
       }
     }
+  }, [getGlobalChartWidget, setGlobalChartWidget]);
 
-    // Create new widget only if necessary - don't set loading state
+  // Helper function to create new widget
+  const createNewWidget = useCallback((symbol: string) => {
+    if (typeof window === 'undefined' || !(window as any).TradingView) return;
+
     const widget = new (window as any).TradingView.widget({
       container_id: "chart",
       autosize: true,
@@ -416,11 +442,29 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
+    
+    // Force chart reload when switching trading types and on Charts tab
+    if (selectedTab === 'Charts') {
+      setTimeout(() => {
+        if (isTradingViewReady) {
+          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
+        }
+      }, 150);
+    }
   };
 
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
+    
+    // Force chart reload when switching to Charts tab
+    if (tab === 'Charts') {
+      setTimeout(() => {
+        if (isTradingViewReady) {
+          loadChart(`BYBIT:${currentSymbol}`, true); // Force reload
+        }
+      }, 150);
+    }
   };
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
@@ -563,6 +607,19 @@ export default function MobileTrade() {
 
           {/* Chart Container - Clean without loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
+            {/* Show loading state when chart is initializing */}
+            {!isTradingViewReady && (
+              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <div className="mb-4">
+                    <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
+                  </div>
+                  <p className="text-lg font-medium">Loading Chart...</p>
+                  <p className="text-sm mt-2">Initializing TradingView</p>
+                </div>
+              </div>
+            )}
+            
             {/* Only show error state if chart fails to load */}
             {chartError && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
@@ -573,7 +630,15 @@ export default function MobileTrade() {
                   <p className="text-lg font-medium">Chart Unavailable</p>
                   <p className="text-sm mt-2">Unable to load chart data</p>
                   <button 
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setChartError(false);
+                      setIsTradingViewReady(false);
+                      setTimeout(() => {
+                        if ((window as any).TradingView) {
+                          loadChart(`BYBIT:${currentSymbol}`, true);
+                        }
+                      }, 100);
+                    }}
                     className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
                   >
                     Retry
