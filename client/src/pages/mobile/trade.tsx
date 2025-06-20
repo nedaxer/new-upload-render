@@ -21,7 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation, Link } from 'wouter';
+import { useLocation } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
@@ -33,8 +33,8 @@ import { useLanguage } from '@/contexts/language-context';
 export default function MobileTrade() {
   const { t } = useLanguage();
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
-  const [selectedTab, setSelectedTab] = useState('Spot'); // Main tab: 'Spot' or 'Futures'
-  const [showChart, setShowChart] = useState(false); // Whether to show chart overlay
+  const [selectedTab, setSelectedTab] = useState('Charts');
+  const [selectedTradingType, setSelectedTradingType] = useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
   const [selectedPair, setSelectedPair] = useState({ symbol: 'BTC', name: 'Bitcoin', price: 0, change: 0});
@@ -392,7 +392,7 @@ export default function MobileTrade() {
   };
 
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
-  // Removed tradingTabs as we now use selectedTab directly
+  const tradingTabs = ['Spot', 'Futures'];
   const cryptoPairs = [
     { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
     { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
@@ -413,15 +413,14 @@ export default function MobileTrade() {
     'polygon': 'BINANCE:MATICUSDT'
   };
 
+  const handleTradingTypeChange = (tab: string) => {
+    hapticLight();
+    setSelectedTradingType(tab);
+  };
+
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
-    setShowChart(false); // Hide chart when switching between Spot/Futures
-  };
-
-  const handleChartClick = () => {
-    hapticLight();
-    setShowChart(!showChart);
   };
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
@@ -486,52 +485,53 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
-      {/* Header with Navigation Tabs */}
-      <div className="bg-gray-900 px-4 py-3">
-        <h1 className="text-xl font-bold text-white text-center mb-4">
-          {showChart ? 'Chart View' : `${selectedTab} Trading`}
-        </h1>
-        
-        {/* Main Trade Type Tabs */}
-        <div className="flex bg-gray-800 rounded-lg p-1">
+      {/* Trading Tabs - Smaller font and padding */}
+      <div className="bg-gray-900 px-3 py-1">
+        <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
+          {tradingTabs.map((tab) => (
+            <button 
+              key={tab}
+              className={`whitespace-nowrap px-2 py-1 rounded text-xs ${
+                selectedTradingType === tab 
+                  ? 'bg-gray-700 text-white' 
+                  : 'text-gray-400'
+              }`}
+              onClick={() => handleTradingTypeChange(tab)}
+            >
+              {t(tab.toLowerCase())}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart/Trade Toggle - Smaller */}
+      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
+        <div className="flex">
           <button 
-            className={`flex-1 py-2 px-4 text-center text-sm font-medium transition-colors ${
-              selectedTab === 'Spot' && !showChart
-                ? 'bg-orange-600 text-white rounded-md' 
-                : 'text-gray-400 hover:text-white'
+            className={`flex-1 py-1 text-xs font-medium ${
+              selectedTab === 'Charts' 
+                ? 'bg-gray-700 text-white' 
+                : 'text-gray-400'
             }`}
-            onClick={() => handleTabChange('Spot')}
+            onClick={() => handleTabChange('Charts')}
           >
-            Spot
+            {t('charts')}
           </button>
           <button 
-            className={`flex-1 py-2 px-4 text-center text-sm font-medium transition-colors ${
-              selectedTab === 'Futures' && !showChart
-                ? 'bg-orange-600 text-white rounded-md' 
-                : 'text-gray-400 hover:text-white'
+            className={`flex-1 py-1 text-xs font-medium ${
+              selectedTab === 'Trade' 
+                ? 'bg-gray-700 text-white' 
+                : 'text-gray-400'
             }`}
-            onClick={() => handleTabChange('Futures')}
+            onClick={() => handleTabChange('Trade')}
           >
-            Futures
-          </button>
-          <button 
-            className={`flex-1 py-2 px-4 text-center text-sm font-medium transition-colors flex items-center justify-center ${
-              showChart
-                ? 'bg-orange-600 text-white rounded-md' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-            onClick={handleChartClick}
-          >
-            <BarChart3 className="w-4 h-4 mr-1" />
-            Chart
+            {t('trade')}
           </button>
         </div>
       </div>
 
-
-
-      {/* Chart Content - Shows when showChart is true */}
-      {showChart && (
+      {/* Charts Tab Content */}
+      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
         <div className="flex-1 overflow-y-auto bg-gray-900">
           {/* Coin Header - Smaller and compact */}
           <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
@@ -648,50 +648,17 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Spot Trading Content - Shows when selectedTab is 'Spot' and chart is not shown */}
-      {selectedTab === 'Spot' && !showChart && (
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full p-4">
-            {/* Spot trading interface will go here */}
-            <MobileSpot />
-          </div>
+      {selectedTab === 'Charts' && selectedTradingType === 'Futures' && (
+        <div className="h-full">
+          <MobileFutures />
         </div>
       )}
 
-      {/* Futures Trading Content - Shows when selectedTab is 'Futures' and chart is not shown */}
-      {selectedTab === 'Futures' && !showChart && (
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full">
-            <MobileFutures />
-          </div>
-        </div>
-      )}
-
-      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
-      {showChart && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
-          <div className="flex gap-2">
-            <button 
-              onClick={handleBuyClick}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-            >
-              Buy
-            </button>
-            <button 
-              onClick={handleSellClick}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
-            >
-              Sell
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* This section is now properly structured with the new navigation - removing legacy content */}
-      {false && (
+      {/* Trade Tab Content */}
+      {selectedTab === 'Trade' && (
         <div className="flex-1 overflow-hidden">
           
-          {false && (
+          {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
               <div className="bg-gray-900 rounded-lg p-4 mb-4">
@@ -848,7 +815,11 @@ export default function MobileTrade() {
               </div>
             </div>
           )}
-          {/* This section is now handled above in the main content areas */}
+          {selectedTradingType === 'Futures' && (
+            <div className="h-full">
+              <MobileFutures />
+            </div>
+          )}
 
         </div>
       )}
