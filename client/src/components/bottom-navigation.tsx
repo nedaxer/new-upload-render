@@ -2,12 +2,10 @@ import { Link, useLocation } from 'wouter';
 import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
 import { hapticNavigation } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
-import { usePersistentChart } from '@/hooks/use-persistent-chart';
 
 export function BottomNavigation() {
   const [location] = useLocation();
   const { t } = useLanguage();
-  const { showChart, hideChart } = usePersistentChart();
 
   const navItems = [
     { 
@@ -40,17 +38,6 @@ export function BottomNavigation() {
   const handleNavClick = (itemName: string) => {
     // Trigger haptic feedback for navigation
     hapticNavigation();
-
-    // Manage chart visibility based on destination
-    if (itemName === 'trade') {
-      // Show chart when going to trade page
-      setTimeout(() => {
-        showChart();
-      }, 100);
-    } else {
-      // Hide chart when leaving trade page
-      hideChart();
-    }
   };
 
   return (
@@ -59,7 +46,7 @@ export function BottomNavigation() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path || (item.path !== '/mobile' && location.startsWith(item.path));
-
+          
           return (
             <Link key={item.nameKey} href={item.path}>
               <div 
