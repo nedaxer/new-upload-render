@@ -1,4 +1,7 @@
 import { MobileLayout } from '@/components/mobile-layout';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { 
   TrendingUp,
   TrendingDown,
@@ -6,15 +9,24 @@ import {
   ArrowUpDown,
   Plus,
   Minus,
+  Calendar,
+  Clock,
+  Star,
+  Edit3,
+  ChevronDown,
   Bell,
+  MessageSquare,
   Settings,
   RefreshCw,
+  X
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { hapticLight } from '@/lib/haptics';
+import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
+import CryptoPriceTicker from '@/components/crypto-price-ticker';
+import CryptoPairSelector from '@/components/crypto-pair-selector';
 import { useLanguage } from '@/contexts/language-context';
 import { usePersistentChart } from '@/hooks/use-persistent-chart';
 
@@ -23,11 +35,15 @@ export default function MobileTrade() {
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
+  const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
+  const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
   const [selectedPair, setSelectedPair] = useState({ symbol: 'BTC', name: 'Bitcoin', price: 0, change: 0});
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [showTools, setShowTools] = useState(false);
-  const [tradeMode, setTradeMode] = useState('Buy');
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showSellModal, setShowSellModal] = useState(false);
+  const [tradeMode, setTradeMode] = useState('Buy'); // 'Buy' or 'Sell'
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
@@ -56,7 +72,7 @@ export default function MobileTrade() {
     };
     
     initChart();
-  }, [initializeChart, currentSymbol]);
+  }, [initializeChart]);
 
   // Show chart when Charts tab is active and chart is ready
   useEffect(() => {
@@ -105,7 +121,7 @@ export default function MobileTrade() {
     }
   };
 
-  // Helper functions
+  // Helper function to get crypto name from symbol
   const getCryptoName = (symbol: string): string => {
     const cryptoNames: { [key: string]: string } = {
       'BTC': 'Bitcoin',
@@ -127,23 +143,87 @@ export default function MobileTrade() {
     return cryptoNames[symbol] || symbol;
   };
 
+  // Helper function to get crypto ID from symbol
+  const getCryptoIdFromSymbol = (symbol: string): string => {
+    const symbolToIdMap: { [key: string]: string } = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'BNB': 'binancecoin',
+      'ADA': 'cardano',
+      'SOL': 'solana',
+      'DOT': 'polkadot',
+      'AVAX': 'avalanche-2',
+      'MATIC': 'polygon',
+      'LINK': 'chainlink',
+      'UNI': 'uniswap',
+      'LTC': 'litecoin',
+      'ATOM': 'cosmos',
+      'NEAR': 'near',
+      'FTM': 'fantom',
+      'ALGO': 'algorand'
+    };
+    return symbolToIdMap[symbol] || 'bitcoin';
+  };
+
   const timeframes = ['15m', '1h', '4h', '1D', 'More'];
   const tradingTabs = ['Spot', 'Futures'];
+  const cryptoPairs = [
+    { symbol: 'BTC', name: 'Bitcoin', price: 50000, change: 2.5 },
+    { symbol: 'ETH', name: 'Ethereum', price: 3000, change: -1.0 },
+    { symbol: 'LTC', name: 'Litecoin', price: 200, change: 0.5 },
+  ];
+
+  // Map crypto IDs to TradingView symbols
+  const cryptoToTradingViewMap: { [key: string]: string } = {
+    'bitcoin': 'BINANCE:BTCUSDT',
+    'ethereum': 'BINANCE:ETHUSDT',
+    'binancecoin': 'BINANCE:BNBUSDT',
+    'solana': 'BINANCE:SOLUSDT',
+    'ripple': 'BINANCE:XRPUSDT',
+    'cardano': 'BINANCE:ADAUSDT',
+    'avalanche-2': 'BINANCE:AVAXUSDT',
+    'dogecoin': 'BINANCE:DOGEUSDT',
+    'chainlink': 'BINANCE:LINKUSDT',
+    'polygon': 'BINANCE:MATICUSDT'
+  };
 
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
   };
 
-  const handlePairSelection = (symbol: string) => {
+  const handleCryptoSymbolChange = (cryptoId: string) => {
+    setSelectedCrypto(cryptoId);
+    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || 'BINANCE:BTCUSDT';
+    setTradingViewSymbol(tradingViewSymbol);
+  };
+
+  const handlePairSelection = (cryptoId: string, symbol: string) => {
+    setSelectedCrypto(cryptoId);
     setSelectedPair({
       symbol: symbol,
       name: getCryptoName(symbol),
       price: 0,
       change: 0
     });
+    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || `BINANCE:${symbol}USDT`;
+    setTradingViewSymbol(tradingViewSymbol);
     setShowPairSelector(false);
+    
+    // Update the persistent chart symbol
     handleSymbolChange(symbol + 'USDT');
+  };
+
+  const handleAlertsClick = () => {
+    setShowAlerts(!showAlerts);
+  };
+
+  const handleToolsClick = () => {
+    setShowTools(!showTools);
+  };
+
+  const handlePerpClick = () => {
+    navigate('/mobile/futures');
   };
 
   const handleBuyClick = () => {
@@ -166,6 +246,11 @@ export default function MobileTrade() {
     if (selectedPair.price > 0) {
       setQuantity(value / selectedPair.price);
     }
+  };
+
+  const handlePairSelect = (pair: any) => {
+    setSelectedPair(pair);
+    setShowPairSelector(false);
   };
 
   // Price update interval
@@ -194,7 +279,7 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
-      {/* Trading Tabs */}
+      {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-gray-900 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {tradingTabs.map((tab) => (
@@ -213,7 +298,7 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Chart/Trade Toggle */}
+      {/* Chart/Trade Toggle - Smaller */}
       <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
@@ -245,27 +330,11 @@ export default function MobileTrade() {
           <div className="h-full flex flex-col">
             {/* Price Ticker */}
             <div className="bg-gray-900 p-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-white font-medium">{selectedPair.symbol}/USDT</span>
-                  <span className="text-gray-400 text-sm">{selectedPair.name}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-white font-mono">
-                    ${currentPrice || '0.00'}
-                  </div>
-                  <div className={`text-sm ${
-                    currentTicker?.price24hPcnt?.startsWith('-') 
-                      ? 'text-red-400' 
-                      : 'text-green-400'
-                  }`}>
-                    {currentTicker?.price24hPcnt ? 
-                      `${parseFloat(currentTicker.price24hPcnt).toFixed(2)}%` : 
-                      '0.00%'
-                    }
-                  </div>
-                </div>
-              </div>
+              <CryptoPriceTicker 
+                symbol={currentSymbol}
+                price={currentPrice}
+                ticker={currentTicker}
+              />
             </div>
 
             {/* Chart Container */}
@@ -317,13 +386,13 @@ export default function MobileTrade() {
                 </button>
                 <button 
                   className="p-1 bg-gray-800 rounded"
-                  onClick={() => setShowAlerts(!showAlerts)}
+                  onClick={handleAlertsClick}
                 >
                   <Bell className="h-4 w-4 text-gray-400" />
                 </button>
                 <button 
                   className="p-1 bg-gray-800 rounded"
-                  onClick={() => setShowTools(!showTools)}
+                  onClick={handleToolsClick}
                 >
                   <Settings className="h-4 w-4 text-gray-400" />
                 </button>
@@ -347,38 +416,35 @@ export default function MobileTrade() {
         ) : (
           <div className="h-full">
             {selectedTradingType === 'Spot' ? (
-              <MobileSpot />
+              <MobileSpot 
+                selectedPair={selectedPair}
+                tradeMode={tradeMode}
+                quantity={quantity}
+                amount={amount}
+                onQuantityChange={handleQuantityChange}
+                onAmountChange={handleAmountChange}
+              />
             ) : (
-              <MobileFutures />
+              <MobileFutures 
+                selectedPair={selectedPair}
+                tradeMode={tradeMode}
+                quantity={quantity}
+                amount={amount}
+                onQuantityChange={handleQuantityChange}
+                onAmountChange={handleAmountChange}
+              />
             )}
           </div>
         )}
       </div>
 
-      {/* Simple Pair Selector Modal */}
+      {/* Pair Selector Modal */}
       {showPairSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-4 m-4 max-w-sm w-full">
-            <h3 className="text-white font-medium mb-4">Select Trading Pair</h3>
-            <div className="space-y-2">
-              {['BTC', 'ETH', 'SOL', 'ADA', 'DOT'].map((symbol) => (
-                <button
-                  key={symbol}
-                  className="w-full text-left p-2 rounded bg-gray-700 text-white hover:bg-gray-600"
-                  onClick={() => handlePairSelection(symbol)}
-                >
-                  {symbol}/USDT
-                </button>
-              ))}
-            </div>
-            <button
-              className="mt-4 w-full p-2 bg-gray-600 text-white rounded"
-              onClick={() => setShowPairSelector(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+        <CryptoPairSelector 
+          isOpen={showPairSelector}
+          onClose={() => setShowPairSelector(false)}
+          onSelect={handlePairSelection}
+        />
       )}
     </MobileLayout>
   );
