@@ -1,18 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ComposedChart,
-  Line,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  Area,
-  AreaChart
-} from "recharts";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -25,6 +12,7 @@ import {
   Activity,
   Zap
 } from "lucide-react";
+import { LightweightChart } from "./lightweight-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -203,114 +191,29 @@ export function AdvancedTradingChart({
     return null;
   };
 
-  const CandlestickChart = ({ data }: { data: any[] }) => (
-    <ResponsiveContainer width="100%" height={400}>
-      <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-        <XAxis 
-          dataKey="date" 
-          tick={{ fontSize: 12 }}
-          stroke="#666"
-        />
-        <YAxis 
-          domain={['dataMin - 100', 'dataMax + 100']}
-          tick={{ fontSize: 12 }}
-          stroke="#666"
-        />
-        <Tooltip content={<CustomTooltip />} />
-        
-        {/* Candlestick representation using bars */}
-        <Bar 
-          dataKey="price" 
-          fill="#0033a0"
-          stroke="#0033a0"
-          strokeWidth={1}
-        />
-        
-        {/* Moving averages */}
-        {selectedIndicators.sma20 && (
-          <Line 
-            type="monotone" 
-            dataKey="sma20" 
-            stroke="#3b82f6" 
-            strokeWidth={2}
-            dot={false}
-          />
-        )}
-        {selectedIndicators.sma50 && (
-          <Line 
-            type="monotone" 
-            dataKey="sma50" 
-            stroke="#ef4444" 
-            strokeWidth={2}
-            dot={false}
-          />
-        )}
-        
-        {/* Bollinger Bands */}
-        {selectedIndicators.bollinger && indicators && (
-          <>
-            <ReferenceLine y={indicators.bollinger_bands.upper} stroke="#ff5900" strokeDasharray="2 2" />
-            <ReferenceLine y={indicators.bollinger_bands.middle} stroke="#666" strokeDasharray="1 1" />
-            <ReferenceLine y={indicators.bollinger_bands.lower} stroke="#ff5900" strokeDasharray="2 2" />
-          </>
-        )}
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
+  const renderChart = () => {
+    if (!processedData.length) return null;
 
-  const LineChart = ({ data }: { data: any[] }) => (
-    <ResponsiveContainer width="100%" height={400}>
-      <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-        <defs>
-          <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#0033a0" stopOpacity={0.3}/>
-            <stop offset="95%" stopColor="#0033a0" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-        <XAxis 
-          dataKey="date" 
-          tick={{ fontSize: 12 }}
-          stroke="#666"
-        />
-        <YAxis 
-          domain={['dataMin - 100', 'dataMax + 100']}
-          tick={{ fontSize: 12 }}
-          stroke="#666"
-        />
-        <Tooltip content={<CustomTooltip />} />
-        
-        <Area 
-          type="monotone" 
-          dataKey="price" 
-          stroke="#0033a0" 
-          strokeWidth={2}
-          fill="url(#priceGradient)"
-        />
-        
-        {/* Moving averages */}
-        {selectedIndicators.sma20 && (
-          <Line 
-            type="monotone" 
-            dataKey="sma20" 
-            stroke="#3b82f6" 
-            strokeWidth={2}
-            dot={false}
-          />
-        )}
-        {selectedIndicators.sma50 && (
-          <Line 
-            type="monotone" 
-            dataKey="sma50" 
-            stroke="#ef4444" 
-            strokeWidth={2}
-            dot={false}
-          />
-        )}
-      </AreaChart>
-    </ResponsiveContainer>
-  );
+    const chartData = processedData.map(item => ({
+      time: item.date,
+      open: item.price * 0.999, // Approximate open price
+      high: item.price * 1.002, // Approximate high price
+      low: item.price * 0.998,  // Approximate low price
+      close: item.price,
+      volume: item.volume
+    }));
+
+    return (
+      <LightweightChart
+        data={chartData}
+        symbol={coinSymbol}
+        height={400}
+        chartType={chartType === "line" ? "line" : "candlestick"}
+        showVolume={showVolume}
+        theme="light"
+      />
+    );
+  };
 
   if (priceLoading || chartLoading) {
     return (
@@ -424,37 +327,7 @@ export function AdvancedTradingChart({
           <TabsContent value="chart" className="mt-0">
             <div className="p-4">
               {/* Main Chart */}
-              {chartType === "line" ? (
-                <LineChart data={processedData} />
-              ) : (
-                <CandlestickChart data={processedData} />
-              )}
-
-              {/* Volume Chart */}
-              {showVolume && processedData.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Volume</h4>
-                  <ResponsiveContainer width="100%" height={120}>
-                    <AreaChart data={processedData}>
-                      <defs>
-                        <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ff5900" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#ff5900" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip formatter={(value: any) => [formatVolume(Number(value)), 'Volume']} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="volume" 
-                        stroke="#ff5900" 
-                        fill="url(#volumeGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
+              {renderChart()}
             </div>
           </TabsContent>
 

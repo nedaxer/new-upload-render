@@ -1,20 +1,6 @@
 import { useState } from "react";
-import { 
-  Area, 
-  AreaChart, 
-  Bar, 
-  BarChart, 
-  CartesianGrid, 
-  ComposedChart, 
-  Legend, 
-  Line, 
-  LineChart, 
-  ResponsiveContainer, 
-  Tooltip, 
-  XAxis, 
-  YAxis 
-} from "recharts";
 import { BarChart4, Clock, Zap, Download, ChevronDown, ChevronUp, Layers, Maximize, RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
+import { LightweightChart, ChartDataPoint as LightweightChartDataPoint } from "./lightweight-chart";
 
 // Define the data shape
 export type CryptoDataPoint = {
@@ -199,130 +185,21 @@ export function CryptoChart({ data, coinSymbol, coinName, className = "" }: Cryp
       
       {/* Chart */}
       <div className="p-2 bg-white">
-        <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            {chartType === "line" ? (
-              <LineChart
-                data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                <XAxis dataKey="date" />
-                <YAxis domain={['auto', 'auto']} tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                <Tooltip 
-                  formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Price']}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="price" 
-                  stroke="#0033a0" 
-                  strokeWidth={2} 
-                  dot={false}
-                  name={`${coinSymbol} Price`}
-                />
-                {showIndicators && (
-                  <>
-                    <Line 
-                      type="monotone" 
-                      dataKey="price" 
-                      stroke="#ff5900" 
-                      strokeWidth={1}
-                      strokeDasharray="5 5" 
-                      dot={false}
-                      name="20 SMA"
-                    />
-                  </>
-                )}
-                {showVolume && (
-                  <Bar dataKey="volume" barSize={20} fill="#c9d3e9" name="Volume" />
-                )}
-              </LineChart>
-            ) : chartType === "area" ? (
-              <AreaChart
-                data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                <XAxis dataKey="date" />
-                <YAxis domain={['auto', 'auto']} tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                <Tooltip 
-                  formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Price']}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Legend />
-                <defs>
-                  <linearGradient id={`color${coinSymbol}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0033a0" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#0033a0" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <Area 
-                  type="monotone" 
-                  dataKey="price" 
-                  stroke="#0033a0" 
-                  fill={`url(#color${coinSymbol})`}
-                  name={`${coinSymbol} Price`}
-                />
-                {showVolume && (
-                  <Bar dataKey="volume" barSize={20} fill="#c9d3e9" name="Volume" />
-                )}
-              </AreaChart>
-            ) : (
-              <ComposedChart
-                data={data}
-                margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                <XAxis dataKey="date" />
-                <YAxis domain={['auto', 'auto']} tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                <Tooltip 
-                  formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Price']}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Legend />
-                {chartType === "bar" ? (
-                  <Bar dataKey="close" name={`${coinSymbol} Price`} fill="#0033a0" />
-                ) : (
-                  // Simplified candlestick representation using Bar + custom styles
-                  <Bar 
-                    dataKey="close"
-                    name={`${coinSymbol} Price`}
-                    fill="#0033a0"
-                    stroke="#002070"
-                    barSize={20}
-                  />
-                )}
-                {showIndicators && (
-                  <>
-                    <Line 
-                      type="monotone" 
-                      dataKey="price" 
-                      stroke="#ff5900" 
-                      strokeWidth={1.5}
-                      dot={false}
-                      name="Price"
-                    />
-                    {showIndicators && (
-                      <Line 
-                        type="monotone" 
-                        dataKey="rsi" 
-                        stroke="#8884d8" 
-                        strokeWidth={1}
-                        dot={false}
-                        name="RSI"
-                      />
-                    )}
-                  </>
-                )}
-                {showVolume && (
-                  <Bar dataKey="volume" barSize={5} fill="#c9d3e9" name="Volume" />
-                )}
-              </ComposedChart>
-            )}
-          </ResponsiveContainer>
-        </div>
+        <LightweightChart
+          data={data.map(item => ({
+            time: item.date,
+            open: item.open,
+            high: item.high,
+            low: item.low,
+            close: item.close,
+            volume: item.volume
+          }))}
+          symbol={coinSymbol}
+          height={400}
+          chartType={chartType === "candlestick" ? "candlestick" : "line"}
+          showVolume={showVolume}
+          theme="light"
+        />
       </div>
       
       {/* Chart Footer */}
