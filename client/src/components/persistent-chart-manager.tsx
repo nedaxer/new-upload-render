@@ -1,159 +1,273 @@
+import { useEffect, useRef, useCallback } from 'react';
 
-import React, { useEffect, useRef, useState } from 'react';
-
-interface PersistentChartManagerProps {
-  children: React.ReactNode;
-  isActive: boolean;
-  chartId: string;
+declare global {
+  interface Window {
+    TradingView: any;
+    tvWidget: any;
+    tvChartState: {
+      isReady: boolean;
+      currentSymbol: string;
+      isVisible: boolean;
+      container: HTMLElement | null;
+    };
+  }
 }
 
-// Global chart container management
-const chartContainers = new Map<string, HTMLDivElement>();
-const chartInstances = new Map<string, any>();
-const chartStates = new Map<string, { symbol: string; ready: boolean }>();
+export interface ChartState {
+  isReady: boolean;
+  currentSymbol: string;
+  isVisible: boolean;
+  container: HTMLElement | null;
+}
 
-// Global persistent container that stays in DOM
-let globalChartContainer: HTMLDivElement | null = null;
-
-// Initialize global chart container
-const initializeGlobalContainer = () => {
-  if (!globalChartContainer && typeof window !== 'undefined') {
-    globalChartContainer = document.createElement('div');
-    globalChartContainer.id = 'global-chart-container';
-    globalChartContainer.style.position = 'fixed';
-    globalChartContainer.style.top = '0';
-    globalChartContainer.style.left = '0';
-    globalChartContainer.style.width = '100%';
-    globalChartContainer.style.height = '100%';
-    globalChartContainer.style.zIndex = '-1';
-    globalChartContainer.style.visibility = 'hidden';
-    globalChartContainer.style.pointerEvents = 'none';
-    
-    // Add to body but keep hidden
-    document.body.appendChild(globalChartContainer);
-  }
-  return globalChartContainer;
-};
-
-export function PersistentChartManager({ children, isActive, chartId }: PersistentChartManagerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Initialize global container
-    const globalContainer = initializeGlobalContainer();
-    if (!globalContainer) return;
-
-    // Get or create persistent container for this chart
-    let persistentContainer = chartContainers.get(chartId);
-    
-    if (!persistentContainer) {
-      // Create a new persistent container
-      persistentContainer = document.createElement('div');
-      persistentContainer.style.width = '100%';
-      persistentContainer.style.height = '100%';
-      persistentContainer.style.position = 'absolute';
-      persistentContainer.style.top = '0';
-      persistentContainer.style.left = '0';
-      persistentContainer.id = `persistent-chart-${chartId}`;
-      
-      // Add to global container
-      globalContainer.appendChild(persistentContainer);
-      chartContainers.set(chartId, persistentContainer);
+export const usePersistentChart = () => {
+  const initializeChartState = useCallback(() => {
+    if (!window.tvChartState) {
+      window.tvChartState = {
+        isReady: false,
+        currentSymbol: 'BYBIT:BTCUSDT',
+        isVisible: false,
+        container: null
+      };
     }
-
-    // Move persistent container to current mount point when active
-    if (isActive) {
-      // Make global container visible and interactive
-      globalContainer.style.visibility = 'visible';
-      globalContainer.style.pointerEvents = 'auto';
-      globalContainer.style.position = 'static';
-      globalContainer.style.zIndex = 'auto';
-      
-      // Move to current container
-      if (persistentContainer.parentNode !== containerRef.current) {
-        containerRef.current.appendChild(persistentContainer);
-      }
-      
-      persistentContainer.style.display = 'block';
-      setIsInitialized(true);
-    } else {
-      // Hide global container when not active
-      globalContainer.style.visibility = 'hidden';
-      globalContainer.style.pointerEvents = 'none';
-      globalContainer.style.position = 'fixed';
-      globalContainer.style.zIndex = '-1';
-      
-      // Move back to global container
-      if (persistentContainer.parentNode !== globalContainer) {
-        globalContainer.appendChild(persistentContainer);
-      }
-    }
-
-    return () => {
-      // Don't cleanup on unmount - keep chart persistent
-    };
-  }, [chartId, isActive]);
-
-  // Cleanup only when app closes
-  useEffect(() => {
-    return () => {
-      // Only cleanup when component is permanently destroyed
-      const persistentContainer = chartContainers.get(chartId);
-      if (persistentContainer && persistentContainer.parentNode) {
-        persistentContainer.parentNode.removeChild(persistentContainer);
-        chartContainers.delete(chartId);
-        chartInstances.delete(chartId);
-        chartStates.delete(chartId);
-      }
-    };
+    return window.tvChartState;
   }, []);
 
-  return (
-    <div 
-      ref={containerRef}
-      style={{ 
-        width: '100%', 
-        height: '100%',
-        position: 'relative',
-        display: isActive ? 'block' : 'none'
-      }}
-    >
-      {isActive && isInitialized && children}
-    </div>
-  );
-}
+  const getChartWidget = useCallback(() => {
+    return window.tvWidget || null;
+  }, []);
 
-// Hook to manage chart instance persistence
-export function usePersistentChart(chartId: string) {
-  const getInstance = () => chartInstances.get(chartId);
-  const setInstance = (instance: any) => {
-    chartInstances.set(chartId, instance);
-    // Store chart state
-    chartStates.set(chartId, { symbol: instance._symbol || 'BTCUSDT', ready: true });
-  };
-  const hasInstance = () => chartInstances.has(chartId);
-  const getState = () => chartStates.get(chartId);
-  const setState = (state: { symbol: string; ready: boolean }) => chartStates.set(chartId, state);
+  const setChartWidget = useCallback((widget: any) => {
+    window.tvWidget = widget;
+  }, []);
 
-  return { getInstance, setInstance, hasInstance, getState, setState };
-}
-
-// Global function to show/hide chart without unmounting
-export const toggleChartVisibility = (show: boolean) => {
-  if (globalChartContainer) {
-    if (show) {
-      globalChartContainer.style.visibility = 'visible';
-      globalChartContainer.style.pointerEvents = 'auto';
-      globalChartContainer.style.position = 'static';
-      globalChartContainer.style.zIndex = 'auto';
-    } else {
-      globalChartContainer.style.visibility = 'hidden';
-      globalChartContainer.style.pointerEvents = 'none';
-      globalChartContainer.style.position = 'fixed';
-      globalChartContainer.style.zIndex = '-1';
+  const createChart = useCallback((containerId: string, symbol: string = 'BYBIT:BTCUSDT') => {
+    if (!window.TradingView) {
+      console.error('TradingView library not loaded');
+      return null;
     }
-  }
+
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.error(`Container ${containerId} not found`);
+      return null;
+    }
+
+    // Clear any existing content
+    container.innerHTML = '';
+
+    const widget = new window.TradingView.widget({
+      container_id: containerId,
+      autosize: true,
+      symbol: symbol,
+      interval: "15",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      backgroundColor: "#111827",
+      toolbar_bg: "#111827",
+      hide_top_toolbar: true,
+      hide_side_toolbar: true,
+      allow_symbol_change: false,
+      enable_publishing: false,
+      details: false,
+      withdateranges: false,
+      calendar: false,
+      studies: [
+        {
+          id: "BB@tv-basicstudies-1",
+          inputs: {
+            length: 20,
+            mult: 2,
+            source: "close"
+          }
+        }
+      ],
+      drawings_access: { type: 'black', tools: [] },
+      crosshair: {
+        mode: 1
+      },
+      save_image: false,
+      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
+      overrides: {
+        "paneProperties.background": "#111827",
+        "paneProperties.backgroundType": "solid",
+        "paneProperties.backgroundGradientStartColor": "#111827", 
+        "paneProperties.backgroundGradientEndColor": "#111827",
+        "paneProperties.vertGridProperties.color": "#374151",
+        "paneProperties.horzGridProperties.color": "#374151",
+        "paneProperties.crossHairProperties.color": "#FFA500",
+        "paneProperties.crossHairProperties.width": 1,
+        "paneProperties.crossHairProperties.style": 2,
+        "paneProperties.crossHairProperties.transparency": 0,
+        "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
+        "paneProperties.crossHairProperties.displayMode": 1,
+
+        "BB@tv-basicstudies.upper.color": "#0066FF",
+        "BB@tv-basicstudies.lower.color": "#0066FF",
+        "BB@tv-basicstudies.median.color": "#FFFF00",
+        "BB@tv-basicstudies.upper.linewidth": 1,
+        "BB@tv-basicstudies.lower.linewidth": 1,
+        "BB@tv-basicstudies.median.linewidth": 2,
+        "BB@tv-basicstudies.fillBackground": true,
+        "BB@tv-basicstudies.transparency": 90,
+
+        "scalesProperties.backgroundColor": "#111827",
+        "scalesProperties.lineColor": "#374151", 
+        "scalesProperties.textColor": "#9CA3AF",
+        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+        "scalesProperties.showLeftScale": false,
+        "scalesProperties.showRightScale": true,
+
+        "mainSeriesProperties.style": 1,
+        "mainSeriesProperties.candleStyle.upColor": "#10B981",
+        "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+        "mainSeriesProperties.candleStyle.drawWick": true,
+        "mainSeriesProperties.candleStyle.drawBorder": false,
+        "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
+        "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
+
+        "volumePaneSize": "small",
+        "volume.volume.color.0": "#EF4444",
+        "volume.volume.color.1": "#10B981",
+        "volume.volume.transparency": 0,
+
+        "paneProperties.legendProperties.showLegend": false,
+        "paneProperties.legendProperties.showStudyArguments": false,
+        "paneProperties.legendProperties.showStudyTitles": false,
+        "paneProperties.legendProperties.showStudyValues": false,
+        "paneProperties.legendProperties.showSeriesTitle": false,
+
+        "paneProperties.topMargin": 5,
+        "paneProperties.bottomMargin": 15,
+        "paneProperties.leftMargin": 5,
+        "paneProperties.rightMargin": 5,
+      },
+      disabled_features: [
+        "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
+        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
+        "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
+        "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
+        "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
+        "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
+        "snapshot_trading_drawings", "show_logo_on_all_charts",
+        "remove_library_container_border", "chart_hide_close_button", "header_saveload",
+        "header_undo_redo", "show_chart_property_page", "popup_hints"
+      ],
+      enabled_features: [
+        "show_crosshair_labels",
+        "crosshair_tooltip",
+        "crosshair_cursor"
+      ],
+      onChartReady: () => {
+        console.log('Persistent chart ready');
+        window.tvChartState = {
+          isReady: true,
+          currentSymbol: symbol,
+          isVisible: true,
+          container: container
+        };
+      }
+    });
+
+    setChartWidget(widget);
+    window.tvChartState = {
+      isReady: false,
+      currentSymbol: symbol,
+      isVisible: true,
+      container: container
+    };
+
+    return widget;
+  }, [setChartWidget]);
+
+  const showChart = useCallback((containerId: string, symbol?: string) => {
+    const existingWidget = getChartWidget();
+    const chartState = initializeChartState();
+    
+    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+      // Chart already exists, just move it to the new container and show it
+      const container = document.getElementById(containerId);
+      if (container) {
+        // Clear container first
+        container.innerHTML = '';
+        
+        // Move the iframe to the new container
+        if (existingWidget.iframe && existingWidget.iframe.parentNode !== container) {
+          container.appendChild(existingWidget.iframe);
+        }
+        
+        // Ensure chart is visible
+        if (existingWidget.iframe) {
+          existingWidget.iframe.style.display = 'block';
+          existingWidget.iframe.style.visibility = 'visible';
+        }
+        
+        chartState.container = container;
+        chartState.isVisible = true;
+        
+        // Change symbol if requested
+        if (symbol && symbol !== chartState.currentSymbol) {
+          try {
+            existingWidget.setSymbol(symbol, "15", () => {
+              console.log('Symbol changed to', symbol);
+              chartState.currentSymbol = symbol;
+            });
+          } catch (error) {
+            console.warn('Failed to change symbol, keeping current:', error);
+          }
+        }
+        
+        return existingWidget;
+      }
+    } else {
+      // No existing chart, create a new one
+      return createChart(containerId, symbol);
+    }
+  }, [getChartWidget, initializeChartState, createChart]);
+
+  const hideChart = useCallback(() => {
+    const existingWidget = getChartWidget();
+    const chartState = initializeChartState();
+    
+    if (existingWidget && existingWidget.iframe) {
+      existingWidget.iframe.style.display = 'none';
+      chartState.isVisible = false;
+    }
+  }, [getChartWidget, initializeChartState]);
+
+  const changeSymbol = useCallback((symbol: string) => {
+    const existingWidget = getChartWidget();
+    const chartState = initializeChartState();
+    
+    if (existingWidget && chartState.isReady) {
+      try {
+        existingWidget.setSymbol(symbol, "15", () => {
+          console.log('Symbol changed to', symbol);
+          chartState.currentSymbol = symbol;
+          
+          // Save symbol to localStorage for persistence across page reloads
+          localStorage.setItem('nedaxer_chart_symbol', symbol);
+        });
+      } catch (error) {
+        console.warn('Failed to change symbol:', error);
+      }
+    }
+  }, [getChartWidget, initializeChartState]);
+
+  const getStoredSymbol = useCallback(() => {
+    return localStorage.getItem('nedaxer_chart_symbol') || 'BYBIT:BTCUSDT';
+  }, []);
+
+  return {
+    initializeChartState,
+    getChartWidget,
+    createChart,
+    showChart,
+    hideChart,
+    changeSymbol,
+    getStoredSymbol
+  };
 };

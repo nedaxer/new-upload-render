@@ -9,6 +9,7 @@ import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
+import { GlobalChartContainer } from '@/components/global-chart-container';
 import { LanguageProvider } from '@/contexts/language-context';
 import { lazy } from 'react';
 
@@ -127,14 +128,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Always show splash screen for testing the optimizations
-    // Comment out the cache check temporarily to test the improvements
-    // const lastSplashTime = localStorage.getItem('lastSplashTime');
-    // const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    // 
-    // if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
-    //   setShowSplash(false);
-    // }
+    // Skip splash screen for testing persistent chart
+    setShowSplash(false);
     
     // Just a small delay to ensure all routes are registered
     const timer = setTimeout(() => {
@@ -280,6 +275,7 @@ export default function App() {
             <Route component={NotFound} />
           </Switch>
         </Router>
+        <GlobalChartContainer />
         <Toaster />
         <PWAInstallPrompt />
       </AuthProvider>
