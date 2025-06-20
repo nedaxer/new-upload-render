@@ -43,8 +43,20 @@ export function usePersistentChart() {
 
   // Create the chart widget only once
   const createWidget = (symbol: string) => {
-    if (!window.TradingView || window.persistentChartWidget) return;
+    if (!window.TradingView) {
+      console.log('TradingView not loaded yet');
+      return;
+    }
+    
+    if (window.persistentChartWidget) {
+      console.log('Widget already exists');
+      setIsLoading(false);
+      setIsReady(true);
+      return;
+    }
 
+    console.log('Creating new TradingView widget for symbol:', symbol);
+    
     try {
       const widget = new window.TradingView.widget({
         container_id: "persistent-chart-container",
@@ -132,7 +144,10 @@ export function usePersistentChart() {
 
   // Load TradingView script if not already loaded
   const loadTradingViewScript = () => {
+    console.log('Loading TradingView script...');
+    
     if (window.TradingView) {
+      console.log('TradingView already loaded');
       setIsReady(true);
       return;
     }
@@ -140,12 +155,15 @@ export function usePersistentChart() {
     // Check if script is already being loaded
     const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
     if (existingScript) {
+      console.log('Script already exists, waiting for load');
       existingScript.addEventListener('load', () => {
+        console.log('TradingView script loaded from existing');
         setIsReady(true);
       });
       return;
     }
 
+    console.log('Creating new script element');
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/tv.js';
     script.async = true;
@@ -153,6 +171,7 @@ export function usePersistentChart() {
     script.crossOrigin = 'anonymous';
     
     script.onload = () => {
+      console.log('TradingView script loaded successfully');
       setIsReady(true);
     };
     
@@ -163,6 +182,7 @@ export function usePersistentChart() {
     };
 
     document.head.appendChild(script);
+    console.log('Script added to head');
   };
 
   // Show the chart in the current container
