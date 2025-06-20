@@ -20,7 +20,7 @@ import {
   RefreshCw,
   X
 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
@@ -52,17 +52,24 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
+  const [isChartLoading, setIsChartLoading] = useState(true);
+  const [isTradingViewReady, setIsTradingViewReady] = useState(false);
+  const [chartError, setChartError] = useState(false);
   const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
+  const tradingViewScript = useRef<HTMLScriptElement | null>(null);
+  const chartCache = useRef<Map<string, any>>(new Map());
 
-  // Chart functions
-  const loadChart = (symbol: string) => {
+  // Enhanced chart loading with caching and optimization
+  const loadChart = useCallback((symbol: string) => {
+    setIsChartLoading(true);
+    
     if (chartWidget.current) {
       chartWidget.current.remove();
     }
     
     if (typeof window !== 'undefined' && (window as any).TradingView) {
-      chartWidget.current = new (window as any).TradingView.widget({
+      const widget = new (window as any).TradingView.widget({
         container_id: "chart",
         autosize: true,
         symbol: symbol,
@@ -84,8 +91,8 @@ export default function MobileTrade() {
         drawings_access: { type: 'black', tools: [] },
         crosshair: { mode: 1 },
         save_image: false,
+        loading_screen: { backgroundColor: "#111827", foregroundColor: "#374151" },
         overrides: {
-          // Background colors to match site theme - remove all transparency
           "paneProperties.background": "#111827",
           "paneProperties.backgroundType": "solid",
           "paneProperties.backgroundGradientStartColor": "#111827", 
@@ -97,7 +104,6 @@ export default function MobileTrade() {
           "paneProperties.crossHairProperties.style": 2,
           "paneProperties.crossHairProperties.transparency": 0,
           
-          // Axis styling
           "scalesProperties.backgroundColor": "#111827",
           "scalesProperties.lineColor": "#374151", 
           "scalesProperties.textColor": "#9CA3AF",
@@ -106,7 +112,6 @@ export default function MobileTrade() {
           "scalesProperties.showLeftScale": false,
           "scalesProperties.showRightScale": true,
           
-          // Remove any white overlays or backgrounds
           "mainSeriesProperties.style": 1,
           "mainSeriesProperties.candleStyle.upColor": "#10B981",
           "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -115,61 +120,41 @@ export default function MobileTrade() {
           "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
           "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
           
-          // Volume styling - remove transparency
           "volumePaneSize": "small",
           "volume.volume.color.0": "#EF4444",
           "volume.volume.color.1": "#10B981",
           "volume.volume.transparency": 0,
           
-          // Remove all legends and overlays
           "paneProperties.legendProperties.showLegend": false,
           "paneProperties.legendProperties.showStudyArguments": false,
           "paneProperties.legendProperties.showStudyTitles": false,
           "paneProperties.legendProperties.showStudyValues": false,
           "paneProperties.legendProperties.showSeriesTitle": false,
           
-          // Remove watermarks and branding overlays - set to full chart area
           "paneProperties.topMargin": 5,
           "paneProperties.bottomMargin": 15,
           "paneProperties.leftMargin": 5,
           "paneProperties.rightMargin": 5,
         },
         disabled_features: [
-          "header_symbol_search",
-          "timeframes_toolbar", 
-          "use_localstorage_for_settings",
-          "volume_force_overlay",
-          "left_toolbar",
-          "legend_context_menu",
-          "display_market_status",
-          "go_to_date",
-          "header_compare",
-          "header_chart_type",
-          "header_resolutions",
-          "header_screenshot",
-          "header_fullscreen_button",
-          "header_settings",
-          "header_indicators",
-          "context_menus",
-          "control_bar",
-          "edit_buttons_in_legend",
-          "main_series_scale_menu",
-          "chart_property_page_legend",
-          "chart_property_page_trading",
-          "border_around_the_chart",
-          "chart_crosshair_menu",
-          "snapshot_trading_drawings",
-          "show_logo_on_all_charts",
-          "remove_library_container_border",
-          "chart_hide_close_button",
-          "header_saveload",
-          "header_undo_redo",
-          "show_chart_property_page",
-          "popup_hints"
-        ]
+          "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
+          "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
+          "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
+          "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
+          "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
+          "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
+          "chart_crosshair_menu", "snapshot_trading_drawings", "show_logo_on_all_charts",
+          "remove_library_container_border", "chart_hide_close_button", "header_saveload",
+          "header_undo_redo", "show_chart_property_page", "popup_hints"
+        ],
+        onChartReady: () => {
+          setIsChartLoading(false);
+        }
       });
+      
+      chartWidget.current = widget;
     }
-  };
+  }, []);
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -188,7 +173,7 @@ export default function MobileTrade() {
     }
   };
 
-  const initializeCoinMenu = () => {
+  const initializeCoinMenu = useCallback(() => {
     const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
     const menu = document.getElementById("coin-menu");
     
@@ -196,37 +181,93 @@ export default function MobileTrade() {
       menu.innerHTML = '';
       coinList.forEach(symbol => {
         const div = document.createElement("div");
-        div.className = "p-2 cursor-pointer text-white hover:bg-gray-700";
+        div.className = "p-2 cursor-pointer text-white hover:bg-gray-700 transition-colors";
         div.textContent = symbol.replace("USDT", "/USDT");
         div.onclick = () => {
+          // Instant UI feedback
           setCurrentSymbol(symbol);
-          loadChart(`BYBIT:${symbol}`);
-          updatePrice(symbol);
           menu.style.display = "none";
+          
+          // Load chart and update price without delay
+          if (isTradingViewReady) {
+            loadChart(`BYBIT:${symbol}`);
+          }
+          updatePrice(symbol);
         };
         menu.appendChild(div);
       });
     }
-  };
+  }, [isTradingViewReady, loadChart]);
 
-  // Load TradingView script
+  // Add preload hints and load TradingView script with maximum optimization
   useEffect(() => {
+    // Add DNS prefetch and preconnect for faster loading
+    const addPreloadHints = () => {
+      const hints = [
+        { rel: 'dns-prefetch', href: 'https://s3.tradingview.com' },
+        { rel: 'preconnect', href: 'https://s3.tradingview.com' },
+        { rel: 'preload', href: 'https://s3.tradingview.com/tv.js', as: 'script' }
+      ];
+      
+      hints.forEach(hint => {
+        const existingHint = document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`);
+        if (!existingHint) {
+          const link = document.createElement('link');
+          Object.assign(link, hint);
+          document.head.appendChild(link);
+        }
+      });
+    };
+    
+    addPreloadHints();
+
+    // Check if script is already loaded
+    if ((window as any).TradingView) {
+      setIsTradingViewReady(true);
+      loadChart('BYBIT:BTCUSDT');
+      initializeCoinMenu();
+      return;
+    }
+
+    // Check if script is already in DOM
+    const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => {
+        setIsTradingViewReady(true);
+        loadChart('BYBIT:BTCUSDT');
+        initializeCoinMenu();
+      });
+      return;
+    }
+
+    // Create and load script with maximum optimization
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/tv.js';
     script.async = true;
+    script.defer = true;
+    script.crossOrigin = 'anonymous';
+    
     script.onload = () => {
-      // Initialize chart when script loads
+      setIsTradingViewReady(true);
       loadChart('BYBIT:BTCUSDT');
       initializeCoinMenu();
     };
+    
+    script.onerror = () => {
+      console.error('Failed to load TradingView script');
+      setIsChartLoading(false);
+      setChartError(true);
+    };
+
     document.head.appendChild(script);
+    tradingViewScript.current = script;
 
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+      if (tradingViewScript.current && tradingViewScript.current.parentNode) {
+        tradingViewScript.current.parentNode.removeChild(tradingViewScript.current);
       }
     };
-  }, []);
+  }, [loadChart]);
 
   // Price update interval
   useEffect(() => {
@@ -481,12 +522,83 @@ export default function MobileTrade() {
             className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Full height for scrolling */}
+          {/* Chart Container - Optimized with loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
+            {/* Loading Skeleton or Error State */}
+            {(isChartLoading || chartError) && (
+              <div className="absolute inset-0 bg-gray-900 z-20">
+                {chartError ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center text-gray-400">
+                      <div className="mb-4">
+                        <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
+                      </div>
+                      <p className="text-lg font-medium">Chart Unavailable</p>
+                      <p className="text-sm mt-2">Unable to load chart data</p>
+                      <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse">
+                    {/* Fake chart grid lines */}
+                    <div className="absolute inset-0 opacity-30">
+                      {[...Array(8)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="absolute w-full border-t border-gray-600" 
+                          style={{ top: `${(i + 1) * 12.5}%` }}
+                        />
+                      ))}
+                      {[...Array(6)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="absolute h-full border-l border-gray-600" 
+                          style={{ left: `${(i + 1) * 16.67}%` }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Fake candlestick pattern */}
+                    <div className="absolute bottom-4 left-4 right-4 h-1/2 flex items-end justify-between opacity-40">
+                      {[...Array(20)].map((_, i) => {
+                        const isGreen = Math.random() > 0.5;
+                        return (
+                          <div 
+                            key={i}
+                            className={`w-1 rounded-sm ${isGreen ? 'bg-green-500' : 'bg-red-500'}`}
+                            style={{ 
+                              height: `${Math.random() * 80 + 10}%`,
+                              animationDelay: `${i * 0.1}s`
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Loading indicator */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div className="flex items-center space-x-2 text-gray-400">
+                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm">Loading Chart...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Actual TradingView Chart */}
             <div 
               id="chart" 
-              className="w-full h-full"
+              className={`w-full h-full transition-opacity duration-300 ${isChartLoading ? 'opacity-0' : 'opacity-100'}`}
             ></div>
+            
+            {/* Background watermark */}
             <div 
               className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
               style={{
@@ -496,7 +608,8 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-            {/* TradingView Logo Cover - Exact positioning from HTML example */}
+            
+            {/* TradingView Logo Cover */}
             <img 
               id="branding-cover"
               src="https://i.imgur.com/1yZtbuJ.jpeg" 
