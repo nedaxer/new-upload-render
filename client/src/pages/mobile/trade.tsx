@@ -60,117 +60,63 @@ export default function MobileTrade() {
   const [chartError, setChartError] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Global persistent chart management
-  const getGlobalWidget = useCallback(() => {
-    return (window as any).globalTradingViewWidget;
-  }, []);
-
-  const setGlobalWidget = useCallback((widget: any) => {
-    (window as any).globalTradingViewWidget = widget;
-  }, []);
-
-  // Create chart with persistence
-  const createChart = useCallback((symbol: string) => {
-    if (!window.TradingView || !(window as any).tradingViewLoaded) return;
-
-    // Check if we already have a working widget
-    const existingWidget = getGlobalWidget();
-    if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      console.log('Using existing widget');
-      try {
-        existingWidget.setSymbol(symbol, '15');
-        setIsChartLoading(false);
-        setIsChartReady(true);
-        return;
-      } catch (error) {
-        console.log('Failed to update symbol, creating new widget');
-      }
+  // Simple persistent chart with global caching
+  const createPersistentChart = useCallback((symbol: string) => {
+    if (!window.TradingView) {
+      console.log('TradingView not loaded yet');
+      return;
     }
 
-    console.log('Creating new widget for:', symbol);
-    const widget = new (window as any).TradingView.widget({
-      container_id: "trading-chart-container",
-      autosize: true,
-      symbol: symbol,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "#111827",
-      toolbar_bg: "#111827",
-      hide_top_toolbar: true,
-      hide_side_toolbar: true,
-      allow_symbol_change: false,
-      enable_publishing: false,
-      details: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [
-        {
-          id: "BB@tv-basicstudies-1",
-          inputs: {
-            length: 20,
-            mult: 2,
-            source: "close"
+    // Use global cache to prevent recreation
+    if (!window.tradingViewChartLoaded) {
+      console.log('Creating persistent chart for:', symbol);
+      
+      try {
+        const widget = new window.TradingView.widget({
+          container_id: "trading-chart-container",
+          autosize: true,
+          symbol: symbol,
+          interval: "15",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "1",
+          locale: "en",
+          hide_top_toolbar: true,
+          hide_side_toolbar: true,
+          allow_symbol_change: false,
+          enable_publishing: false,
+          withdateranges: false,
+          calendar: false,
+          onChartReady: () => {
+            console.log('Persistent chart ready');
+            setIsChartLoading(false);
+            setIsChartReady(true);
+            window.tradingViewChartLoaded = true;
           }
-        }
-      ],
-      drawings_access: { type: 'black', tools: [] },
-      crosshair: { mode: 1 },
-      save_image: false,
-      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
-      overrides: {
-        "paneProperties.background": "#111827",
-        "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#111827", 
-        "paneProperties.backgroundGradientEndColor": "#111827",
-        "paneProperties.vertGridProperties.color": "#374151",
-        "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#FFA500",
-        "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,
-        "paneProperties.crossHairProperties.transparency": 0,
-        "volumePaneSize": "small",
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
-        "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": false,
-      },
-      disabled_features: [
-        "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
-        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
-        "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
-        "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
-        "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
-        "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
-        "snapshot_trading_drawings", "show_logo_on_all_charts",
-        "remove_library_container_border", "chart_hide_close_button", "header_saveload",
-        "header_undo_redo", "show_chart_property_page", "popup_hints"
-      ],
-      enabled_features: [
-        "show_crosshair_labels",
-        "crosshair_tooltip",
-        "crosshair_cursor"
-      ],
-      onChartReady: () => {
+        });
+        
+        (window as any).globalTradingViewWidget = widget;
+        
+      } catch (error) {
+        console.error('Chart creation failed:', error);
+        setChartError(true);
         setIsChartLoading(false);
-        setIsChartReady(true);
-        console.log('Chart ready');
       }
-    });
-    
-    setGlobalWidget(widget);
-  }, [getGlobalWidget, setGlobalWidget]);
+    } else {
+      console.log('Chart already loaded, skipping creation');
+      setIsChartLoading(false);
+      setIsChartReady(true);
+    }
+  }, []);
 
   // Handle symbol changes with persistent chart
   const handleSymbolChange = useCallback((symbol: string) => {
     setCurrentSymbol(symbol);
-    if ((window as any).tradingViewLoaded) {
-      createChart(`BYBIT:${symbol}`);
+    if (window.TradingView) {
+      createPersistentChart(`BYBIT:${symbol}`);
     }
     updatePrice(symbol);
-  }, [createChart]);
+  }, [createPersistentChart]);
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -214,8 +160,7 @@ export default function MobileTrade() {
     const initializeChart = () => {
       // Check if TradingView is already loaded
       if (window.TradingView) {
-        (window as any).tradingViewLoaded = true;
-        createChart('BYBIT:BTCUSDT');
+        createPersistentChart('BYBIT:BTCUSDT');
         initializeCoinMenu();
         return;
       }
@@ -224,8 +169,7 @@ export default function MobileTrade() {
       const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
       if (existingScript) {
         existingScript.addEventListener('load', () => {
-          (window as any).tradingViewLoaded = true;
-          createChart('BYBIT:BTCUSDT');
+          createPersistentChart('BYBIT:BTCUSDT');
           initializeCoinMenu();
         });
         return;
@@ -239,8 +183,7 @@ export default function MobileTrade() {
       script.crossOrigin = 'anonymous';
       
       script.onload = () => {
-        (window as any).tradingViewLoaded = true;
-        createChart('BYBIT:BTCUSDT');
+        createPersistentChart('BYBIT:BTCUSDT');
         initializeCoinMenu();
       };
       
@@ -254,7 +197,7 @@ export default function MobileTrade() {
     };
 
     initializeChart();
-  }, [createChart, initializeCoinMenu]);
+  }, [createPersistentChart, initializeCoinMenu]);
 
   // Price update interval
   useEffect(() => {
@@ -367,14 +310,6 @@ export default function MobileTrade() {
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
-    
-    // Ensure chart is visible when switching to Charts tab
-    if (tab === 'Charts' && isChartReady) {
-      const existingWidget = getGlobalWidget();
-      if (existingWidget) {
-        console.log('Chart tab selected, widget ready');
-      }
-    }
   };
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
