@@ -29,7 +29,6 @@ import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import { useLanguage } from '@/contexts/language-context';
-import { usePersistentChart } from '@/hooks/use-persistent-chart';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
@@ -61,61 +60,122 @@ export default function MobileTrade() {
   const tradingViewScript = useRef<HTMLScriptElement | null>(null);
   const chartCache = useRef<Map<string, any>>(new Map());
 
-  // Use the persistent chart system
-  const { showChart, hideChart, isChartReady, updateChartSymbol } = usePersistentChart();
+  // Global chart widget cache to persist across ALL navigation
+  const getGlobalChartWidget = useCallback(() => {
+    if (!(window as any).nedaxerGlobalChartWidget) {
+      (window as any).nedaxerGlobalChartWidget = null;
+    }
+    if (!(window as any).nedaxerChartState) {
+      (window as any).nedaxerChartState = {
+        isReady: false,
+        currentSymbol: 'BTCUSDT',
+        isVisible: false
+      };
+    }
+    return (window as any).nedaxerGlobalChartWidget;
+  }, []);
 
-  // Simplified chart loading with true persistence
+  const setGlobalChartWidget = useCallback((widget: any) => {
+    (window as any).nedaxerGlobalChartWidget = widget;
+    (window as any).nedaxerChartState.isReady = true;
+    chartWidget.current = widget;
+  }, []);
+
+  const getChartState = useCallback(() => {
+    return (window as any).nedaxerChartState || { isReady: false, currentSymbol: 'BTCUSDT', isVisible: false };
+  }, []);
+
+  const setChartState = useCallback((state: any) => {
+    if (!(window as any).nedaxerChartState) {
+      (window as any).nedaxerChartState = {};
+    }
+    Object.assign((window as any).nedaxerChartState, state);
+  }, []);
+
+  // Enhanced chart loading with global persistence across all pages
   const loadChart = useCallback((symbol: string, forceReload = false) => {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
 
-    // Use the persistent chart system
-    if (window.nedaxerGlobalChart && window.nedaxerGlobalChart.widget && window.nedaxerGlobalChart.isReady && !forceReload) {
-      console.log('Using existing persistent chart');
-      updateChartSymbol(symbol);
-      showChart();
+    // Check if chart is already loaded and functional globally
+    const existingWidget = getGlobalChartWidget();
+    const chartState = getChartState();
+    
+    if (!forceReload && existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+      console.log('Global chart already exists, reusing existing widget');
+      
+      // Always ensure chart is visible when on Charts tab
+      const chartContainer = document.getElementById('chart');
+      if (chartContainer) {
+        // Make sure the chart iframe is in the current container
+        if (!chartContainer.querySelector('iframe') && existingWidget.iframe) {
+          // Move the existing chart to current container
+          if (existingWidget.iframe.parentNode) {
+            chartContainer.appendChild(existingWidget.iframe);
+          }
+        }
+        
+        // Make chart visible
+        if (existingWidget.iframe) {
+          existingWidget.iframe.style.display = 'block';
+          existingWidget.iframe.style.visibility = 'visible';
+        }
+      }
+      
+      // Update symbol if needed
+      if (chartState.currentSymbol !== symbol) {
+        try {
+          existingWidget.setSymbol(symbol, "15", () => {
+            console.log('Symbol changed to', symbol);
+            setChartState({ currentSymbol: symbol, isVisible: true });
+          });
+        } catch (error) {
+          console.log('Failed to change symbol, keeping current chart');
+        }
+      }
+      
+      chartWidget.current = existingWidget;
+      setChartState({ isVisible: true });
       return;
     }
 
-    // Create new chart only if needed
-    const chartContainer = document.getElementById('chart');
-    if (chartContainer) {
-      createNewWidget(symbol);
-    }
-  }, [showChart, updateChartSymbol]);
+    // Create new widget only if none exists or force reload
+    if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
+      console.log('Creating new global chart widget');
+      
+      // Remove existing widget if present
+      if (existingWidget) {
+        try {
+          existingWidget.remove();
+        } catch (removeError) {
+          // Ignore removal errors
+        }
+        setGlobalChartWidget(null);
+        setChartState({ isReady: false, currentSymbol: symbol, isVisible: false });
+      }
 
-  // Helper function to create new widget with persistent system
+      // Clear the chart container
+      const chartContainer = document.getElementById('chart');
+      if (chartContainer) {
+        chartContainer.innerHTML = '';
+      }
+
+      // Create new widget after a short delay
+      setTimeout(() => {
+        createNewWidget(symbol);
+      }, 100);
+    }
+  }, [getGlobalChartWidget, setGlobalChartWidget, getChartState, setChartState]);
+
+  // Helper function to create new widget with global persistence
   const createNewWidget = useCallback((symbol: string) => {
     if (typeof window === 'undefined' || !(window as any).TradingView) return;
 
-    // Initialize global chart if not exists
-    if (!window.nedaxerGlobalChart) {
-      window.nedaxerGlobalChart = {
-        widget: null,
-        container: document.createElement('div'),
-        isReady: false,
-        currentSymbol: symbol,
-        isVisible: false
-      };
-
-      // Style the container
-      window.nedaxerGlobalChart.container.style.width = '100%';
-      window.nedaxerGlobalChart.container.style.height = '100%';
-      window.nedaxerGlobalChart.container.id = 'global-chart-container';
-
-      // Add to chart element
-      const chartElement = document.getElementById('chart');
-      if (chartElement) {
-        chartElement.appendChild(window.nedaxerGlobalChart.container);
-      }
-    }
-
     const widget = new (window as any).TradingView.widget({
-      container: window.nedaxerGlobalChart.container,
-      width: '100%',
-      height: '100%',
+      container_id: "chart",
+      autosize: true,
       symbol: symbol,
       interval: "15",
-      timezone: "Etc/UTC", 
+      timezone: "Etc/UTC",
       theme: "dark",
       style: "1",
       locale: "en",
@@ -131,35 +191,51 @@ export default function MobileTrade() {
       studies: [
         {
           id: "BB@tv-basicstudies-1",
-          inputs: { length: 20, mult: 2, source: "close" }
+          inputs: {
+            length: 20,
+            mult: 2,
+            source: "close"
+          }
         }
       ],
       drawings_access: { type: 'black', tools: [] },
-      crosshair: { mode: 1 },
+      crosshair: {
+        mode: 1  // Normal crosshair mode that follows your finger/mouse
+      },
       save_image: false,
       loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
       overrides: {
         "paneProperties.background": "#111827",
         "paneProperties.backgroundType": "solid",
+        "paneProperties.backgroundGradientStartColor": "#111827", 
+        "paneProperties.backgroundGradientEndColor": "#111827",
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#FFA500",
+        "paneProperties.crossHairProperties.color": "#FFA500", // orange line
         "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,
+        "paneProperties.crossHairProperties.style": 2,  // Dashed
         "paneProperties.crossHairProperties.transparency": 0,
         "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
-        "paneProperties.crossHairProperties.displayMode": 1,
-        "BB@tv-basicstudies.upper.color": "#0066FF",
-        "BB@tv-basicstudies.lower.color": "#0066FF", 
-        "BB@tv-basicstudies.median.color": "#FFFF00",
+        "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
+
+        // Bollinger Bands styling
+        "BB@tv-basicstudies.upper.color": "#0066FF", // Blue upper band
+        "BB@tv-basicstudies.lower.color": "#0066FF", // Blue lower band
+        "BB@tv-basicstudies.median.color": "#FFFF00", // Yellow middle line
         "BB@tv-basicstudies.upper.linewidth": 1,
         "BB@tv-basicstudies.lower.linewidth": 1,
         "BB@tv-basicstudies.median.linewidth": 2,
         "BB@tv-basicstudies.fillBackground": true,
         "BB@tv-basicstudies.transparency": 90,
+
         "scalesProperties.backgroundColor": "#111827",
-        "scalesProperties.lineColor": "#374151",
+        "scalesProperties.lineColor": "#374151", 
         "scalesProperties.textColor": "#9CA3AF",
+        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+        "scalesProperties.showLeftScale": false,
+        "scalesProperties.showRightScale": true,
+
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
         "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -167,10 +243,22 @@ export default function MobileTrade() {
         "mainSeriesProperties.candleStyle.drawBorder": false,
         "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
         "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
+
         "volumePaneSize": "small",
         "volume.volume.color.0": "#EF4444",
         "volume.volume.color.1": "#10B981",
         "volume.volume.transparency": 0,
+
+        "paneProperties.legendProperties.showLegend": false,
+        "paneProperties.legendProperties.showStudyArguments": false,
+        "paneProperties.legendProperties.showStudyTitles": false,
+        "paneProperties.legendProperties.showStudyValues": false,
+        "paneProperties.legendProperties.showSeriesTitle": false,
+
+        "paneProperties.topMargin": 5,
+        "paneProperties.bottomMargin": 15,
+        "paneProperties.leftMargin": 5,
+        "paneProperties.rightMargin": 5,
       },
       disabled_features: [
         "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
@@ -184,18 +272,28 @@ export default function MobileTrade() {
         "header_undo_redo", "show_chart_property_page", "popup_hints"
       ],
       enabled_features: [
-        "show_crosshair_labels", "crosshair_tooltip", "crosshair_cursor"
+        "show_crosshair_labels",
+        "crosshair_tooltip",
+        "crosshair_cursor"
       ],
       onChartReady: () => {
-        console.log('Persistent chart ready');
-        window.nedaxerGlobalChart!.isReady = true;
-        window.nedaxerGlobalChart!.currentSymbol = symbol;
+        console.log('Chart ready and persistent');
+        setChartState({ 
+          isReady: true, 
+          currentSymbol: symbol, 
+          isVisible: true 
+        });
       }
     });
 
-    window.nedaxerGlobalChart.widget = widget;
-    chartWidget.current = widget;
-  }, []);
+    // Store widget globally with state
+    setGlobalChartWidget(widget);
+    setChartState({ 
+      isReady: false, 
+      currentSymbol: symbol, 
+      isVisible: true 
+    });
+  }, [setGlobalChartWidget, setChartState]);
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -229,12 +327,30 @@ export default function MobileTrade() {
           setCurrentSymbol(symbol);
           menu.style.display = "none";
 
-          // Update chart symbol using persistent system
+          // Update chart symbol on persistent widget
           if (isTradingViewReady) {
-            if (window.nedaxerGlobalChart && window.nedaxerGlobalChart.widget) {
-              updateChartSymbol(`BYBIT:${symbol}`);
+            const existingWidget = getGlobalChartWidget();
+            const chartState = getChartState();
+            
+            if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+              try {
+                existingWidget.setSymbol(`BYBIT:${symbol}`, "15", () => {
+                  console.log('Symbol changed to', symbol);
+                  setChartState({ 
+                    ...chartState, 
+                    currentSymbol: symbol 
+                  });
+                });
+              } catch (error) {
+                console.log('Failed to change symbol on persistent chart');
+                // Don't reload, just update state
+                setChartState({ 
+                  ...chartState, 
+                  currentSymbol: symbol 
+                });
+              }
             } else {
-              // Create chart if none exists
+              // Load chart if widget doesn't exist
               loadChart(`BYBIT:${symbol}`, false);
             }
           }
@@ -243,7 +359,7 @@ export default function MobileTrade() {
         menu.appendChild(div);
       });
     }
-  }, [isTradingViewReady, loadChart, updateChartSymbol]);
+  }, [isTradingViewReady, loadChart, getGlobalChartWidget]);
 
   // Add preload hints and load TradingView script with maximum optimization
   useEffect(() => {
@@ -277,7 +393,7 @@ export default function MobileTrade() {
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         console.log('Reusing existing chart widget');
         chartWidget.current = existingWidget;
-
+        
         // Ensure chart is in the correct container
         const chartContainer = document.getElementById('chart');
         if (chartContainer && !chartContainer.querySelector('iframe')) {
@@ -290,7 +406,7 @@ export default function MobileTrade() {
         console.log('Creating initial chart widget');
         loadChart('BYBIT:BTCUSDT', false);
       }
-
+      
       initializeCoinMenu();
       return;
     }
@@ -379,11 +495,6 @@ export default function MobileTrade() {
     }
   }, [location]);
 
-  // Helper function to get global chart widget
-  const getGlobalChartWidget = useCallback(() => {
-    return window.nedaxerGlobalChart?.widget || null;
-  }, []);
-
   // Helper function to get crypto name from symbol
   const getCryptoName = (symbol: string): string => {
     const cryptoNames: { [key: string]: string } = {
@@ -456,33 +567,47 @@ export default function MobileTrade() {
     // Don't reload chart when switching trading types - keep it persistent
   };
 
-  // Handle tab changes with true persistence
+  // Handle tab changes with global chart persistence
   const handleTabChange = useCallback((tab: 'Charts' | 'Trade') => {
     setSelectedTab(tab);
 
     if (tab === 'Charts') {
-      // Show chart using persistent system
-      if (window.nedaxerGlobalChart && window.nedaxerGlobalChart.widget) {
-        console.log('Showing existing persistent chart');
-
-        // Move chart container to current view
-        const chartElement = document.getElementById('chart');
-        if (chartElement && window.nedaxerGlobalChart.container.parentNode !== chartElement) {
-          chartElement.appendChild(window.nedaxerGlobalChart.container);
+      // Always try to show existing chart first
+      const existingWidget = getGlobalChartWidget();
+      const chartState = getChartState();
+      
+      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+        console.log('Chart widget exists globally, restoring to view');
+        
+        // Ensure chart is visible in the container
+        const chartContainer = document.getElementById('chart');
+        if (chartContainer) {
+          if (!chartContainer.querySelector('iframe') && existingWidget.iframe) {
+            // Move existing chart to container
+            chartContainer.appendChild(existingWidget.iframe);
+          }
+          
+          // Make chart visible
+          if (existingWidget.iframe) {
+            existingWidget.iframe.style.display = 'block';
+            existingWidget.iframe.style.visibility = 'visible';
+          }
         }
-
-        showChart();
+        
+        chartWidget.current = existingWidget;
+        setChartState({ ...chartState, isVisible: true });
       } else if (isTradingViewReady) {
-        // Create chart only if none exists
+        // Load chart only if TradingView is ready and no widget exists
         setTimeout(() => {
           loadChart(`BYBIT:${currentSymbol}`, false);
         }, 100);
       }
     } else {
-      // When leaving Charts tab, hide chart but keep it alive
-      hideChart();
+      // When leaving Charts tab, keep chart in background but hidden
+      const chartState = getChartState();
+      setChartState({ ...chartState, isVisible: false });
     }
-  }, [currentSymbol, isTradingViewReady, loadChart, showChart, hideChart]);
+  }, [currentSymbol, loadChart, getGlobalChartWidget, getChartState, setChartState, isTradingViewReady]);
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);
