@@ -8,6 +8,7 @@ import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { ChartPanel } from '@/components/chart-panel';
 import { 
   Search, 
   Bell, 
@@ -669,6 +670,15 @@ export default function MobileHome() {
             ))
           )}
         </div>
+      </div>
+
+      {/* Chart Panel - Demonstrates persistent charts across navigation */}
+      <div className="px-4 pb-6">
+        <ChartPanel 
+          className="mb-4" 
+          height="250px" 
+          defaultSymbol="BYBIT:BTCUSDT"
+        />
       </div>
 
       {/* Deposit Modal */}
