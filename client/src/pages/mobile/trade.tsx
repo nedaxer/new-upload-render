@@ -391,7 +391,7 @@ export default function MobileTrade() {
       // Always check for existing widget first
       const existingWidget = getGlobalChartWidget();
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Reusing existing chart widget');
+        console.log('Reusing existing chart widget - no reload needed');
         chartWidget.current = existingWidget;
         
         // Ensure chart is in the correct container
@@ -564,7 +564,7 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-    // Don't reload chart when switching trading types - keep it persistent
+    // Chart persists across trading types - no reload needed
   };
 
   // Handle tab changes with global chart persistence
@@ -577,7 +577,7 @@ export default function MobileTrade() {
       const chartState = getChartState();
       
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Chart widget exists globally, restoring to view');
+        console.log('Chart widget exists globally, restoring to view - no reload needed');
         
         // Ensure chart is visible in the container
         const chartContainer = document.getElementById('chart');
