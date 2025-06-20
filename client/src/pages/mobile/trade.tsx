@@ -522,80 +522,31 @@ export default function MobileTrade() {
             className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
           ></div>
 
-          {/* Chart Container - Optimized with loading skeleton */}
+          {/* Chart Container - Clean without loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
-            {/* Loading Skeleton or Error State */}
-            {(isChartLoading || chartError) && (
-              <div className="absolute inset-0 bg-gray-900 z-20">
-                {chartError ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center text-gray-400">
-                      <div className="mb-4">
-                        <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
-                      </div>
-                      <p className="text-lg font-medium">Chart Unavailable</p>
-                      <p className="text-sm mt-2">Unable to load chart data</p>
-                      <button 
-                        onClick={() => window.location.reload()}
-                        className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
-                      >
-                        Retry
-                      </button>
-                    </div>
+            {/* Only show error state if chart fails to load */}
+            {chartError && (
+              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <div className="mb-4">
+                    <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
                   </div>
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse">
-                    {/* Fake chart grid lines */}
-                    <div className="absolute inset-0 opacity-30">
-                      {[...Array(8)].map((_, i) => (
-                        <div 
-                          key={i} 
-                          className="absolute w-full border-t border-gray-600" 
-                          style={{ top: `${(i + 1) * 12.5}%` }}
-                        />
-                      ))}
-                      {[...Array(6)].map((_, i) => (
-                        <div 
-                          key={i} 
-                          className="absolute h-full border-l border-gray-600" 
-                          style={{ left: `${(i + 1) * 16.67}%` }}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Fake candlestick pattern */}
-                    <div className="absolute bottom-4 left-4 right-4 h-1/2 flex items-end justify-between opacity-40">
-                      {[...Array(20)].map((_, i) => {
-                        const isGreen = Math.random() > 0.5;
-                        return (
-                          <div 
-                            key={i}
-                            className={`w-1 rounded-sm ${isGreen ? 'bg-green-500' : 'bg-red-500'}`}
-                            style={{ 
-                              height: `${Math.random() * 80 + 10}%`,
-                              animationDelay: `${i * 0.1}s`
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Loading indicator */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div className="flex items-center space-x-2 text-gray-400">
-                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm">Loading Chart...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  <p className="text-lg font-medium">Chart Unavailable</p>
+                  <p className="text-sm mt-2">Unable to load chart data</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
               </div>
             )}
             
-            {/* Actual TradingView Chart */}
+            {/* TradingView Chart */}
             <div 
               id="chart" 
-              className={`w-full h-full transition-opacity duration-300 ${isChartLoading ? 'opacity-0' : 'opacity-100'}`}
+              className="w-full h-full"
             ></div>
             
             {/* Background watermark */}
