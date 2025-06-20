@@ -28,7 +28,13 @@ import MobileFutures from './futures';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import { useLanguage } from '@/contexts/language-context';
-import { PersistentTradingViewChart } from '@/components/persistent-tradingview-chart';
+
+declare global {
+  interface Window {
+    TradingView: any;
+    persistentTradingViewWidget: any;
+  }
+}
 
 
 
@@ -51,7 +57,9 @@ export default function MobileTrade() {
   const [location, navigate] = useLocation();
   
   // Chart state
-  const [currentSymbol, setCurrentSymbol] = useState('BYBIT:BTCUSDT');
+  const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
+  const [widget, setWidget] = useState<any>(null);
+  const chartInitialized = useRef(false);
 
   const handleTabChange = (tab: string) => {
     hapticLight();
@@ -72,6 +80,138 @@ export default function MobileTrade() {
     setTradeMode('Sell');
     setSelectedTab('Trade');
   };
+
+  // Load TradingView chart with persistence
+  const loadChart = useCallback((symbol: string) => {
+    if (!window.TradingView) return;
+    
+    // Check if widget already exists globally
+    if (window.persistentTradingViewWidget && !window.persistentTradingViewWidget._destroyed) {
+      console.log('Reusing existing persistent chart');
+      setWidget(window.persistentTradingViewWidget);
+      return;
+    }
+    
+    console.log('Creating new persistent chart');
+    const newWidget = new window.TradingView.widget({
+      container_id: "tradingview-chart",
+      autosize: true,
+      symbol: `BYBIT:${symbol}`,
+      interval: "15",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      backgroundColor: "rgba(0,0,0,0)",
+      toolbar_bg: "rgba(0,0,0,0)",
+      hide_top_toolbar: true,
+      hide_side_toolbar: true,
+      allow_symbol_change: false,
+      enable_publishing: false,
+      details: false,
+      withdateranges: false,
+      calendar: false,
+      studies: [],
+      drawings_access: { type: 'black', tools: [] },
+      crosshair: { mode: 1 },
+      overrides: {
+        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+        "scalesProperties.showLeftScale": false,
+        "scalesProperties.showRightScale": false,
+        "paneProperties.crossHairProperties.color": "#FFA500",
+        "paneProperties.crossHairProperties.width": 1,
+        "paneProperties.crossHairProperties.style": 2,
+        "paneProperties.crossHairProperties.transparency": 0,
+        "volumePaneSize": "small"
+      },
+      disabled_features: [
+        "header_symbol_search",
+        "timeframes_toolbar",
+        "use_localstorage_for_settings",
+        "volume_force_overlay",
+        "left_toolbar",
+        "legend_context_menu",
+        "display_market_status",
+        "go_to_date",
+        "header_compare",
+        "header_chart_type",
+        "header_resolutions",
+        "header_screenshot",
+        "header_fullscreen_button",
+        "header_settings",
+        "header_indicators",
+        "context_menus",
+        "control_bar",
+        "edit_buttons_in_legend",
+        "main_series_scale_menu",
+        "chart_property_page_legend",
+        "chart_property_page_trading",
+        "border_around_the_chart"
+      ]
+    });
+
+    // Store globally for persistence
+    window.persistentTradingViewWidget = newWidget;
+    setWidget(newWidget);
+  }, [widget]);
+
+  // Update price data
+  const updatePrice = useCallback(async (symbol: string) => {
+    try {
+      const response = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol}`);
+      const data = await response.json();
+      
+      if (data.result && data.result.list && data.result.list[0]) {
+        const ticker = data.result.list[0];
+        const price = parseFloat(ticker.lastPrice).toFixed(2);
+        const high = parseFloat(ticker.highPrice24h).toFixed(2);
+        const low = parseFloat(ticker.lowPrice24h).toFixed(2);
+        const turnover = (parseFloat(ticker.turnover24h) / 1e6).toFixed(2);
+
+        const priceElement = document.getElementById("coin-price");
+        const highElement = document.getElementById("high");
+        const lowElement = document.getElementById("low");
+        const turnoverElement = document.getElementById("turnover");
+
+        if (priceElement) priceElement.textContent = price;
+        if (highElement) highElement.textContent = high;
+        if (lowElement) lowElement.textContent = low;
+        if (turnoverElement) turnoverElement.textContent = turnover + "M";
+      }
+    } catch (error) {
+      console.error("Price fetch error:", error);
+    }
+  }, []);
+
+  // Initialize chart and price updates
+  useEffect(() => {
+    // Load TradingView script if not already loaded
+    if (!window.TradingView) {
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/tv.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('TradingView loaded');
+        if (selectedTab === 'Charts' && !chartInitialized.current) {
+          loadChart(currentSymbol);
+          chartInitialized.current = true;
+        }
+      };
+      document.head.appendChild(script);
+    } else if (selectedTab === 'Charts' && !chartInitialized.current) {
+      loadChart(currentSymbol);
+      chartInitialized.current = true;
+    }
+
+    // Start price updates
+    updatePrice(currentSymbol);
+    const interval = setInterval(() => {
+      updatePrice(currentSymbol);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [selectedTab, currentSymbol, loadChart, updatePrice]);
 
   const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
   const tabs = ['Charts', 'Trade'];
@@ -127,12 +267,51 @@ export default function MobileTrade() {
       {/* Charts Tab Content */}
       {selectedTab === 'Charts' && (
         <div className="flex-1 overflow-hidden bg-gray-900">
-          <PersistentTradingViewChart 
-            symbol={currentSymbol}
-            interval="15"
-            theme="dark"
-            onReady={() => console.log('Chart ready')}
-          />
+          {/* Price Header */}
+          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
+            <div className="flex flex-col">
+              <div className="text-white font-bold text-lg cursor-pointer" onClick={() => setShowPairSelector(!showPairSelector)}>
+                BTC/USDT
+              </div>
+              <div className="text-gray-400 text-sm">
+                Price: <span className="text-white" id="coin-price">--</span> USD
+              </div>
+            </div>
+            <div className="text-right text-xs text-gray-400">
+              <div>24h High: <span className="text-white" id="high">--</span></div>
+              <div>24h Low: <span className="text-white" id="low">--</span></div>
+              <div>Turnover: <span className="text-white" id="turnover">--</span></div>
+            </div>
+          </div>
+
+          {/* Chart Container */}
+          <div className="flex-1 relative bg-gray-900">
+            <div 
+              id="tradingview-chart" 
+              className="w-full h-full"
+              style={{ height: 'calc(100vh - 200px)' }}
+            />
+            
+            {/* Watermark */}
+            <div 
+              className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
+              style={{
+                backgroundImage: 'url(https://i.imgur.com/F9ljfzP.png)',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center'
+              }}
+            />
+
+            {/* Brand Cover */}
+            <div className="absolute bottom-7 left-3 w-12 h-12 bg-gray-900 rounded-lg shadow-lg z-50 pointer-events-auto">
+              <img 
+                src="https://i.imgur.com/1yZtbuJ.jpeg" 
+                alt="Nedaxer"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+          </div>
         </div>
       )}
 
