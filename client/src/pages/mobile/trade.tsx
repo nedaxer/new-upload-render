@@ -96,12 +96,12 @@ export default function MobileTrade() {
         currentSymbol: symbol,
         isVisible: false
       };
-      
+
       // Style the container
       window.nedaxerGlobalChart.container.style.width = '100%';
       window.nedaxerGlobalChart.container.style.height = '100%';
       window.nedaxerGlobalChart.container.id = 'global-chart-container';
-      
+
       // Add to chart element
       const chartElement = document.getElementById('chart');
       if (chartElement) {
@@ -277,7 +277,7 @@ export default function MobileTrade() {
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         console.log('Reusing existing chart widget');
         chartWidget.current = existingWidget;
-        
+
         // Ensure chart is in the correct container
         const chartContainer = document.getElementById('chart');
         if (chartContainer && !chartContainer.querySelector('iframe')) {
@@ -290,7 +290,7 @@ export default function MobileTrade() {
         console.log('Creating initial chart widget');
         loadChart('BYBIT:BTCUSDT', false);
       }
-      
+
       initializeCoinMenu();
       return;
     }
@@ -379,6 +379,11 @@ export default function MobileTrade() {
     }
   }, [location]);
 
+  // Helper function to get global chart widget
+  const getGlobalChartWidget = useCallback(() => {
+    return window.nedaxerGlobalChart?.widget || null;
+  }, []);
+
   // Helper function to get crypto name from symbol
   const getCryptoName = (symbol: string): string => {
     const cryptoNames: { [key: string]: string } = {
@@ -459,13 +464,13 @@ export default function MobileTrade() {
       // Show chart using persistent system
       if (window.nedaxerGlobalChart && window.nedaxerGlobalChart.widget) {
         console.log('Showing existing persistent chart');
-        
+
         // Move chart container to current view
         const chartElement = document.getElementById('chart');
         if (chartElement && window.nedaxerGlobalChart.container.parentNode !== chartElement) {
           chartElement.appendChild(window.nedaxerGlobalChart.container);
         }
-        
+
         showChart();
       } else if (isTradingViewReady) {
         // Create chart only if none exists
