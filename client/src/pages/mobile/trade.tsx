@@ -47,7 +47,7 @@ export default function MobileTrade() {
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
-
+  
   // Chart state
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
@@ -79,7 +79,7 @@ export default function MobileTrade() {
 
     // Check if we have a cached widget for this symbol
     const existingWidget = getGlobalChartWidget();
-
+    
     // If force reload is requested or no existing widget, create new one
     if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
       // Remove existing widget if present
@@ -91,20 +91,20 @@ export default function MobileTrade() {
         }
         setGlobalChartWidget(null);
       }
-
+      
       // Clear the chart container
       const chartContainer = document.getElementById('chart');
       if (chartContainer) {
         chartContainer.innerHTML = '';
       }
-
+      
       // Create new widget
       setTimeout(() => {
         createNewWidget(symbol);
       }, 50);
       return;
     }
-
+    
     // Try to change symbol on existing widget
     if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
       try {
@@ -145,24 +145,8 @@ export default function MobileTrade() {
       calendar: false,
       studies: [],
       drawings_access: { type: 'black', tools: [] },
-      crosshair: { 
-        mode: 2, // Real-time tracking crosshair
-        vertLine: {
-          visible: true,
-          color: "#F59E0B",
-          width: 2,
-          style: 0,
-          labelVisible: true,
-          labelBackgroundColor: "#F59E0B"
-        },
-        horzLine: {
-          visible: true,
-          color: "#F59E0B", 
-          width: 2,
-          style: 0,
-          labelVisible: true,
-          labelBackgroundColor: "#F59E0B"
-        }
+      crosshair: {
+        mode: 1  // Normal crosshair mode that follows your finger/mouse
       },
       save_image: false,
       loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
@@ -173,23 +157,13 @@ export default function MobileTrade() {
         "paneProperties.backgroundGradientEndColor": "#111827",
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#F59E0B",
-        "paneProperties.crossHairProperties.width": 2,
-        "paneProperties.crossHairProperties.style": 0,
+        "paneProperties.crossHairProperties.color": "#FFA500", // orange line
+        "paneProperties.crossHairProperties.width": 1,
+        "paneProperties.crossHairProperties.style": 2,  // Dashed
         "paneProperties.crossHairProperties.transparency": 0,
-        "paneProperties.crossHairProperties.horzLine.visible": true,
-        "paneProperties.crossHairProperties.horzLine.color": "#F59E0B",
-        "paneProperties.crossHairProperties.horzLine.width": 2,
-        "paneProperties.crossHairProperties.horzLine.style": 0,
-        "paneProperties.crossHairProperties.horzLine.labelVisible": true,
-        "paneProperties.crossHairProperties.horzLine.labelBackgroundColor": "#F59E0B",
-        "paneProperties.crossHairProperties.vertLine.visible": true,
-        "paneProperties.crossHairProperties.vertLine.color": "#F59E0B",
-        "paneProperties.crossHairProperties.vertLine.width": 2,
-        "paneProperties.crossHairProperties.vertLine.style": 0,
-        "paneProperties.crossHairProperties.vertLine.labelVisible": true,
-        "paneProperties.crossHairProperties.vertLine.labelBackgroundColor": "#F59E0B",
-
+        "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
+        "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
+        
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
         "scalesProperties.textColor": "#9CA3AF",
@@ -197,7 +171,7 @@ export default function MobileTrade() {
         "paneProperties.rightAxisProperties.showSeriesLastValue": false,
         "scalesProperties.showLeftScale": false,
         "scalesProperties.showRightScale": true,
-
+        
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
         "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -205,18 +179,18 @@ export default function MobileTrade() {
         "mainSeriesProperties.candleStyle.drawBorder": false,
         "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
         "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
-
+        
         "volumePaneSize": "small",
         "volume.volume.color.0": "#EF4444",
         "volume.volume.color.1": "#10B981",
         "volume.volume.transparency": 0,
-
+        
         "paneProperties.legendProperties.showLegend": false,
         "paneProperties.legendProperties.showStudyArguments": false,
         "paneProperties.legendProperties.showStudyTitles": false,
         "paneProperties.legendProperties.showStudyValues": false,
         "paneProperties.legendProperties.showSeriesTitle": false,
-
+        
         "paneProperties.topMargin": 5,
         "paneProperties.bottomMargin": 15,
         "paneProperties.leftMargin": 5,
@@ -239,57 +213,10 @@ export default function MobileTrade() {
         "crosshair_cursor"
       ],
       onChartReady: () => {
-        // Chart ready - add crosshair movement listeners for haptic feedback
-        try {
-          // Add event listener to the chart container for mouse/touch movement
-          const chartContainer = document.getElementById('chart');
-          if (chartContainer) {
-            let lastCrosshairPosition = { x: 0, y: 0 };
-            let hapticThrottle = false;
-            
-            const handleCrosshairMove = (event: MouseEvent | TouchEvent) => {
-              // Prevent excessive haptic feedback
-              if (hapticThrottle) return;
-              
-              let currentX = 0, currentY = 0;
-              
-              if (event instanceof TouchEvent && event.touches.length > 0) {
-                currentX = event.touches[0].clientX;
-                currentY = event.touches[0].clientY;
-              } else if (event instanceof MouseEvent) {
-                currentX = event.clientX;
-                currentY = event.clientY;
-              }
-              
-              // Check if crosshair position actually changed significantly
-              const deltaX = Math.abs(currentX - lastCrosshairPosition.x);
-              const deltaY = Math.abs(currentY - lastCrosshairPosition.y);
-              
-              if (deltaX > 5 || deltaY > 5) {
-                // Trigger light haptic feedback
-                hapticLight();
-                
-                // Update last position
-                lastCrosshairPosition = { x: currentX, y: currentY };
-                
-                // Throttle haptic feedback to prevent overuse
-                hapticThrottle = true;
-                setTimeout(() => {
-                  hapticThrottle = false;
-                }, 50); // 50ms throttle
-              }
-            };
-            
-            // Add event listeners for both mouse and touch
-            chartContainer.addEventListener('mousemove', handleCrosshairMove, { passive: true });
-            chartContainer.addEventListener('touchmove', handleCrosshairMove, { passive: true });
-          }
-        } catch (error) {
-          console.log('Crosshair haptic setup error:', error);
-        }
+        // Chart ready - no loading state changes needed
       }
     });
-
+    
     setGlobalChartWidget(widget);
   }, [getGlobalChartWidget, setGlobalChartWidget]);
 
@@ -297,7 +224,7 @@ export default function MobileTrade() {
     try {
       const response = await fetch('/api/bybit/tickers');
       const data = await response.json();
-
+      
       if (data.success && data.data) {
         const ticker = data.data.find((t: any) => t.symbol === symbol);
         if (ticker) {
@@ -313,7 +240,7 @@ export default function MobileTrade() {
   const initializeCoinMenu = useCallback(() => {
     const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
     const menu = document.getElementById("coin-menu");
-
+    
     if (menu) {
       menu.innerHTML = '';
       coinList.forEach(symbol => {
@@ -324,7 +251,7 @@ export default function MobileTrade() {
           // Instant UI feedback
           setCurrentSymbol(symbol);
           menu.style.display = "none";
-
+          
           // Load chart and update price without delay
           if (isTradingViewReady) {
             loadChart(`BYBIT:${symbol}`);
@@ -345,7 +272,7 @@ export default function MobileTrade() {
         { rel: 'preconnect', href: 'https://s3.tradingview.com' },
         { rel: 'preload', href: 'https://s3.tradingview.com/tv.js', as: 'script' }
       ];
-
+      
       hints.forEach(hint => {
         const existingHint = document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`);
         if (!existingHint) {
@@ -355,13 +282,13 @@ export default function MobileTrade() {
         }
       });
     };
-
+    
     addPreloadHints();
 
     // Check if script is already loaded and widget exists
     if ((window as any).TradingView) {
       setIsTradingViewReady(true);
-
+      
       // Check for existing widget first
       const existingWidget = getGlobalChartWidget();
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
@@ -394,13 +321,13 @@ export default function MobileTrade() {
     script.async = true;
     script.defer = true;
     script.crossOrigin = 'anonymous';
-
+    
     script.onload = () => {
       setIsTradingViewReady(true);
       loadChart('BYBIT:BTCUSDT');
       initializeCoinMenu();
     };
-
+    
     script.onerror = () => {
       console.error('Failed to load TradingView script');
       setIsChartLoading(false);
@@ -434,13 +361,13 @@ export default function MobileTrade() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const symbolParam = urlParams.get('symbol');
-
+    
     if (symbolParam) {
       // Update trading view symbol for Bybit
       const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
       setTradingViewSymbol(tradingViewSymbol);
       setCurrentSymbol(`${symbolParam}USDT`);
-
+      
       // Update selected pair
       setSelectedPair({
         symbol: symbolParam,
@@ -448,7 +375,7 @@ export default function MobileTrade() {
         price: 0,
         change: 0
       });
-
+      
       // Update crypto selection
       const cryptoId = getCryptoIdFromSymbol(symbolParam);
       setSelectedCrypto(cryptoId);
@@ -524,7 +451,7 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-
+    
     // Force chart reload when switching trading types and on Charts tab
     if (selectedTab === 'Charts') {
       setTimeout(() => {
@@ -538,7 +465,7 @@ export default function MobileTrade() {
   const handleTabChange = (tab: string) => {
     hapticLight();
     setSelectedTab(tab);
-
+    
     // Force chart reload when switching to Charts tab
     if (tab === 'Charts') {
       setTimeout(() => {
@@ -701,7 +628,7 @@ export default function MobileTrade() {
                 </div>
               </div>
             )}
-
+            
             {/* Only show error state if chart fails to load */}
             {chartError && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
@@ -728,13 +655,13 @@ export default function MobileTrade() {
                 </div>
               </div>
             )}
-
+            
             {/* TradingView Chart */}
             <div 
               id="chart" 
               className="w-full h-full"
             ></div>
-
+            
             {/* Background watermark */}
             <div 
               className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
@@ -745,7 +672,7 @@ export default function MobileTrade() {
                 backgroundPosition: 'center'
               }}
             ></div>
-
+            
             {/* TradingView Logo Cover */}
             <img 
               id="branding-cover"
@@ -766,7 +693,7 @@ export default function MobileTrade() {
             />
           </div>
 
-
+          
         </div>
       )}
 
@@ -793,7 +720,7 @@ export default function MobileTrade() {
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
         <div className="flex-1 overflow-hidden">
-
+          
           {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
