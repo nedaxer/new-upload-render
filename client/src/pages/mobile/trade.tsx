@@ -192,7 +192,11 @@ export default function MobileTrade() {
         "paneProperties.leftAxisProperties.showSeriesLastValue": false,
         "paneProperties.rightAxisProperties.showSeriesLastValue": false,
         "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": true,
+        "scalesProperties.showRightScale": false,
+        
+        // Hide the price axis completely
+        "paneProperties.rightAxisProperties.visible": false,
+        "paneProperties.leftAxisProperties.visible": false,
 
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
@@ -232,7 +236,8 @@ export default function MobileTrade() {
       enabled_features: [
         "show_crosshair_labels",
         "crosshair_tooltip",
-        "crosshair_cursor"
+        "crosshair_cursor",
+        "move_logo_to_main_pane"
       ],
       onChartReady: () => {
         // Chart ready - no loading state changes needed
