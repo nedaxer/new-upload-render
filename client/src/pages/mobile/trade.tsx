@@ -530,8 +530,8 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Charts Tab Content */}
-      {selectedTab === 'Charts' && selectedTradingType === 'Spot' && (
+      {/* Charts Tab Content - Shared for both Spot and Futures */}
+      {selectedTab === 'Charts' && (
         <div className="flex-1 overflow-y-auto bg-gray-900">
           {/* Coin Header - Smaller and compact */}
           <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
@@ -636,21 +636,15 @@ export default function MobileTrade() {
               onClick={handleBuyClick}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
             >
-              Buy
+              {selectedTradingType === 'Futures' ? 'Long' : 'Buy'}
             </button>
             <button 
               onClick={handleSellClick}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
             >
-              Sell
+              {selectedTradingType === 'Futures' ? 'Short' : 'Sell'}
             </button>
           </div>
-        </div>
-      )}
-
-      {selectedTab === 'Charts' && selectedTradingType === 'Futures' && (
-        <div className="h-full">
-          <MobileFutures />
         </div>
       )}
 
@@ -816,8 +810,176 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Futures' && (
-            <div className="h-full">
-              <MobileFutures />
+            <div className="h-full p-4">
+              {/* Trading Pair Info */}
+              <div className="bg-gray-900 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-400 text-lg font-bold">
+                      ${selectedPair.price?.toFixed(2) || '0.00'}
+                    </span>
+                    <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-400">
+                  <span>Leverage: Up to 100x</span>
+                  <span>Funding Rate: 0.01%</span>
+                </div>
+              </div>
+
+              {/* Long/Short Toggle */}
+              <div className="bg-gray-900 rounded-lg overflow-hidden mb-4">
+                <div className="flex">
+                  <button 
+                    className={`flex-1 py-3 font-medium transition-colors ${
+                      tradeMode === 'Buy' 
+                        ? 'bg-green-600 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => setTradeMode('Buy')}
+                  >
+                    {t('long')} {selectedPair.symbol}
+                  </button>
+                  <button 
+                    className={`flex-1 py-3 font-medium transition-colors ${
+                      tradeMode === 'Sell' 
+                        ? 'bg-red-600 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => setTradeMode('Sell')}
+                  >
+                    {t('short')} {selectedPair.symbol}
+                  </button>
+                </div>
+              </div>
+
+              {/* Futures Trading Form */}
+              <div className="space-y-4">
+                {/* Leverage Selector */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <label className="block text-gray-400 text-sm mb-2">Leverage</label>
+                  <div className="flex space-x-2 mb-4">
+                    {['5x', '10x', '25x', '50x', '100x'].map((leverage) => (
+                      <button
+                        key={leverage}
+                        className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors"
+                      >
+                        {leverage}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Type and Size */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <div className="flex space-x-2 mb-4">
+                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
+                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
+                  </div>
+
+                  {/* Position Size Input */}
+                  <div className="mb-4">
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Position Size (USDT)
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={() => handleAmountChange(Math.max(0, amount - 10))}
+                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <input
+                        type="number"
+                        value={amount.toFixed(2)}
+                        onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
+                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        placeholder="0.00"
+                      />
+                      <button 
+                        onClick={() => handleAmountChange(amount + 10)}
+                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Amount Buttons */}
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    {['25%', '50%', '75%', '100%'].map((percent) => (
+                      <button
+                        key={percent}
+                        onClick={() => {
+                          const multiplier = parseInt(percent) / 100;
+                          handleAmountChange(1000 * multiplier); // Assuming $1000 available balance
+                        }}
+                        className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
+                      >
+                        {percent}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Entry Price:</span>
+                      <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Position Size:</span>
+                      <span className="text-white">${amount.toFixed(2)} USDT</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Leverage:</span>
+                      <span className="text-white">10x</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Margin Required:</span>
+                      <span className="text-white">${(amount / 10).toFixed(2)} USDT</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Trading Fee:</span>
+                      <span className="text-white">${(amount * 0.0006).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Place Order Button */}
+                  <button 
+                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${
+                      tradeMode === 'Buy' 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {tradeMode === 'Buy' ? 'Open Long' : 'Open Short'} Position
+                  </button>
+                </div>
+
+                {/* Margin and Positions Info */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <h3 className="text-white font-medium mb-3">Account Balance</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Available Margin:</span>
+                      <span className="text-white">1,000.00 USDT</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Used Margin:</span>
+                      <span className="text-white">0.00 USDT</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Unrealized P&L:</span>
+                      <span className="text-green-400">+0.00 USDT</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

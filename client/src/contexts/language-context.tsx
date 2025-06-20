@@ -252,7 +252,15 @@ const TRANSLATIONS: Record<string, any> = {
     'derivatives': 'Derivatives',
     'no_favorites_selected': 'No favorites selected',
     'loading_market_data': 'Loading market data...',
-    'vol': 'Vol'
+    'vol': 'Vol',
+    'charts': 'Charts',
+    'long': 'Long',
+    'short': 'Short',
+    'market': 'Market',
+    'limit': 'Limit',
+    'stop': 'Stop',
+    'quantity': 'Quantity',
+    'leverage': 'Leverage'
   },
   zh: {
     'settings': '设置',
@@ -343,7 +351,15 @@ const TRANSLATIONS: Record<string, any> = {
     'derivatives': '衍生品',
     'no_favorites_selected': '未选择收藏',
     'loading_market_data': '加载市场数据中...',
-    'vol': '成交量'
+    'vol': '成交量',
+    'charts': '图表',
+    'long': '做多',
+    'short': '做空',
+    'market': '市价',
+    'limit': '限价',
+    'stop': '止损',
+    'quantity': '数量',
+    'leverage': '杠杆'
   },
   ja: {
     'settings': '設定',
