@@ -184,34 +184,42 @@ export default function MobileTrade() {
     }
   }, []);
 
-  // Initialize chart and price updates
+  // Initialize chart when Charts tab is selected
   useEffect(() => {
-    // Load TradingView script if not already loaded
-    if (!window.TradingView) {
-      const script = document.createElement('script');
-      script.src = 'https://s3.tradingview.com/tv.js';
-      script.async = true;
-      script.onload = () => {
-        console.log('TradingView loaded');
-        if (selectedTab === 'Charts' && !chartInitialized.current) {
+    if (selectedTab === 'Charts') {
+      // Load TradingView script if not already loaded
+      if (!window.TradingView) {
+        const script = document.createElement('script');
+        script.src = 'https://s3.tradingview.com/tv.js';
+        script.async = true;
+        script.onload = () => {
+          console.log('TradingView script loaded');
+          setTimeout(() => {
+            loadChart(currentSymbol);
+          }, 100);
+        };
+        script.onerror = () => {
+          console.error('Failed to load TradingView script');
+        };
+        document.head.appendChild(script);
+      } else {
+        // TradingView already loaded, create chart
+        setTimeout(() => {
           loadChart(currentSymbol);
-          chartInitialized.current = true;
-        }
-      };
-      document.head.appendChild(script);
-    } else if (selectedTab === 'Charts' && !chartInitialized.current) {
-      loadChart(currentSymbol);
-      chartInitialized.current = true;
+        }, 100);
+      }
     }
+  }, [selectedTab, currentSymbol, loadChart]);
 
-    // Start price updates
+  // Price updates
+  useEffect(() => {
     updatePrice(currentSymbol);
     const interval = setInterval(() => {
       updatePrice(currentSymbol);
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [selectedTab, currentSymbol, loadChart, updatePrice]);
+  }, [currentSymbol, updatePrice]);
 
   const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
   const tabs = ['Charts', 'Trade'];
