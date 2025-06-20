@@ -202,25 +202,28 @@
     calendar: false,
     studies: [],
     drawings_access: { type: 'black', tools: [] },
-    crosshair: { mode: 1 },
+    crosshair: { mode: 0 },
     overrides: {
       "paneProperties.leftAxisProperties.showSeriesLastValue": false,
       "paneProperties.rightAxisProperties.showSeriesLastValue": false,
       "scalesProperties.showLeftScale": false,
       "scalesProperties.showRightScale": false,
-      "paneProperties.crossHairProperties.color": "#FFA500", // orange line
+      "paneProperties.crossHairProperties.color": "#FFA500",
       "paneProperties.crossHairProperties.width": 1,
-      "paneProperties.crossHairProperties.style": 2,  // Dashed
+      "paneProperties.crossHairProperties.style": 2,
       "paneProperties.crossHairProperties.transparency": 0,
       "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
-      "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
-      "volumePaneSize": "small"
+      "paneProperties.crossHairProperties.displayMode": 1,
+      "volumePaneSize": "iny",
+      "volume.volume.color.0": "rgba(59, 130, 246, 0.6)",
+      "volume.volume.color.1": "rgba(59, 130, 246, 0.8)",
+      "volume.volume.transparency": 30,
+      "volume.volume.plottype": "columns"
     },
     disabled_features: [
       "header_symbol_search",
       "timeframes_toolbar",
       "use_localstorage_for_settings",
-      "volume_force_overlay",
       "left_toolbar",
       "legend_context_menu",
       "display_market_status",

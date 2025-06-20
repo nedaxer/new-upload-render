@@ -146,32 +146,41 @@ export default function MobileTrade() {
       studies: [],
       drawings_access: { type: 'black', tools: [] },
       crosshair: {
-        mode: 1  // Normal crosshair mode that follows your finger/mouse
+        mode: 0  // Magnet mode - shows crosshair on single tap/click
       },
       save_image: false,
       loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
       overrides: {
+        // Chart background
         "paneProperties.background": "#111827",
         "paneProperties.backgroundType": "solid",
         "paneProperties.backgroundGradientStartColor": "#111827", 
         "paneProperties.backgroundGradientEndColor": "#111827",
+        
+        // Grid colors
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#FFA500", // orange line
+        
+        // Crosshair configuration
+        "paneProperties.crossHairProperties.color": "#FFA500",
         "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,  // Dashed
+        "paneProperties.crossHairProperties.style": 2,
         "paneProperties.crossHairProperties.transparency": 0,
         "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
-        "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
+        "paneProperties.crossHairProperties.displayMode": 1,
         
+        // Scale properties
         "scalesProperties.backgroundColor": "#111827",
         "scalesProperties.lineColor": "#374151", 
         "scalesProperties.textColor": "#9CA3AF",
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
         "scalesProperties.showLeftScale": false,
         "scalesProperties.showRightScale": true,
         
+        // Axis properties
+        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
+        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
+        
+        // Candlestick styling
         "mainSeriesProperties.style": 1,
         "mainSeriesProperties.candleStyle.upColor": "#10B981",
         "mainSeriesProperties.candleStyle.downColor": "#EF4444",
@@ -180,25 +189,29 @@ export default function MobileTrade() {
         "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
         "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
         
-        "volumePaneSize": "small",
-        "volume.volume.color.0": "#EF4444",
-        "volume.volume.color.1": "#10B981",
-        "volume.volume.transparency": 0,
+        // Volume overlay with glowing blue water effect
+        "volumePaneSize": "iny",
+        "volume.volume.color.0": "rgba(59, 130, 246, 0.6)",
+        "volume.volume.color.1": "rgba(59, 130, 246, 0.8)",
+        "volume.volume.transparency": 30,
+        "volume.volume.plottype": "columns",
         
+        // Legend properties
         "paneProperties.legendProperties.showLegend": false,
         "paneProperties.legendProperties.showStudyArguments": false,
         "paneProperties.legendProperties.showStudyTitles": false,
         "paneProperties.legendProperties.showStudyValues": false,
         "paneProperties.legendProperties.showSeriesTitle": false,
         
+        // Chart margins
         "paneProperties.topMargin": 5,
-        "paneProperties.bottomMargin": 15,
+        "paneProperties.bottomMargin": 25,
         "paneProperties.leftMargin": 5,
         "paneProperties.rightMargin": 5,
       },
       disabled_features: [
         "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
-        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
+        "left_toolbar", "legend_context_menu", "display_market_status",
         "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
         "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
         "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
