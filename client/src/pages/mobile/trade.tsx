@@ -58,80 +58,61 @@ export default function MobileTrade() {
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
 
-  // Initialize selected pair from sessionStorage, user preferences, or defaults
+  // Initialize selected pair from sessionStorage or URL parameter or default
   useEffect(() => {
-    const loadInitialState = async () => {
-      // Check sessionStorage first (for navigation from markets page)
-      const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
-      const tabFromStorage = sessionStorage.getItem('selectedTab');
+    // Check sessionStorage first (for navigation from markets page)
+    const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
+    const tabFromStorage = sessionStorage.getItem('selectedTab');
+    
+    // Also check URL parameters as fallback
+    const currentLocation = location.includes('?') ? location : window.location.search;
+    const urlParams = new URLSearchParams(currentLocation.split('?')[1] || '');
+    const symbolFromUrl = urlParams.get('symbol');
+    const tabFromUrl = urlParams.get('tab');
+    
+    // Prefer sessionStorage over URL params
+    const symbolToUse = symbolFromStorage || symbolFromUrl;
+    const tabToUse = tabFromStorage || tabFromUrl;
+    
+    console.log('Trade page params:', { 
+      symbolFromStorage, 
+      tabFromStorage, 
+      symbolFromUrl, 
+      tabFromUrl, 
+      location 
+    });
+    
+    // Set tab if specified
+    if (tabToUse === 'Charts') {
+      setSelectedTab('Charts');
+      console.log('Setting tab to Charts');
+    }
+    
+    if (symbolToUse) {
+      const pair = findPairBySymbol(symbolToUse);
+      console.log('Found pair for symbol:', symbolToUse, pair);
       
-      // Also check URL parameters as fallback
-      const currentLocation = location.includes('?') ? location : window.location.search;
-      const urlParams = new URLSearchParams(currentLocation.split('?')[1] || '');
-      const symbolFromUrl = urlParams.get('symbol');
-      const tabFromUrl = urlParams.get('tab');
-      
-      let symbolToUse = symbolFromStorage || symbolFromUrl;
-      let tabToUse = tabFromStorage || tabFromUrl;
-      
-      // If no symbol from navigation, try to load from user preferences
-      if (!symbolToUse) {
-        try {
-          const preferencesResponse = await fetch('/api/user/preferences');
-          if (preferencesResponse.ok) {
-            const preferences = await preferencesResponse.json();
-            symbolToUse = preferences.lastSelectedPair;
-            tabToUse = tabToUse || preferences.lastSelectedTab || 'Charts';
-          }
-        } catch (error) {
-          console.log('Could not load user preferences, using defaults');
-        }
-      }
-      
-      console.log('Trade page params:', { 
-        symbolFromStorage, 
-        tabFromStorage, 
-        symbolFromUrl, 
-        tabFromUrl, 
-        symbolToUse,
-        tabToUse,
-        location 
-      });
-      
-      // Set tab if specified
-      if (tabToUse === 'Charts') {
-        setSelectedTab('Charts');
-        console.log('Setting tab to Charts');
-      }
-      
-      if (symbolToUse) {
-        const pair = findPairBySymbol(symbolToUse);
-        console.log('Found pair for symbol:', symbolToUse, pair);
+      if (pair) {
+        setSelectedPair(pair);
+        setCurrentSymbol(pair.symbol);
+        setTradingViewSymbol(pair.tradingViewSymbol);
         
-        if (pair) {
-          setSelectedPair(pair);
-          setCurrentSymbol(pair.symbol);
-          setTradingViewSymbol(pair.tradingViewSymbol);
-          
-          // Update price for the new pair
-          updatePrice(pair.symbol);
-          
-          // Delay chart loading to ensure proper initialization
-          setTimeout(() => {
-            if (tabToUse === 'Charts') {
-              console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
-              loadChart(pair.tradingViewSymbol, false);
-            }
-          }, 1000);
-        }
+        // Update price for the new pair
+        updatePrice(pair.symbol);
+        
+        // Delay chart loading to ensure proper initialization
+        setTimeout(() => {
+          if (tabToUse === 'Charts') {
+            console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
+            loadChart(pair.tradingViewSymbol, false);
+          }
+        }, 1000);
       }
       
       // Clear sessionStorage after use to prevent stale data
       sessionStorage.removeItem('selectedSymbol');
       sessionStorage.removeItem('selectedTab');
-    };
-    
-    loadInitialState();
+    }
   }, [location]);
 
   // Update chart when selected pair changes or when Charts tab is selected

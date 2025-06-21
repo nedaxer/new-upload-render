@@ -14,15 +14,6 @@ export interface IStorage {
   verifyUser(userId: number, code: string): Promise<boolean>;
   markUserAsVerified(userId: number): Promise<void>;
   updateUserProfile(userId: number, updates: Partial<User>): Promise<void>;
-  
-  // Favorites management
-  addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void>;
-  removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void>;
-  getUserFavorites(userId: number): Promise<string[]>;
-  
-  // User preferences management
-  updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void>;
-  getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null>;
 }
 
 export class MemStorage implements IStorage {
@@ -115,39 +106,6 @@ export class MemStorage implements IStorage {
       this.users.set(userId, user);
     }
   }
-
-  // Favorites management - in-memory implementation
-  async addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
-    // For in-memory storage, we'll just store in a simple Map
-    const key = `${userId}_favorites`;
-    const existing = (this as any)[key] || [];
-    if (!existing.includes(cryptoPairSymbol)) {
-      existing.push(cryptoPairSymbol);
-      (this as any)[key] = existing;
-    }
-  }
-
-  async removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void> {
-    const key = `${userId}_favorites`;
-    const existing = (this as any)[key] || [];
-    (this as any)[key] = existing.filter((symbol: string) => symbol !== cryptoPairSymbol);
-  }
-
-  async getUserFavorites(userId: number): Promise<string[]> {
-    const key = `${userId}_favorites`;
-    return (this as any)[key] || [];
-  }
-
-  // User preferences management - in-memory implementation
-  async updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
-    const key = `${userId}_preferences`;
-    (this as any)[key] = { ...(this as any)[key], ...preferences };
-  }
-
-  async getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
-    const key = `${userId}_preferences`;
-    return (this as any)[key] || null;
-  }
 }
 
 export class PostgresStorage implements IStorage {
@@ -167,11 +125,18 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return result[0];
+    // Insert the user into the database
+    const result = await db.insert(users).values(insertUser);
+    
+    // For MySQL, we need to get the inserted user by username or email since insertId handling can be tricky
+    // We'll use email as it's unique and always provided
+    const newUser = await db.select().from(users).where(eq(users.email, insertUser.email)).limit(1);
+    
+    if (!newUser[0]) {
+      throw new Error('Failed to create user - could not retrieve newly created user');
+    }
+    
+    return newUser[0];
   }
 
   async setVerificationCode(userId: number, code: string, expiresAt: Date): Promise<void> {
@@ -208,81 +173,6 @@ export class PostgresStorage implements IStorage {
     await db.update(users)
       .set(updates)
       .where(eq(users.id, userId));
-  }
-
-  // Favorites management
-  async addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
-    await db
-      .insert(userFavorites)
-      .values({
-        userId,
-        cryptoPairSymbol,
-        cryptoId
-      })
-      .onConflictDoNothing();
-  }
-
-  async removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void> {
-    await db
-      .delete(userFavorites)
-      .where(and(
-        eq(userFavorites.userId, userId),
-        eq(userFavorites.cryptoPairSymbol, cryptoPairSymbol)
-      ));
-  }
-
-  async getUserFavorites(userId: number): Promise<string[]> {
-    const result = await db
-      .select({ cryptoPairSymbol: userFavorites.cryptoPairSymbol })
-      .from(userFavorites)
-      .where(eq(userFavorites.userId, userId));
-    
-    return result.map(row => row.cryptoPairSymbol);
-  }
-
-  // User preferences management
-  async updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
-    const existing = await db
-      .select()
-      .from(userPreferences)
-      .where(eq(userPreferences.userId, userId))
-      .limit(1);
-
-    if (existing.length > 0) {
-      await db
-        .update(userPreferences)
-        .set({
-          ...preferences,
-          updatedAt: new Date()
-        })
-        .where(eq(userPreferences.userId, userId));
-    } else {
-      await db
-        .insert(userPreferences)
-        .values({
-          userId,
-          ...preferences
-        });
-    }
-  }
-
-  async getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
-    const result = await db
-      .select()
-      .from(userPreferences)
-      .where(eq(userPreferences.userId, userId))
-      .limit(1);
-
-    if (result.length === 0) {
-      return null;
-    }
-
-    const pref = result[0];
-    return {
-      lastSelectedPair: pref.lastSelectedPair || undefined,
-      lastSelectedCrypto: pref.lastSelectedCrypto || undefined,
-      lastSelectedTab: pref.lastSelectedTab || undefined
-    };
   }
 }
 

@@ -26,8 +26,7 @@ import {
   TrendingUp,
   TrendingDown,
   User,
-  QrCode,
-  Star
+  QrCode
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
@@ -40,7 +39,6 @@ export default function MobileHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
-  const [, navigate] = useLocation();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
   const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -96,13 +94,6 @@ export default function MobileHome() {
   const { data: priceData } = useQuery({
     queryKey: ['/api/crypto/prices'],
     refetchInterval: 30000, // Refetch every 30 seconds
-  });
-
-  // Fetch user favorites
-  const { data: userFavorites } = useQuery<string[]>({
-    queryKey: ['/api/user/favorites'],
-    enabled: !!user,
-    retry: false
   });
 
   // Fetch currency conversion rates

@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, X, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/hooks/use-auth';
+import { useQuery } from '@tanstack/react-query';
 
 interface CryptoPair {
   id: string;
@@ -77,46 +75,12 @@ const FEATURED_CRYPTOCURRENCIES = [
 
 export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: CryptoPairSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const [favorites, setFavorites] = useState<string[]>(['bitcoin', 'ethereum', 'binancecoin']);
 
   const { data: cryptoData, isLoading } = useQuery<CryptoPair[]>({
     queryKey: ['/api/crypto/prices'],
     refetchInterval: 10000, // Refresh every 10 seconds
     enabled: isOpen
-  });
-
-  // Fetch user favorites
-  const { data: userFavorites } = useQuery<string[]>({
-    queryKey: ['/api/user/favorites'],
-    enabled: !!user && isOpen,
-    retry: false
-  });
-
-  // Update favorites when user favorites data changes
-  useEffect(() => {
-    if (userFavorites) {
-      setFavorites(userFavorites);
-    }
-  }, [userFavorites]);
-
-  // Mutation for adding/removing favorites
-  const favoritesMutation = useMutation({
-    mutationFn: async ({ action, cryptoPairSymbol, cryptoId }: { 
-      action: 'add' | 'remove'; 
-      cryptoPairSymbol: string; 
-      cryptoId?: string; 
-    }) => {
-      if (action === 'add' && cryptoId) {
-        await apiRequest('/api/user/favorites', 'POST', { cryptoPairSymbol, cryptoId });
-      } else if (action === 'remove') {
-        await apiRequest(`/api/user/favorites/${cryptoPairSymbol}`, 'DELETE');
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/favorites'] });
-    }
   });
 
   const filteredCryptos = FEATURED_CRYPTOCURRENCIES.filter(crypto =>
@@ -128,16 +92,12 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
     return cryptoData?.find(crypto => crypto.id === cryptoId);
   };
 
-  const toggleFavorite = (cryptoId: string, cryptoPairSymbol: string) => {
-    if (!user) return; // Only logged-in users can manage favorites
-    
-    const isFavorite = favorites.includes(cryptoPairSymbol);
-    
-    if (isFavorite) {
-      favoritesMutation.mutate({ action: 'remove', cryptoPairSymbol });
-    } else {
-      favoritesMutation.mutate({ action: 'add', cryptoPairSymbol, cryptoId });
-    }
+  const toggleFavorite = (cryptoId: string) => {
+    setFavorites(prev => 
+      prev.includes(cryptoId) 
+        ? prev.filter(id => id !== cryptoId)
+        : [...prev, cryptoId]
+    );
   };
 
   const handleSelectPair = (cryptoId: string, symbol: string) => {
@@ -176,9 +136,9 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
           <div className="p-4 border-b border-gray-700">
             <h3 className="text-gray-400 text-sm mb-3">Favorites</h3>
             <div className="space-y-2">
-              {favorites.map(cryptoPairSymbol => {
-                const crypto = FEATURED_CRYPTOCURRENCIES.find(c => `${c.symbol.toUpperCase()}USDT` === cryptoPairSymbol);
-                const liveData = crypto ? getCryptoData(crypto.id) : null;
+              {favorites.map(cryptoId => {
+                const crypto = FEATURED_CRYPTOCURRENCIES.find(c => c.id === cryptoId);
+                const liveData = getCryptoData(cryptoId);
                 if (!crypto) return null;
 
                 return (
@@ -250,8 +210,7 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
               <div className="space-y-2">
                 {filteredCryptos.map(crypto => {
                   const liveData = getCryptoData(crypto.id);
-                  const cryptoPairSymbol = `${crypto.symbol.toUpperCase()}USDT`;
-                  const isFavorite = favorites.includes(cryptoPairSymbol);
+                  const isFavorite = favorites.includes(crypto.id);
 
                   return (
                     <div
