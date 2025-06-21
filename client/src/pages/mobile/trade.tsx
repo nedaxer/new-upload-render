@@ -116,13 +116,20 @@ export default function MobileTrade() {
           // Update price for the new pair
           updatePrice(pair.symbol);
           
-          // Delay chart loading to ensure proper initialization
-          setTimeout(() => {
-            if (tabToUse === 'Charts') {
-              console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
-              loadChart(pair.tradingViewSymbol, false);
+          // Ensure Charts tab is selected when coming from home page
+          if (tabToUse === 'Charts') {
+            setSelectedTab('Charts');
+            
+            // Load chart immediately if TradingView is ready, otherwise wait
+            if (isTradingViewReady) {
+              console.log('TradingView ready, loading chart for:', pair.tradingViewSymbol);
+              loadChart(pair.tradingViewSymbol, true);
+            } else {
+              console.log('TradingView not ready, will load chart when ready');
             }
-          }, 1000);
+          }
+        } else {
+          console.log('No pair found for symbol:', symbolToUse, 'using default BTC');
         }
       }
       

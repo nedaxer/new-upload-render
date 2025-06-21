@@ -121,7 +121,32 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
 
 // Helper functions
 export const findPairBySymbol = (symbol: string): CryptoPair | undefined => {
-  return CRYPTO_PAIRS.find(pair => pair.symbol === symbol);
+  // First try exact match
+  let pair = CRYPTO_PAIRS.find(pair => pair.symbol === symbol);
+  
+  // If no exact match, try different formats
+  if (!pair) {
+    // Try with USDT suffix if not present
+    if (!symbol.includes('USDT')) {
+      pair = CRYPTO_PAIRS.find(pair => pair.symbol === `${symbol}USDT`);
+    }
+    
+    // Try matching by base asset
+    if (!pair) {
+      const baseAsset = symbol.replace('USDT', '').replace('/', '');
+      pair = CRYPTO_PAIRS.find(pair => pair.baseAsset === baseAsset);
+    }
+    
+    // Try matching symbol with different separators
+    if (!pair) {
+      const normalizedSymbol = symbol.replace('/', '').replace('-', '').toUpperCase();
+      pair = CRYPTO_PAIRS.find(pair => 
+        pair.symbol.replace('/', '').replace('-', '') === normalizedSymbol
+      );
+    }
+  }
+  
+  return pair;
 };
 
 export const findPairByBaseAsset = (baseAsset: string): CryptoPair | undefined => {

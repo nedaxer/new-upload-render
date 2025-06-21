@@ -645,7 +645,16 @@ export default function MobileHome() {
             </div>
           ) : (
             watchlistMarkets.map((market, index) => (
-              <Link key={`${market.pair}-${index}`} href={`/mobile/trade?symbol=${market.symbol}`}>
+              <Link 
+                key={`${market.pair}-${index}`} 
+                href={`/mobile/trade?symbol=${market.symbol}&tab=Charts`}
+                onClick={() => {
+                  // Store symbol and tab for trade page
+                  sessionStorage.setItem('selectedSymbol', market.symbol);
+                  sessionStorage.setItem('selectedTab', 'Charts');
+                  console.log('Navigating to trade with symbol:', market.symbol);
+                }}
+              >
                 <div className="flex items-center justify-between py-3 px-2 hover:bg-gray-800/30 rounded transition-colors">
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2">
