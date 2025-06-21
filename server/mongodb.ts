@@ -109,18 +109,18 @@ async function createInitialData() {
     const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
     
     if (usdCurrency && btcCurrency && ethCurrency && testUser) {
-      // Create balances for test user
+      // Create zero balances for test user - users must deposit to have funds
       const balances = [
-        { userId: testUser._id, currencyId: usdCurrency._id, amount: 10000 },
-        { userId: testUser._id, currencyId: btcCurrency._id, amount: 0.5 },
-        { userId: testUser._id, currencyId: ethCurrency._id, amount: 5 }
+        { userId: testUser._id, currencyId: usdCurrency._id, amount: 0 },
+        { userId: testUser._id, currencyId: btcCurrency._id, amount: 0 },
+        { userId: testUser._id, currencyId: ethCurrency._id, amount: 0 }
       ];
       
       for (const balanceData of balances) {
         const balance = new UserBalance(balanceData);
         await balance.save();
       }
-      console.log('Created initial balances for test user');
+      console.log('Created zero balances for test user - deposits required for funds');
     }
     
     console.log('Initial data creation completed successfully');
