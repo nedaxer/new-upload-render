@@ -73,10 +73,9 @@ async function initializeDatabase() {
         console.log(`Creating staking rate for ${stakingSetting.symbol}: ${stakingSetting.rate * 100}%`);
         await db.insert(stakingRates).values({
           currencyId,
-          rate: stakingSetting.rate,
-          minAmount: stakingSetting.minAmount,
-          isActive: true,
-          updatedAt: new Date()
+          apy: stakingSetting.rate,
+          minimumStake: stakingSetting.minAmount,
+          isActive: true
         });
       } else {
         console.log(`Staking rate for ${stakingSetting.symbol} already exists`);
