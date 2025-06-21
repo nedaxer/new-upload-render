@@ -28,7 +28,9 @@ import MobileFutures from './futures';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
+import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
 import { useLanguage } from '@/contexts/language-context';
+import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
@@ -37,7 +39,7 @@ export default function MobileTrade() {
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
-  const [selectedPair, setSelectedPair] = useState({ symbol: 'BTC', name: 'Bitcoin', price: 0, change: 0});
+  const [selectedPair, setSelectedPair] = useState<CryptoPair>(CRYPTO_PAIRS[0]); // Default to BTC
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [showTools, setShowTools] = useState(false);
@@ -52,6 +54,7 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
+  const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState(false);
@@ -312,54 +315,38 @@ export default function MobileTrade() {
     }
   };
 
-  const initializeCoinMenu = useCallback(() => {
-    const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
-    const menu = document.getElementById("coin-menu");
-
-    if (menu) {
-      menu.innerHTML = '';
-      coinList.forEach(symbol => {
-        const div = document.createElement("div");
-        div.className = "p-2 cursor-pointer text-white hover:bg-gray-700 transition-colors";
-        div.textContent = symbol.replace("USDT", "/USDT");
-        div.onclick = () => {
-          // Instant UI feedback
-          setCurrentSymbol(symbol);
-          menu.style.display = "none";
-
-          // Update chart symbol on persistent widget
-          if (isTradingViewReady) {
-            const existingWidget = getGlobalChartWidget();
-            const chartState = getChartState();
-            
-            if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-              try {
-                existingWidget.setSymbol(`BYBIT:${symbol}`, "15", () => {
-                  console.log('Symbol changed to', symbol);
-                  setChartState({ 
-                    ...chartState, 
-                    currentSymbol: symbol 
-                  });
-                });
-              } catch (error) {
-                console.log('Failed to change symbol on persistent chart');
-                // Don't reload, just update state
-                setChartState({ 
-                  ...chartState, 
-                  currentSymbol: symbol 
-                });
-              }
-            } else {
-              // Load chart if widget doesn't exist
-              loadChart(`BYBIT:${symbol}`, false);
-            }
-          }
-          updatePrice(symbol);
-        };
-        menu.appendChild(div);
-      });
+  const handlePairSelectionModal = useCallback((pair: CryptoPair) => {
+    setSelectedPair(pair);
+    setCurrentSymbol(pair.symbol);
+    
+    // Update chart symbol on persistent widget
+    if (isTradingViewReady) {
+      const existingWidget = getGlobalChartWidget();
+      const chartState = getChartState();
+      
+      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+        try {
+          existingWidget.setSymbol(pair.tradingViewSymbol, "15", () => {
+            console.log('Symbol changed to', pair.symbol);
+            setChartState({ 
+              ...chartState, 
+              currentSymbol: pair.symbol 
+            });
+          });
+        } catch (error) {
+          console.log('Failed to change symbol on persistent chart');
+          setChartState({ 
+            ...chartState, 
+            currentSymbol: pair.symbol 
+          });
+        }
+      } else {
+        // Load chart if widget doesn't exist
+        loadChart(pair.tradingViewSymbol, false);
+      }
     }
-  }, [isTradingViewReady, loadChart, getGlobalChartWidget]);
+    updatePrice(pair.symbol);
+  }, [isTradingViewReady, loadChart, getGlobalChartWidget, getChartState, setChartState]);
 
   // Add preload hints and load TradingView script with maximum optimization
   useEffect(() => {
@@ -719,16 +706,20 @@ export default function MobileTrade() {
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
         <div className="flex-1 overflow-y-auto bg-gray-900">
-          {/* Coin Header - Smaller and compact */}
+          {/* Tappable Coin Header - Smaller and compact */}
           <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
-            <div className="flex flex-col">
-              <div 
-                id="coin-symbol" 
-                className="text-sm font-bold text-white cursor-pointer"
-                onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
-                  document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
-              >
-                {currentSymbol}
+            <div 
+              className="flex flex-col cursor-pointer hover:bg-gray-700 rounded px-2 py-1 transition-colors"
+              onClick={() => {
+                hapticLight();
+                setShowPairSelectorModal(true);
+              }}
+            >
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-bold text-white">
+                  {getPairDisplayName(selectedPair)}
+                </span>
+                <ChevronDown className="w-3 h-3 text-gray-400" />
               </div>
               <div className="text-sm font-bold text-green-400">
                 $<span id="coin-price">{currentPrice || '--'}</span>
@@ -740,12 +731,6 @@ export default function MobileTrade() {
               <div>Vol: <span id="turnover" className="text-white">{currentTicker?.volume24h ? (parseFloat(currentTicker.volume24h) / 1000000).toFixed(1) : '--'}M</span></div>
             </div>
           </div>
-
-          {/* Coin Menu */}
-          <div 
-            id="coin-menu" 
-            className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
-          ></div>
 
           {/* Chart Container - Clean without loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
@@ -830,6 +815,14 @@ export default function MobileTrade() {
 
         </div>
       )}
+
+      {/* Crypto Pair Selector Modal */}
+      <CryptoPairSelectorModal
+        isOpen={showPairSelectorModal}
+        onClose={() => setShowPairSelectorModal(false)}
+        onSelectPair={handlePairSelectionModal}
+        currentPair={selectedPair}
+      />
 
       {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
       {selectedTab === 'Charts' && (

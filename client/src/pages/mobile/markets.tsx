@@ -18,6 +18,7 @@ import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { hapticLight } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
+import { CRYPTO_PAIRS, CryptoPair, getPairDisplayName } from '@/lib/crypto-pairs';
 
 interface BybitTicker {
   symbol: string;
@@ -123,30 +124,54 @@ export default function MobileMarkets() {
     retry: 3,
   });
 
-  // Process market data from Bybit API
-  const processedMarkets = marketData?.data?.map((ticker: BybitTicker) => {
-    const baseSymbol = ticker.symbol.replace('USDT', '').replace('USDC', '').replace('USD', '');
-    const price = parseFloat(ticker.lastPrice);
-    const change = parseFloat(ticker.price24hPcnt);
-    const volume = parseFloat(ticker.turnover24h);
+  // Process comprehensive crypto pairs with live price data
+  const processedMarkets = CRYPTO_PAIRS.map((pair: CryptoPair) => {
+    // Find matching ticker data from API
+    const ticker = marketData?.data?.find((t: BybitTicker) => t.symbol === pair.symbol);
     
-    return {
-      symbol: baseSymbol,
-      pair: ticker.symbol,
-      displayPair: `${baseSymbol}/USDT`,
-      price: formatPrice(price),
-      priceValue: price,
-      change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`,
-      changeValue: change,
-      isPositive: change >= 0,
-      volume: formatVolume(volume),
-      volumeValue: volume,
-      high24h: formatPrice(parseFloat(ticker.highPrice24h)),
-      low24h: formatPrice(parseFloat(ticker.lowPrice24h)),
-      sentiment: ticker.sentiment,
-      favorite: favoriteCoins.includes(ticker.symbol)
-    };
-  }) || [];
+    if (ticker) {
+      const price = parseFloat(ticker.lastPrice);
+      const change = parseFloat(ticker.price24hPcnt);
+      const volume = parseFloat(ticker.turnover24h);
+      
+      return {
+        symbol: pair.baseAsset,
+        pair: pair.symbol,
+        displayPair: getPairDisplayName(pair),
+        price: formatPrice(price),
+        priceValue: price,
+        change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`,
+        changeValue: change,
+        isPositive: change >= 0,
+        volume: formatVolume(volume),
+        volumeValue: volume,
+        high24h: formatPrice(parseFloat(ticker.highPrice24h)),
+        low24h: formatPrice(parseFloat(ticker.lowPrice24h)),
+        sentiment: ticker.sentiment,
+        favorite: favoriteCoins.includes(pair.symbol),
+        cryptoPair: pair
+      };
+    } else {
+      // Return pair with placeholder data for pairs not in live data
+      return {
+        symbol: pair.baseAsset,
+        pair: pair.symbol,
+        displayPair: getPairDisplayName(pair),
+        price: '--',
+        priceValue: 0,
+        change: '--',
+        changeValue: 0,
+        isPositive: true,
+        volume: '--',
+        volumeValue: 0,
+        high24h: '--',
+        low24h: '--',
+        sentiment: 'Neutral' as const,
+        favorite: favoriteCoins.includes(pair.symbol),
+        cryptoPair: pair
+      };
+    }
+  });
 
   // Filter markets based on search query
   const searchFilteredMarkets = processedMarkets.filter(market =>
@@ -190,9 +215,9 @@ export default function MobileMarkets() {
 
   const sortedMarkets = getFilteredMarkets();
 
-  const handleCoinClick = (symbol: string) => {
+  const handleCoinClick = (market: any) => {
     hapticLight();
-    navigate(`/mobile/trade?symbol=${symbol}`);
+    navigate(`/mobile/trade?symbol=${market.pair}`);
   };
 
   return (
@@ -251,7 +276,7 @@ export default function MobileMarkets() {
             <div 
               key={`${market.pair}-${index}`} 
               className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
-              onClick={() => handleCoinClick(market.symbol)}
+              onClick={() => handleCoinClick(market)}
             >
               <div className="flex items-center space-x-3">
                 <button 
