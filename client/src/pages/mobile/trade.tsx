@@ -28,7 +28,6 @@ import MobileFutures from './futures';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
-import { useGlobalChart } from '@/components/global-chart-manager';
 import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileTrade() {
@@ -53,20 +52,8 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
+  const [chartWidget, setChartWidget] = useState<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
-  
-  // Global chart management
-  const { createChart, showChart, hideChart, changeSymbol, isChartReady } = useGlobalChart();
-
-  // Initialize chart on component mount
-  useEffect(() => {
-    if (!isChartReady()) {
-      console.log('Initializing global persistent chart...');
-      createChart(currentSymbol);
-    }
-  }, [createChart, isChartReady, currentSymbol]);
-
-  
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -85,43 +72,77 @@ export default function MobileTrade() {
     }
   };
 
-  const initializeCoinMenu = useCallback(() => {
-    const coinList = ["BTCUSDT", "ETHUSDT", "XRPUSDT", "TRXUSDT", "SOLUSDT"];
-    const menu = document.getElementById("coin-menu");
-
-    if (menu) {
-      menu.innerHTML = '';
-      coinList.forEach(symbol => {
-        const div = document.createElement("div");
-        div.className = "p-2 cursor-pointer text-white hover:bg-gray-700 transition-colors";
-        div.textContent = symbol.replace("USDT", "/USDT");
-        div.onclick = () => {
-          // Instant UI feedback
-          setCurrentSymbol(symbol);
-          menu.style.display = "none";
-
-          // Update chart symbol on persistent global chart
-          changeSymbol(symbol);
-          updatePrice(symbol);
-        };
-        menu.appendChild(div);
-      });
-    }
-  }, [changeSymbol]);
-
-  // Initialize coin menu when chart is ready
+  // Initialize TradingView chart
   useEffect(() => {
-    if (isChartReady()) {
-      initializeCoinMenu();
+    if (selectedTab === 'Charts' && typeof window !== 'undefined' && (window as any).TradingView) {
+      const initChart = () => {
+        try {
+          const container = document.getElementById('tradingview-chart');
+          if (container && !chartWidget) {
+            container.innerHTML = '';
+
+            const widget = new (window as any).TradingView.widget({
+              container_id: 'tradingview-chart',
+              autosize: true,
+              symbol: `BYBIT:${currentSymbol}`,
+              interval: "15",
+              timezone: "Etc/UTC",
+              theme: "dark",
+              style: "1",
+              locale: "en",
+              backgroundColor: "#111827",
+              toolbar_bg: "#111827",
+              hide_top_toolbar: true,
+              hide_side_toolbar: true,
+              allow_symbol_change: true,
+              enable_publishing: false,
+              details: false,
+              withdateranges: false,
+              calendar: false,
+              overrides: {
+                "paneProperties.background": "#111827",
+                "paneProperties.backgroundType": "solid",
+                "paneProperties.vertGridProperties.color": "#374151",
+                "paneProperties.horzGridProperties.color": "#374151",
+                "mainSeriesProperties.candleStyle.upColor": "#10B981",
+                "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+                "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
+                "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
+              },
+              disabled_features: [
+                "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
+                "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
+                "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
+                "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
+                "context_menus", "control_bar", "edit_buttons_in_legend"
+              ]
+            });
+
+            setChartWidget(widget);
+          }
+        } catch (error) {
+          console.error('Chart initialization error:', error);
+        }
+      };
+
+      if ((window as any).TradingView) {
+        initChart();
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://s3.tradingview.com/tv.js';
+        script.async = true;
+        script.onload = initChart;
+        document.head.appendChild(script);
+      }
     }
-  }, [isChartReady, initializeCoinMenu]);
+  }, [selectedTab, currentSymbol]);
 
   // Price update interval
   useEffect(() => {
     updatePrice(currentSymbol);
     priceUpdateInterval.current = setInterval(() => {
       updatePrice(currentSymbol);
-    }, 1000);
+    }, 5000);
 
     return () => {
       if (priceUpdateInterval.current) {
@@ -136,20 +157,15 @@ export default function MobileTrade() {
     const symbolParam = urlParams.get('symbol');
 
     if (symbolParam) {
-      // Update trading view symbol for Bybit
       const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
       setTradingViewSymbol(tradingViewSymbol);
       setCurrentSymbol(`${symbolParam}USDT`);
-
-      // Update selected pair
       setSelectedPair({
         symbol: symbolParam,
         name: getCryptoName(symbolParam),
         price: 0,
         change: 0
       });
-
-      // Update crypto selection
       const cryptoId = getCryptoIdFromSymbol(symbolParam);
       setSelectedCrypto(cryptoId);
     }
@@ -224,27 +240,11 @@ export default function MobileTrade() {
   const handleTradingTypeChange = (tab: string) => {
     hapticLight();
     setSelectedTradingType(tab);
-    // Chart persists across trading types - no reload needed
   };
 
-  // Handle tab changes with global chart persistence
-  const handleTabChange = useCallback((tab: 'Charts' | 'Trade') => {
+  const handleTabChange = (tab: 'Charts' | 'Trade') => {
     setSelectedTab(tab);
-
-    if (tab === 'Charts') {
-      // Show the global persistent chart in this container
-      if (isChartReady()) {
-        showChart('chart');
-      } else {
-        // Create chart if it doesn't exist
-        createChart(currentSymbol);
-        setTimeout(() => showChart('chart'), 500);
-      }
-    } else {
-      // Hide chart but keep it running
-      hideChart();
-    }
-  }, [currentSymbol, showChart, hideChart, isChartReady, createChart]);
+  };
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);
@@ -265,18 +265,6 @@ export default function MobileTrade() {
     setShowPairSelector(false);
   };
 
-  const handleAlertsClick = () => {
-    setShowAlerts(!showAlerts);
-  };
-
-  const handleToolsClick = () => {
-    setShowTools(!showTools);
-  };
-
-  const handlePerpClick = () => {
-    navigate('/mobile/futures');
-  };
-
   const handleBuyClick = () => {
     setTradeMode('Buy');
     setSelectedTab('Trade');
@@ -289,32 +277,30 @@ export default function MobileTrade() {
 
   const handleQuantityChange = (value: number) => {
     setQuantity(value);
-    // Calculate amount based on current price
     setAmount(value * (selectedPair.price || 0));
   };
 
   const handleAmountChange = (value: number) => {
     setAmount(value);
-    // Calculate quantity based on current price
     if (selectedPair.price > 0) {
       setQuantity(value / selectedPair.price);
     }
   };
 
-    const handlePairSelect = (pair: any) => {
-        setSelectedPair(pair);
-        setShowPairSelector(false);
-    };
+  const handlePairSelect = (pair: any) => {
+    setSelectedPair(pair);
+    setShowPairSelector(false);
+  };
 
   return (
     <MobileLayout>
-      {/* Trading Tabs - Smaller font and padding */}
-      <div className="bg-gray-900 px-3 py-1">
+      {/* Trading Tabs */}
+      <div className="bg-gray-900 px-3 py-2">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {tradingTabs.map((tab) => (
             <button 
               key={tab}
-              className={`whitespace-nowrap px-2 py-1 rounded text-xs ${
+              className={`whitespace-nowrap px-3 py-2 rounded text-sm ${
                 selectedTradingType === tab 
                   ? 'bg-gray-700 text-white' 
                   : 'text-gray-400'
@@ -327,11 +313,11 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Chart/Trade Toggle - Smaller */}
-      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
+      {/* Chart/Trade Toggle */}
+      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden mb-3">
         <div className="flex">
           <button 
-            className={`flex-1 py-1 text-xs font-medium ${
+            className={`flex-1 py-2 text-sm font-medium ${
               selectedTab === 'Charts' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -341,7 +327,7 @@ export default function MobileTrade() {
             {t('charts')}
           </button>
           <button 
-            className={`flex-1 py-1 text-xs font-medium ${
+            className={`flex-1 py-2 text-sm font-medium ${
               selectedTab === 'Trade' 
                 ? 'bg-gray-700 text-white' 
                 : 'text-gray-400'
@@ -353,107 +339,49 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Charts Tab Content - Shared for both Spot and Futures */}
+      {/* Charts Tab Content */}
       {selectedTab === 'Charts' && (
         <div className="flex-1 overflow-y-auto bg-gray-900">
-          {/* Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
+          {/* Coin Header */}
+          <div className="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
             <div className="flex flex-col">
-              <div 
-                id="coin-symbol" 
-                className="text-sm font-bold text-white cursor-pointer"
-                onClick={() => document.getElementById('coin-menu')?.style.setProperty('display', 
-                  document.getElementById('coin-menu')?.style.display === 'block' ? 'none' : 'block')}
-              >
+              <div className="text-lg font-bold text-white">
                 {currentSymbol}
               </div>
-              <div className="text-sm font-bold text-green-400">
-                $<span id="coin-price">{currentPrice || '--'}</span>
+              <div className="text-lg font-bold text-green-400">
+                ${currentPrice || '--'}
               </div>
             </div>
-            <div className="text-right text-xs leading-tight text-gray-300">
-              <div>24h High: <span id="high" className="text-white">{currentTicker?.highPrice24h || '--'}</span></div>
-              <div>24h Low: <span id="low" className="text-white">{currentTicker?.lowPrice24h || '--'}</span></div>
-              <div>Vol: <span id="turnover" className="text-white">{currentTicker?.volume24h ? (parseFloat(currentTicker.volume24h) / 1000000).toFixed(1) : '--'}M</span></div>
+            <div className="text-right text-sm text-gray-300">
+              <div>24h High: <span className="text-white">{currentTicker?.highPrice24h || '--'}</span></div>
+              <div>24h Low: <span className="text-white">{currentTicker?.lowPrice24h || '--'}</span></div>
+              <div>Vol: <span className="text-white">{currentTicker?.volume24h ? (parseFloat(currentTicker.volume24h) / 1000000).toFixed(1) : '--'}M</span></div>
             </div>
           </div>
 
-          {/* Coin Menu */}
-          <div 
-            id="coin-menu" 
-            className="absolute bg-gray-800 border border-gray-600 top-16 left-3 rounded-md z-50 max-h-60 overflow-y-auto hidden"
-          ></div>
-
-          {/* Chart Container - Clean without loading skeleton */}
-          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
-            {/* Show loading state when chart is initializing */}
-            {!isChartReady() && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="mb-4">
-                    <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
-                  </div>
-                  <p className="text-lg font-medium">Loading Persistent Chart...</p>
-                  <p className="text-sm mt-2">Initializing Global TradingView</p>
-                </div>
-              </div>
-            )}
-
-            {/* TradingView Chart - Global Persistent */}
+          {/* Chart Container */}
+          <div className="relative bg-gray-900" style={{ height: '400px' }}>
             <div 
-              id="chart" 
+              id="tradingview-chart" 
               className="w-full h-full"
-              data-chart-symbol={currentSymbol}
             ></div>
-
-            {/* Background watermark */}
-            <div 
-              className="absolute top-1/2 left-1/2 w-20 h-20 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none z-10"
-              style={{
-                backgroundImage: "url('https://i.imgur.com/F9ljfzP.png')",
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center'
-              }}
-            ></div>
-
-            {/* TradingView Logo Cover */}
-            <img 
-              id="branding-cover"
-              src="https://i.imgur.com/1yZtbuJ.jpeg" 
-              alt="Nedaxer Logo"
-              className="absolute"
-              style={{
-                bottom: '28px',
-                left: '12px',
-                width: '50px',
-                height: '50px',
-                borderRadius: '8px',
-                backgroundColor: '#0e0e0e',
-                zIndex: 9999,
-                pointerEvents: 'auto',
-                boxShadow: '0 0 4px #000'
-              }}
-            />
           </div>
-
-
         </div>
       )}
 
-      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
+      {/* Fixed Buy/Sell Panel */}
       {selectedTab === 'Charts' && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
+        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-3" style={{ bottom: '64px', zIndex: 10000 }}>
           <div className="flex gap-2">
             <button 
               onClick={handleBuyClick}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
             >
               {selectedTradingType === 'Futures' ? 'Long' : 'Buy'}
             </button>
             <button 
               onClick={handleSellClick}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
             >
               {selectedTradingType === 'Futures' ? 'Short' : 'Sell'}
             </button>
@@ -464,7 +392,6 @@ export default function MobileTrade() {
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
         <div className="flex-1 overflow-hidden">
-
           {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
@@ -473,7 +400,7 @@ export default function MobileTrade() {
                   <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
                   <div className="flex items-center space-x-2">
                     <span className="text-green-400 text-lg font-bold">
-                      ${selectedPair.price?.toFixed(2) || '0.00'}
+                      ${selectedPair.price?.toFixed(2) || currentPrice || '0.00'}
                     </span>
                     <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
@@ -510,61 +437,32 @@ export default function MobileTrade() {
 
               {/* Trading Form */}
               <div className="space-y-4">
-                {/* Order Type */}
                 <div className="bg-gray-900 rounded-lg p-4">
                   <div className="flex space-x-2 mb-4">
                     <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
                     <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
-                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
                   </div>
 
-                  {/* Quantity Input */}
                   <div className="mb-4">
                     <label className="block text-gray-400 text-sm mb-2">
-                      {t('quantity')} ({tradeMode === 'Buy' ? 'USDT' : selectedPair.symbol})
+                      {t('amount')} (USDT)
                     </label>
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        onClick={() => handleQuantityChange(Math.max(0, quantity - (tradeMode === 'Buy' ? 10 : 0.001)))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <input
-                        type="number"
-                        value={tradeMode === 'Buy' ? amount.toFixed(2) : quantity.toFixed(6)}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
-                          if (tradeMode === 'Buy') {
-                            handleAmountChange(value);
-                          } else {
-                            handleQuantityChange(value);
-                          }
-                        }}
-                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="0.00"
-                      />
-                      <button 
-                        onClick={() => handleQuantityChange(quantity + (tradeMode === 'Buy' ? 10 : 0.001))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <input
+                      type="number"
+                      value={amount.toFixed(2)}
+                      onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
+                      className="w-full bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="0.00"
+                    />
                   </div>
 
-                  {/* Quick Amount Buttons */}
                   <div className="grid grid-cols-4 gap-2 mb-4">
                     {['25%', '50%', '75%', '100%'].map((percent) => (
                       <button
                         key={percent}
                         onClick={() => {
                           const multiplier = parseInt(percent) / 100;
-                          if (tradeMode === 'Buy') {
-                            handleAmountChange(1000 * multiplier); // Assuming $1000 available balance
-                          } else {
-                            handleQuantityChange(1 * multiplier); // Assuming 1 unit available
-                          }
+                          handleAmountChange(1000 * multiplier);
                         }}
                         className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
                       >
@@ -573,27 +471,6 @@ export default function MobileTrade() {
                     ))}
                   </div>
 
-                  {/* Order Summary */}
-                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Price:</span>
-                      <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Quantity:</span>
-                      <span className="text-white">{quantity.toFixed(6)} {selectedPair.symbol}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Total:</span>
-                      <span className="text-white">${amount.toFixed(2)} USDT</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Fee (0.1%):</span>
-                      <span className="text-white">${(amount * 0.001).toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Place Order Button */}
                   <button 
                     className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${
                       tradeMode === 'Buy' 
@@ -604,201 +481,15 @@ export default function MobileTrade() {
                     {tradeMode} {selectedPair.symbol}
                   </button>
                 </div>
-
-                {/* Available Balance */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-white font-medium mb-3">Available Balance</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">USDT:</span>
-                      <span className="text-white">1,000.00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">{selectedPair.symbol}:</span>
-                      <span className="text-white">1.00000000</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
+
           {selectedTradingType === 'Futures' && (
-            <div className="h-full p-4">
-              {/* Trading Pair Info */}
-              <div className="bg-gray-900 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-green-400 text-lg font-bold">
-                      ${selectedPair.price?.toFixed(2) || '0.00'}
-                    </span>
-                    <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-400">
-                  <span>Leverage: Up to 100x</span>
-                  <span>Funding Rate: 0.01%</span>
-                </div>
-              </div>
-
-              {/* Long/Short Toggle */}
-              <div className="bg-gray-900 rounded-lg overflow-hidden mb-4">
-                <div className="flex">
-                  <button 
-                    className={`flex-1 py-3 font-medium transition-colors ${
-                      tradeMode === 'Buy' 
-                        ? 'bg-green-600 text-white' 
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    onClick={() => setTradeMode('Buy')}
-                  >
-                    {t('long')} {selectedPair.symbol}
-                  </button>
-                  <button 
-                    className={`flex-1 py-3 font-medium transition-colors ${
-                      tradeMode === 'Sell' 
-                        ? 'bg-red-600 text-white' 
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    onClick={() => setTradeMode('Sell')}
-                  >
-                    {t('short')} {selectedPair.symbol}
-                  </button>
-                </div>
-              </div>
-
-              {/* Futures Trading Form */}
-              <div className="space-y-4">
-                {/* Leverage Selector */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <label className="block text-gray-400 text-sm mb-2">Leverage</label>
-                  <div className="flex space-x-2 mb-4">
-                    {['5x', '10x', '25x', '50x', '100x'].map((leverage) => (
-                      <button
-                        key={leverage}
-                        className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors"
-                      >
-                        {leverage}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Order Type and Size */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <div className="flex space-x-2 mb-4">
-                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
-                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
-                    <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
-                  </div>
-
-                  {/* Position Size Input */}
-                  <div className="mb-4">
-                    <label className="block text-gray-400 text-sm mb-2">
-                      Position Size (USDT)
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        onClick={() => handleAmountChange(Math.max(0, amount - 10))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <input
-                        type="number"
-                        value={amount.toFixed(2)}
-                        onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
-                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="0.00"
-                      />
-                      <button 
-                        onClick={() => handleAmountChange(amount + 10)}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Quick Amount Buttons */}
-                  <div className="grid grid-cols-4 gap-2 mb-4">
-                    {['25%', '50%', '75%', '100%'].map((percent) => (
-                      <button
-                        key={percent}
-                        onClick={() => {
-                          const multiplier = parseInt(percent) / 100;
-                          handleAmountChange(1000 * multiplier); // Assuming $1000 available balance
-                        }}
-                        className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
-                      >
-                        {percent}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Order Summary */}
-                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Entry Price:</span>
-                      <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Position Size:</span>
-                      <span className="text-white">${amount.toFixed(2)} USDT</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Leverage:</span>
-                      <span className="text-white">10x</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Margin Required:</span>
-                      <span className="text-white">${(amount / 10).toFixed(2)} USDT</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Trading Fee:</span>
-                      <span className="text-white">${(amount * 0.0006).toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Place Order Button */}
-                  <button 
-                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${
-                      tradeMode === 'Buy' 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
-                        : 'bg-red-600 hover:bg-red-700 text-white'
-                    }`}
-                  >
-                    {tradeMode === 'Buy' ? 'Open Long' : 'Open Short'} Position
-                  </button>
-                </div>
-
-                {/* Margin and Positions Info */}
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h3 className="text-white font-medium mb-3">Account Balance</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Available Margin:</span>
-                      <span className="text-white">1,000.00 USDT</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Used Margin:</span>
-                      <span className="text-white">0.00 USDT</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Unrealized P&L:</span>
-                      <span className="text-green-400">+0.00 USDT</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MobileFutures />
           )}
-
         </div>
       )}
-
       {/* Cryptocurrency Pair Selector Modal */}
       {showPairSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
