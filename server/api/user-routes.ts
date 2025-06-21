@@ -267,6 +267,55 @@ userRouter.get("/profile-picture", requireAuth, async (req, res) => {
   }
 });
 
+// Update user profile
+userRouter.patch("/update-profile", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { profilePicture, nickname } = req.body;
+
+    console.log("Profile update request:", {
+      userId,
+      hasProfilePicture: !!profilePicture,
+      nickname
+    });
+
+    const updateData: any = {};
+    
+    if (profilePicture) {
+      if (!profilePicture.startsWith('data:image/')) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid image format"
+        });
+      }
+      updateData.profilePicture = profilePicture;
+    }
+
+    if (nickname) {
+      updateData.username = nickname;
+    }
+
+    // Update user's profile in database
+    await db.update(users)
+      .set(updateData)
+      .where(eq(users.id, userId));
+
+    console.log("Profile updated successfully for user:", userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updateData
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile"
+    });
+  }
+});
+
 // Update user profile picture
 userRouter.post("/profile-picture", requireAuth, async (req, res) => {
   try {

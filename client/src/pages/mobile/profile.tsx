@@ -97,14 +97,14 @@ export default function MobileProfile() {
       // Trigger global profile update event for synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated'));
       toast({
-        title: t('profile_updated'),
-        description: t('picture_updated_success')
+        title: t('profile_updated') || 'Profile Updated',
+        description: t('picture_updated_success') || 'Profile picture updated successfully'
       });
     },
     onError: (error: any) => {
       toast({
-        title: t('updateFailed'),
-        description: error.message || t('picture_update_failed'),
+        title: t('updateFailed') || 'Update Failed',
+        description: error.message || t('picture_update_failed') || 'Failed to update profile picture',
         variant: "destructive"
       });
     }
@@ -115,8 +115,8 @@ export default function MobileProfile() {
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast({
-          title: t('invalidFileType'),
-          description: t('select_image_file'),
+          title: t('invalidFileType') || 'Invalid File Type',
+          description: t('select_image_file') || 'Please select an image file',
           variant: "destructive"
         });
         return;
@@ -124,8 +124,8 @@ export default function MobileProfile() {
 
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         toast({
-          title: t('fileTooLarge'),
-          description: t('select_smaller_image'),
+          title: t('fileTooLarge') || 'File Too Large',
+          description: t('select_smaller_image') || 'Please select an image smaller than 5MB',
           variant: "destructive"
         });
         return;
@@ -138,8 +138,8 @@ export default function MobileProfile() {
       };
       reader.onerror = () => {
         toast({
-          title: t('uploadFailed'),
-          description: t('failed_to_read_image'),
+          title: t('uploadFailed') || 'Upload Failed',
+          description: t('failed_to_read_image') || 'Failed to read image file',
           variant: "destructive"
         });
       };
@@ -263,7 +263,9 @@ export default function MobileProfile() {
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h2 className="text-white text-xl font-bold">
-                {user?.username || 'User'}
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}` 
+                  : user?.username || 'User'}
               </h2>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </div>
@@ -282,8 +284,8 @@ export default function MobileProfile() {
                 onClick={() => {
                   navigator.clipboard.writeText(generateUID());
                   toast({
-                    title: t('common.copied'),
-                    description: t('profile.uidCopied'),
+                    title: t('common.copied') || 'Copied',
+                    description: t('profile.uidCopied') || 'UID copied to clipboard',
                   });
                 }}
               />
@@ -323,7 +325,7 @@ export default function MobileProfile() {
           className="w-full bg-red-900 hover:bg-red-800 text-white"
           onClick={() => logoutMutation.mutate()}
         >
-          {t('auth.logout')}
+          {t('logout') || 'Logout'}
         </Button>
       </div>
 

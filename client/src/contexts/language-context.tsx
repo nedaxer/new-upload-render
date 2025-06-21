@@ -309,12 +309,13 @@ const TRANSLATIONS: Record<string, any> = {
     'spot_trading': 'Spot Trading',
     'futures_trading': 'Futures Trading',
     'kyc_verification': 'KYC Verification',
-    // Profile specific
-    profile: {
-      mainAccount: 'Main Account',
-      switchCreateAccount: 'Switch/Create Account',
-      uidCopied: 'UID copied to clipboard',
-    },
+      'logout': 'Logout',
+      // Profile specific
+      profile: {
+        mainAccount: 'Main Account',
+        switchCreateAccount: 'Switch/Create Account',
+        uidCopied: 'UID copied to clipboard',
+      },
     // Status messages
     'lv1_verified': 'Lv1 Verified',
     'processing': 'Processing',
@@ -326,9 +327,12 @@ const TRANSLATIONS: Record<string, any> = {
     'invalidFileType': 'Invalid File Type',
     'select_image_file': 'Please select an image file',
     'fileTooLarge': 'File Too Large',
-    'select_smaller_image': 'Please select a smaller image (max 5MB)',
+    'select_smaller_image': 'Please select an image smaller than 5MB',
     'uploadFailed': 'Upload Failed',
-    'failed_to_read_image': 'Failed to read the image file',
+    'failed_to_read_image': 'Failed to read image file',
+    'common': {
+      'copied': 'Copied'
+    },
   },
   zh: {
     'settings': '设置',
