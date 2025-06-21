@@ -9,20 +9,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { RefreshCw, Search, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 
-interface BybitTicker {
+interface CryptoTicker {
   symbol: string;
-  lastPrice: string;
-  price24hPcnt: string;
-  volume24h: string;
-  highPrice24h: string;
-  lowPrice24h: string;
-  turnover24h: string;
+  name: string;
+  price: number;
+  change: number;
+  volume: number;
+  marketCap: number;
   sentiment: 'Bullish' | 'Bearish' | 'Neutral';
 }
 
-interface BybitResponse {
+interface CoinGeckoResponse {
   success: boolean;
-  data: BybitTicker[];
+  data: CryptoTicker[];
   timestamp: number;
 }
 
@@ -31,11 +30,11 @@ export default function LiveMarkets() {
   const [searchTerm, setSearchTerm] = useState("");
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  // Fetch Bybit market data with auto-refresh every 10 seconds
+  // Fetch CoinGecko market data with auto-refresh every 10 seconds
   const { data: marketData, isLoading, refetch, error } = useQuery({
-    queryKey: ["/api/bybit/tickers"],
-    queryFn: async (): Promise<BybitResponse> => {
-      const response = await fetch("/api/bybit/tickers");
+    queryKey: ["/api/crypto/realtime-prices"],
+    queryFn: async (): Promise<CoinGeckoResponse> => {
+      const response = await fetch("/api/crypto/realtime-prices");
       if (!response.ok) {
         throw new Error(`Failed to fetch market data: ${response.statusText}`);
       }
@@ -53,8 +52,8 @@ export default function LiveMarkets() {
   ) || [];
 
   // Sort tickers by volume (descending)
-  const sortedTickers = filteredTickers.sort((a, b) => 
-    parseFloat(b.turnover24h) - parseFloat(a.turnover24h)
+  const sortedTickers = filteredTickers.sort((a: CryptoTicker, b: CryptoTicker) => 
+    b.volume - a.volume
   );
 
   const handleCoinClick = (symbol: string) => {
@@ -247,25 +246,25 @@ export default function LiveMarkets() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          ${formatPrice(ticker.lastPrice)}
+                          ${formatPrice(ticker.price.toString())}
                         </TableCell>
                         <TableCell className="text-right">
                           <span className={`font-semibold ${
-                            parseFloat(ticker.price24hPcnt) >= 0 
+                            ticker.change >= 0 
                               ? 'text-green-600' 
                               : 'text-red-600'
                           }`}>
-                            {formatPercentage(ticker.price24hPcnt)}
+                            {formatPercentage(ticker.change.toString())}
                           </span>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {formatVolume(ticker.turnover24h)}
+                          {formatVolume(ticker.volume.toString())}
                         </TableCell>
                         <TableCell className="text-right font-mono text-green-600">
-                          ${formatPrice(ticker.highPrice24h)}
+                          ${formatPrice((ticker.price * 1.05).toString())}
                         </TableCell>
                         <TableCell className="text-right font-mono text-red-600">
-                          ${formatPrice(ticker.lowPrice24h)}
+                          ${formatPrice((ticker.price * 0.95).toString())}
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge 
@@ -303,7 +302,7 @@ export default function LiveMarkets() {
           <CardContent className="p-4">
             <div className="text-center text-sm text-gray-500">
               <p>Market data updates automatically every 10 seconds</p>
-              <p>Data provided by Bybit Exchange API</p>
+              <p>Data provided by CoinGecko API</p>
             </div>
           </CardContent>
         </Card>

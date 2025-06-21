@@ -276,22 +276,22 @@ export default function MobileHome() {
     }
   }, []);
 
-  // Fetch live market data from Bybit API
+  // Fetch live market data from CoinGecko API
   const { data: marketData } = useQuery({
-    queryKey: ['/api/bybit/tickers'],
+    queryKey: ['/api/crypto/realtime-prices'],
     queryFn: async () => {
-      const response = await fetch('/api/bybit/tickers');
+      const response = await fetch('/api/crypto/realtime-prices');
       if (!response.ok) {
         throw new Error(`Failed to fetch market data: ${response.statusText}`);
       }
       return await response.json();
     },
-    refetchInterval: 5000, // Refresh every 5 seconds for more real-time updates
+    refetchInterval: 10000, // Refresh every 10 seconds for consistent data
     retry: 3,
-    staleTime: 1000, // Consider data stale after 1 second
+    staleTime: 5000, // Consider data stale after 5 seconds
   });
 
-  // Process market data from Bybit API
+  // Process market data from CoinGecko API
   const processedMarkets = React.useMemo(() => {
     if (!marketData?.data || !Array.isArray(marketData.data)) {
       return [];
@@ -299,8 +299,8 @@ export default function MobileHome() {
 
     return marketData.data.map((ticker: any) => {
       const baseSymbol = ticker.symbol.replace('USDT', '').replace('USDC', '').replace('USD', '');
-      const price = parseFloat(ticker.lastPrice);
-      const change = parseFloat(ticker.price24hPcnt);
+      const price = ticker.price;
+      const change = ticker.change;
       const volume = parseFloat(ticker.turnover24h);
 
       return {

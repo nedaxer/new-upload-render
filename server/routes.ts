@@ -1531,6 +1531,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Real-time crypto prices from CoinGecko API
+  app.get("/api/crypto/realtime-prices", async (req: Request, res: Response) => {
+    try {
+      const { getCoinGeckoPrices } = await import('./coingecko-api.js');
+      const tickers = await getCoinGeckoPrices();
+      
+      // Transform tickers to include sentiment
+      const tickersWithSentiment = tickers.map(ticker => ({
+        ...ticker,
+        sentiment: ticker.change > 5 ? 'Bullish' : ticker.change < -5 ? 'Bearish' : 'Neutral'
+      }));
+
+      res.json({
+        success: true,
+        data: tickersWithSentiment,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error("Error fetching real-time crypto prices:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to fetch real-time crypto prices",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Setup WebSocket server for real-time updates

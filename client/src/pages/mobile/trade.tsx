@@ -342,14 +342,14 @@ export default function MobileTrade() {
 
   const updatePrice = async (symbol: string) => {
     try {
-      const response = await fetch('/api/bybit/tickers');
+      const response = await fetch('/api/crypto/realtime-prices');
       const data = await response.json();
 
       if (data.success && data.data) {
         const ticker = data.data.find((t: any) => t.symbol === symbol);
         if (ticker) {
           setCurrentTicker(ticker);
-          setCurrentPrice(parseFloat(ticker.lastPrice).toFixed(2));
+          setCurrentPrice(ticker.price.toFixed(2));
         }
       }
     } catch (error) {
