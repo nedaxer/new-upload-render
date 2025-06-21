@@ -63,27 +63,27 @@ export default function MobileTrade() {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const symbolFromUrl = urlParams.get('symbol');
     const tabFromUrl = urlParams.get('tab');
-    
+
     console.log('Trade page URL params:', { symbolFromUrl, tabFromUrl, location });
-    
+
     // Set tab if specified in URL (from markets navigation)
     if (tabFromUrl && tabFromUrl === 'Charts') {
       setSelectedTab('Charts');
       console.log('Setting tab to Charts from URL');
     }
-    
+
     if (symbolFromUrl) {
       const pair = findPairBySymbol(symbolFromUrl);
       console.log('Found pair for symbol:', symbolFromUrl, pair);
-      
+
       if (pair) {
         setSelectedPair(pair);
         setCurrentSymbol(pair.symbol);
         setTradingViewSymbol(pair.tradingViewSymbol);
-        
+
         // Update price for the new pair
         updatePrice(pair.symbol);
-        
+
         // Force chart update if TradingView is ready and Charts tab is selected
         if (isTradingViewReady && (tabFromUrl === 'Charts' || selectedTab === 'Charts')) {
           console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
@@ -97,10 +97,10 @@ export default function MobileTrade() {
   useEffect(() => {
     if (isTradingViewReady && selectedTab === 'Charts') {
       console.log('Chart update triggered for:', selectedPair.symbol, selectedPair.tradingViewSymbol);
-      
+
       const existingWidget = getGlobalChartWidget();
       const chartState = getChartState();
-      
+
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         try {
           console.log('Updating existing chart to:', selectedPair.tradingViewSymbol);
@@ -127,7 +127,7 @@ export default function MobileTrade() {
     if (selectedTab === 'Charts' && isTradingViewReady) {
       console.log('Charts tab selected, ensuring chart is loaded for:', selectedPair.tradingViewSymbol);
       const existingWidget = getGlobalChartWidget();
-      
+
       if (!existingWidget || !existingWidget.iframe) {
         console.log('No existing chart found, creating new one');
         loadChart(selectedPair.tradingViewSymbol, false);
@@ -180,10 +180,10 @@ export default function MobileTrade() {
     // Check if chart is already loaded and functional globally
     const existingWidget = getGlobalChartWidget();
     const chartState = getChartState();
-    
+
     if (!forceReload && existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
       console.log('Global chart already exists, reusing existing widget');
-      
+
       // Always ensure chart is visible when on Charts tab
       const chartContainer = document.getElementById('chart');
       if (chartContainer) {
@@ -194,14 +194,14 @@ export default function MobileTrade() {
             chartContainer.appendChild(existingWidget.iframe);
           }
         }
-        
+
         // Make chart visible
         if (existingWidget.iframe) {
           existingWidget.iframe.style.display = 'block';
           existingWidget.iframe.style.visibility = 'visible';
         }
       }
-      
+
       // Update symbol if needed
       if (chartState.currentSymbol !== symbol) {
         try {
@@ -213,7 +213,7 @@ export default function MobileTrade() {
           console.log('Failed to change symbol, keeping current chart');
         }
       }
-      
+
       chartWidget.current = existingWidget;
       setChartState({ isVisible: true });
       return;
@@ -222,7 +222,7 @@ export default function MobileTrade() {
     // Create new widget only if none exists or force reload
     if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
       console.log('Creating new global chart widget');
-      
+
       // Remove existing widget if present
       if (existingWidget) {
         try {
@@ -396,12 +396,12 @@ export default function MobileTrade() {
   const handlePairSelectionModal = useCallback((pair: CryptoPair) => {
     setSelectedPair(pair);
     setCurrentSymbol(pair.symbol);
-    
+
     // Update chart symbol on persistent widget
     if (isTradingViewReady) {
       const existingWidget = getGlobalChartWidget();
       const chartState = getChartState();
-      
+
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         try {
           existingWidget.setSymbol(pair.tradingViewSymbol, "15", () => {
@@ -458,7 +458,7 @@ export default function MobileTrade() {
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         console.log('Reusing existing chart widget - no reload needed');
         chartWidget.current = existingWidget;
-        
+
         // Ensure chart is in the correct container
         const chartContainer = document.getElementById('chart');
         if (chartContainer && !chartContainer.querySelector('iframe')) {
@@ -471,7 +471,7 @@ export default function MobileTrade() {
         console.log('Creating initial chart widget');
         loadChart(selectedPair.tradingViewSymbol, false);
       }
-      
+
       return;
     }
 
@@ -635,10 +635,10 @@ export default function MobileTrade() {
       // Always try to show existing chart first
       const existingWidget = getGlobalChartWidget();
       const chartState = getChartState();
-      
+
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         console.log('Chart widget exists globally, restoring to view - no reload needed');
-        
+
         // Ensure chart is visible in the container
         const chartContainer = document.getElementById('chart');
         if (chartContainer) {
@@ -646,14 +646,14 @@ export default function MobileTrade() {
             // Move existing chart to container
             chartContainer.appendChild(existingWidget.iframe);
           }
-          
+
           // Make chart visible
           if (existingWidget.iframe) {
             existingWidget.iframe.style.display = 'block';
             existingWidget.iframe.style.visibility = 'visible';
           }
         }
-        
+
         chartWidget.current = existingWidget;
         setChartState({ ...chartState, isVisible: true });
       } else if (isTradingViewReady) {
