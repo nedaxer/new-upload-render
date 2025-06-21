@@ -260,7 +260,75 @@ const TRANSLATIONS: Record<string, any> = {
     'limit': 'Limit',
     'stop': 'Stop',
     'quantity': 'Quantity',
-    'leverage': 'Leverage'
+    'leverage': 'Leverage',
+    'order_value': 'Order Value',
+    'max_buy': 'Max Buy',
+    'tp_sl': 'TP/SL',
+    'post_only': 'Post Only',
+    'price_label': 'Price',
+    'my_assets': 'My Assets',
+    'total_value': 'Total Value',
+    'available_balance': 'Available Balance',
+    'frozen_balance': 'Frozen Balance',
+    'profit_loss': 'Profit & Loss',
+    'this_week': 'This Week',
+    'this_month': 'This Month',
+    'all_time': 'All Time',
+    'market_cap': 'Market Cap',
+    'top_gainers': 'Top Gainers',
+    'top_losers': 'Top Losers',
+    'notification_settings': 'Notification Settings',
+    'currency_selection': 'Currency Selection',
+    'network_selection': 'Network Selection',
+    'crypto_selection': 'Crypto Selection',
+    'address_display': 'Address Display',
+    'select_crypto': 'Select Crypto',
+    'select_network': 'Select Network',
+    'deposit_address': 'Deposit Address',
+    'minimum_deposit': 'Minimum Deposit',
+    'copy_address': 'Copy Address',
+    'save_image': 'Save Image',
+    'network_fee': 'Network Fee',
+    'estimated_time': 'Estimated Time',
+    'referral_program': 'Referral Program',
+    'total_earnings': 'Total Earnings',
+    'total_referrals': 'Total Referrals',
+    'monthly_earnings': 'Monthly Earnings',
+    'referral_link': 'Referral Link',
+    'share_link': 'Share Link',
+    'recent_earnings': 'Recent Earnings',
+    'no_notifications': 'No notifications',
+    'mark_all_read': 'Mark all as read',
+    'system_notification': 'System Notification',
+    'latest_events': 'Latest Events',
+    'invite_friends': 'Invite Friends',
+    'identity_verification': 'Identity Verification',
+    'notification_center': 'Notification Center',
+    'help_contact': 'Help & Contact',
+    'about_us': 'About Us',
+    'spot_trading': 'Spot Trading',
+    'futures_trading': 'Futures Trading',
+    'kyc_verification': 'KYC Verification',
+    // Profile specific
+    profile: {
+      mainAccount: 'Main Account',
+      switchCreateAccount: 'Switch/Create Account',
+      uidCopied: 'UID copied to clipboard',
+    },
+    // Status messages
+    'lv1_verified': 'Lv1 Verified',
+    'processing': 'Processing',
+    'not_verified': 'Not Verified',
+    'profile_updated': 'Profile Updated',
+    'picture_updated_success': 'Profile picture updated successfully',
+    'updateFailed': 'Update Failed',
+    'picture_update_failed': 'Failed to update profile picture',
+    'invalidFileType': 'Invalid File Type',
+    'select_image_file': 'Please select an image file',
+    'fileTooLarge': 'File Too Large',
+    'select_smaller_image': 'Please select a smaller image (max 5MB)',
+    'uploadFailed': 'Upload Failed',
+    'failed_to_read_image': 'Failed to read the image file',
   },
   zh: {
     'settings': '设置',
@@ -781,10 +849,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLanguage = (language: Language) => {
     setCurrentLanguage(language);
     localStorage.setItem('selectedLanguage', JSON.stringify(language));
-    
+
     // Force immediate UI update by updating the document language attribute
     document.documentElement.lang = language.code;
-    
+
     // Dispatch a custom event to notify other components of language change
     window.dispatchEvent(new CustomEvent('languageChanged', { 
       detail: { language } 
@@ -799,21 +867,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = (key: string): string => {
     const languageCode = currentLanguage.code.split('-')[0]; // Handle variants like zh-TW
     const translations = TRANSLATIONS[languageCode] || TRANSLATIONS['en'];
-    
+
     // Handle dotted notation keys like 'profile.inviteFriends'
     if (key.includes('.')) {
       const parts = key.split('.');
       let result: any = translations;
-      
+
       for (const part of parts) {
         result = result?.[part];
         if (!result) break;
       }
-      
+
       // If nested lookup fails, try the full key as-is
       return result || translations[key] || key;
     }
-    
+
     return translations[key] || key;
   };
 

@@ -533,7 +533,7 @@ const TRANSLATIONS: Record<string, any> = {
     'view_details': '查看详情',
     'flexible_savings': '活期理财',
     'start_earning_anytime': '随时开始赚取',
-    'fixed_savings': '定期理财',
+    '定期理财',
     'higher_returns_locked': '更高收益，锁定期限',
     'staking': '质押',
     'stake_earn_rewards': '质押并赚取奖励',
@@ -746,7 +746,7 @@ const TRANSLATIONS: Record<string, any> = {
     'dashboard': 'ダッシュボード',
     'assets': '資産',
     'trade': '取引',
-    'markets': '市場',
+    'markets': 'マーケット',
     'earn': '収益',
     'profile': 'プロフィール',
     'balance': '残高',
@@ -985,7 +985,7 @@ const TRANSLATIONS: Record<string, any> = {
     'assets': 'Ativos',
     'trade': 'Negociar',
     'markets': 'Mercados',
-    'earn': 'Ganhar',
+    'earn': 'Ganar',
     'profile': 'Perfil',
     'balance': 'Saldo',
     'portfolio': 'Portfólio',
@@ -1081,10 +1081,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLanguage = (language: Language) => {
     setCurrentLanguage(language);
     localStorage.setItem('selectedLanguage', JSON.stringify(language));
-    
+
     // Force immediate UI update by updating the document language attribute
     document.documentElement.lang = language.code;
-    
+
     // Dispatch a custom event to notify other components of language change
     window.dispatchEvent(new CustomEvent('languageChanged', { 
       detail: { language } 
@@ -1099,21 +1099,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = (key: string): string => {
     const languageCode = currentLanguage.code.split('-')[0]; // Handle variants like zh-TW
     const translations = TRANSLATIONS[languageCode] || TRANSLATIONS['en'];
-    
+
     // Handle dotted notation keys like 'profile.inviteFriends'
     if (key.includes('.')) {
       const parts = key.split('.');
       let result: any = translations;
-      
+
       for (const part of parts) {
         result = result?.[part];
         if (!result) break;
       }
-      
+
       // If nested lookup fails, try the full key as-is
       return result || translations[key] || key;
     }
-    
+
     return translations[key] || key;
   };
 

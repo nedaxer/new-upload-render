@@ -269,7 +269,7 @@ export default function MobileProfile() {
             </div>
             <div className="flex items-center space-x-2 mt-1">
               <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium">
-                {t('profile.mainAccount')}
+                Main Account
               </span>
               <div className="flex items-center space-x-1">
                 <span className="text-gray-400 text-sm">
@@ -315,7 +315,7 @@ export default function MobileProfile() {
           variant="outline" 
           className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
         >
-          {t('profile.switchCreateAccount')}
+          Switch/Create Account
         </Button>
 
         <Button 
