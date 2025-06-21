@@ -93,7 +93,7 @@ export default function TradePage() {
   // Buy crypto mutation
   const buyMutation = useMutation({
     mutationFn: async (data: { fromCurrencyId: number, toCurrencyId: number, amount: number }) => {
-      const res = await apiRequest("POST", "/api/trading/buy", data);
+      const res = await apiRequest("/api/trading/buy", "POST", data);
       return res.json();
     },
     onSuccess: () => {
@@ -123,7 +123,7 @@ export default function TradePage() {
   // Sell crypto mutation
   const sellMutation = useMutation({
     mutationFn: async (data: { fromCurrencyId: number, toCurrencyId: number, amount: number }) => {
-      const res = await apiRequest("POST", "/api/trading/sell", data);
+      const res = await apiRequest("/api/trading/sell", "POST", data);
       return res.json();
     },
     onSuccess: () => {
