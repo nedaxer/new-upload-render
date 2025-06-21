@@ -28,6 +28,7 @@ import MobileFutures from './futures';
 import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
+import { useGlobalChart } from '@/components/global-chart-manager';
 import { useLanguage } from '@/contexts/language-context';
 
 export default function MobileTrade() {
@@ -52,248 +53,20 @@ export default function MobileTrade() {
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
-  const [isChartLoading, setIsChartLoading] = useState(false);
-  const [isTradingViewReady, setIsTradingViewReady] = useState(false);
-  const [chartError, setChartError] = useState(false);
-  const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
-  const tradingViewScript = useRef<HTMLScriptElement | null>(null);
-  const chartCache = useRef<Map<string, any>>(new Map());
+  
+  // Global chart management
+  const { createChart, showChart, hideChart, changeSymbol, isChartReady } = useGlobalChart();
 
-  // Global chart widget cache to persist across ALL navigation
-  const getGlobalChartWidget = useCallback(() => {
-    if (!(window as any).nedaxerGlobalChartWidget) {
-      (window as any).nedaxerGlobalChartWidget = null;
+  // Initialize chart on component mount
+  useEffect(() => {
+    if (!isChartReady()) {
+      console.log('Initializing global persistent chart...');
+      createChart(currentSymbol);
     }
-    if (!(window as any).nedaxerChartState) {
-      (window as any).nedaxerChartState = {
-        isReady: false,
-        currentSymbol: 'BTCUSDT',
-        isVisible: false
-      };
-    }
-    return (window as any).nedaxerGlobalChartWidget;
-  }, []);
+  }, [createChart, isChartReady, currentSymbol]);
 
-  const setGlobalChartWidget = useCallback((widget: any) => {
-    (window as any).nedaxerGlobalChartWidget = widget;
-    (window as any).nedaxerChartState.isReady = true;
-    chartWidget.current = widget;
-  }, []);
-
-  const getChartState = useCallback(() => {
-    return (window as any).nedaxerChartState || { isReady: false, currentSymbol: 'BTCUSDT', isVisible: false };
-  }, []);
-
-  const setChartState = useCallback((state: any) => {
-    if (!(window as any).nedaxerChartState) {
-      (window as any).nedaxerChartState = {};
-    }
-    Object.assign((window as any).nedaxerChartState, state);
-  }, []);
-
-  // Enhanced chart loading with global persistence across all pages
-  const loadChart = useCallback((symbol: string, forceReload = false) => {
-    if (typeof window === 'undefined' || !(window as any).TradingView) return;
-
-    // Check if chart is already loaded and functional globally
-    const existingWidget = getGlobalChartWidget();
-    const chartState = getChartState();
-    
-    if (!forceReload && existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-      console.log('Global chart already exists, reusing existing widget');
-      
-      // Always ensure chart is visible when on Charts tab
-      const chartContainer = document.getElementById('chart');
-      if (chartContainer) {
-        // Make sure the chart iframe is in the current container
-        if (!chartContainer.querySelector('iframe') && existingWidget.iframe) {
-          // Move the existing chart to current container
-          if (existingWidget.iframe.parentNode) {
-            chartContainer.appendChild(existingWidget.iframe);
-          }
-        }
-        
-        // Make chart visible
-        if (existingWidget.iframe) {
-          existingWidget.iframe.style.display = 'block';
-          existingWidget.iframe.style.visibility = 'visible';
-        }
-      }
-      
-      // Update symbol if needed
-      if (chartState.currentSymbol !== symbol) {
-        try {
-          existingWidget.setSymbol(symbol, "15", () => {
-            console.log('Symbol changed to', symbol);
-            setChartState({ currentSymbol: symbol, isVisible: true });
-          });
-        } catch (error) {
-          console.log('Failed to change symbol, keeping current chart');
-        }
-      }
-      
-      chartWidget.current = existingWidget;
-      setChartState({ isVisible: true });
-      return;
-    }
-
-    // Create new widget only if none exists or force reload
-    if (forceReload || !existingWidget || !existingWidget.iframe || !existingWidget.iframe.contentWindow) {
-      console.log('Creating new global chart widget');
-      
-      // Remove existing widget if present
-      if (existingWidget) {
-        try {
-          existingWidget.remove();
-        } catch (removeError) {
-          // Ignore removal errors
-        }
-        setGlobalChartWidget(null);
-        setChartState({ isReady: false, currentSymbol: symbol, isVisible: false });
-      }
-
-      // Clear the chart container
-      const chartContainer = document.getElementById('chart');
-      if (chartContainer) {
-        chartContainer.innerHTML = '';
-      }
-
-      // Create new widget after a short delay
-      setTimeout(() => {
-        createNewWidget(symbol);
-      }, 100);
-    }
-  }, [getGlobalChartWidget, setGlobalChartWidget, getChartState, setChartState]);
-
-  // Helper function to create new widget with global persistence
-  const createNewWidget = useCallback((symbol: string) => {
-    if (typeof window === 'undefined' || !(window as any).TradingView) return;
-
-    const widget = new (window as any).TradingView.widget({
-      container_id: "chart",
-      autosize: true,
-      symbol: symbol,
-      interval: "15",
-      timezone: "Etc/UTC",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      backgroundColor: "#111827",
-      toolbar_bg: "#111827",
-      hide_top_toolbar: true,
-      hide_side_toolbar: true,
-      allow_symbol_change: false,
-      enable_publishing: false,
-      details: false,
-      withdateranges: false,
-      calendar: false,
-      studies: [
-        {
-          id: "BB@tv-basicstudies-1",
-          inputs: {
-            length: 20,
-            mult: 2,
-            source: "close"
-          }
-        }
-      ],
-      drawings_access: { type: 'black', tools: [] },
-      crosshair: {
-        mode: 1  // Normal crosshair mode that follows your finger/mouse
-      },
-      save_image: false,
-      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
-      overrides: {
-        "paneProperties.background": "#111827",
-        "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#111827", 
-        "paneProperties.backgroundGradientEndColor": "#111827",
-        "paneProperties.vertGridProperties.color": "#374151",
-        "paneProperties.horzGridProperties.color": "#374151",
-        "paneProperties.crossHairProperties.color": "#FFA500", // orange line
-        "paneProperties.crossHairProperties.width": 1,
-        "paneProperties.crossHairProperties.style": 2,  // Dashed
-        "paneProperties.crossHairProperties.transparency": 0,
-        "paneProperties.crossHairProperties.labelBackgroundColor": "#000",
-        "paneProperties.crossHairProperties.displayMode": 1,  // Enables floating price label
-
-        // Bollinger Bands styling
-        "BB@tv-basicstudies.upper.color": "#0066FF", // Blue upper band
-        "BB@tv-basicstudies.lower.color": "#0066FF", // Blue lower band
-        "BB@tv-basicstudies.median.color": "#FFFF00", // Yellow middle line
-        "BB@tv-basicstudies.upper.linewidth": 1,
-        "BB@tv-basicstudies.lower.linewidth": 1,
-        "BB@tv-basicstudies.median.linewidth": 2,
-        "BB@tv-basicstudies.fillBackground": true,
-        "BB@tv-basicstudies.transparency": 90,
-
-        "scalesProperties.backgroundColor": "#111827",
-        "scalesProperties.lineColor": "#374151", 
-        "scalesProperties.textColor": "#9CA3AF",
-        "paneProperties.leftAxisProperties.showSeriesLastValue": false,
-        "paneProperties.rightAxisProperties.showSeriesLastValue": false,
-        "scalesProperties.showLeftScale": false,
-        "scalesProperties.showRightScale": true,
-
-        "mainSeriesProperties.style": 1,
-        "mainSeriesProperties.candleStyle.upColor": "#10B981",
-        "mainSeriesProperties.candleStyle.downColor": "#EF4444",
-        "mainSeriesProperties.candleStyle.drawWick": true,
-        "mainSeriesProperties.candleStyle.drawBorder": false,
-        "mainSeriesProperties.candleStyle.wickUpColor": "#10B981",
-        "mainSeriesProperties.candleStyle.wickDownColor": "#EF4444",
-
-        "volumePaneSize": "small",
-        "volume.volume.color.0": "#EF4444",
-        "volume.volume.color.1": "#10B981",
-        "volume.volume.transparency": 0,
-
-        "paneProperties.legendProperties.showLegend": false,
-        "paneProperties.legendProperties.showStudyArguments": false,
-        "paneProperties.legendProperties.showStudyTitles": false,
-        "paneProperties.legendProperties.showStudyValues": false,
-        "paneProperties.legendProperties.showSeriesTitle": false,
-
-        "paneProperties.topMargin": 5,
-        "paneProperties.bottomMargin": 15,
-        "paneProperties.leftMargin": 5,
-        "paneProperties.rightMargin": 5,
-      },
-      disabled_features: [
-        "header_symbol_search", "timeframes_toolbar", "use_localstorage_for_settings",
-        "volume_force_overlay", "left_toolbar", "legend_context_menu", "display_market_status",
-        "go_to_date", "header_compare", "header_chart_type", "header_resolutions",
-        "header_screenshot", "header_fullscreen_button", "header_settings", "header_indicators",
-        "context_menus", "control_bar", "edit_buttons_in_legend", "main_series_scale_menu",
-        "chart_property_page_legend", "chart_property_page_trading", "border_around_the_chart",
-        "snapshot_trading_drawings", "show_logo_on_all_charts",
-        "remove_library_container_border", "chart_hide_close_button", "header_saveload",
-        "header_undo_redo", "show_chart_property_page", "popup_hints"
-      ],
-      enabled_features: [
-        "show_crosshair_labels",
-        "crosshair_tooltip",
-        "crosshair_cursor"
-      ],
-      onChartReady: () => {
-        console.log('Chart ready and persistent');
-        setChartState({ 
-          isReady: true, 
-          currentSymbol: symbol, 
-          isVisible: true 
-        });
-      }
-    });
-
-    // Store widget globally with state
-    setGlobalChartWidget(widget);
-    setChartState({ 
-      isReady: false, 
-      currentSymbol: symbol, 
-      isVisible: true 
-    });
-  }, [setGlobalChartWidget, setChartState]);
+  
 
   const updatePrice = async (symbol: string) => {
     try {
@@ -327,134 +100,21 @@ export default function MobileTrade() {
           setCurrentSymbol(symbol);
           menu.style.display = "none";
 
-          // Update chart symbol on persistent widget
-          if (isTradingViewReady) {
-            const existingWidget = getGlobalChartWidget();
-            const chartState = getChartState();
-            
-            if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-              try {
-                existingWidget.setSymbol(`BYBIT:${symbol}`, "15", () => {
-                  console.log('Symbol changed to', symbol);
-                  setChartState({ 
-                    ...chartState, 
-                    currentSymbol: symbol 
-                  });
-                });
-              } catch (error) {
-                console.log('Failed to change symbol on persistent chart');
-                // Don't reload, just update state
-                setChartState({ 
-                  ...chartState, 
-                  currentSymbol: symbol 
-                });
-              }
-            } else {
-              // Load chart if widget doesn't exist
-              loadChart(`BYBIT:${symbol}`, false);
-            }
-          }
+          // Update chart symbol on persistent global chart
+          changeSymbol(symbol);
           updatePrice(symbol);
         };
         menu.appendChild(div);
       });
     }
-  }, [isTradingViewReady, loadChart, getGlobalChartWidget]);
+  }, [changeSymbol]);
 
-  // Add preload hints and load TradingView script with maximum optimization
+  // Initialize coin menu when chart is ready
   useEffect(() => {
-    // Add DNS prefetch and preconnect for faster loading
-    const addPreloadHints = () => {
-      const hints = [
-        { rel: 'dns-prefetch', href: 'https://s3.tradingview.com' },
-        { rel: 'preconnect', href: 'https://s3.tradingview.com' },
-        { rel: 'preload', href: 'https://s3.tradingview.com/tv.js', as: 'script' }
-      ];
-
-      hints.forEach(hint => {
-        const existingHint = document.querySelector(`link[rel="${hint.rel}"][href="${hint.href}"]`);
-        if (!existingHint) {
-          const link = document.createElement('link');
-          Object.assign(link, hint);
-          document.head.appendChild(link);
-        }
-      });
-    };
-
-    addPreloadHints();
-
-    // Check if script is already loaded and widget exists
-    if ((window as any).TradingView) {
-      setIsTradingViewReady(true);
-      setIsChartLoading(false);
-
-      // Always check for existing widget first
-      const existingWidget = getGlobalChartWidget();
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Reusing existing chart widget - no reload needed');
-        chartWidget.current = existingWidget;
-        
-        // Ensure chart is in the correct container
-        const chartContainer = document.getElementById('chart');
-        if (chartContainer && !chartContainer.querySelector('iframe')) {
-          if (existingWidget.iframe && existingWidget.iframe.parentNode) {
-            chartContainer.appendChild(existingWidget.iframe);
-          }
-        }
-      } else if (selectedTab === 'Charts') {
-        // Only create new widget if we're on Charts tab and no existing widget
-        console.log('Creating initial chart widget');
-        loadChart('BYBIT:BTCUSDT', false);
-      }
-      
+    if (isChartReady()) {
       initializeCoinMenu();
-      return;
     }
-
-    // Check if script is already in DOM
-    const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
-    if (existingScript) {
-      existingScript.addEventListener('load', () => {
-        setIsTradingViewReady(true);
-        setIsChartLoading(false);
-        if (selectedTab === 'Charts') {
-          loadChart('BYBIT:BTCUSDT', false);
-        }
-        initializeCoinMenu();
-      });
-      return;
-    }
-
-    // Create and load script with maximum optimization
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.defer = true;
-    script.crossOrigin = 'anonymous';
-
-    script.onload = () => {
-      setIsTradingViewReady(true);
-      setIsChartLoading(false);
-      if (selectedTab === 'Charts') {
-        loadChart('BYBIT:BTCUSDT', false);
-      }
-      initializeCoinMenu();
-    };
-
-    script.onerror = () => {
-      console.error('Failed to load TradingView script');
-      setIsChartLoading(false);
-      setChartError(true);
-    };
-
-    document.head.appendChild(script);
-    tradingViewScript.current = script;
-
-    return () => {
-      // Don't remove the script or widget when component unmounts
-      // Keep them cached for instant access when returning
-    };
-  }, [loadChart, getGlobalChartWidget, selectedTab]);
+  }, [isChartReady, initializeCoinMenu]);
 
   // Price update interval
   useEffect(() => {
@@ -572,42 +232,19 @@ export default function MobileTrade() {
     setSelectedTab(tab);
 
     if (tab === 'Charts') {
-      // Always try to show existing chart first
-      const existingWidget = getGlobalChartWidget();
-      const chartState = getChartState();
-      
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        console.log('Chart widget exists globally, restoring to view - no reload needed');
-        
-        // Ensure chart is visible in the container
-        const chartContainer = document.getElementById('chart');
-        if (chartContainer) {
-          if (!chartContainer.querySelector('iframe') && existingWidget.iframe) {
-            // Move existing chart to container
-            chartContainer.appendChild(existingWidget.iframe);
-          }
-          
-          // Make chart visible
-          if (existingWidget.iframe) {
-            existingWidget.iframe.style.display = 'block';
-            existingWidget.iframe.style.visibility = 'visible';
-          }
-        }
-        
-        chartWidget.current = existingWidget;
-        setChartState({ ...chartState, isVisible: true });
-      } else if (isTradingViewReady) {
-        // Load chart only if TradingView is ready and no widget exists
-        setTimeout(() => {
-          loadChart(`BYBIT:${currentSymbol}`, false);
-        }, 100);
+      // Show the global persistent chart in this container
+      if (isChartReady()) {
+        showChart('chart');
+      } else {
+        // Create chart if it doesn't exist
+        createChart(currentSymbol);
+        setTimeout(() => showChart('chart'), 500);
       }
     } else {
-      // When leaving Charts tab, keep chart in background but hidden
-      const chartState = getChartState();
-      setChartState({ ...chartState, isVisible: false });
+      // Hide chart but keep it running
+      hideChart();
     }
-  }, [currentSymbol, loadChart, getGlobalChartWidget, getChartState, setChartState, isTradingViewReady]);
+  }, [currentSymbol, showChart, hideChart, isChartReady, createChart]);
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);
@@ -750,46 +387,19 @@ export default function MobileTrade() {
           {/* Chart Container - Clean without loading skeleton */}
           <div className="relative bg-gray-900" style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
-            {!isTradingViewReady && (
+            {!isChartReady() && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
                   </div>
-                  <p className="text-lg font-medium">Loading Chart...</p>
-                  <p className="text-sm mt-2">Initializing TradingView</p>
+                  <p className="text-lg font-medium">Loading Persistent Chart...</p>
+                  <p className="text-sm mt-2">Initializing Global TradingView</p>
                 </div>
               </div>
             )}
 
-            {/* Only show error state if chart fails to load */}
-            {chartError && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="mb-4">
-                    <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
-                  </div>
-                  <p className="text-lg font-medium">Chart Unavailable</p>
-                  <p className="text-sm mt-2">Unable to load chart data</p>
-                  <button 
-                    onClick={() => {
-                      setChartError(false);
-                      setIsTradingViewReady(false);
-                      setTimeout(() => {
-                        if ((window as any).TradingView) {
-                          loadChart(`BYBIT:${currentSymbol}`, true);
-                        }
-                      }, 100);
-                    }}
-                    className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition-colors"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* TradingView Chart */}
+            {/* TradingView Chart - Global Persistent */}
             <div 
               id="chart" 
               className="w-full h-full"

@@ -11,6 +11,7 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
 import { lazy } from 'react';
+import { initializeGlobalChartSystem } from '@/components/global-chart-manager';
 
 // Pages
 import Home from '@/pages/home';
@@ -135,7 +136,10 @@ export default function App() {
     // if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
     //   setShowSplash(false);
     // }
-    
+
+    // Initialize global chart system
+    initializeGlobalChartSystem();
+
     // Just a small delay to ensure all routes are registered
     const timer = setTimeout(() => {
       setIsLoading(false);
