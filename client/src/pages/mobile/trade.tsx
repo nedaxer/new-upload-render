@@ -804,9 +804,9 @@ export default function MobileTrade() {
         </div>
       </div>
 
-      {/* Charts Tab Content - Shared for both Spot and Futures */}
+      {/* Charts Tab Content - Fixed layout without scrolling */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 overflow-y-auto bg-gray-900">
+        <div className="flex-1 overflow-hidden bg-gray-900" style={{ height: 'calc(100vh - 140px)' }}>
           {/* Tappable Coin Header - Smaller and compact */}
           <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
             <div 
@@ -833,8 +833,8 @@ export default function MobileTrade() {
             </div>
           </div>
 
-          {/* Chart Container - Clean without loading skeleton */}
-          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
+          {/* Chart Container - Fixed height to prevent scrolling */}
+          <div className="relative bg-gray-900" style={{ height: 'calc(100vh - 200px)' }}>
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
@@ -925,7 +925,7 @@ export default function MobileTrade() {
         currentPair={selectedPair}
       />
 
-      {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
+      {/* Fixed Buy/Sell Panel - Joined with bottom navigation */}
       {selectedTab === 'Charts' && (
         <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '56px', zIndex: 10000 }}>
           <div className="flex gap-2">
@@ -945,12 +945,12 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Trade Tab Content */}
+      {/* Trade Tab Content - Fixed height layout */}
       {selectedTab === 'Trade' && (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100vh - 140px)' }}>
 
           {selectedTradingType === 'Spot' && (
-            <div className="h-full p-4">
+            <div className="h-full p-4 overflow-y-auto">
               {/* Trading Pair Info */}
               <div className="bg-gray-900 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -1107,7 +1107,7 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Futures' && (
-            <div className="h-full p-4">
+            <div className="h-full p-4 overflow-y-auto">
               {/* Trading Pair Info */}
               <div className="bg-gray-900 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
