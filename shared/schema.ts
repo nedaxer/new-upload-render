@@ -1,28 +1,28 @@
-import { pgTable, text, integer, boolean, timestamp, doublePrecision, primaryKey, json, varchar } from "drizzle-orm/pg-core";
+import { mysqlTable, text, int, boolean, timestamp, double, primaryKey, json, varchar } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // User-related tables
-export const users = pgTable("users", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
+export const users = mysqlTable("users", {
+  id: int("id").primaryKey().autoincrement(),
+  username: varchar("username", { length: 255 }).notNull().unique(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  verificationCode: text("verification_code"),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  verificationCode: varchar("verification_code", { length: 255 }),
   verificationCodeExpires: timestamp("verification_code_expires"),
   isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isAdmin: boolean("is_admin").default(false).notNull(),
-  kycStatus: text("kyc_status").default("pending").notNull(), // pending, approved, rejected
-  phone: text("phone"),
-  country: text("country"),
-  totalPortfolioValue: doublePrecision("total_portfolio_value").default(0).notNull(),
-  riskLevel: text("risk_level").default("moderate").notNull(), // conservative, moderate, aggressive
-  referralCode: text("referral_code").unique(),
-  referredBy: integer("referred_by"),
+  kycStatus: varchar("kyc_status", { length: 50 }).default("pending").notNull(),
+  phone: varchar("phone", { length: 50 }),
+  country: varchar("country", { length: 100 }),
+  totalPortfolioValue: double("total_portfolio_value").default(0).notNull(),
+  riskLevel: varchar("risk_level", { length: 50 }).default("moderate").notNull(),
+  referralCode: varchar("referral_code", { length: 255 }).unique(),
+  referredBy: int("referred_by"),
   profilePicture: text("profile_picture"),
 });
 
@@ -36,11 +36,11 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 }));
 
 // Currency types
-export const currencies = pgTable("currencies", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  symbol: text("symbol").notNull().unique(), // BTC, ETH, USD, etc.
-  name: text("name").notNull(),
-  type: text("type").notNull(), // crypto, fiat
+export const currencies = mysqlTable("currencies", {
+  id: int("id").primaryKey().autoincrement(),
+  symbol: varchar("symbol", { length: 10 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
@@ -52,11 +52,11 @@ export const currenciesRelations = relations(currencies, ({ many }) => ({
 }));
 
 // User balance table
-export const userBalances = pgTable("user_balances", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  balance: doublePrecision("balance").notNull().default(0),
+export const userBalances = mysqlTable("user_balances", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  balance: double("balance").notNull().default(0),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
@@ -72,10 +72,10 @@ export const userBalancesRelations = relations(userBalances, ({ one }) => ({
 }));
 
 // User wallet addresses
-export const userWallets = pgTable("user_wallets", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+export const userWallets = mysqlTable("user_wallets", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
   address: text("address").notNull(),
   hdPath: text("hd_path").notNull(),
   privateKeyEncrypted: text("private_key_encrypted"), // Optional: store encrypted private keys if needed
@@ -94,18 +94,18 @@ export const userWalletsRelations = relations(userWallets, ({ one }) => ({
 }));
 
 // Transaction types: deposit, withdrawal, trade, stake, unstake
-export const transactions = pgTable("transactions", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
+export const transactions = mysqlTable("transactions", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
   type: text("type").notNull(), // deposit, withdrawal, trade_buy, trade_sell, stake, unstake, reward
-  sourceId: integer("source_id").references(() => currencies.id), // From currency (null for deposits)
-  sourceAmount: doublePrecision("source_amount").default(0),
-  targetId: integer("target_id").references(() => currencies.id), // To currency (null for withdrawals)
-  targetAmount: doublePrecision("target_amount").default(0),
-  fee: doublePrecision("fee").default(0),
+  sourceId: int("source_id").references(() => currencies.id), // From currency (null for deposits)
+  sourceAmount: double("source_amount").default(0),
+  targetId: int("target_id").references(() => currencies.id), // To currency (null for withdrawals)
+  targetAmount: double("target_amount").default(0),
+  fee: double("fee").default(0),
   status: text("status").default("pending").notNull(), // pending, completed, failed
   txHash: text("tx_hash"), // Blockchain transaction hash
-  blockchainConfirmations: integer("blockchain_confirmations").default(0),
+  blockchainConfirmations: int("blockchain_confirmations").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   description: text("description"),
@@ -128,12 +128,12 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 }));
 
 // Staking rates for different currencies
-export const stakingRates = pgTable("staking_rates", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  apy: doublePrecision("apy").notNull(), // Annual Percentage Yield
-  minimumStake: doublePrecision("minimum_stake").default(0).notNull(),
-  lockupPeriod: integer("lockup_period").default(0).notNull(), // in days
+export const stakingRates = mysqlTable("staking_rates", {
+  id: int("id").primaryKey().autoincrement(),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  apy: double("apy").notNull(), // Annual Percentage Yield
+  minimumStake: double("minimum_stake").default(0).notNull(),
+  lockupPeriod: int("lockup_period").default(0).notNull(), // in days
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
@@ -146,17 +146,17 @@ export const stakingRatesRelations = relations(stakingRates, ({ one }) => ({
 }));
 
 // User staking positions
-export const stakingPositions = pgTable("staking_positions", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  amount: doublePrecision("amount").notNull(),
-  apy: doublePrecision("apy").notNull(), // Rate locked in when staking started
-  lockupPeriod: integer("lockup_period").notNull(),
+export const stakingPositions = mysqlTable("staking_positions", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  amount: double("amount").notNull(),
+  apy: double("apy").notNull(), // Rate locked in when staking started
+  lockupPeriod: int("lockup_period").notNull(),
   startDate: timestamp("start_date").defaultNow().notNull(),
   endDate: timestamp("end_date").notNull(),
   status: text("status").default("active").notNull(), // active, completed, withdrawn
-  rewardsEarned: doublePrecision("rewards_earned").default(0).notNull(),
+  rewardsEarned: double("rewards_earned").default(0).notNull(),
   lastRewardCalculation: timestamp("last_reward_calculation").defaultNow().notNull()
 });
 
@@ -172,13 +172,13 @@ export const stakingPositionsRelations = relations(stakingPositions, ({ one }) =
 }));
 
 // Market prices for cryptocurrencies
-export const marketPrices = pgTable("market_prices", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  price: doublePrecision("price").notNull(),
-  change24h: doublePrecision("change_24h").default(0).notNull(),
-  volume24h: doublePrecision("volume_24h").default(0).notNull(),
-  marketCap: doublePrecision("market_cap").default(0).notNull(),
+export const marketPrices = mysqlTable("market_prices", {
+  id: int("id").primaryKey().autoincrement(),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  price: double("price").notNull(),
+  change24h: double("change_24h").default(0).notNull(),
+  volume24h: double("volume_24h").default(0).notNull(),
+  marketCap: double("market_cap").default(0).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
@@ -190,31 +190,31 @@ export const marketPricesRelations = relations(marketPrices, ({ one }) => ({
 }));
 
 // Futures contracts
-export const futuresContracts = pgTable("futures_contracts", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+export const futuresContracts = mysqlTable("futures_contracts", {
+  id: int("id").primaryKey().autoincrement(),
   symbol: text("symbol").notNull().unique(), // BTCUSDT, ETHUSDT, etc.
   baseCurrency: text("base_currency").notNull(),
   quoteCurrency: text("quote_currency").notNull(),
-  contractSize: doublePrecision("contract_size").default(1).notNull(),
-  tickSize: doublePrecision("tick_size").default(0.01).notNull(),
-  maxLeverage: integer("max_leverage").default(100).notNull(),
+  contractSize: double("contract_size").default(1).notNull(),
+  tickSize: double("tick_size").default(0.01).notNull(),
+  maxLeverage: int("max_leverage").default(100).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
 // Futures positions
-export const futuresPositions = pgTable("futures_positions", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  contractId: integer("contract_id").notNull().references(() => futuresContracts.id),
+export const futuresPositions = mysqlTable("futures_positions", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  contractId: int("contract_id").notNull().references(() => futuresContracts.id),
   side: text("side").notNull(), // long, short
-  size: doublePrecision("size").notNull(),
-  entryPrice: doublePrecision("entry_price").notNull(),
-  markPrice: doublePrecision("mark_price").notNull(),
-  leverage: integer("leverage").notNull(),
-  margin: doublePrecision("margin").notNull(),
-  unrealizedPnl: doublePrecision("unrealized_pnl").default(0).notNull(),
-  realizedPnl: doublePrecision("realized_pnl").default(0).notNull(),
+  size: double("size").notNull(),
+  entryPrice: double("entry_price").notNull(),
+  markPrice: double("mark_price").notNull(),
+  leverage: int("leverage").notNull(),
+  margin: double("margin").notNull(),
+  unrealizedPnl: double("unrealized_pnl").default(0).notNull(),
+  realizedPnl: double("realized_pnl").default(0).notNull(),
   status: text("status").default("open").notNull(), // open, closed, liquidated
   openedAt: timestamp("opened_at").defaultNow().notNull(),
   closedAt: timestamp("closed_at")
@@ -232,16 +232,16 @@ export const futuresPositionsRelations = relations(futuresPositions, ({ one }) =
 }));
 
 // Spot orders
-export const spotOrders = pgTable("spot_orders", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  baseCurrencyId: integer("base_currency_id").notNull().references(() => currencies.id),
-  quoteCurrencyId: integer("quote_currency_id").notNull().references(() => currencies.id),
+export const spotOrders = mysqlTable("spot_orders", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  baseCurrencyId: int("base_currency_id").notNull().references(() => currencies.id),
+  quoteCurrencyId: int("quote_currency_id").notNull().references(() => currencies.id),
   side: text("side").notNull(), // buy, sell
   type: text("type").notNull(), // market, limit
-  quantity: doublePrecision("quantity").notNull(),
-  price: doublePrecision("price"), // null for market orders
-  filled: doublePrecision("filled").default(0).notNull(),
+  quantity: double("quantity").notNull(),
+  price: double("price"), // null for market orders
+  filled: double("filled").default(0).notNull(),
   status: text("status").default("open").notNull(), // open, filled, cancelled, partial
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
@@ -263,17 +263,17 @@ export const spotOrdersRelations = relations(spotOrders, ({ one }) => ({
 }));
 
 // Futures orders
-export const futuresOrders = pgTable("futures_orders", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  contractId: integer("contract_id").notNull().references(() => futuresContracts.id),
+export const futuresOrders = mysqlTable("futures_orders", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  contractId: int("contract_id").notNull().references(() => futuresContracts.id),
   side: text("side").notNull(), // buy, sell
   type: text("type").notNull(), // market, limit, stop
-  quantity: doublePrecision("quantity").notNull(),
-  price: doublePrecision("price"), // null for market orders
-  stopPrice: doublePrecision("stop_price"), // for stop orders
-  leverage: integer("leverage").notNull(),
-  filled: doublePrecision("filled").default(0).notNull(),
+  quantity: double("quantity").notNull(),
+  price: double("price"), // null for market orders
+  stopPrice: double("stop_price"), // for stop orders
+  leverage: int("leverage").notNull(),
+  filled: double("filled").default(0).notNull(),
   status: text("status").default("open").notNull(), // open, filled, cancelled, partial
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
@@ -291,14 +291,14 @@ export const futuresOrdersRelations = relations(futuresOrders, ({ one }) => ({
 }));
 
 // Portfolio snapshots for performance tracking
-export const portfolioSnapshots = pgTable("portfolio_snapshots", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  totalValue: doublePrecision("total_value").notNull(),
-  spotValue: doublePrecision("spot_value").default(0).notNull(),
-  futuresValue: doublePrecision("futures_value").default(0).notNull(),
-  stakingValue: doublePrecision("staking_value").default(0).notNull(),
-  change24h: doublePrecision("change_24h").default(0).notNull(),
+export const portfolioSnapshots = mysqlTable("portfolio_snapshots", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  totalValue: double("total_value").notNull(),
+  spotValue: double("spot_value").default(0).notNull(),
+  futuresValue: double("futures_value").default(0).notNull(),
+  stakingValue: double("staking_value").default(0).notNull(),
+  change24h: double("change_24h").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
@@ -310,10 +310,10 @@ export const portfolioSnapshotsRelations = relations(portfolioSnapshots, ({ one 
 }));
 
 // Deposit addresses for cryptocurrencies
-export const depositAddresses = pgTable("deposit_addresses", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+export const depositAddresses = mysqlTable("deposit_addresses", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
   address: text("address").notNull(),
   tag: text("tag"), // for currencies that require destination tags
   isActive: boolean("is_active").default(true).notNull(),
@@ -332,14 +332,14 @@ export const depositAddressesRelations = relations(depositAddresses, ({ one }) =
 }));
 
 // Admin credits system
-export const adminCredits = pgTable("admin_credits", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  amount: doublePrecision("amount").notNull(),
+export const adminCredits = mysqlTable("admin_credits", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  amount: double("amount").notNull(),
   type: text("type").notNull(), // credit, debit
   reason: text("reason").notNull(),
-  adminId: integer("admin_id").notNull().references(() => users.id),
+  adminId: int("admin_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
@@ -359,12 +359,12 @@ export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
 }));
 
 // Referral earnings
-export const referralEarnings = pgTable("referral_earnings", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  referredUserId: integer("referred_user_id").notNull().references(() => users.id),
-  currencyId: integer("currency_id").notNull().references(() => currencies.id),
-  amount: doublePrecision("amount").notNull(),
+export const referralEarnings = mysqlTable("referral_earnings", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  referredUserId: int("referred_user_id").notNull().references(() => users.id),
+  currencyId: int("currency_id").notNull().references(() => currencies.id),
+  amount: double("amount").notNull(),
   type: text("type").notNull(), // trading_fee, deposit_bonus
   status: text("status").default("pending").notNull(), // pending, paid
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -372,128 +372,122 @@ export const referralEarnings = pgTable("referral_earnings", {
 });
 
 // User favorites for cryptocurrency pairs
-export const userFavorites = pgTable("user_favorites", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
+export const userFavorites = mysqlTable("user_favorites", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
   cryptoPairSymbol: text("crypto_pair_symbol").notNull(), // e.g., "BTCUSDT", "ETHUSDT"
   cryptoId: text("crypto_id").notNull(), // e.g., "bitcoin", "ethereum"
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
 // User preferences for trading interface
-export const userPreferences = pgTable("user_preferences", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  lastSelectedPair: text("last_selected_pair"), // Last crypto pair symbol
-  lastSelectedCrypto: text("last_selected_crypto"), // Last crypto ID
-  lastSelectedTab: text("last_selected_tab").default("Charts"), // Last selected tab
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  lastSelectedPair: varchar("last_selected_pair", { length: 50 }),
+  lastSelectedCrypto: varchar("last_selected_crypto", { length: 50 }),
+  lastSelectedTab: varchar("last_selected_tab", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
-export const referralEarningsRelations = relations(referralEarnings, ({ one }) => ({
-  user: one(users, {
-    fields: [referralEarnings.userId],
-    references: [users.id]
-  }),
-  referredUser: one(users, {
-    fields: [referralEarnings.referredUserId],
-    references: [users.id]
-  }),
-  currency: one(currencies, {
-    fields: [referralEarnings.currencyId],
-    references: [currencies.id]
-  })
-}));
-
-export const userFavoritesRelations = relations(userFavorites, ({ one }) => ({
-  user: one(users, {
-    fields: [userFavorites.userId],
-    references: [users.id]
-  })
-}));
-
-export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
-  user: one(users, {
-    fields: [userPreferences.userId],
-    references: [users.id]
-  })
-}));
-
-// Zod schemas for validation
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  email: true,
-  password: true,
-  firstName: true,
-  lastName: true,
-  phone: true,
-  country: true,
-  riskLevel: true
+// Insert schemas using zod
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
 });
 
-export const insertCurrencySchema = createInsertSchema(currencies);
-export const insertBalanceSchema = createInsertSchema(userBalances);
-export const insertWalletSchema = createInsertSchema(userWallets);
-export const insertTransactionSchema = createInsertSchema(transactions);
-export const insertStakingRateSchema = createInsertSchema(stakingRates);
-export const insertStakingPositionSchema = createInsertSchema(stakingPositions);
-export const insertMarketPriceSchema = createInsertSchema(marketPrices);
-export const insertFuturesContractSchema = createInsertSchema(futuresContracts);
-export const insertFuturesPositionSchema = createInsertSchema(futuresPositions);
-export const insertSpotOrderSchema = createInsertSchema(spotOrders);
-export const insertFuturesOrderSchema = createInsertSchema(futuresOrders);
-export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapshots);
-export const insertDepositAddressSchema = createInsertSchema(depositAddresses);
-export const insertAdminCreditSchema = createInsertSchema(adminCredits);
-export const insertReferralEarningSchema = createInsertSchema(referralEarnings);
-export const insertUserFavoriteSchema = createInsertSchema(userFavorites);
-export const insertUserPreferenceSchema = createInsertSchema(userPreferences);
+export const insertCurrencySchema = createInsertSchema(currencies).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserBalanceSchema = createInsertSchema(userBalances).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertTransactionSchema = createInsertSchema(transactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStakingRateSchema = createInsertSchema(stakingRates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStakingPositionSchema = createInsertSchema(stakingPositions).omit({
+  id: true,
+  startDate: true,
+  lastRewardCalculation: true,
+});
+
+export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertSpotOrderSchema = createInsertSchema(spotOrders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFuturesOrderSchema = createInsertSchema(futuresOrders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserFavoriteSchema = createInsertSchema(userFavorites).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 // Type definitions
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export type InsertCurrency = z.infer<typeof insertCurrencySchema>;
 export type Currency = typeof currencies.$inferSelect;
+export type InsertCurrency = z.infer<typeof insertCurrencySchema>;
 
-export type InsertUserBalance = z.infer<typeof insertBalanceSchema>;
 export type UserBalance = typeof userBalances.$inferSelect;
+export type InsertUserBalance = z.infer<typeof insertUserBalanceSchema>;
 
-export type InsertUserWallet = z.infer<typeof insertWalletSchema>;
-export type UserWallet = typeof userWallets.$inferSelect;
-
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 
-export type InsertStakingRate = z.infer<typeof insertStakingRateSchema>;
 export type StakingRate = typeof stakingRates.$inferSelect;
+export type InsertStakingRate = z.infer<typeof insertStakingRateSchema>;
 
-export type InsertStakingPosition = z.infer<typeof insertStakingPositionSchema>;
 export type StakingPosition = typeof stakingPositions.$inferSelect;
+export type InsertStakingPosition = z.infer<typeof insertStakingPositionSchema>;
 
-export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
 export type MarketPrice = typeof marketPrices.$inferSelect;
+export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
 
-export type InsertFuturesContract = z.infer<typeof insertFuturesContractSchema>;
-export type FuturesContract = typeof futuresContracts.$inferSelect;
-
-export type InsertFuturesPosition = z.infer<typeof insertFuturesPositionSchema>;
-export type FuturesPosition = typeof futuresPositions.$inferSelect;
-
-export type InsertSpotOrder = z.infer<typeof insertSpotOrderSchema>;
 export type SpotOrder = typeof spotOrders.$inferSelect;
+export type InsertSpotOrder = z.infer<typeof insertSpotOrderSchema>;
 
-export type InsertFuturesOrder = z.infer<typeof insertFuturesOrderSchema>;
 export type FuturesOrder = typeof futuresOrders.$inferSelect;
+export type InsertFuturesOrder = z.infer<typeof insertFuturesOrderSchema>;
 
-export type InsertPortfolioSnapshot = z.infer<typeof insertPortfolioSnapshotSchema>;
 export type PortfolioSnapshot = typeof portfolioSnapshots.$inferSelect;
+export type InsertPortfolioSnapshot = z.infer<typeof insertPortfolioSnapshotSchema>;
 
-export type InsertDepositAddress = z.infer<typeof insertDepositAddressSchema>;
-export type DepositAddress = typeof depositAddresses.$inferSelect;
+export type UserFavorite = typeof userFavorites.$inferSelect;
+export type InsertUserFavorite = z.infer<typeof insertUserFavoriteSchema>;
 
-export type InsertAdminCredit = z.infer<typeof insertAdminCreditSchema>;
-export type AdminCredit = typeof adminCredits.$inferSelect;
-
-export type InsertReferralEarning = z.infer<typeof insertReferralEarningSchema>;
-export type ReferralEarning = typeof referralEarnings.$inferSelect;
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = z.infer<typeof insertUserPreferenceSchema>;
