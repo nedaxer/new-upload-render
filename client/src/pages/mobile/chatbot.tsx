@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/language-context';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Message {
   id: string;
@@ -143,17 +144,19 @@ export default function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   // Initialize with welcome message
   useEffect(() => {
+    const userName = user?.firstName || user?.username || 'there';
     const welcomeMessage: Message = {
       id: '1',
-      text: "Hello there! I'm Nedaxer Bot, how can I assist you today?",
+      text: `Hello ${userName}! I'm Nedaxer Bot, how can I assist you today?`,
       isUser: false,
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-  }, []);
+  }, [user]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -183,7 +186,8 @@ export default function Chatbot() {
         body: JSON.stringify({
           message: userMessage.text,
           language: selectedLanguage.code,
-          conversationHistory: messages.slice(-5) // Send last 5 messages for context
+          conversationHistory: messages.slice(-5), // Send last 5 messages for context
+          userName: user?.firstName || user?.username || 'User'
         }),
       });
 

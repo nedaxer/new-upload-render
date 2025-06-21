@@ -78,11 +78,13 @@ interface ChatRequest {
   message: string;
   language: string;
   conversationHistory: ChatMessage[];
+  userName: string;
 }
 
+// Chat endpoint
 router.post('/message', async (req: Request, res: Response) => {
   try {
-    const { message, language, conversationHistory }: ChatRequest = req.body;
+    const { message, language, conversationHistory, userName }: ChatRequest = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -92,7 +94,7 @@ router.post('/message', async (req: Request, res: Response) => {
     const contextMessages: any[] = [
       {
         role: 'system',
-        content: `You are Nedaxer Bot, a helpful customer support assistant for Nedaxer cryptocurrency trading platform. 
+        content: `You are Nedaxer Bot, a helpful customer support assistant for Nedaxer cryptocurrency trading platform. You are currently helping ${userName || 'a user'}.
 
 IMPORTANT INSTRUCTIONS:
 - Always respond in ${getLanguageName(language)} language
@@ -266,7 +268,7 @@ function getLanguageName(code: string): string {
     'yo': 'Yoruba',
     'zu': 'Zulu'
   };
-  
+
   return languageMap[code] || 'English';
 }
 

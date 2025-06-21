@@ -28,7 +28,7 @@ export default function MobileSettings() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentLanguage, t } = useLanguage();
-  
+
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
     language: currentLanguage.name,
@@ -36,7 +36,7 @@ export default function MobileSettings() {
     theme: 'Dark Mode',
     screenLock: false
   });
-  
+
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [tempNickname, setTempNickname] = useState(settings.nickname || '');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -104,7 +104,7 @@ export default function MobileSettings() {
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('securityUpdated', handleSecurityUpdate);
     window.addEventListener('focus', handleCurrencyUpdate);
-    
+
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('securityUpdated', handleSecurityUpdate);
@@ -122,12 +122,12 @@ export default function MobileSettings() {
         credentials: 'include',
         body: JSON.stringify(data)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update profile');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -170,7 +170,7 @@ export default function MobileSettings() {
     }
 
     setUploadingPhoto(true);
-    
+
     try {
       // Convert file to base64 for simple storage
       const reader = new FileReader();
@@ -208,7 +208,7 @@ export default function MobileSettings() {
 
   const handleThemeChange = (theme: string) => {
     setSettings(prev => ({ ...prev, theme }));
-    
+
     // Apply theme to document
     const root = document.documentElement;
     if (theme === 'Dark Mode') {
@@ -216,10 +216,10 @@ export default function MobileSettings() {
     } else {
       root.classList.remove('dark');
     }
-    
+
     // Save theme preference to localStorage
     localStorage.setItem('theme', theme);
-    
+
     toast({
       title: "Theme updated",
       description: `Switched to ${theme}`
@@ -264,7 +264,7 @@ export default function MobileSettings() {
         {/* Account Info Section */}
         <div>
           <h2 className="text-lg font-semibold mb-4">{t('account_info')}</h2>
-          
+
           {/* Profile Picture */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
             <span className="text-gray-300">{t('profile_picture')}</span>
@@ -313,7 +313,7 @@ export default function MobileSettings() {
 
           {/* Username/Nickname */}
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
-            <span className="text-gray-300">Username</span>
+            <span className="text-gray-300">Name</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
                 <div className="flex items-center gap-2">
@@ -395,7 +395,7 @@ export default function MobileSettings() {
                 <ChevronRight className="h-4 w-4" />
               </div>
             </Button>
-            
+
             <Button
               variant="ghost"
               onClick={() => setLocation('/mobile/security')}
@@ -419,7 +419,7 @@ export default function MobileSettings() {
         {/* Settings Section */}
         <div>
           <h2 className="text-lg font-semibold mb-4">{t('settings')}</h2>
-          
+
           {/* Language */}
           <Button
             variant="ghost"

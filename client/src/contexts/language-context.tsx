@@ -220,7 +220,7 @@ const TRANSLATIONS: Record<string, any> = {
     'point_camera_qr': 'Point camera at QR code',
     'camera_access_denied': 'Camera access denied or not available',
     'qr_scanner_not_supported': 'QR scanner not supported on this device',
-    'welcome_helper': 'Welcome! How can I assist you?',
+    'welcome_helper': 'Welcome! How can I assist you today?',
     'quick_actions': 'Quick Actions',
     'watchlist': 'Watchlist',
     'top_movers': 'Top Movers',

@@ -502,7 +502,7 @@ export default function MobileHome() {
             {showHelperTooltip && (
               <div className="absolute top-8 -right-2 bg-orange-500 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg z-50 animate-in fade-in-0 slide-in-from-top-2 duration-300">
                 <div className="absolute -top-1 right-4 w-2 h-2 bg-orange-500 rotate-45"></div>
-{t('welcome_helper').replace('Welcome!', `${t('welcome')} ${user?.username || user?.firstName || ''}!`)}
+{t('welcome_helper').replace('Welcome!', `${t('welcome')} ${user?.firstName || user?.username || 'User'}!`)}
               </div>
             )}
           </div>
