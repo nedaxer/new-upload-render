@@ -313,9 +313,9 @@ export default function MobileHome() {
       const volume = parseFloat(ticker.turnover24h);
 
       return {
-        symbol: baseSymbol,
-        pair: ticker.symbol,
-        displayPair: `${baseSymbol}/USDT`,
+        symbol: baseSymbol, // Just the base symbol like BTC, ETH
+        pair: ticker.symbol, // Full trading pair like BTCUSDT, ETHUSDT
+        displayPair: `${baseSymbol}/USDT`, // Display format like BTC/USDT
         price: price >= 1 ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : price.toFixed(8),
         priceValue: price,
         change: `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`,
@@ -645,45 +645,47 @@ export default function MobileHome() {
             </div>
           ) : (
             watchlistMarkets.map((market, index) => (
-              <Link 
-                key={`${market.pair}-${index}`} 
-                href={`/mobile/trade?symbol=${market.symbol}&tab=Charts`}
+              <div
+                key={`${market.pair}-${index}`}
                 onClick={() => {
-                  // Store symbol and tab for trade page
-                  sessionStorage.setItem('selectedSymbol', market.symbol);
+                  // Store the trading pair symbol for trade page (using the full pair symbol like BTCUSDT)
+                  const tradingSymbol = market.pair; // This should be like BTCUSDT, ETHUSDT, etc.
+                  sessionStorage.setItem('selectedSymbol', tradingSymbol);
                   sessionStorage.setItem('selectedTab', 'Charts');
-                  console.log('Navigating to trade with symbol:', market.symbol);
+                  console.log('Home page: Navigating to trade with symbol:', tradingSymbol);
+                  
+                  // Navigate to trade page
+                  navigate('/mobile/trade');
                 }}
+                className="flex items-center justify-between py-3 px-2 hover:bg-gray-800/30 rounded transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between py-3 px-2 hover:bg-gray-800/30 rounded transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-2">
-                      {market.favorite && (
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                      )}
-                      <div className="flex flex-col">
-                        <span className="text-white font-medium">{market.displayPair}</span>
-                        <span className="text-gray-400 text-xs">{t('vol')}: {market.volume}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">
-                      ${market.price}
-                    </div>
-                    <div className={`text-sm flex items-center justify-end space-x-1 ${
-                      market.isPositive ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {market.isPositive ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                      <span className="font-medium">{market.change}</span>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    {market.favorite && (
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-white font-medium">{market.displayPair}</span>
+                      <span className="text-gray-400 text-xs">{t('vol')}: {market.volume}</span>
                     </div>
                   </div>
                 </div>
-              </Link>
+                <div className="text-right">
+                  <div className="text-white font-medium">
+                    ${market.price}
+                  </div>
+                  <div className={`text-sm flex items-center justify-end space-x-1 ${
+                    market.isPositive ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {market.isPositive ? (
+                      <TrendingUp className="w-3 h-3" />
+                    ) : (
+                      <TrendingDown className="w-3 h-3" />
+                    )}
+                    <span className="font-medium">{market.change}</span>
+                  </div>
+                </div>
+              </div>
             ))
           )}
         </div>
