@@ -102,7 +102,7 @@ const CRYPTO_PAIRS: CryptoPair[] = [
   { symbol: 'COREUSDT', baseAsset: 'CORE', quoteAsset: 'USDT', name: 'Core', tradingViewSymbol: 'BYBIT:COREUSDT', coinGeckoId: 'coredaoorg' },
   { symbol: 'MINAUSDT', baseAsset: 'MINA', quoteAsset: 'USDT', name: 'Mina Protocol', tradingViewSymbol: 'BYBIT:MINAUSDT', coinGeckoId: 'mina-protocol' },
   { symbol: 'CKBUSDT', baseAsset: 'CKB', quoteAsset: 'USDT', name: 'Nervos Network', tradingViewSymbol: 'BYBIT:CKBUSDT', coinGeckoId: 'nervos-network' },
-  { symbol: 'SATSUSDT', baseAsset: 'SATS', quoteAsset: 'USDT', name: '1000SATS', tradingViewSymbol: 'BYBIT:1000SATSUSDT', coinGeckoId: '1000sats' },
+  { symbol: 'SATSUSDT', baseAsset: 'SATS', quoteAsset: 'USDT', name: '1000SATS', tradingViewSymbol: 'BYBIT:1000SATSUSDT' },
   { symbol: 'ORDIUSDT', baseAsset: 'ORDI', quoteAsset: 'USDT', name: 'ORDI', tradingViewSymbol: 'BYBIT:ORDIUSDT', coinGeckoId: 'ordinals' },
   { symbol: 'BOMEUSDT', baseAsset: 'BOME', quoteAsset: 'USDT', name: 'BOOK OF MEME', tradingViewSymbol: 'BYBIT:BOMEUSDT', coinGeckoId: 'book-of-meme' },
   { symbol: 'KASUSDT', baseAsset: 'KAS', quoteAsset: 'USDT', name: 'Kaspa', tradingViewSymbol: 'BYBIT:KASUSDT', coinGeckoId: 'kaspa' },
@@ -161,9 +161,13 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
 
     // Transform data to match our crypto pairs
     const tickers: CryptoTicker[] = [];
+    const missingCoins: string[] = [];
+    
+    // Keep track of processed coin IDs to avoid duplicates
+    const processedCoinIds = new Set<string>();
     
     CRYPTO_PAIRS.forEach(pair => {
-      if (pair.coinGeckoId && response.data[pair.coinGeckoId]) {
+      if (pair.coinGeckoId && response.data[pair.coinGeckoId] && !processedCoinIds.has(pair.coinGeckoId)) {
         const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
         tickers.push({
           symbol: pair.symbol,
@@ -173,8 +177,26 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
           volume: coinData.usd_24h_vol || 0,
           marketCap: coinData.usd_market_cap || 0
         });
+        processedCoinIds.add(pair.coinGeckoId);
+      } else if (pair.coinGeckoId && processedCoinIds.has(pair.coinGeckoId)) {
+        // Handle duplicate coinGeckoId by using the same data but different symbol
+        const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
+        tickers.push({
+          symbol: pair.symbol,
+          name: pair.name,
+          price: coinData.usd,
+          change: coinData.usd_24h_change || 0,
+          volume: coinData.usd_24h_vol || 0,
+          marketCap: coinData.usd_market_cap || 0
+        });
+      } else if (pair.coinGeckoId && !response.data[pair.coinGeckoId]) {
+        missingCoins.push(pair.coinGeckoId);
       }
     });
+
+    if (missingCoins.length > 0) {
+      console.log(`Missing coin data for: ${missingCoins.join(', ')}`);
+    }
 
     console.log(`Successfully fetched ${tickers.length} crypto prices from CoinGecko`);
     return tickers;
