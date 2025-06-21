@@ -96,20 +96,12 @@ router.get('/conversion-rates', async (req, res) => {
 // Get top cryptocurrencies
 router.get('/cryptocurrencies', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = parseInt(req.query.limit as string) || 50;
     const cryptocurrencies = await priceService.getTopCryptocurrencies(limit);
-
-    // Ensure we have data for the most important trading pairs
-    const enhancedData = cryptocurrencies.map(crypto => ({
-      ...crypto,
-      // Add symbol mappings for easier lookup
-      baseSymbol: crypto.symbol?.toUpperCase(),
-      tradingPair: `${crypto.symbol?.toUpperCase()}USDT`
-    }));
 
     res.json({
       success: true,
-      data: enhancedData
+      data: cryptocurrencies
     });
   } catch (error: any) {
     console.error('Error fetching cryptocurrencies:', error.message);

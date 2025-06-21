@@ -102,36 +102,37 @@ export default function MobileMarkets() {
     const newFavorites = favoriteCoins.includes(symbol)
       ? favoriteCoins.filter(id => id !== symbol)
       : [...favoriteCoins, symbol];
-
+    
     setFavoriteCoins(newFavorites);
     localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
   };
 
   // Fetch live market data from CoinGecko API (10-second auto-refresh)
   const { data: marketData, isLoading, refetch, error } = useQuery({
-    queryKey: ['crypto-prices'],
-    queryFn: async () => {
-      const response = await fetch('/api/market-data/cryptocurrencies?limit=100');
+    queryKey: ['/api/crypto/realtime-prices'],
+    queryFn: async (): Promise<CoinGeckoResponse> => {
+      const response = await fetch('/api/crypto/realtime-prices');
       if (!response.ok) {
-        throw new Error('Failed to fetch market data');
+        throw new Error(`Failed to fetch market data: ${response.statusText}`);
       }
-      return response.json();
+      const data = await response.json();
+      setLastUpdate(new Date());
+      return data;
     },
-    refetchInterval: 2000,
+    refetchInterval: 10000, // Refresh every 10 seconds
     retry: 3,
-    retryDelay: 1000
   });
 
   // Process comprehensive crypto pairs with live price data
   const processedMarkets = CRYPTO_PAIRS.map((pair: CryptoPair) => {
     // Find matching ticker data from API
     const ticker = marketData?.data?.find((t: CryptoTicker) => t.symbol === pair.symbol);
-
+    
     if (ticker) {
       const price = ticker.price;
       const change = ticker.change;
       const volume = ticker.volume;
-
+      
       return {
         symbol: pair.baseAsset,
         pair: pair.symbol,
@@ -180,7 +181,7 @@ export default function MobileMarkets() {
   // Filter markets based on active tab
   const getFilteredMarkets = () => {
     let filtered = searchFilteredMarkets;
-
+    
     switch (activeTab) {
       case 'Favorites':
         filtered = filtered.filter(market => market.favorite);
@@ -207,7 +208,7 @@ export default function MobileMarkets() {
       default:
         filtered = filtered.sort((a, b) => b.volumeValue - a.volumeValue);
     }
-
+    
     return filtered;
   };
 
@@ -216,7 +217,7 @@ export default function MobileMarkets() {
   const handleCoinClick = (market: any) => {
     hapticLight();
     console.log('Market pair clicked:', market.pair);
-
+    
     // Navigate to trade page and ensure Charts tab is selected
     navigate(`/mobile/trade?symbol=${market.pair}&tab=Charts`);
   };
@@ -313,7 +314,7 @@ export default function MobileMarkets() {
                   }`}>
                     <div className="font-medium text-sm">{market.change}</div>
                   </div>
-
+                  
                   {/* Sentiment Badge */}
                   <div className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${getSentimentColor(market.sentiment)}`}>
                     {getSentimentIcon(market.sentiment)}
