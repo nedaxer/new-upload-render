@@ -60,11 +60,13 @@ export default function MobileTrade() {
 
   // Initialize selected pair from URL parameter or default
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    // Handle both hash-based and regular query parameters
+    const currentLocation = location.includes('?') ? location : window.location.search;
+    const urlParams = new URLSearchParams(currentLocation.split('?')[1] || '');
     const symbolFromUrl = urlParams.get('symbol');
     const tabFromUrl = urlParams.get('tab');
     
-    console.log('Trade page URL params:', { symbolFromUrl, tabFromUrl, location });
+    console.log('Trade page URL params:', { symbolFromUrl, tabFromUrl, location, currentLocation });
     
     // Set tab if specified in URL (from markets navigation)
     if (tabFromUrl === 'Charts') {
@@ -93,7 +95,7 @@ export default function MobileTrade() {
         }, 1000);
       }
     }
-  }, [location]);
+  }, [location, window.location.search]);
 
   // Update chart when selected pair changes or when Charts tab is selected
   useEffect(() => {

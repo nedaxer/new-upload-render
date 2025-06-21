@@ -223,10 +223,7 @@ export default function MobileMarkets() {
     const targetUrl = `/mobile/trade?symbol=${symbol}&tab=Charts`;
     console.log('Navigating to:', targetUrl);
     
-    // Force navigation using hash
-    window.location.hash = targetUrl;
-    
-    // Also use the navigate function as backup
+    // Use navigate function with query parameters
     navigate(targetUrl);
   };
 
