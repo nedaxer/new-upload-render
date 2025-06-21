@@ -10,7 +10,7 @@ interface MobileLayoutProps {
 
 export function MobileLayout({ children, className = '', hideBottomNav = false }: MobileLayoutProps) {
   const [location] = useLocation();
-
+  
   // Hide bottom navigation for profile and settings pages
   const shouldHideBottomNav = hideBottomNav || 
     location.includes('/profile') || 
@@ -22,8 +22,8 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
     location.includes('/invite-friends');
 
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-hidden">
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
         {children}
       </div>
       {!shouldHideBottomNav && <BottomNavigation />}
