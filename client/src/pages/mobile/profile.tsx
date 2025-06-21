@@ -323,9 +323,25 @@ export default function MobileProfile() {
         <Button 
           variant="destructive" 
           className="w-full bg-red-900 hover:bg-red-800 text-white"
-          onClick={() => logoutMutation.mutate()}
+          onClick={async () => {
+            try {
+              // Auto-backup user data before logout
+              if (user?.id) {
+                await fetch('/api/user/backup', {
+                  method: 'GET',
+                  credentials: 'include'
+                }).catch(err => console.log('Backup failed:', err));
+              }
+              
+              logoutMutation.mutate();
+            } catch (error) {
+              console.error('Error during logout:', error);
+              logoutMutation.mutate(); // Logout anyway
+            }
+          }}
+          disabled={logoutMutation.isPending}
         >
-          {t('logout') || 'Logout'}
+          {logoutMutation.isPending ? 'Logging out...' : (t('logout') || 'Logout')}
         </Button>
       </div>
 

@@ -9,6 +9,7 @@ import {
 import { eq } from "drizzle-orm";
 import { tradingService } from "../services/trading.service";
 import { stakingService } from "../services/staking.service";
+import { backupService } from "../services/backup.service";
 
 const userRouter = Router();
 
@@ -461,6 +462,54 @@ userRouter.post("/kyc/submit", requireAuth, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to submit KYC verification"
+    });
+  }
+});
+
+// Backup user data
+userRouter.get("/backup", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const backup = await backupService.backupUserData(userId);
+    
+    if (backup.success) {
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="user-backup-${userId}-${Date.now()}.json"`);
+      
+      return res.status(200).json(backup.data);
+    } else {
+      return res.status(500).json(backup);
+    }
+  } catch (error) {
+    console.error("Error creating user backup:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create backup"
+    });
+  }
+});
+
+// Restore user data (admin only for safety)
+userRouter.post("/restore", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { backupData } = req.body;
+    
+    if (!backupData) {
+      return res.status(400).json({
+        success: false,
+        message: "Backup data is required"
+      });
+    }
+    
+    const result = await backupService.restoreUserData(userId, backupData);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error restoring user data:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to restore user data"
     });
   }
 });

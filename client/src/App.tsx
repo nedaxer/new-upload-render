@@ -11,6 +11,7 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
 import { lazy } from 'react';
+import { CookieConsent } from '@/components/cookie-consent';
 
 // Pages
 import Home from '@/pages/home';
@@ -135,7 +136,7 @@ export default function App() {
     // if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
     //   setShowSplash(false);
     // }
-    
+
     // Just a small delay to ensure all routes are registered
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -281,6 +282,7 @@ export default function App() {
           </Switch>
         </Router>
         <Toaster />
+        <CookieConsent />
         <PWAInstallPrompt />
       </AuthProvider>
     </LanguageProvider>
