@@ -218,13 +218,17 @@ export default function MobileMarkets() {
     hapticLight();
     console.log('Market pair clicked:', market.pair);
     
-    // Navigate to trade page and ensure Charts tab is selected with proper symbol
+    // For hash-based routing, we need to pass parameters differently
     const symbol = market.pair; // Use the full trading pair symbol like BTCUSDT
-    const targetUrl = `/mobile/trade?symbol=${symbol}&tab=Charts`;
-    console.log('Navigating to:', targetUrl);
     
-    // Use navigate function with query parameters
-    navigate(targetUrl);
+    // Store the symbol and tab in sessionStorage for the trade page to pick up
+    sessionStorage.setItem('selectedSymbol', symbol);
+    sessionStorage.setItem('selectedTab', 'Charts');
+    
+    console.log('Navigating to trade page with symbol:', symbol);
+    
+    // Navigate to trade page - hash routing will handle the base path
+    navigate('/mobile/trade');
   };
 
   return (
