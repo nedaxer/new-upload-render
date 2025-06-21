@@ -1,6 +1,6 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { users, userFavorites, userPreferences, type User, type InsertUser } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -14,6 +14,15 @@ export interface IStorage {
   verifyUser(userId: number, code: string): Promise<boolean>;
   markUserAsVerified(userId: number): Promise<void>;
   updateUserProfile(userId: number, updates: Partial<User>): Promise<void>;
+  
+  // Favorites functionality
+  getUserFavorites(userId: number): Promise<string[]>;
+  addUserFavorite(userId: number, symbol: string): Promise<void>;
+  removeUserFavorite(userId: number, symbol: string): Promise<void>;
+  
+  // Preferences functionality
+  getUserPreferences(userId: number): Promise<any>;
+  updateUserPreferences(userId: number, updates: any): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -106,6 +115,32 @@ export class MemStorage implements IStorage {
       this.users.set(userId, user);
     }
   }
+
+  async getUserFavorites(userId: number): Promise<string[]> {
+    // In memory storage, use a simple array
+    return [];
+  }
+
+  async addUserFavorite(userId: number, symbol: string): Promise<void> {
+    // In memory storage - not implemented for simplicity
+  }
+
+  async removeUserFavorite(userId: number, symbol: string): Promise<void> {
+    // In memory storage - not implemented for simplicity
+  }
+
+  async getUserPreferences(userId: number): Promise<any> {
+    return {
+      lastSelectedPair: 'BTCUSDT',
+      preferredCurrency: 'USD',
+      theme: 'dark',
+      language: 'en'
+    };
+  }
+
+  async updateUserPreferences(userId: number, updates: any): Promise<void> {
+    // In memory storage - not implemented for simplicity
+  }
 }
 
 export class PostgresStorage implements IStorage {
@@ -173,6 +208,109 @@ export class PostgresStorage implements IStorage {
     await db.update(users)
       .set(updates)
       .where(eq(users.id, userId));
+  }
+
+  async getUserFavorites(userId: number): Promise<string[]> {
+    try {
+      const favorites = await db
+        .select({ symbol: userFavorites.symbol })
+        .from(userFavorites)
+        .where(eq(userFavorites.userId, userId));
+      
+      return favorites.map(f => f.symbol);
+    } catch (error) {
+      console.error('Error fetching user favorites:', error);
+      return [];
+    }
+  }
+
+  async addUserFavorite(userId: number, symbol: string): Promise<void> {
+    try {
+      // Check if favorite already exists
+      const existing = await db
+        .select()
+        .from(userFavorites)
+        .where(and(eq(userFavorites.userId, userId), eq(userFavorites.symbol, symbol)));
+      
+      if (existing.length === 0) {
+        await db
+          .insert(userFavorites)
+          .values({ userId, symbol });
+      }
+    } catch (error) {
+      console.error('Error adding user favorite:', error);
+    }
+  }
+
+  async removeUserFavorite(userId: number, symbol: string): Promise<void> {
+    try {
+      await db
+        .delete(userFavorites)
+        .where(and(eq(userFavorites.userId, userId), eq(userFavorites.symbol, symbol)));
+    } catch (error) {
+      console.error('Error removing user favorite:', error);
+    }
+  }
+
+  async getUserPreferences(userId: number): Promise<any> {
+    try {
+      const [prefs] = await db
+        .select()
+        .from(userPreferences)
+        .where(eq(userPreferences.userId, userId));
+      
+      if (!prefs) {
+        // Create default preferences for new users
+        const defaultPrefs = {
+          userId,
+          lastSelectedPair: 'BTCUSDT',
+          preferredCurrency: 'USD',
+          theme: 'dark',
+          language: 'en'
+        };
+        
+        await db
+          .insert(userPreferences)
+          .values(defaultPrefs);
+        
+        return defaultPrefs;
+      }
+      
+      return prefs;
+    } catch (error) {
+      console.error('Error fetching user preferences:', error);
+      return {
+        lastSelectedPair: 'BTCUSDT',
+        preferredCurrency: 'USD',
+        theme: 'dark',
+        language: 'en'
+      };
+    }
+  }
+
+  async updateUserPreferences(userId: number, updates: any): Promise<void> {
+    try {
+      // Check if preferences exist
+      const existing = await db
+        .select()
+        .from(userPreferences)
+        .where(eq(userPreferences.userId, userId));
+      
+      if (existing.length === 0) {
+        // Create new preferences
+        await db
+          .insert(userPreferences)
+          .values({ userId, ...updates });
+      } else {
+        // Update existing preferences
+        await db
+          .update(userPreferences)
+          .set({ ...updates, updatedAt: new Date() })
+          .where(eq(userPreferences.userId, userId));
+      }
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+    }
   }
 }
 

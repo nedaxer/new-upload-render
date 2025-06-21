@@ -369,6 +369,25 @@ export const referralEarnings = mysqlTable("referral_earnings", {
   paidAt: timestamp("paid_at")
 });
 
+// User favorites for trading pairs
+export const userFavorites = mysqlTable("user_favorites", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  symbol: text("symbol").notNull(), // e.g., "bitcoin", "ethereum"
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+// User preferences for UI settings
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  lastSelectedPair: text("last_selected_pair"), // Last selected trading pair symbol
+  preferredCurrency: text("preferred_currency").default("USD"), // User's preferred currency
+  theme: text("theme").default("dark"), // UI theme
+  language: text("language").default("en"), // User's language preference
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
 export const referralEarningsRelations = relations(referralEarnings, ({ one }) => ({
   user: one(users, {
     fields: [referralEarnings.userId],
@@ -381,6 +400,20 @@ export const referralEarningsRelations = relations(referralEarnings, ({ one }) =
   currency: one(currencies, {
     fields: [referralEarnings.currencyId],
     references: [currencies.id]
+  })
+}));
+
+export const userFavoritesRelations = relations(userFavorites, ({ one }) => ({
+  user: one(users, {
+    fields: [userFavorites.userId],
+    references: [users.id]
+  })
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id]
   })
 }));
 
@@ -411,6 +444,8 @@ export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapsho
 export const insertDepositAddressSchema = createInsertSchema(depositAddresses);
 export const insertAdminCreditSchema = createInsertSchema(adminCredits);
 export const insertReferralEarningSchema = createInsertSchema(referralEarnings);
+export const insertUserFavoriteSchema = createInsertSchema(userFavorites);
+export const insertUserPreferenceSchema = createInsertSchema(userPreferences);
 
 // Type definitions
 export type InsertUser = z.infer<typeof insertUserSchema>;

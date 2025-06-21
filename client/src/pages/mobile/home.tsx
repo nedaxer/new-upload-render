@@ -29,16 +29,19 @@ import {
   QrCode
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
+import { useFavorites } from '@/hooks/use-favorites';
 
 export default function MobileHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const queryClient = useQueryClient();
+  const [location, navigate] = useLocation();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
   const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'

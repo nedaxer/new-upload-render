@@ -75,7 +75,7 @@ const FEATURED_CRYPTOCURRENCIES = [
 
 export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: CryptoPairSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [favorites, setFavorites] = useState<string[]>(['bitcoin', 'ethereum', 'binancecoin']);
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
   const { data: cryptoData, isLoading } = useQuery<CryptoPair[]>({
     queryKey: ['/api/crypto/prices'],
@@ -92,13 +92,7 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
     return cryptoData?.find(crypto => crypto.id === cryptoId);
   };
 
-  const toggleFavorite = (cryptoId: string) => {
-    setFavorites(prev => 
-      prev.includes(cryptoId) 
-        ? prev.filter(id => id !== cryptoId)
-        : [...prev, cryptoId]
-    );
-  };
+  // toggleFavorite function is now provided by the hook
 
   const handleSelectPair = (cryptoId: string, symbol: string) => {
     onSelectPair(cryptoId, symbol);
@@ -210,7 +204,7 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
               <div className="space-y-2">
                 {filteredCryptos.map(crypto => {
                   const liveData = getCryptoData(crypto.id);
-                  const isFavorite = favorites.includes(crypto.id);
+                  const isThisFavorite = isFavorite(crypto.id);
 
                   return (
                     <div
@@ -226,9 +220,9 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
                             e.stopPropagation();
                             toggleFavorite(crypto.id);
                           }}
-                          className={`${isFavorite ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
+                          className={`${isFavorite(crypto.id) ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
                         >
-                          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                          <Star className={`w-4 h-4 ${isFavorite(crypto.id) ? 'fill-current' : ''}`} />
                         </button>
                         {liveData?.image && (
                           <img src={liveData.image} alt={crypto.name} className="w-8 h-8 rounded-full" />

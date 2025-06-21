@@ -31,15 +31,21 @@ import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
+import { usePreferences } from '@/hooks/use-preferences';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
+  const { getLastSelectedPair, updateLastSelectedPair } = usePreferences();
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
   const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
   const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
-  const [selectedPair, setSelectedPair] = useState<CryptoPair>(CRYPTO_PAIRS[0]); // Default to BTC
+  const [selectedPair, setSelectedPair] = useState<CryptoPair>(() => {
+    // Initialize with the last selected pair or default to BTC
+    const lastPair = getLastSelectedPair();
+    return findPairBySymbol(lastPair) || CRYPTO_PAIRS[0];
+  });
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [showTools, setShowTools] = useState(false);
@@ -58,7 +64,7 @@ export default function MobileTrade() {
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
 
-  // Initialize selected pair from sessionStorage or URL parameter or default
+  // Initialize selected pair from sessionStorage or URL parameter or user preferences
   useEffect(() => {
     // Check sessionStorage first (for navigation from markets page)
     const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
@@ -70,8 +76,11 @@ export default function MobileTrade() {
     const symbolFromUrl = urlParams.get('symbol');
     const tabFromUrl = urlParams.get('tab');
     
-    // Prefer sessionStorage over URL params
-    const symbolToUse = symbolFromStorage || symbolFromUrl;
+    // Get last selected pair from user preferences
+    const lastSelectedPair = getLastSelectedPair();
+    
+    // Prefer sessionStorage > URL params > user preferences
+    const symbolToUse = symbolFromStorage || symbolFromUrl || lastSelectedPair;
     const tabToUse = tabFromStorage || tabFromUrl;
     
     console.log('Trade page params:', { 
@@ -79,6 +88,8 @@ export default function MobileTrade() {
       tabFromStorage, 
       symbolFromUrl, 
       tabFromUrl, 
+      lastSelectedPair,
+      symbolToUse,
       location 
     });
     
@@ -97,6 +108,9 @@ export default function MobileTrade() {
         setCurrentSymbol(pair.symbol);
         setTradingViewSymbol(pair.tradingViewSymbol);
         
+        // Update user preferences to remember this selection
+        updateLastSelectedPair(pair.symbol);
+        
         // Update price for the new pair
         updatePrice(pair.symbol);
         
@@ -113,7 +127,7 @@ export default function MobileTrade() {
       sessionStorage.removeItem('selectedSymbol');
       sessionStorage.removeItem('selectedTab');
     }
-  }, [location]);
+  }, [location, getLastSelectedPair, updateLastSelectedPair]);
 
   // Update chart when selected pair changes or when Charts tab is selected
   useEffect(() => {
