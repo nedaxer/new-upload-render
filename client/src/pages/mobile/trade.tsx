@@ -67,7 +67,7 @@ export default function MobileTrade() {
     console.log('Trade page URL params:', { symbolFromUrl, tabFromUrl, location });
     
     // Set tab if specified in URL (from markets navigation)
-    if (tabFromUrl && tabFromUrl === 'Charts') {
+    if (tabFromUrl === 'Charts') {
       setSelectedTab('Charts');
       console.log('Setting tab to Charts from URL');
     }
@@ -84,14 +84,16 @@ export default function MobileTrade() {
         // Update price for the new pair
         updatePrice(pair.symbol);
         
-        // Force chart update if TradingView is ready and Charts tab is selected
-        if (isTradingViewReady && (tabFromUrl === 'Charts' || selectedTab === 'Charts')) {
-          console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
-          loadChart(pair.tradingViewSymbol, true);
-        }
+        // Delay chart loading to ensure proper initialization
+        setTimeout(() => {
+          if (tabFromUrl === 'Charts') {
+            console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
+            loadChart(pair.tradingViewSymbol, false);
+          }
+        }, 1000);
       }
     }
-  }, [location, isTradingViewReady]);
+  }, [location]);
 
   // Update chart when selected pair changes or when Charts tab is selected
   useEffect(() => {
@@ -532,28 +534,8 @@ export default function MobileTrade() {
     };
   }, [currentSymbol]);
 
-  // Read symbol from URL parameters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const symbolParam = urlParams.get('symbol');
-
-    if (symbolParam) {
-      // Update trading view symbol for Bybit
-      const tradingViewSymbol = `BYBIT:${symbolParam}USDT`;
-      setTradingViewSymbol(tradingViewSymbol);
-      setCurrentSymbol(`${symbolParam}USDT`);
-
-      // Update selected pair - find the correct pair from our crypto pairs list
-      const cryptoPair = findPairBySymbol(`${symbolParam}USDT`);
-      if (cryptoPair) {
-        setSelectedPair(cryptoPair);
-      }
-
-      // Update crypto selection
-      const cryptoId = getCryptoIdFromSymbol(symbolParam);
-      setSelectedCrypto(cryptoId);
-    }
-  }, [location]);
+  // This useEffect is now handled by the main URL parameter handler above
+  // Removed to avoid conflicts
 
   // Helper function to get crypto name from symbol
   const getCryptoName = (symbol: string): string => {

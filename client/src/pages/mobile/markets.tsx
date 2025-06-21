@@ -219,7 +219,8 @@ export default function MobileMarkets() {
     console.log('Market pair clicked:', market.pair);
     
     // Navigate to trade page and ensure Charts tab is selected with proper symbol
-    const symbol = market.pair || market.symbol;
+    const symbol = market.pair; // Use the full trading pair symbol like BTCUSDT
+    console.log('Navigating to:', `/mobile/trade?symbol=${symbol}&tab=Charts`);
     navigate(`/mobile/trade?symbol=${symbol}&tab=Charts`);
   };
 
@@ -280,6 +281,7 @@ export default function MobileMarkets() {
               key={`${market.pair}-${index}`} 
               className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
               onClick={() => handleCoinClick(market)}
+              onTouchStart={() => hapticLight()}
             >
               <div className="flex items-center space-x-3">
                 <button 
