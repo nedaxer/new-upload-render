@@ -897,19 +897,19 @@ export default function MobileTrade() {
         currentPair={selectedPair}
       />
 
-      {/* Fixed Buy/Sell Panel - Positioned closer to bottom navigation with minimal spacing */}
+      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
       {selectedTab === 'Charts' && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 px-3 py-2" style={{ bottom: '68px', zIndex: 10000 }}>
-          <div className="flex gap-3">
+        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
+          <div className="flex gap-2">
             <button 
               onClick={handleBuyClick}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg text-sm font-semibold transition-colors active:scale-95"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
             >
               {selectedTradingType === 'Futures' ? 'Long' : 'Buy'}
             </button>
             <button 
               onClick={handleSellClick}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg text-sm font-semibold transition-colors active:scale-95"
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
             >
               {selectedTradingType === 'Futures' ? 'Short' : 'Sell'}
             </button>
