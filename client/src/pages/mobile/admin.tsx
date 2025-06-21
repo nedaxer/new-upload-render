@@ -397,7 +397,7 @@ export default function AdminPage() {
                           To: {tx.targetUserUsername} ({tx.targetUserEmail})
                         </div>
                         <div className="text-sm text-orange-500">
-                          ${tx.usdAmount?.toFixed(2)} USD
+                          ${tx.usdAmount ? tx.usdAmount.toFixed(2) : '0.00'} USD
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {new Date(tx.createdAt).toLocaleString()}
@@ -450,7 +450,7 @@ export default function AdminPage() {
                   <div className="text-sm">
                     <div><strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}</div>
                     <div><strong>Email:</strong> {selectedUser.email}</div>
-                    <div><strong>Current Balance:</strong> ${selectedUser.balance.toFixed(2)}</div>
+                    <div><strong>Current Balance:</strong> ${selectedUser.balance ? selectedUser.balance.toFixed(2) : '0.00'}</div>
                   </div>
                 </div>
               )}
