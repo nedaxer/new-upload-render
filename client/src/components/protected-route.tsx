@@ -38,7 +38,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!user) {
+  // Development mode: Allow access to mobile routes without authentication for testing
+  const isDevelopment = import.meta.env.DEV;
+  const isMobileRoute = path.startsWith('/mobile');
+  
+  if (!user && !(isDevelopment && isMobileRoute)) {
     console.log('No user found, redirecting to login');
     return <Redirect to="/account/login" />;
   }
@@ -57,7 +61,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           return loadingComponent;
         }
 
-        if (!user) {
+        if (!user && !(isDevelopment && isMobileRoute)) {
           return <Redirect to="/account/login" />;
         }
 

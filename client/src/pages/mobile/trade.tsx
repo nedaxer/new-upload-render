@@ -62,8 +62,15 @@ export default function MobileTrade() {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const symbolFromUrl = urlParams.get('symbol');
+    const tabFromUrl = urlParams.get('tab');
     
-    console.log('Trade page URL params:', { symbolFromUrl, location });
+    console.log('Trade page URL params:', { symbolFromUrl, tabFromUrl, location });
+    
+    // Set tab if specified in URL (from markets navigation)
+    if (tabFromUrl && tabFromUrl === 'Charts') {
+      setSelectedTab('Charts');
+      console.log('Setting tab to Charts from URL');
+    }
     
     if (symbolFromUrl) {
       const pair = findPairBySymbol(symbolFromUrl);
@@ -77,8 +84,8 @@ export default function MobileTrade() {
         // Update price for the new pair
         updatePrice(pair.symbol);
         
-        // Force chart update if TradingView is ready
-        if (isTradingViewReady) {
+        // Force chart update if TradingView is ready and Charts tab is selected
+        if (isTradingViewReady && (tabFromUrl === 'Charts' || selectedTab === 'Charts')) {
           console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
           loadChart(pair.tradingViewSymbol, true);
         }

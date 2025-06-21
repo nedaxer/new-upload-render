@@ -60,11 +60,11 @@ const formatVolume = (volume: number) => {
 const getSentimentColor = (sentiment: string) => {
   switch (sentiment) {
     case 'Bullish':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-green-600 text-white';
     case 'Bearish':
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-red-600 text-white';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-gray-600 text-white';
   }
 };
 
@@ -216,7 +216,10 @@ export default function MobileMarkets() {
 
   const handleCoinClick = (market: any) => {
     hapticLight();
-    navigate(`/mobile/trade?symbol=${market.pair}`);
+    console.log('Market pair clicked:', market.pair);
+    
+    // Navigate to trade page and ensure Charts tab is selected
+    navigate(`/mobile/trade?symbol=${market.pair}&tab=Charts`);
   };
 
   return (
@@ -297,7 +300,7 @@ export default function MobileMarkets() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <div className="text-white font-medium">${market.price}</div>
                   <div className="text-gray-400 text-sm">
@@ -305,10 +308,18 @@ export default function MobileMarkets() {
                   </div>
                 </div>
 
-                <div className={`text-right min-w-[80px] px-2 py-1 rounded ${
-                  market.isPositive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-                }`}>
-                  <div className="font-medium text-sm">{market.change}</div>
+                <div className="flex flex-col items-end space-y-1">
+                  <div className={`text-right min-w-[80px] px-2 py-1 rounded ${
+                    market.isPositive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                  }`}>
+                    <div className="font-medium text-sm">{market.change}</div>
+                  </div>
+                  
+                  {/* Sentiment Badge */}
+                  <div className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${getSentimentColor(market.sentiment)}`}>
+                    {getSentimentIcon(market.sentiment)}
+                    <span>{market.sentiment}</span>
+                  </div>
                 </div>
               </div>
             </div>
