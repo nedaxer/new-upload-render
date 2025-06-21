@@ -55,6 +55,8 @@ export default function MobileTrade() {
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
   const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
+  const [isChartLoading, setIsChartLoading] = useState(false);
+  const [isTradingViewReady, setIsTradingViewReady] = useState(false);
 
   // Initialize selected pair from URL parameter or default
   useEffect(() => {
@@ -96,8 +98,7 @@ export default function MobileTrade() {
       }
     }
   }, [selectedPair, isTradingViewReady, selectedTab]);
-  const [isChartLoading, setIsChartLoading] = useState(false);
-  const [isTradingViewReady, setIsTradingViewReady] = useState(false);
+
   const [chartError, setChartError] = useState(false);
   const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
@@ -506,13 +507,11 @@ export default function MobileTrade() {
       setTradingViewSymbol(tradingViewSymbol);
       setCurrentSymbol(`${symbolParam}USDT`);
 
-      // Update selected pair
-      setSelectedPair({
-        symbol: symbolParam,
-        name: getCryptoName(symbolParam),
-        price: 0,
-        change: 0
-      });
+      // Update selected pair - find the correct pair from our crypto pairs list
+      const cryptoPair = findPairBySymbol(`${symbolParam}USDT`);
+      if (cryptoPair) {
+        setSelectedPair(cryptoPair);
+      }
 
       // Update crypto selection
       const cryptoId = getCryptoIdFromSymbol(symbolParam);
@@ -642,14 +641,13 @@ export default function MobileTrade() {
 
   const handlePairSelection = (cryptoId: string, symbol: string) => {
     setSelectedCrypto(cryptoId);
-    setSelectedPair({
-      symbol: symbol,
-      name: getCryptoName(symbol),
-      price: 0,
-      change: 0
-    });
-    const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || `BINANCE:${symbol}USDT`;
-    setTradingViewSymbol(tradingViewSymbol);
+    // Find the correct pair from our crypto pairs list
+    const cryptoPair = findPairBySymbol(symbol);
+    if (cryptoPair) {
+      setSelectedPair(cryptoPair);
+      const tradingViewSymbol = cryptoToTradingViewMap[cryptoId] || cryptoPair.tradingViewSymbol;
+      setTradingViewSymbol(tradingViewSymbol);
+    }
     setShowPairSelector(false);
   };
 
@@ -684,8 +682,9 @@ export default function MobileTrade() {
   const handleAmountChange = (value: number) => {
     setAmount(value);
     // Calculate quantity based on current price
-    if (selectedPair.price > 0) {
-      setQuantity(value / selectedPair.price);
+    const price = selectedPair.price || 0;
+    if (price > 0) {
+      setQuantity(value / price);
     }
   };
 
@@ -896,8 +895,8 @@ export default function MobileTrade() {
                     <span className="text-green-400 text-lg font-bold">
                       ${selectedPair.price?.toFixed(2) || '0.00'}
                     </span>
-                    <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
+                    <span className={`text-sm ${(selectedPair.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(selectedPair.change || 0) >= 0 ? '+' : ''}{(selectedPair.change || 0).toFixed(2)}%
                     </span>
                   </div>
                 </div>
@@ -1053,8 +1052,8 @@ export default function MobileTrade() {
                     <span className="text-green-400 text-lg font-bold">
                       ${selectedPair.price?.toFixed(2) || '0.00'}
                     </span>
-                    <span className={`text-sm ${selectedPair.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {selectedPair.change >= 0 ? '+' : ''}{selectedPair.change?.toFixed(2) || '0.00'}%
+                    <span className={`text-sm ${(selectedPair.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(selectedPair.change || 0) >= 0 ? '+' : ''}{(selectedPair.change || 0).toFixed(2)}%
                     </span>
                   </div>
                 </div>
