@@ -220,7 +220,7 @@ export default function MobileHome() {
   // Fetch notification count
   const { data: notificationData } = useQuery({
     queryKey: ['notifications', 'count'],
-    queryFn: () => apiRequest('/api/users/notifications/count'),
+    queryFn: () => apiRequest('/api/users/notifications/count').then(res => res.json()),
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 

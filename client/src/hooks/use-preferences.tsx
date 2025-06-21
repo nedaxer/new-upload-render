@@ -15,19 +15,35 @@ export function usePreferences() {
 
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
-    mutationFn: (updates: any) => 
-      apiRequest('/api/user/preferences', 'PUT', updates),
+    mutationFn: async (updates: any) => {
+      try {
+        return await apiRequest('/api/user/preferences', 'PUT', updates);
+      } catch (error) {
+        console.error('Preferences update error:', error);
+        // Return a default response to prevent hanging
+        return { success: false, error: 'Failed to update preferences' };
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/preferences'] });
+    },
+    onError: (error) => {
+      console.error('Preferences mutation error:', error);
     }
   });
 
   const updateLastSelectedPair = (pair: string) => {
-    updatePreferencesMutation.mutate({ lastSelectedPair: pair });
+    // Only update if user is authenticated
+    if (user) {
+      updatePreferencesMutation.mutate({ lastSelectedPair: pair });
+    }
   };
 
   const updatePreference = (key: string, value: any) => {
-    updatePreferencesMutation.mutate({ [key]: value });
+    // Only update if user is authenticated
+    if (user) {
+      updatePreferencesMutation.mutate({ [key]: value });
+    }
   };
 
   const getLastSelectedPair = () => {
