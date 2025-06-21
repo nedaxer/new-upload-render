@@ -104,8 +104,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: () => {
-      // Clear the auth user data from the cache
+      // Clear all cached data
+      queryClient.clear();
+      // Set auth user to null
       queryClient.setQueryData(["/api/auth/user"], { user: null });
+      // Remove any persisted data
+      localStorage.removeItem('authToken');
+      sessionStorage.clear();
+    },
+    onError: () => {
+      // Even on error, clear the cache and local data
+      queryClient.clear();
+      queryClient.setQueryData(["/api/auth/user"], { user: null });
+      localStorage.removeItem('authToken');
+      sessionStorage.clear();
     },
   });
 

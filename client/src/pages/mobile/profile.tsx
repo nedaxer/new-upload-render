@@ -333,10 +333,20 @@ export default function MobileProfile() {
                 }).catch(err => console.log('Backup failed:', err));
               }
               
-              logoutMutation.mutate();
+              // Clear all caches before logout
+              queryClient.clear();
+              
+              // Perform logout
+              await logoutMutation.mutateAsync();
+              
+              // Force redirect to login page after successful logout
+              window.location.href = '/account/login';
+              
             } catch (error) {
               console.error('Error during logout:', error);
-              logoutMutation.mutate(); // Logout anyway
+              // Force logout and redirect even if there's an error
+              queryClient.clear();
+              window.location.href = '/account/login';
             }
           }}
           disabled={logoutMutation.isPending}
