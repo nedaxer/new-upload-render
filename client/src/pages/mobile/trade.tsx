@@ -63,41 +63,70 @@ export default function MobileTrade() {
     const urlParams = new URLSearchParams(location.split('?')[1] || '');
     const symbolFromUrl = urlParams.get('symbol');
     
+    console.log('Trade page URL params:', { symbolFromUrl, location });
+    
     if (symbolFromUrl) {
       const pair = findPairBySymbol(symbolFromUrl);
+      console.log('Found pair for symbol:', symbolFromUrl, pair);
+      
       if (pair) {
         setSelectedPair(pair);
         setCurrentSymbol(pair.symbol);
+        setTradingViewSymbol(pair.tradingViewSymbol);
+        
         // Update price for the new pair
         updatePrice(pair.symbol);
+        
+        // Force chart update if TradingView is ready
+        if (isTradingViewReady) {
+          console.log('Loading chart for new symbol:', pair.tradingViewSymbol);
+          loadChart(pair.tradingViewSymbol, true);
+        }
       }
     }
-  }, [location]);
+  }, [location, isTradingViewReady]);
 
-  // Update chart when selected pair changes
+  // Update chart when selected pair changes or when Charts tab is selected
   useEffect(() => {
     if (isTradingViewReady && selectedTab === 'Charts') {
+      console.log('Chart update triggered for:', selectedPair.symbol, selectedPair.tradingViewSymbol);
+      
       const existingWidget = getGlobalChartWidget();
       const chartState = getChartState();
       
       if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
         try {
+          console.log('Updating existing chart to:', selectedPair.tradingViewSymbol);
           existingWidget.setSymbol(selectedPair.tradingViewSymbol, "15", () => {
-            console.log('Chart updated to', selectedPair.symbol);
+            console.log('Chart successfully updated to', selectedPair.symbol);
             setChartState({ 
               ...chartState, 
               currentSymbol: selectedPair.symbol 
             });
           });
         } catch (error) {
-          console.log('Failed to update chart symbol, reloading chart');
+          console.log('Failed to update chart symbol, reloading chart:', error);
           loadChart(selectedPair.tradingViewSymbol, true);
         }
       } else {
+        console.log('Loading new chart for:', selectedPair.tradingViewSymbol);
         loadChart(selectedPair.tradingViewSymbol, false);
       }
     }
   }, [selectedPair, isTradingViewReady, selectedTab]);
+
+  // Force chart load when switching to Charts tab
+  useEffect(() => {
+    if (selectedTab === 'Charts' && isTradingViewReady) {
+      console.log('Charts tab selected, ensuring chart is loaded for:', selectedPair.tradingViewSymbol);
+      const existingWidget = getGlobalChartWidget();
+      
+      if (!existingWidget || !existingWidget.iframe) {
+        console.log('No existing chart found, creating new one');
+        loadChart(selectedPair.tradingViewSymbol, false);
+      }
+    }
+  }, [selectedTab, isTradingViewReady, selectedPair.tradingViewSymbol]);
 
   const [chartError, setChartError] = useState(false);
   const chartWidget = useRef<any>(null);
