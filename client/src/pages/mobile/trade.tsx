@@ -102,6 +102,7 @@ export default function MobileTrade() {
       console.log('Found pair for symbol:', symbolToUse, pair);
       
       if (pair) {
+        console.log('Setting selected pair from navigation:', pair);
         setSelectedPair(pair);
         setCurrentSymbol(pair.symbol);
         setTradingViewSymbol(pair.tradingViewSymbol);
@@ -806,7 +807,7 @@ export default function MobileTrade() {
             >
               <div className="flex items-center gap-1">
                 <span className="text-sm font-bold text-white">
-                  {getPairDisplayName(selectedPair)}
+                  {selectedPair ? getPairDisplayName(selectedPair) : 'BTC/USDT'}
                 </span>
                 <ChevronDown className="w-3 h-3 text-gray-400" />
               </div>
