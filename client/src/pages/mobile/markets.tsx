@@ -20,20 +20,19 @@ import { hapticLight } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
 import { CRYPTO_PAIRS, CryptoPair, getPairDisplayName } from '@/lib/crypto-pairs';
 
-interface BybitTicker {
+interface CryptoTicker {
   symbol: string;
-  lastPrice: string;
-  price24hPcnt: string;
-  volume24h: string;
-  highPrice24h: string;
-  lowPrice24h: string;
-  turnover24h: string;
+  name: string;
+  price: number;
+  change: number;
+  volume: number;
+  marketCap: number;
   sentiment: 'Bullish' | 'Bearish' | 'Neutral';
 }
 
-interface BybitResponse {
+interface CoinGeckoResponse {
   success: boolean;
-  data: BybitTicker[];
+  data: CryptoTicker[];
   timestamp: number;
 }
 
@@ -108,11 +107,11 @@ export default function MobileMarkets() {
     localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
   };
 
-  // Fetch live market data from Bybit API (10-second auto-refresh)
+  // Fetch live market data from CoinGecko API (10-second auto-refresh)
   const { data: marketData, isLoading, refetch, error } = useQuery({
-    queryKey: ['/api/bybit/tickers'],
-    queryFn: async (): Promise<BybitResponse> => {
-      const response = await fetch('/api/bybit/tickers');
+    queryKey: ['/api/crypto/realtime-prices'],
+    queryFn: async (): Promise<CoinGeckoResponse> => {
+      const response = await fetch('/api/crypto/realtime-prices');
       if (!response.ok) {
         throw new Error(`Failed to fetch market data: ${response.statusText}`);
       }
@@ -127,12 +126,12 @@ export default function MobileMarkets() {
   // Process comprehensive crypto pairs with live price data
   const processedMarkets = CRYPTO_PAIRS.map((pair: CryptoPair) => {
     // Find matching ticker data from API
-    const ticker = marketData?.data?.find((t: BybitTicker) => t.symbol === pair.symbol);
+    const ticker = marketData?.data?.find((t: CryptoTicker) => t.symbol === pair.symbol);
     
     if (ticker) {
-      const price = parseFloat(ticker.lastPrice);
-      const change = parseFloat(ticker.price24hPcnt);
-      const volume = parseFloat(ticker.turnover24h);
+      const price = ticker.price;
+      const change = ticker.change;
+      const volume = ticker.volume;
       
       return {
         symbol: pair.baseAsset,
@@ -145,8 +144,8 @@ export default function MobileMarkets() {
         isPositive: change >= 0,
         volume: formatVolume(volume),
         volumeValue: volume,
-        high24h: formatPrice(parseFloat(ticker.highPrice24h)),
-        low24h: formatPrice(parseFloat(ticker.lowPrice24h)),
+        high24h: '--',
+        low24h: '--',
         sentiment: ticker.sentiment,
         favorite: favoriteCoins.includes(pair.symbol),
         cryptoPair: pair
