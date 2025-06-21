@@ -897,9 +897,9 @@ export default function MobileTrade() {
         currentPair={selectedPair}
       />
 
-      {/* Fixed Buy/Sell Panel - Positioned above bottom navigation */}
+      {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
       {selectedTab === 'Charts' && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '64px', zIndex: 10000 }}>
+        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '56px', zIndex: 10000 }}>
           <div className="flex gap-2">
             <button 
               onClick={handleBuyClick}
