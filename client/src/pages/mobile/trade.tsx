@@ -55,6 +55,47 @@ export default function MobileTrade() {
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
   const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
+
+  // Initialize selected pair from URL parameter or default
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const symbolFromUrl = urlParams.get('symbol');
+    
+    if (symbolFromUrl) {
+      const pair = findPairBySymbol(symbolFromUrl);
+      if (pair) {
+        setSelectedPair(pair);
+        setCurrentSymbol(pair.symbol);
+        // Update price for the new pair
+        updatePrice(pair.symbol);
+      }
+    }
+  }, [location]);
+
+  // Update chart when selected pair changes
+  useEffect(() => {
+    if (isTradingViewReady && selectedTab === 'Charts') {
+      const existingWidget = getGlobalChartWidget();
+      const chartState = getChartState();
+      
+      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+        try {
+          existingWidget.setSymbol(selectedPair.tradingViewSymbol, "15", () => {
+            console.log('Chart updated to', selectedPair.symbol);
+            setChartState({ 
+              ...chartState, 
+              currentSymbol: selectedPair.symbol 
+            });
+          });
+        } catch (error) {
+          console.log('Failed to update chart symbol, reloading chart');
+          loadChart(selectedPair.tradingViewSymbol, true);
+        }
+      } else {
+        loadChart(selectedPair.tradingViewSymbol, false);
+      }
+    }
+  }, [selectedPair, isTradingViewReady, selectedTab]);
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState(false);
@@ -391,10 +432,9 @@ export default function MobileTrade() {
       } else if (selectedTab === 'Charts') {
         // Only create new widget if we're on Charts tab and no existing widget
         console.log('Creating initial chart widget');
-        loadChart('BYBIT:BTCUSDT', false);
+        loadChart(selectedPair.tradingViewSymbol, false);
       }
       
-      initializeCoinMenu();
       return;
     }
 
@@ -405,9 +445,8 @@ export default function MobileTrade() {
         setIsTradingViewReady(true);
         setIsChartLoading(false);
         if (selectedTab === 'Charts') {
-          loadChart('BYBIT:BTCUSDT', false);
+          loadChart(selectedPair.tradingViewSymbol, false);
         }
-        initializeCoinMenu();
       });
       return;
     }
@@ -423,9 +462,8 @@ export default function MobileTrade() {
       setIsTradingViewReady(true);
       setIsChartLoading(false);
       if (selectedTab === 'Charts') {
-        loadChart('BYBIT:BTCUSDT', false);
+        loadChart(selectedPair.tradingViewSymbol, false);
       }
-      initializeCoinMenu();
     };
 
     script.onerror = () => {

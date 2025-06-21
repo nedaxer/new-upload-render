@@ -300,9 +300,9 @@ export default function MobileMarkets() {
 
               <div className="flex items-center space-x-6">
                 <div className="text-right">
-                  <div className="text-white font-medium">{market.price}</div>
+                  <div className="text-white font-medium">${market.price}</div>
                   <div className="text-gray-400 text-sm">
-                    {market.price} USD
+                    Vol: {market.volume}
                   </div>
                 </div>
 

@@ -88,24 +88,24 @@ export default function CryptoPairSelectorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md mx-auto h-[80vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md mx-auto h-[80vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 p-6 pb-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Select Trading Pair</DialogTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white h-8 w-8 p-0"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
 
         {/* Search */}
-        <div className="flex-shrink-0 relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className="flex-shrink-0 relative mb-4 px-6">
+          <Search className="absolute left-9 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             placeholder="Search pairs..."
             value={searchQuery}
@@ -115,11 +115,11 @@ export default function CryptoPairSelectorModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col px-6">
           {!searchQuery && favoritePairs.length > 0 && (
             <div className="flex-shrink-0 mb-4">
               <h3 className="text-sm font-medium text-gray-400 mb-2 px-1">Favorites</h3>
-              <div className="space-y-1">
+              <div className="space-y-1 max-h-32 overflow-y-auto">
                 {favoritePairs.map(pair => (
                   <PairItem key={pair.symbol} pair={pair} />
                 ))}
@@ -131,7 +131,7 @@ export default function CryptoPairSelectorModal({
             <h3 className="text-sm font-medium text-gray-400 mb-2 px-1">
               {searchQuery ? 'Search Results' : 'All Pairs'}
             </h3>
-            <div className="space-y-1">
+            <div className="space-y-1 pb-6">
               {filteredPairs.map(pair => (
                 <PairItem key={pair.symbol} pair={pair} />
               ))}
