@@ -758,9 +758,9 @@ export default function MobileTrade() {
     };
 
   return (
-    <MobileLayout className="flex flex-col h-screen">
+    <MobileLayout>
       {/* Trading Tabs - Smaller font and padding */}
-      <div className="bg-gray-900 px-3 py-1 flex-shrink-0">
+      <div className="bg-gray-900 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {tradingTabs.map((tab) => (
             <button 
@@ -779,7 +779,7 @@ export default function MobileTrade() {
       </div>
 
       {/* Chart/Trade Toggle - Smaller */}
-      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden flex-shrink-0">
+      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
@@ -806,9 +806,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 flex flex-col min-h-0 bg-gray-900">
+        <div className="flex-1 overflow-y-auto bg-gray-900">
           {/* Tappable Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 flex-shrink-0">
+          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
             <div 
               className="flex flex-col cursor-pointer hover:bg-gray-700 rounded px-2 py-1 transition-colors"
               onClick={() => {
@@ -833,8 +833,8 @@ export default function MobileTrade() {
             </div>
           </div>
 
-          {/* Chart Container - Flexible height */}
-          <div className="relative bg-gray-900 flex-1 min-h-0">
+          {/* Chart Container - Clean without loading skeleton */}
+          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
               <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
@@ -913,23 +913,7 @@ export default function MobileTrade() {
             />
           </div>
 
-          {/* Buy/Sell Panel - Integrated at bottom of Charts tab */}
-          <div className="bg-gray-800 border-t border-gray-700 p-3 flex-shrink-0">
-            <div className="flex gap-3">
-              <button 
-                onClick={handleBuyClick}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
-              >
-                {selectedTradingType === 'Futures' ? 'Long' : 'Buy'} {selectedPair.symbol}
-              </button>
-              <button 
-                onClick={handleSellClick}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded text-sm font-medium transition-colors"
-              >
-                {selectedTradingType === 'Futures' ? 'Short' : 'Sell'} {selectedPair.symbol}
-              </button>
-            </div>
-          </div>
+
         </div>
       )}
 
@@ -941,14 +925,32 @@ export default function MobileTrade() {
         currentPair={selectedPair}
       />
 
-      
+      {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
+      {selectedTab === 'Charts' && (
+        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '56px', zIndex: 10000 }}>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleBuyClick}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+            >
+              {selectedTradingType === 'Futures' ? 'Long' : 'Buy'}
+            </button>
+            <button 
+              onClick={handleSellClick}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-xs font-medium transition-colors"
+            >
+              {selectedTradingType === 'Futures' ? 'Short' : 'Sell'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
 
           {selectedTradingType === 'Spot' && (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="h-full p-4">
               {/* Trading Pair Info */}
               <div className="bg-gray-900 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -1105,7 +1107,7 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Futures' && (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="h-full p-4">
               {/* Trading Pair Info */}
               <div className="bg-gray-900 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">

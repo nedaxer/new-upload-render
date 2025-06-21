@@ -22,8 +22,8 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
     location.includes('/invite-friends');
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
-      <div className={`flex-1 ${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
         {children}
       </div>
       {!shouldHideBottomNav && <BottomNavigation />}
