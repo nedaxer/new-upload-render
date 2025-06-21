@@ -247,25 +247,25 @@ export default function App() {
             <ProtectedRoute path="/deposit" component={Deposit} />
             <ProtectedRoute path="/withdraw" component={Withdraw} />
 
-            {/* Mobile App Routes - Protected */}
-            <ProtectedRoute path="/mobile" component={MobileHome} />
-            <ProtectedRoute path="/mobile/assets" component={MobileAssets} />
-            <ProtectedRoute path="/mobile/trade" component={MobileTrade} />
-            <ProtectedRoute path="/mobile/markets" component={MobileMarkets} />
-            <ProtectedRoute path="/mobile/earn" component={MobileEarn} />
-            <ProtectedRoute path="/mobile/profile" component={MobileProfile} />
-            <ProtectedRoute path="/mobile/convert" component={MobileConvert} />
-            <ProtectedRoute path="/mobile/futures" component={MobileFutures} />
-            <ProtectedRoute path="/mobile/spot" component={MobileSpot} />
-            <ProtectedRoute path="/mobile/invite-friends" component={MobileInviteFriends} />
-            <ProtectedRoute path="/mobile/notifications" component={MobileNotifications} />
-            <ProtectedRoute path="/mobile/notification-settings" component={NotificationSettings} />
-            <ProtectedRoute path="/mobile/chatbot" component={Chatbot} />
-            <ProtectedRoute path="/mobile/kyc" component={MobileKYC} />
-            <ProtectedRoute path="/mobile/news" component={MobileNews} />
-            <ProtectedRoute path="/mobile/settings" component={MobileSettings} />
-            <ProtectedRoute path="/mobile/security" component={MobileSecurity} />
-            <ProtectedRoute path="/mobile/language-selection" component={LanguageSelection} />
+            {/* Mobile App Routes - Open Access for Trading */}
+            <Route path="/mobile" component={MobileHome} />
+            <Route path="/mobile/assets" component={MobileAssets} />
+            <Route path="/mobile/trade" component={MobileTrade} />
+            <Route path="/mobile/markets" component={MobileMarkets} />
+            <Route path="/mobile/earn" component={MobileEarn} />
+            <Route path="/mobile/profile" component={MobileProfile} />
+            <Route path="/mobile/convert" component={MobileConvert} />
+            <Route path="/mobile/futures" component={MobileFutures} />
+            <Route path="/mobile/spot" component={MobileSpot} />
+            <Route path="/mobile/invite-friends" component={MobileInviteFriends} />
+            <Route path="/mobile/notifications" component={MobileNotifications} />
+            <Route path="/mobile/notification-settings" component={NotificationSettings} />
+            <Route path="/mobile/chatbot" component={Chatbot} />
+            <Route path="/mobile/kyc" component={MobileKYC} />
+            <Route path="/mobile/news" component={MobileNews} />
+            <Route path="/mobile/settings" component={MobileSettings} />
+            <Route path="/mobile/security" component={MobileSecurity} />
+            <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
