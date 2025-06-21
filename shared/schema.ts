@@ -452,7 +452,6 @@ export const insertUserFavoriteSchema = createInsertSchema(userFavorites).omit({
 export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 // Type definitions

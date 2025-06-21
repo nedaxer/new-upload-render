@@ -1,6 +1,6 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { users, userFavorites, userPreferences, type User, type InsertUser } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -150,7 +150,7 @@ export class MemStorage implements IStorage {
   }
 }
 
-export class PostgresStorage implements IStorage {
+export class MySQLStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
@@ -167,10 +167,13 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db
+    const insertResult = await db
       .insert(users)
-      .values(insertUser)
-      .returning();
+      .values(insertUser);
+    
+    // Get the inserted user by ID since MySQL doesn't support returning
+    const insertedId = (insertResult as any).insertId;
+    const result = await db.select().from(users).where(eq(users.id, Number(insertedId))).limit(1);
     return result[0];
   }
 
@@ -212,14 +215,25 @@ export class PostgresStorage implements IStorage {
 
   // Favorites management
   async addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
-    await db
-      .insert(userFavorites)
-      .values({
-        userId,
-        cryptoPairSymbol,
-        cryptoId
-      })
-      .onConflictDoNothing();
+    // Check if favorite already exists
+    const existing = await db
+      .select()
+      .from(userFavorites)
+      .where(and(
+        eq(userFavorites.userId, userId),
+        eq(userFavorites.cryptoPairSymbol, cryptoPairSymbol)
+      ))
+      .limit(1);
+    
+    if (existing.length === 0) {
+      await db
+        .insert(userFavorites)
+        .values({
+          userId,
+          cryptoPairSymbol,
+          cryptoId
+        });
+    }
   }
 
   async removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void> {
@@ -251,10 +265,7 @@ export class PostgresStorage implements IStorage {
     if (existing.length > 0) {
       await db
         .update(userPreferences)
-        .set({
-          ...preferences,
-          updatedAt: new Date()
-        })
+        .set(preferences)
         .where(eq(userPreferences.userId, userId));
     } else {
       await db
@@ -286,6 +297,5 @@ export class PostgresStorage implements IStorage {
   }
 }
 
-// Using MemStorage for now
-// Will implement MongoDB storage in a separate step
-export const storage = new PostgresStorage();
+// Using MySQL storage with your free database
+export const storage = new MySQLStorage();
