@@ -107,6 +107,9 @@ import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
+import MobileAdmin from '@/pages/mobile/admin';
+import AssetHistory from '@/pages/mobile/asset-history';
+import DepositDetails from '@/pages/mobile/deposit-details';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -268,6 +271,9 @@ export default function App() {
             <Route path="/mobile/security" component={MobileSecurity} />
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
+            <Route path="/mobile/admin" component={MobileAdmin} />
+            <Route path="/mobile/asset-history" component={AssetHistory} />
+            <Route path="/mobile/deposit-details/:id" component={DepositDetails} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
