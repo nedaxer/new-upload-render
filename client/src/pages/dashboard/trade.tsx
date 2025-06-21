@@ -180,58 +180,86 @@ export default function TradePage() {
 
   // Setup WebSocket connection for real-time updates
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
 
-    ws = new WebSocket(wsUrl);
+      ws = new WebSocket(wsUrl);
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      setConnected(true);
+      ws.onopen = () => {
+        console.log('WebSocket connected successfully');
+        setConnected(true);
 
-      // Send ping to keep connection alive
-      const pingInterval = setInterval(() => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'ping' }));
+        // Send initial subscription message
+        if (ws) {
+          ws.send(JSON.stringify({ 
+            type: 'subscribe_prices',
+            timestamp: Date.now()
+          }));
         }
-      }, 30000);
 
-      return () => clearInterval(pingInterval);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'prices') {
-          // Update price data
-          const newPrices: {[key: string]: number} = {};
-          data.data.forEach((price: any) => {
-            newPrices[price.currency.symbol] = price.price;
-          });
-          setPrices(newPrices);
-
-          // Update estimated result if we have an amount and selected currencies
-          if (amount && selectedFromCurrency && selectedToCurrency) {
-            updateEstimatedResult(amount, selectedFromCurrency, selectedToCurrency, newPrices);
+        // Send ping to keep connection alive
+        const pingInterval = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
           }
+        }, 30000);
+
+        return () => clearInterval(pingInterval);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket connection error:', error);
+        setConnected(false);
+      };
+
+      ws.onclose = (event) => {
+        console.log('WebSocket disconnected:', event.code, event.reason);
+        setConnected(false);
+        
+        // Attempt to reconnect after 3 seconds
+        setTimeout(() => {
+          connectWebSocket();
+        }, 3000);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'prices') {
+            // Update price data
+            const newPrices: {[key: string]: number} = {};
+            data.data.forEach((price: any) => {
+              newPrices[price.currency.symbol] = price.price;
+            });
+            setPrices(newPrices);
+
+            // Update estimated result if we have an amount and selected currencies
+            if (amount && selectedFromCurrency && selectedToCurrency) {
+              updateEstimatedResult(amount, selectedFromCurrency, selectedToCurrency, newPrices);
+            }
+          } else if (data.type === 'connection') {
+            console.log('WebSocket connection confirmed:', data.message);
+          } else if (data.type === 'pong') {
+            // Handle ping response
+            console.log('WebSocket ping response received');
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
         }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-      }
+      };
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      setConnected(false);
-    };
+    // Initialize connection
+    connectWebSocket();
 
     return () => {
       if (ws) {
         ws.close();
       }
     };
-  }, [amount, selectedFromCurrency, selectedToCurrency]);
+  }, []);
 
   // Set default currencies when data loads
   useEffect(() => {

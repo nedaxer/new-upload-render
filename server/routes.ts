@@ -1561,7 +1561,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // Setup WebSocket server for real-time updates
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws'
+  });
 
   // Store active WebSocket connections
   const activeConnections = new Set<any>();
@@ -1574,16 +1577,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (newsData.length > 0) {
         const formattedNews = newsData.slice(0, 10);
 
-        // Broadcast to all connected clients
+        // Broadcast to all connected clients with error handling
+        const deadConnections = new Set();
         activeConnections.forEach(ws => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({
-              type: 'news_update',
-              data: formattedNews,
-              timestamp: Date.now()
-            }));
+          try {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'news_update',
+                data: formattedNews,
+                timestamp: Date.now()
+              }));
+            } else {
+              deadConnections.add(ws);
+            }
+          } catch (error) {
+            console.error('Error sending to WebSocket client:', error);
+            deadConnections.add(ws);
           }
         });
+
+        // Clean up dead connections
+        deadConnections.forEach(ws => activeConnections.delete(ws));
 
         console.log(`Broadcasted ${formattedNews.length} news articles to ${activeConnections.size} clients`);
       }
@@ -1629,22 +1643,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up periodic news updates every 2 minutes
   setInterval(broadcastNewsUpdate, 2 * 60 * 1000);
 
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws, req) => {
     console.log('WebSocket client connected');
     activeConnections.add(ws);
 
     // Send initial connection message
-    ws.send(JSON.stringify({ 
-      type: 'connection', 
-      message: 'Connected to real-time crypto news feed',
-      timestamp: Date.now()
-    }));
+    try {
+      ws.send(JSON.stringify({ 
+        type: 'connection', 
+        message: 'Connected to real-time crypto news feed',
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error('Error sending initial message:', error);
+    }
 
     // Handle messages from clients
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        console.log('Received:', data);
 
         // Handle different message types
         if (data.type === 'ping') {
@@ -1652,15 +1669,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (data.type === 'subscribe_news') {
           // Send latest news immediately when client subscribes
           broadcastNewsUpdate();
+        } else if (data.type === 'subscribe_prices') {
+          // Handle price subscription requests
+          ws.send(JSON.stringify({ 
+            type: 'price_subscription_confirmed',
+            timestamp: Date.now()
+          }));
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
+        try {
+          ws.send(JSON.stringify({ 
+            type: 'error', 
+            message: 'Invalid message format',
+            timestamp: Date.now()
+          }));
+        } catch (sendError) {
+          console.error('Error sending error message:', sendError);
+        }
       }
     });
 
+    // Handle connection errors
+    ws.on('error', (error) => {
+      console.error('WebSocket connection error:', error);
+      activeConnections.delete(ws);
+    });
+
     // Handle disconnection
-    ws.on('close', () => {
-      console.log('WebSocket client disconnected');
+    ws.on('close', (code, reason) => {
+      console.log(`WebSocket client disconnected: ${code} ${reason}`);
       activeConnections.delete(ws);
     });
   });
