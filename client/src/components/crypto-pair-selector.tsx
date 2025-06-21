@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, X, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 interface CryptoPair {
   id: string;
@@ -75,12 +77,46 @@ const FEATURED_CRYPTOCURRENCIES = [
 
 export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: CryptoPairSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: cryptoData, isLoading } = useQuery<CryptoPair[]>({
     queryKey: ['/api/crypto/prices'],
     refetchInterval: 10000, // Refresh every 10 seconds
     enabled: isOpen
+  });
+
+  // Fetch user favorites
+  const { data: userFavorites } = useQuery<string[]>({
+    queryKey: ['/api/user/favorites'],
+    enabled: !!user && isOpen,
+    retry: false
+  });
+
+  // Update favorites when user favorites data changes
+  useEffect(() => {
+    if (userFavorites) {
+      setFavorites(userFavorites);
+    }
+  }, [userFavorites]);
+
+  // Mutation for adding/removing favorites
+  const favoritesMutation = useMutation({
+    mutationFn: async ({ action, cryptoPairSymbol, cryptoId }: { 
+      action: 'add' | 'remove'; 
+      cryptoPairSymbol: string; 
+      cryptoId?: string; 
+    }) => {
+      if (action === 'add' && cryptoId) {
+        await apiRequest('/api/user/favorites', 'POST', { cryptoPairSymbol, cryptoId });
+      } else if (action === 'remove') {
+        await apiRequest(`/api/user/favorites/${cryptoPairSymbol}`, 'DELETE');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user/favorites'] });
+    }
   });
 
   const filteredCryptos = FEATURED_CRYPTOCURRENCIES.filter(crypto =>
@@ -92,7 +128,17 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
     return cryptoData?.find(crypto => crypto.id === cryptoId);
   };
 
-  // toggleFavorite function is now provided by the hook
+  const toggleFavorite = (cryptoId: string, cryptoPairSymbol: string) => {
+    if (!user) return; // Only logged-in users can manage favorites
+    
+    const isFavorite = favorites.includes(cryptoPairSymbol);
+    
+    if (isFavorite) {
+      favoritesMutation.mutate({ action: 'remove', cryptoPairSymbol });
+    } else {
+      favoritesMutation.mutate({ action: 'add', cryptoPairSymbol, cryptoId });
+    }
+  };
 
   const handleSelectPair = (cryptoId: string, symbol: string) => {
     onSelectPair(cryptoId, symbol);
@@ -130,9 +176,9 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
           <div className="p-4 border-b border-gray-700">
             <h3 className="text-gray-400 text-sm mb-3">Favorites</h3>
             <div className="space-y-2">
-              {favorites.map(cryptoId => {
-                const crypto = FEATURED_CRYPTOCURRENCIES.find(c => c.id === cryptoId);
-                const liveData = getCryptoData(cryptoId);
+              {favorites.map(cryptoPairSymbol => {
+                const crypto = FEATURED_CRYPTOCURRENCIES.find(c => `${c.symbol.toUpperCase()}USDT` === cryptoPairSymbol);
+                const liveData = crypto ? getCryptoData(crypto.id) : null;
                 if (!crypto) return null;
 
                 return (
@@ -204,7 +250,8 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
               <div className="space-y-2">
                 {filteredCryptos.map(crypto => {
                   const liveData = getCryptoData(crypto.id);
-                  const isThisFavorite = isFavorite(crypto.id);
+                  const cryptoPairSymbol = `${crypto.symbol.toUpperCase()}USDT`;
+                  const isFavorite = favorites.includes(cryptoPairSymbol);
 
                   return (
                     <div
@@ -220,9 +267,9 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
                             e.stopPropagation();
                             toggleFavorite(crypto.id);
                           }}
-                          className={`${isFavorite(crypto.id) ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
+                          className={`${isFavorite ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
                         >
-                          <Star className={`w-4 h-4 ${isFavorite(crypto.id) ? 'fill-current' : ''}`} />
+                          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                         </button>
                         {liveData?.image && (
                           <img src={liveData.image} alt={crypto.name} className="w-8 h-8 rounded-full" />

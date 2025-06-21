@@ -1,6 +1,6 @@
-import { users, userFavorites, userPreferences, type User, type InsertUser } from "@shared/schema";
+import { users, type User, type InsertUser } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -15,14 +15,14 @@ export interface IStorage {
   markUserAsVerified(userId: number): Promise<void>;
   updateUserProfile(userId: number, updates: Partial<User>): Promise<void>;
   
-  // Favorites functionality
+  // Favorites management
+  addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void>;
+  removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void>;
   getUserFavorites(userId: number): Promise<string[]>;
-  addUserFavorite(userId: number, symbol: string): Promise<void>;
-  removeUserFavorite(userId: number, symbol: string): Promise<void>;
   
-  // Preferences functionality
-  getUserPreferences(userId: number): Promise<any>;
-  updateUserPreferences(userId: number, updates: any): Promise<void>;
+  // User preferences management
+  updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void>;
+  getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null>;
 }
 
 export class MemStorage implements IStorage {
@@ -116,30 +116,37 @@ export class MemStorage implements IStorage {
     }
   }
 
+  // Favorites management - in-memory implementation
+  async addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
+    // For in-memory storage, we'll just store in a simple Map
+    const key = `${userId}_favorites`;
+    const existing = (this as any)[key] || [];
+    if (!existing.includes(cryptoPairSymbol)) {
+      existing.push(cryptoPairSymbol);
+      (this as any)[key] = existing;
+    }
+  }
+
+  async removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void> {
+    const key = `${userId}_favorites`;
+    const existing = (this as any)[key] || [];
+    (this as any)[key] = existing.filter((symbol: string) => symbol !== cryptoPairSymbol);
+  }
+
   async getUserFavorites(userId: number): Promise<string[]> {
-    // In memory storage, use a simple array
-    return [];
+    const key = `${userId}_favorites`;
+    return (this as any)[key] || [];
   }
 
-  async addUserFavorite(userId: number, symbol: string): Promise<void> {
-    // In memory storage - not implemented for simplicity
+  // User preferences management - in-memory implementation
+  async updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
+    const key = `${userId}_preferences`;
+    (this as any)[key] = { ...(this as any)[key], ...preferences };
   }
 
-  async removeUserFavorite(userId: number, symbol: string): Promise<void> {
-    // In memory storage - not implemented for simplicity
-  }
-
-  async getUserPreferences(userId: number): Promise<any> {
-    return {
-      lastSelectedPair: 'BTCUSDT',
-      preferredCurrency: 'USD',
-      theme: 'dark',
-      language: 'en'
-    };
-  }
-
-  async updateUserPreferences(userId: number, updates: any): Promise<void> {
-    // In memory storage - not implemented for simplicity
+  async getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
+    const key = `${userId}_preferences`;
+    return (this as any)[key] || null;
   }
 }
 
@@ -160,18 +167,11 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    // Insert the user into the database
-    const result = await db.insert(users).values(insertUser);
-    
-    // For MySQL, we need to get the inserted user by username or email since insertId handling can be tricky
-    // We'll use email as it's unique and always provided
-    const newUser = await db.select().from(users).where(eq(users.email, insertUser.email)).limit(1);
-    
-    if (!newUser[0]) {
-      throw new Error('Failed to create user - could not retrieve newly created user');
-    }
-    
-    return newUser[0];
+    const result = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return result[0];
   }
 
   async setVerificationCode(userId: number, code: string, expiresAt: Date): Promise<void> {
@@ -210,107 +210,79 @@ export class PostgresStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
+  // Favorites management
+  async addFavorite(userId: number, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
+    await db
+      .insert(userFavorites)
+      .values({
+        userId,
+        cryptoPairSymbol,
+        cryptoId
+      })
+      .onConflictDoNothing();
+  }
+
+  async removeFavorite(userId: number, cryptoPairSymbol: string): Promise<void> {
+    await db
+      .delete(userFavorites)
+      .where(and(
+        eq(userFavorites.userId, userId),
+        eq(userFavorites.cryptoPairSymbol, cryptoPairSymbol)
+      ));
+  }
+
   async getUserFavorites(userId: number): Promise<string[]> {
-    try {
-      const favorites = await db
-        .select({ symbol: userFavorites.symbol })
-        .from(userFavorites)
-        .where(eq(userFavorites.userId, userId));
-      
-      return favorites.map(f => f.symbol);
-    } catch (error) {
-      console.error('Error fetching user favorites:', error);
-      return [];
-    }
+    const result = await db
+      .select({ cryptoPairSymbol: userFavorites.cryptoPairSymbol })
+      .from(userFavorites)
+      .where(eq(userFavorites.userId, userId));
+    
+    return result.map(row => row.cryptoPairSymbol);
   }
 
-  async addUserFavorite(userId: number, symbol: string): Promise<void> {
-    try {
-      // Check if favorite already exists
-      const existing = await db
-        .select()
-        .from(userFavorites)
-        .where(and(eq(userFavorites.userId, userId), eq(userFavorites.symbol, symbol)));
-      
-      if (existing.length === 0) {
-        await db
-          .insert(userFavorites)
-          .values({ userId, symbol });
-      }
-    } catch (error) {
-      console.error('Error adding user favorite:', error);
-    }
-  }
+  // User preferences management
+  async updateUserPreferences(userId: number, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
+    const existing = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1);
 
-  async removeUserFavorite(userId: number, symbol: string): Promise<void> {
-    try {
+    if (existing.length > 0) {
       await db
-        .delete(userFavorites)
-        .where(and(eq(userFavorites.userId, userId), eq(userFavorites.symbol, symbol)));
-    } catch (error) {
-      console.error('Error removing user favorite:', error);
-    }
-  }
-
-  async getUserPreferences(userId: number): Promise<any> {
-    try {
-      const [prefs] = await db
-        .select()
-        .from(userPreferences)
+        .update(userPreferences)
+        .set({
+          ...preferences,
+          updatedAt: new Date()
+        })
         .where(eq(userPreferences.userId, userId));
-      
-      if (!prefs) {
-        // Create default preferences for new users
-        const defaultPrefs = {
+    } else {
+      await db
+        .insert(userPreferences)
+        .values({
           userId,
-          lastSelectedPair: 'BTCUSDT',
-          preferredCurrency: 'USD',
-          theme: 'dark',
-          language: 'en'
-        };
-        
-        await db
-          .insert(userPreferences)
-          .values(defaultPrefs);
-        
-        return defaultPrefs;
-      }
-      
-      return prefs;
-    } catch (error) {
-      console.error('Error fetching user preferences:', error);
-      return {
-        lastSelectedPair: 'BTCUSDT',
-        preferredCurrency: 'USD',
-        theme: 'dark',
-        language: 'en'
-      };
+          ...preferences
+        });
     }
   }
 
-  async updateUserPreferences(userId: number, updates: any): Promise<void> {
-    try {
-      // Check if preferences exist
-      const existing = await db
-        .select()
-        .from(userPreferences)
-        .where(eq(userPreferences.userId, userId));
-      
-      if (existing.length === 0) {
-        // Create new preferences
-        await db
-          .insert(userPreferences)
-          .values({ userId, ...updates });
-      } else {
-        // Update existing preferences
-        await db
-          .update(userPreferences)
-          .set({ ...updates, updatedAt: new Date() })
-          .where(eq(userPreferences.userId, userId));
-      }
-    } catch (error) {
-      console.error('Error updating user preferences:', error);
+  async getUserPreferences(userId: number): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
+    const result = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1);
+
+    if (result.length === 0) {
+      return null;
     }
+
+    const pref = result[0];
+    return {
+      lastSelectedPair: pref.lastSelectedPair || undefined,
+      lastSelectedCrypto: pref.lastSelectedCrypto || undefined,
+      lastSelectedTab: pref.lastSelectedTab || undefined
+    };
   }
 }
 

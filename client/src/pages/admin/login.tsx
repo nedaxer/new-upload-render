@@ -26,7 +26,7 @@ export default function AdminLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      const res = await apiRequest("/api/admin/login", "POST", credentials);
+      const res = await apiRequest("POST", "/api/admin/login", credentials);
       return res.json();
     },
     onSuccess: (data) => {

@@ -93,7 +93,7 @@ export default function StakingPage() {
   // Stake mutation
   const stakeMutation = useMutation({
     mutationFn: async (data: { currencyId: number, amount: number }) => {
-      const res = await apiRequest("/api/staking/stake", "POST", data);
+      const res = await apiRequest("POST", "/api/staking/stake", data);
       return res.json();
     },
     onSuccess: () => {
@@ -124,7 +124,7 @@ export default function StakingPage() {
   // Unstake mutation
   const unstakeMutation = useMutation({
     mutationFn: async (positionId: number) => {
-      const res = await apiRequest(`/api/staking/unstake/${positionId}`, "POST");
+      const res = await apiRequest("POST", `/api/staking/unstake/${positionId}`);
       return res.json();
     },
     onSuccess: (data) => {
@@ -151,7 +151,7 @@ export default function StakingPage() {
   // Process rewards mutation
   const processRewardsMutation = useMutation({
     mutationFn: async (positionId: number) => {
-      const res = await apiRequest(`/api/staking/rewards/${positionId}`, "POST");
+      const res = await apiRequest("POST", `/api/staking/rewards/${positionId}`);
       return res.json();
     },
     onSuccess: (data) => {

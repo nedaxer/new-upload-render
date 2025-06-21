@@ -26,22 +26,21 @@ import {
   TrendingUp,
   TrendingDown,
   User,
-  QrCode
+  QrCode,
+  Star
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
-import { useFavorites } from '@/hooks/use-favorites';
 
 export default function MobileHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { toggleFavorite, isFavorite } = useFavorites();
   const queryClient = useQueryClient();
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTab, setSelectedTab] = useState('Exchange');
   const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -97,6 +96,13 @@ export default function MobileHome() {
   const { data: priceData } = useQuery({
     queryKey: ['/api/crypto/prices'],
     refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Fetch user favorites
+  const { data: userFavorites } = useQuery<string[]>({
+    queryKey: ['/api/user/favorites'],
+    enabled: !!user,
+    retry: false
   });
 
   // Fetch currency conversion rates
@@ -220,7 +226,7 @@ export default function MobileHome() {
   // Fetch notification count
   const { data: notificationData } = useQuery({
     queryKey: ['notifications', 'count'],
-    queryFn: () => apiRequest('/api/users/notifications/count').then(res => res.json()),
+    queryFn: () => apiRequest('/api/users/notifications/count'),
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 

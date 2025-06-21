@@ -35,7 +35,6 @@ export default function CryptoPairSelectorModal({
   const favoritePairs = CRYPTO_PAIRS.filter(pair => favorites.includes(pair.symbol));
 
   const handlePairSelect = (pair: CryptoPair) => {
-    console.log('handlePairSelect called with pair:', pair);
     hapticLight();
     onSelectPair(pair);
     onClose();

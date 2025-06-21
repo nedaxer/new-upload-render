@@ -64,7 +64,7 @@ export default function AdminStaking() {
   // Update staking rate mutation
   const updateRateMutation = useMutation({
     mutationFn: async (data: { currencyId: number, rate: number, minAmount: number }) => {
-      const res = await apiRequest("/api/admin/staking-rates", "POST", data);
+      const res = await apiRequest("POST", "/api/admin/staking-rates", data);
       return res.json();
     },
     onSuccess: (data) => {

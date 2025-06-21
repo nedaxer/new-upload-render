@@ -75,7 +75,7 @@ export default function DepositPage() {
   // Check deposits mutation
   const checkDepositsMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("/api/wallet/check-deposits", "POST");
+      const res = await apiRequest("POST", "/api/wallet/check-deposits");
       return res.json();
     },
     onSuccess: (data) => {

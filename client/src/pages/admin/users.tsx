@@ -71,7 +71,7 @@ export default function AdminUsers() {
   // Credit balance mutation
   const creditMutation = useMutation({
     mutationFn: async (data: { userId: number, currencyId: number, amount: number }) => {
-      const res = await apiRequest("/api/admin/credit-balance", "POST", data);
+      const res = await apiRequest("POST", "/api/admin/credit-balance", data);
       return res.json();
     },
     onSuccess: (data) => {
