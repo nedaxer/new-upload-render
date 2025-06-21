@@ -220,8 +220,14 @@ export default function MobileMarkets() {
     
     // Navigate to trade page and ensure Charts tab is selected with proper symbol
     const symbol = market.pair; // Use the full trading pair symbol like BTCUSDT
-    console.log('Navigating to:', `/mobile/trade?symbol=${symbol}&tab=Charts`);
-    navigate(`/mobile/trade?symbol=${symbol}&tab=Charts`);
+    const targetUrl = `/mobile/trade?symbol=${symbol}&tab=Charts`;
+    console.log('Navigating to:', targetUrl);
+    
+    // Force navigation using hash
+    window.location.hash = targetUrl;
+    
+    // Also use the navigate function as backup
+    navigate(targetUrl);
   };
 
   return (
