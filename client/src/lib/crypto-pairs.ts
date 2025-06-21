@@ -13,7 +13,6 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
   // Top Market Cap - Tier 1 (Rank 1-20)
   { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', name: 'Bitcoin', tradingViewSymbol: 'BYBIT:BTCUSDT', coinGeckoId: 'bitcoin' },
   { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', name: 'Ethereum', tradingViewSymbol: 'BYBIT:ETHUSDT', coinGeckoId: 'ethereum' },
-  { symbol: 'USDTUSDT', baseAsset: 'USDT', quoteAsset: 'USDT', name: 'Tether', tradingViewSymbol: 'BYBIT:USDTUSDT', coinGeckoId: 'tether' },
   { symbol: 'SOLUSDT', baseAsset: 'SOL', quoteAsset: 'USDT', name: 'Solana', tradingViewSymbol: 'BYBIT:SOLUSDT', coinGeckoId: 'solana' },
   { symbol: 'BNBUSDT', baseAsset: 'BNB', quoteAsset: 'USDT', name: 'BNB', tradingViewSymbol: 'BYBIT:BNBUSDT', coinGeckoId: 'binancecoin' },
   { symbol: 'XRPUSDT', baseAsset: 'XRP', quoteAsset: 'USDT', name: 'XRP', tradingViewSymbol: 'BYBIT:XRPUSDT', coinGeckoId: 'ripple' },
@@ -22,7 +21,6 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
   { symbol: 'ADAUSDT', baseAsset: 'ADA', quoteAsset: 'USDT', name: 'Cardano', tradingViewSymbol: 'BYBIT:ADAUSDT', coinGeckoId: 'cardano' },
   { symbol: 'TRXUSDT', baseAsset: 'TRX', quoteAsset: 'USDT', name: 'TRON', tradingViewSymbol: 'BYBIT:TRXUSDT', coinGeckoId: 'tron' },
   { symbol: 'AVAXUSDT', baseAsset: 'AVAX', quoteAsset: 'USDT', name: 'Avalanche', tradingViewSymbol: 'BYBIT:AVAXUSDT', coinGeckoId: 'avalanche-2' },
-  { symbol: 'WBTCUSDT', baseAsset: 'WBTC', quoteAsset: 'USDT', name: 'Wrapped Bitcoin', tradingViewSymbol: 'BYBIT:WBTCUSDT', coinGeckoId: 'wrapped-bitcoin' },
   { symbol: 'LINKUSDT', baseAsset: 'LINK', quoteAsset: 'USDT', name: 'Chainlink', tradingViewSymbol: 'BYBIT:LINKUSDT', coinGeckoId: 'chainlink' },
   { symbol: 'TONUSDT', baseAsset: 'TON', quoteAsset: 'USDT', name: 'Toncoin', tradingViewSymbol: 'BYBIT:TONUSDT', coinGeckoId: 'the-open-network' },
   { symbol: 'SHIBUSDT', baseAsset: 'SHIB', quoteAsset: 'USDT', name: 'Shiba Inu', tradingViewSymbol: 'BYBIT:SHIBUSDT', coinGeckoId: 'shiba-inu' },
@@ -35,7 +33,7 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
   // Tier 2 (Rank 21-50)
   { symbol: 'UNIUSDT', baseAsset: 'UNI', quoteAsset: 'USDT', name: 'Uniswap', tradingViewSymbol: 'BYBIT:UNIUSDT', coinGeckoId: 'uniswap' },
   { symbol: 'KASUSDT', baseAsset: 'KAS', quoteAsset: 'USDT', name: 'Kaspa', tradingViewSymbol: 'BYBIT:KASUSDT', coinGeckoId: 'kaspa' },
-  { symbol: 'DAIUSDT', baseAsset: 'DAI', quoteAsset: 'USDT', name: 'Dai', tradingViewSymbol: 'BYBIT:DAIUSDT', coinGeckoId: 'dai' },
+
   { symbol: 'NEARUSDT', baseAsset: 'NEAR', quoteAsset: 'USDT', name: 'NEAR Protocol', tradingViewSymbol: 'BYBIT:NEARUSDT', coinGeckoId: 'near' },
   { symbol: 'APTUSDT', baseAsset: 'APT', quoteAsset: 'USDT', name: 'Aptos', tradingViewSymbol: 'BYBIT:APTUSDT', coinGeckoId: 'aptos' },
   { symbol: 'ICPUSDT', baseAsset: 'ICP', quoteAsset: 'USDT', name: 'Internet Computer', tradingViewSymbol: 'BYBIT:ICPUSDT', coinGeckoId: 'internet-computer' },
@@ -65,12 +63,12 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
   { symbol: 'GALAUSDT', baseAsset: 'GALA', quoteAsset: 'USDT', name: 'Gala', tradingViewSymbol: 'BYBIT:GALAUSDT', coinGeckoId: 'gala' },
   { symbol: 'TIAUSDT', baseAsset: 'TIA', quoteAsset: 'USDT', name: 'Celestia', tradingViewSymbol: 'BYBIT:TIAUSDT', coinGeckoId: 'celestia' },
   { symbol: 'SANDUSDT', baseAsset: 'SAND', quoteAsset: 'USDT', name: 'The Sandbox', tradingViewSymbol: 'BYBIT:SANDUSDT', coinGeckoId: 'the-sandbox' },
-  { symbol: 'FANTUSDT', baseAsset: 'FANT', quoteAsset: 'USDT', name: 'Fantom', tradingViewSymbol: 'BYBIT:FANTUSDT', coinGeckoId: 'fantom' },
+
   { symbol: 'GRTUSDT', baseAsset: 'GRT', quoteAsset: 'USDT', name: 'The Graph', tradingViewSymbol: 'BYBIT:GRTUSDT', coinGeckoId: 'the-graph' },
-  { symbol: 'ROCKETPOOLUSDT', baseAsset: 'RPL', quoteAsset: 'USDT', name: 'Rocket Pool', tradingViewSymbol: 'BYBIT:ROCKETPOOLUSDT', coinGeckoId: 'rocket-pool' },
+
   { symbol: 'BEAMUSDT', baseAsset: 'BEAM', quoteAsset: 'USDT', name: 'Beam', tradingViewSymbol: 'BYBIT:BEAMUSDT', coinGeckoId: 'beam-2' },
   { symbol: 'MINAUSDT', baseAsset: 'MINA', quoteAsset: 'USDT', name: 'Mina Protocol', tradingViewSymbol: 'BYBIT:MINAUSDT', coinGeckoId: 'mina-protocol' },
-  { symbol: 'THORUSDT', baseAsset: 'RUNE', quoteAsset: 'USDT', name: 'THORChain', tradingViewSymbol: 'BYBIT:RUNEUSDT', coinGeckoId: 'thorchain' },
+
   { symbol: 'FLOWUSDT', baseAsset: 'FLOW', quoteAsset: 'USDT', name: 'Flow', tradingViewSymbol: 'BYBIT:FLOWUSDT', coinGeckoId: 'flow' },
   { symbol: 'QNTUSDT', baseAsset: 'QNT', quoteAsset: 'USDT', name: 'Quant', tradingViewSymbol: 'BYBIT:QNTUSDT', coinGeckoId: 'quant-network' },
   { symbol: 'JUPUSDT', baseAsset: 'JUP', quoteAsset: 'USDT', name: 'Jupiter', tradingViewSymbol: 'BYBIT:JUPUSDT', coinGeckoId: 'jupiter-exchange-solana' },
@@ -78,22 +76,22 @@ export const CRYPTO_PAIRS: CryptoPair[] = [
 
   // Tier 4 (Rank 81-110)
   { symbol: 'AXSUSDT', baseAsset: 'AXS', quoteAsset: 'USDT', name: 'Axie Infinity', tradingViewSymbol: 'BYBIT:AXSUSDT', coinGeckoId: 'axie-infinity' },
-  { symbol: 'XMRUSDT', baseAsset: 'XMR', quoteAsset: 'USDT', name: 'Monero', tradingViewSymbol: 'BYBIT:XMRUSDT', coinGeckoId: 'monero' },
+
   { symbol: 'IMXUSDT', baseAsset: 'IMX', quoteAsset: 'USDT', name: 'Immutable X', tradingViewSymbol: 'BYBIT:IMXUSDT', coinGeckoId: 'immutable-x' },
   { symbol: 'ARKMUSDT', baseAsset: 'ARKM', quoteAsset: 'USDT', name: 'Arkham', tradingViewSymbol: 'BYBIT:ARKMUSDT', coinGeckoId: 'arkham' },
   { symbol: 'STRKUSDT', baseAsset: 'STRK', quoteAsset: 'USDT', name: 'Starknet', tradingViewSymbol: 'BYBIT:STRKUSDT', coinGeckoId: 'starknet' },
   { symbol: 'FETUSDT', baseAsset: 'FET', quoteAsset: 'USDT', name: 'Fetch.ai', tradingViewSymbol: 'BYBIT:FETUSDT', coinGeckoId: 'fetch-ai' },
-  { symbol: 'LTOUSDT', baseAsset: 'LTO', quoteAsset: 'USDT', name: 'LTO Network', tradingViewSymbol: 'BYBIT:LTOUSDT', coinGeckoId: 'lto-network' },
+
   { symbol: 'CHZUSDT', baseAsset: 'CHZ', quoteAsset: 'USDT', name: 'Chiliz', tradingViewSymbol: 'BYBIT:CHZUSDT', coinGeckoId: 'chiliz' },
   { symbol: 'SNXUSDT', baseAsset: 'SNX', quoteAsset: 'USDT', name: 'Synthetix', tradingViewSymbol: 'BYBIT:SNXUSDT', coinGeckoId: 'havven' },
   { symbol: 'CRVUSDT', baseAsset: 'CRV', quoteAsset: 'USDT', name: 'Curve DAO', tradingViewSymbol: 'BYBIT:CRVUSDT', coinGeckoId: 'curve-dao-token' },
   { symbol: 'ENJUSDT', baseAsset: 'ENJ', quoteAsset: 'USDT', name: 'Enjin Coin', tradingViewSymbol: 'BYBIT:ENJUSDT', coinGeckoId: 'enjincoin' },
   { symbol: 'AXLUSDT', baseAsset: 'AXL', quoteAsset: 'USDT', name: 'Axelar', tradingViewSymbol: 'BYBIT:AXLUSDT', coinGeckoId: 'axelar' },
-  { symbol: 'KCSUSDT', baseAsset: 'KCS', quoteAsset: 'USDT', name: 'KuCoin Token', tradingViewSymbol: 'BYBIT:KCSUSDT', coinGeckoId: 'kucoin-shares' },
+
   { symbol: 'ETHFIUSDT', baseAsset: 'ETHFI', quoteAsset: 'USDT', name: 'Ether.fi', tradingViewSymbol: 'BYBIT:ETHFIUSDT', coinGeckoId: 'ether-fi' },
   { symbol: 'GMXUSDT', baseAsset: 'GMX', quoteAsset: 'USDT', name: 'GMX', tradingViewSymbol: 'BYBIT:GMXUSDT', coinGeckoId: 'gmx' },
-  { symbol: 'PENGUUSDT', baseAsset: 'PENGU', quoteAsset: 'USDT', name: 'Pudgy Penguins', tradingViewSymbol: 'BYBIT:PENGUUSDT', coinGeckoId: 'pudgy-penguins' },
-  { symbol: 'APECOINUSDT', baseAsset: 'APE', quoteAsset: 'USDT', name: 'ApeCoin', tradingViewSymbol: 'BYBIT:APEUSDT', coinGeckoId: 'apecoin' },
+
+
   { symbol: 'DYDXUSDT', baseAsset: 'DYDX', quoteAsset: 'USDT', name: 'dYdX', tradingViewSymbol: 'BYBIT:DYDXUSDT', coinGeckoId: 'dydx' },
   { symbol: 'COMPUSDT', baseAsset: 'COMP', quoteAsset: 'USDT', name: 'Compound', tradingViewSymbol: 'BYBIT:COMPUSDT', coinGeckoId: 'compound-governance-token' },
   { symbol: 'ZETAUSDT', baseAsset: 'ZETA', quoteAsset: 'USDT', name: 'ZetaChain', tradingViewSymbol: 'BYBIT:ZETAUSDT', coinGeckoId: 'zetachain' },

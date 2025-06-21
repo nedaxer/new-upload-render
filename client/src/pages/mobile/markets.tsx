@@ -218,8 +218,9 @@ export default function MobileMarkets() {
     hapticLight();
     console.log('Market pair clicked:', market.pair);
     
-    // Navigate to trade page and ensure Charts tab is selected
-    navigate(`/mobile/trade?symbol=${market.pair}&tab=Charts`);
+    // Navigate to trade page and ensure Charts tab is selected with proper symbol
+    const symbol = market.pair || market.symbol;
+    navigate(`/mobile/trade?symbol=${symbol}&tab=Charts`);
   };
 
   return (
