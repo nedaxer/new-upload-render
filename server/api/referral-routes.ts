@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { users, referralEarnings } from '@shared/schema';
+import { users } from '@shared/schema';
 import { eq, sql, and, desc } from 'drizzle-orm';
 
 const router = Router();

@@ -42,8 +42,8 @@ export default function MobileSettings() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Generate user ID for display
-  const userId = user?.id ? `${user.id}75573582` : '475573582';
+  // Use the actual UID from the database
+  const userUID = user?.uid || 'N/A';
 
   // Fetch security settings for real-time status
   const { data: securityData } = useQuery({
@@ -228,17 +228,17 @@ export default function MobileSettings() {
 
   const copyUserId = async () => {
     try {
-      await navigator.clipboard.writeText(userId);
+      await navigator.clipboard.writeText(userUID);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({
         title: "Copied",
-        description: "User ID copied to clipboard"
+        description: "UID copied to clipboard"
       });
     } catch (error) {
       toast({
         title: "Copy failed",
-        description: "Failed to copy User ID",
+        description: "Failed to copy UID",
         variant: "destructive"
       });
     }
@@ -357,7 +357,7 @@ export default function MobileSettings() {
           <div className="flex items-center justify-between py-3 border-b border-gray-800">
             <span className="text-gray-300">UID</span>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">{userId}</span>
+              <span className="text-gray-400 text-sm">{userUID}</span>
               <Button
                 variant="ghost"
                 size="sm"

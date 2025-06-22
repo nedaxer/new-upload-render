@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { db } from "../db";
-import { users, currencies, userBalances, adminCredits, stakingRates, transactions } from "../../shared/schema";
+import { users, currencies, userBalances, stakingRates, transactions } from "../../shared/schema";
 import { eq, desc, sum, count } from "drizzle-orm";
 import { z } from "zod";
 

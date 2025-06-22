@@ -2,8 +2,6 @@ import { Router, Request, Response, NextFunction } from "express";
 import { db } from "../db";
 import { 
   users, 
-  futuresContracts, 
-  futuresPositions, 
   futuresOrders, 
   userBalances, 
   currencies,

@@ -3,7 +3,7 @@ import { db } from "../db";
 import { 
   users, 
   currencies, 
-  spotOrders, 
+  transactions, 
   userBalances, 
   transactions 
 } from "../../shared/schema";

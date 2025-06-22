@@ -1,11 +1,12 @@
-import { mysqlTable, text, int, boolean, timestamp, double, primaryKey, json, varchar } from "drizzle-orm/mysql-core";
+import { pgTable, text, integer, boolean, timestamp, doublePrecision, primaryKey, json, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // User-related tables
-export const users = mysqlTable("users", {
-  id: int("id").primaryKey().autoincrement(),
+export const users = pgTable("users", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  uid: varchar("uid", { length: 10 }).notNull().unique(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
@@ -19,10 +20,10 @@ export const users = mysqlTable("users", {
   kycStatus: varchar("kyc_status", { length: 50 }).default("pending").notNull(),
   phone: varchar("phone", { length: 50 }),
   country: varchar("country", { length: 100 }),
-  totalPortfolioValue: double("total_portfolio_value").default(0).notNull(),
+  totalPortfolioValue: doublePrecision("total_portfolio_value").default(0).notNull(),
   riskLevel: varchar("risk_level", { length: 50 }).default("moderate").notNull(),
   referralCode: varchar("referral_code", { length: 255 }).unique(),
-  referredBy: int("referred_by"),
+  referredBy: integer("referred_by"),
   profilePicture: text("profile_picture"),
 });
 
@@ -36,8 +37,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 }));
 
 // Currency types
-export const currencies = mysqlTable("currencies", {
-  id: int("id").primaryKey().autoincrement(),
+export const currencies = pgTable("currencies", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   symbol: varchar("symbol", { length: 10 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   type: varchar("type", { length: 50 }).notNull(),
@@ -52,11 +53,11 @@ export const currenciesRelations = relations(currencies, ({ many }) => ({
 }));
 
 // User balance table
-export const userBalances = mysqlTable("user_balances", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  balance: double("balance").notNull().default(0),
+export const userBalances = pgTable("user_balances", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  balance: doublePrecision("balance").notNull().default(0),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
@@ -71,14 +72,14 @@ export const userBalancesRelations = relations(userBalances, ({ one }) => ({
   })
 }));
 
-// User wallet addresses
-export const userWallets = mysqlTable("user_wallets", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  address: text("address").notNull(),
-  hdPath: text("hd_path").notNull(),
-  privateKeyEncrypted: text("private_key_encrypted"), // Optional: store encrypted private keys if needed
+// User wallets for crypto deposits
+export const userWallets = pgTable("user_wallets", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  address: varchar("address", { length: 255 }).notNull(),
+  privateKey: text("private_key"), // Encrypted private key
+  publicKey: text("public_key"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
@@ -93,23 +94,20 @@ export const userWalletsRelations = relations(userWallets, ({ one }) => ({
   })
 }));
 
-// Transaction types: deposit, withdrawal, trade, stake, unstake
-export const transactions = mysqlTable("transactions", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  type: text("type").notNull(), // deposit, withdrawal, trade_buy, trade_sell, stake, unstake, reward
-  sourceId: int("source_id").references(() => currencies.id), // From currency (null for deposits)
-  sourceAmount: double("source_amount").default(0),
-  targetId: int("target_id").references(() => currencies.id), // To currency (null for withdrawals)
-  targetAmount: double("target_amount").default(0),
-  fee: double("fee").default(0),
-  status: text("status").default("pending").notNull(), // pending, completed, failed
-  txHash: text("tx_hash"), // Blockchain transaction hash
-  blockchainConfirmations: int("blockchain_confirmations").default(0),
+// Transactions table
+export const transactions = pgTable("transactions", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  type: varchar("type", { length: 50 }).notNull(), // 'deposit', 'withdrawal', 'trade'
+  amount: doublePrecision("amount").notNull(),
+  fee: doublePrecision("fee").default(0).notNull(),
+  status: varchar("status", { length: 50 }).default("pending").notNull(),
+  txHash: varchar("tx_hash", { length: 255 }),
+  fromAddress: varchar("from_address", { length: 255 }),
+  toAddress: varchar("to_address", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  completedAt: timestamp("completed_at"),
-  description: text("description"),
-  metadata: json("metadata") // Additional transaction data
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
@@ -117,47 +115,44 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     fields: [transactions.userId],
     references: [users.id]
   }),
-  sourceCurrency: one(currencies, {
-    fields: [transactions.sourceId],
-    references: [currencies.id]
-  }),
-  targetCurrency: one(currencies, {
-    fields: [transactions.targetId],
+  currency: one(currencies, {
+    fields: [transactions.currencyId],
     references: [currencies.id]
   })
 }));
 
-// Staking rates for different currencies
-export const stakingRates = mysqlTable("staking_rates", {
-  id: int("id").primaryKey().autoincrement(),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  apy: double("apy").notNull(), // Annual Percentage Yield
-  minimumStake: double("minimum_stake").default(0).notNull(),
-  lockupPeriod: int("lockup_period").default(0).notNull(), // in days
-  isActive: boolean("is_active").default(true).notNull(),
+// Staking rates
+export const stakingRates = pgTable("staking_rates", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  apy: doublePrecision("apy").notNull(),
+  minAmount: doublePrecision("min_amount").default(0).notNull(),
+  maxAmount: doublePrecision("max_amount").default(1000000).notNull(),
+  lockPeriod: integer("lock_period").default(30).notNull(), // days
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
-export const stakingRatesRelations = relations(stakingRates, ({ one }) => ({
+export const stakingRatesRelations = relations(stakingRates, ({ one, many }) => ({
   currency: one(currencies, {
     fields: [stakingRates.currencyId],
     references: [currencies.id]
-  })
+  }),
+  positions: many(stakingPositions)
 }));
 
-// User staking positions
-export const stakingPositions = mysqlTable("staking_positions", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  amount: double("amount").notNull(),
-  apy: double("apy").notNull(), // Rate locked in when staking started
-  lockupPeriod: int("lockup_period").notNull(),
+// Staking positions
+export const stakingPositions = pgTable("staking_positions", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  currencyId: integer("currency_id").notNull().references(() => currencies.id),
+  amount: doublePrecision("amount").notNull(),
+  apy: doublePrecision("apy").notNull(),
   startDate: timestamp("start_date").defaultNow().notNull(),
-  endDate: timestamp("end_date").notNull(),
-  status: text("status").default("active").notNull(), // active, completed, withdrawn
-  rewardsEarned: double("rewards_earned").default(0).notNull(),
-  lastRewardCalculation: timestamp("last_reward_calculation").defaultNow().notNull()
+  endDate: timestamp("end_date"),
+  status: varchar("status", { length: 50 }).default("active").notNull(),
+  rewards: doublePrecision("rewards").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
 export const stakingPositionsRelations = relations(stakingPositions, ({ one }) => ({
@@ -171,110 +166,30 @@ export const stakingPositionsRelations = relations(stakingPositions, ({ one }) =
   })
 }));
 
-// Market prices for cryptocurrencies
-export const marketPrices = mysqlTable("market_prices", {
-  id: int("id").primaryKey().autoincrement(),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  price: double("price").notNull(),
-  change24h: double("change_24h").default(0).notNull(),
-  volume24h: double("volume_24h").default(0).notNull(),
-  marketCap: double("market_cap").default(0).notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
+// Market prices for real-time data
+export const marketPrices = pgTable("market_prices", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  symbol: varchar("symbol", { length: 20 }).notNull().unique(),
+  price: doublePrecision("price").notNull(),
+  change24h: doublePrecision("change_24h").default(0).notNull(),
+  volume24h: doublePrecision("volume_24h").default(0).notNull(),
+  marketCap: doublePrecision("market_cap").default(0).notNull(),
+  lastUpdated: timestamp("last_updated").defaultNow().notNull()
 });
-
-export const marketPricesRelations = relations(marketPrices, ({ one }) => ({
-  currency: one(currencies, {
-    fields: [marketPrices.currencyId],
-    references: [currencies.id]
-  })
-}));
-
-// Futures contracts
-export const futuresContracts = mysqlTable("futures_contracts", {
-  id: int("id").primaryKey().autoincrement(),
-  symbol: text("symbol").notNull().unique(), // BTCUSDT, ETHUSDT, etc.
-  baseCurrency: text("base_currency").notNull(),
-  quoteCurrency: text("quote_currency").notNull(),
-  contractSize: double("contract_size").default(1).notNull(),
-  tickSize: double("tick_size").default(0.01).notNull(),
-  maxLeverage: int("max_leverage").default(100).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-
-// Futures positions
-export const futuresPositions = mysqlTable("futures_positions", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  contractId: int("contract_id").notNull().references(() => futuresContracts.id),
-  side: text("side").notNull(), // long, short
-  size: double("size").notNull(),
-  entryPrice: double("entry_price").notNull(),
-  markPrice: double("mark_price").notNull(),
-  leverage: int("leverage").notNull(),
-  margin: double("margin").notNull(),
-  unrealizedPnl: double("unrealized_pnl").default(0).notNull(),
-  realizedPnl: double("realized_pnl").default(0).notNull(),
-  status: text("status").default("open").notNull(), // open, closed, liquidated
-  openedAt: timestamp("opened_at").defaultNow().notNull(),
-  closedAt: timestamp("closed_at")
-});
-
-export const futuresPositionsRelations = relations(futuresPositions, ({ one }) => ({
-  user: one(users, {
-    fields: [futuresPositions.userId],
-    references: [users.id]
-  }),
-  contract: one(futuresContracts, {
-    fields: [futuresPositions.contractId],
-    references: [futuresContracts.id]
-  })
-}));
-
-// Spot orders
-export const spotOrders = mysqlTable("spot_orders", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  baseCurrencyId: int("base_currency_id").notNull().references(() => currencies.id),
-  quoteCurrencyId: int("quote_currency_id").notNull().references(() => currencies.id),
-  side: text("side").notNull(), // buy, sell
-  type: text("type").notNull(), // market, limit
-  quantity: double("quantity").notNull(),
-  price: double("price"), // null for market orders
-  filled: double("filled").default(0).notNull(),
-  status: text("status").default("open").notNull(), // open, filled, cancelled, partial
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
-});
-
-export const spotOrdersRelations = relations(spotOrders, ({ one }) => ({
-  user: one(users, {
-    fields: [spotOrders.userId],
-    references: [users.id]
-  }),
-  baseCurrency: one(currencies, {
-    fields: [spotOrders.baseCurrencyId],
-    references: [currencies.id]
-  }),
-  quoteCurrency: one(currencies, {
-    fields: [spotOrders.quoteCurrencyId],
-    references: [currencies.id]
-  })
-}));
 
 // Futures orders
-export const futuresOrders = mysqlTable("futures_orders", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  contractId: int("contract_id").notNull().references(() => futuresContracts.id),
-  side: text("side").notNull(), // buy, sell
-  type: text("type").notNull(), // market, limit, stop
-  quantity: double("quantity").notNull(),
-  price: double("price"), // null for market orders
-  stopPrice: double("stop_price"), // for stop orders
-  leverage: int("leverage").notNull(),
-  filled: double("filled").default(0).notNull(),
-  status: text("status").default("open").notNull(), // open, filled, cancelled, partial
+export const futuresOrders = pgTable("futures_orders", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  side: varchar("side", { length: 10 }).notNull(), // 'long', 'short'
+  size: doublePrecision("size").notNull(),
+  entryPrice: doublePrecision("entry_price").notNull(),
+  markPrice: doublePrecision("mark_price").notNull(),
+  pnl: doublePrecision("pnl").default(0).notNull(),
+  margin: doublePrecision("margin").notNull(),
+  leverage: integer("leverage").default(1).notNull(),
+  status: varchar("status", { length: 20 }).default("open").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
@@ -283,22 +198,17 @@ export const futuresOrdersRelations = relations(futuresOrders, ({ one }) => ({
   user: one(users, {
     fields: [futuresOrders.userId],
     references: [users.id]
-  }),
-  contract: one(futuresContracts, {
-    fields: [futuresOrders.contractId],
-    references: [futuresContracts.id]
   })
 }));
 
-// Portfolio snapshots for performance tracking
-export const portfolioSnapshots = mysqlTable("portfolio_snapshots", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  totalValue: double("total_value").notNull(),
-  spotValue: double("spot_value").default(0).notNull(),
-  futuresValue: double("futures_value").default(0).notNull(),
-  stakingValue: double("staking_value").default(0).notNull(),
-  change24h: double("change_24h").default(0).notNull(),
+// Portfolio snapshots
+export const portfolioSnapshots = pgTable("portfolio_snapshots", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  totalValue: doublePrecision("total_value").notNull(),
+  totalChange: doublePrecision("total_change").default(0).notNull(),
+  totalChangePercent: doublePrecision("total_change_percent").default(0).notNull(),
+  positions: json("positions").$type<Array<{symbol: string, amount: number, value: number}>>(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
@@ -309,90 +219,44 @@ export const portfolioSnapshotsRelations = relations(portfolioSnapshots, ({ one 
   })
 }));
 
-// Deposit addresses for cryptocurrencies
-export const depositAddresses = mysqlTable("deposit_addresses", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  address: text("address").notNull(),
-  tag: text("tag"), // for currencies that require destination tags
-  isActive: boolean("is_active").default(true).notNull(),
+// User favorites
+export const userFavorites = pgTable("user_favorites", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  cryptoPairSymbol: varchar("crypto_pair_symbol", { length: 20 }).notNull(),
+  cryptoId: varchar("crypto_id", { length: 50 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
-export const depositAddressesRelations = relations(depositAddresses, ({ one }) => ({
+export const userFavoritesRelations = relations(userFavorites, ({ one }) => ({
   user: one(users, {
-    fields: [depositAddresses.userId],
-    references: [users.id]
-  }),
-  currency: one(currencies, {
-    fields: [depositAddresses.currencyId],
-    references: [currencies.id]
-  })
-}));
-
-// Admin credits system
-export const adminCredits = mysqlTable("admin_credits", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  amount: double("amount").notNull(),
-  type: text("type").notNull(), // credit, debit
-  reason: text("reason").notNull(),
-  adminId: int("admin_id").notNull().references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-
-export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
-  user: one(users, {
-    fields: [adminCredits.userId],
-    references: [users.id]
-  }),
-  currency: one(currencies, {
-    fields: [adminCredits.currencyId],
-    references: [currencies.id]
-  }),
-  admin: one(users, {
-    fields: [adminCredits.adminId],
+    fields: [userFavorites.userId],
     references: [users.id]
   })
 }));
 
-// Referral earnings
-export const referralEarnings = mysqlTable("referral_earnings", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  referredUserId: int("referred_user_id").notNull().references(() => users.id),
-  currencyId: int("currency_id").notNull().references(() => currencies.id),
-  amount: double("amount").notNull(),
-  type: text("type").notNull(), // trading_fee, deposit_bonus
-  status: text("status").default("pending").notNull(), // pending, paid
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  paidAt: timestamp("paid_at")
-});
-
-// User favorites for cryptocurrency pairs
-export const userFavorites = mysqlTable("user_favorites", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  cryptoPairSymbol: text("crypto_pair_symbol").notNull(), // e.g., "BTCUSDT", "ETHUSDT"
-  cryptoId: text("crypto_id").notNull(), // e.g., "bitcoin", "ethereum"
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-
-// User preferences for trading interface
-export const userPreferences = mysqlTable("user_preferences", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  lastSelectedPair: varchar("last_selected_pair", { length: 50 }),
+// User preferences
+export const userPreferences = pgTable("user_preferences", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  lastSelectedPair: varchar("last_selected_pair", { length: 20 }),
   lastSelectedCrypto: varchar("last_selected_crypto", { length: 50 }),
-  lastSelectedTab: varchar("last_selected_tab", { length: 50 }),
-  createdAt: timestamp("created_at").defaultNow().notNull()
+  lastSelectedTab: varchar("last_selected_tab", { length: 20 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id]
+  })
+}));
 
 // Insert schemas using zod
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
+  uid: true,
   createdAt: true,
 });
 
@@ -406,9 +270,15 @@ export const insertUserBalanceSchema = createInsertSchema(userBalances).omit({
   updatedAt: true,
 });
 
+export const insertUserWalletSchema = createInsertSchema(userWallets).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertStakingRateSchema = createInsertSchema(stakingRates).omit({
@@ -418,19 +288,13 @@ export const insertStakingRateSchema = createInsertSchema(stakingRates).omit({
 
 export const insertStakingPositionSchema = createInsertSchema(stakingPositions).omit({
   id: true,
-  startDate: true,
-  lastRewardCalculation: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
   id: true,
-  updatedAt: true,
-});
-
-export const insertSpotOrderSchema = createInsertSchema(spotOrders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  lastUpdated: true,
 });
 
 export const insertFuturesOrderSchema = createInsertSchema(futuresOrders).omit({
@@ -475,9 +339,6 @@ export type InsertStakingPosition = z.infer<typeof insertStakingPositionSchema>;
 
 export type MarketPrice = typeof marketPrices.$inferSelect;
 export type InsertMarketPrice = z.infer<typeof insertMarketPriceSchema>;
-
-export type SpotOrder = typeof spotOrders.$inferSelect;
-export type InsertSpotOrder = z.infer<typeof insertSpotOrderSchema>;
 
 export type FuturesOrder = typeof futuresOrders.$inferSelect;
 export type InsertFuturesOrder = z.infer<typeof insertFuturesOrderSchema>;

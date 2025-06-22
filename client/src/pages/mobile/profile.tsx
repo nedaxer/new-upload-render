@@ -36,27 +36,8 @@ export default function MobileProfile() {
     select: (data: any) => data?.data || { isVerified: false, status: 'not_verified' }
   });
 
-  // Generate a realistic UID based on user ID with mixed numbers
-  const generateUID = () => {
-    if (!user?.id) return '072661763';
-    // Create a mixed number UID based on user ID
-    const baseId = user.id.toString();
-    const mixedNumbers = [0, 7, 2, 6, 6, 1, 7, 6, 3];
-    let result = '';
-
-    for (let i = 0; i < 9; i++) {
-      if (i < baseId.length) {
-        // Mix the user ID digits with the predefined pattern
-        const userDigit = parseInt(baseId[i % baseId.length]);
-        const mixedDigit = (userDigit + mixedNumbers[i]) % 10;
-        result += mixedDigit.toString();
-      } else {
-        result += mixedNumbers[i].toString();
-      }
-    }
-
-    return result;
-  };
+  // Use the actual UID from the database
+  const userUID = user?.uid || 'N/A';
 
   // Blue verification tick component
   const VerificationTick = () => (
@@ -275,14 +256,14 @@ export default function MobileProfile() {
               </span>
               <div className="flex items-center space-x-1">
                 <span className="text-gray-400 text-sm">
-                  UID: {generateUID()}
+                  UID: {userUID}
                 </span>
                 {kycStatus?.isVerified && <VerificationTick />}
               </div>
               <Copy 
                 className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white"
                 onClick={() => {
-                  navigator.clipboard.writeText(generateUID());
+                  navigator.clipboard.writeText(userUID);
                   toast({
                     title: t('common.copied') || 'Copied',
                     description: t('profile.uidCopied') || 'UID copied to clipboard',

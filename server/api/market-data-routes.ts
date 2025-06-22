@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { db } from "../db";
-import { currencies, marketPrices, futuresContracts } from "../../shared/schema";
+import { currencies, marketPrices, futuresOrders } from "../../shared/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import axios from "axios";
 import { priceService } from '../services/price.service';

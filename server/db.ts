@@ -1,17 +1,10 @@
-import mysql from 'mysql2/promise';
-import { drizzle } from 'drizzle-orm/mysql2';
+import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from "@shared/schema";
 
-// MySQL connection configuration
-const connection = mysql.createPool({
-  host: 'sql7.freesqldatabase.com',
-  port: 3306,
-  user: 'sql7785049',
-  password: 'k2kSfD5TYV',
-  database: 'sql7785049',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
 
-export const db = drizzle(connection, { schema, mode: 'default' });
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle(pool, { schema });
