@@ -82,7 +82,7 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
       
       if (!isNaN(searchNumber)) {
         // Search by UID
-        query = { _id: searchNumber };
+        query = { uid: searchNumber.toString() };
       } else {
         // Use MongoDB $or and $regex for text search
         query = {

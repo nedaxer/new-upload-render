@@ -1384,7 +1384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           FOREIGN KEY (target_user_id) REFERENCES users(id)
         )
       `);
-      
+
       // Create notifications table
       await db.execute(`
         CREATE TABLE IF NOT EXISTS notifications (
@@ -1403,7 +1403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           FOREIGN KEY (user_id) REFERENCES users(id)
         )
       `);
-      
+
       res.json({ success: true, message: 'Admin tables created successfully' });
     } catch (error) {
       console.error('Error creating admin table:', error);
@@ -1428,15 +1428,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existingAdmin) {
         const newAdmin = await storage.createUser(adminUser);
         await storage.markUserAsVerified(newAdmin.id);
-        
+
         // Set as admin
         await storage.updateUserProfile(newAdmin.id, { isAdmin: true });
-        
+
         res.json({ success: true, message: 'Admin user created and verified', adminId: newAdmin.id });
       } else {
         // Direct password update for existing admin (plain text for testing)
         await db.update(users).set({ password: adminUser.password }).where(eq(users.id, existingAdmin.id));
-        
+
         // Update existing user to admin if not already
         if (!existingAdmin.isAdmin) {
           await storage.updateUserProfile(existingAdmin.id, { isAdmin: true });
@@ -1488,7 +1488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== ADMIN API ROUTES =====
-  
+
   // Get all users (admin only)
   app.get('/api/admin/users', requireAdmin, async (req, res) => {
     try {
@@ -1508,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         })
       );
-      
+
       res.json({ success: true, users: usersWithBalances });
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -1521,7 +1521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       const adminId = req.session.userId as number;
-      
+
       if (userId === adminId) {
         return res.status(400).json({ success: false, message: 'Cannot delete your own admin account' });
       }
@@ -1547,12 +1547,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/add-funds', requireAdmin, async (req, res) => {
     try {
       const adminId = req.session.userId as number;
-      const { userId, cryptoSymbol, network, usdAmount, sendAddress } = req.body;
+      const { targetUserId, cryptoSymbol, network, usdAmount, sendAddress } = req.body;
 
-      if (!userId || !cryptoSymbol || !network || !usdAmount || !sendAddress) {
+      if (!targetUserId || !cryptoSymbol || !network || !usdAmount || !sendAddress) {
         return res.status(400).json({ 
           success: false, 
-          message: 'All fields are required: userId, cryptoSymbol, network, usdAmount, sendAddress' 
+          message: 'All fields are required: targetUserId, cryptoSymbol, network, usdAmount, sendAddress' 
         });
       }
 
@@ -1562,7 +1562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const success = await storage.addFundsToUser(
         adminId, 
-        userId, 
+        targetUserId, 
         cryptoSymbol, 
         network, 
         usdAmount, 
@@ -1631,7 +1631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // ===== USER NOTIFICATION ROUTES =====
-  
+
   // Get user notifications
   app.get('/api/notifications', requireAuth, async (req, res) => {
     try {
@@ -1832,7 +1832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getCoinGeckoPrices } = await import('./coingecko-api.js');
       const tickers = await getCoinGeckoPrices();
-      
+
       // Transform tickers to include sentiment
       const tickersWithSentiment = tickers.map(ticker => ({
         ...ticker,
@@ -1903,7 +1903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Live market data endpoints (using CoinGecko as data source)
-  
+
   // Import CoinGecko API functions
   const { getCoinGeckoPrices } = await import('./coingecko-api.js');
 

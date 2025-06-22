@@ -14,13 +14,14 @@ import { apiRequest } from '@/lib/queryClient';
 
 interface User {
   id: number;
+  uid: string;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
   isVerified: boolean;
-  createdAt: string;
-  balance: number;
+  isAdmin: boolean;
+  balance?: number;
 }
 
 interface AdminTransaction {
@@ -300,7 +301,7 @@ export default function AdminPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <div className="font-medium">UID: #{user.id.toString().padStart(8, '0')}</div>
+                              <div className="font-medium">UID: #{user.uid}</div>
                               <div className={`px-2 py-1 rounded-full text-xs ${
                                 user.isVerified ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'
                               }`}>
@@ -320,8 +321,11 @@ export default function AdminPage() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => startDelete(user.id)}
-                            className="ml-4"
+                            onClick={() => {
+                              setDeleteUserId(user.uid);
+                              setShowDeleteConfirm(true);
+                              setDeleteCountdown(3);
+                            }}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
