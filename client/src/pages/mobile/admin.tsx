@@ -440,7 +440,19 @@ export default function AdminPage() {
       </div>
 
       {/* Add Funds Modal */}
-      <Dialog open={showAddFundsModal} onOpenChange={setShowAddFundsModal}>
+      <Dialog open={showAddFundsModal} onOpenChange={(open) => {
+        setShowAddFundsModal(open);
+        if (!open) {
+          setUserSearchQuery('');
+          setAddFundsForm({
+            userId: '',
+            cryptoSymbol: '',
+            network: '',
+            usdAmount: '',
+            sendAddress: ''
+          });
+        }
+      }}>
         <DialogContent className="bg-gray-900 border-gray-800 text-white">
           <DialogHeader>
             <DialogTitle>Add Funds to User</DialogTitle>
@@ -449,28 +461,45 @@ export default function AdminPage() {
           <div className="space-y-4">
             {/* User Selection */}
             <div>
-              <Label>Select User (UID)</Label>
-              <Select 
-                value={addFundsForm.userId} 
-                onValueChange={(value) => setAddFundsForm({ ...addFundsForm, userId: value })}
-              >
-                <SelectTrigger className="bg-gray-800 border-gray-700">
-                  <SelectValue placeholder="Select user by UID" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  {(usersData as any)?.users?.map((user: User) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.id} - {user.username} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>User ID or Email</Label>
+              <Input
+                type="text"
+                value={userSearchQuery}
+                onChange={(e) => {
+                  setUserSearchQuery(e.target.value);
+                  // Auto-find user by UID or email
+                  const foundUser = (usersData as any)?.users?.find((user: User) => 
+                    user.id.toString() === e.target.value || 
+                    user.email.toLowerCase() === e.target.value.toLowerCase()
+                  );
+                  if (foundUser) {
+                    setAddFundsForm({ ...addFundsForm, userId: foundUser.id.toString() });
+                  } else {
+                    setAddFundsForm({ ...addFundsForm, userId: '' });
+                  }
+                }}
+                className="bg-gray-800 border-gray-700"
+                placeholder="Type User ID (e.g. 8) or email address"
+              />
               {selectedUser && (
-                <div className="mt-2 p-3 bg-gray-800 rounded-lg">
+                <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-green-600">
                   <div className="text-sm">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-green-400 font-medium">User Found</span>
+                    </div>
+                    <div><strong>UID:</strong> {selectedUser.id}</div>
+                    <div><strong>Username:</strong> {selectedUser.username}</div>
                     <div><strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}</div>
                     <div><strong>Email:</strong> {selectedUser.email}</div>
                     <div><strong>Current Balance:</strong> ${selectedUser.balance ? selectedUser.balance.toFixed(2) : '0.00'}</div>
+                  </div>
+                </div>
+              )}
+              {userSearchQuery && !selectedUser && (
+                <div className="mt-2 p-3 bg-red-900/30 border border-red-600 rounded-lg">
+                  <div className="text-sm text-red-400">
+                    No user found with UID "{userSearchQuery}" or email "{userSearchQuery}"
                   </div>
                 </div>
               )}
