@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/queryClient';
 
 // PWA Service Worker Registration
 function registerServiceWorker() {
@@ -185,12 +183,10 @@ function addNoCacheHeaders() {
 // Setup no-cache headers
 addNoCacheHeaders();
 
-// Render the application with QueryClientProvider
+// Render the application
 const root = document.getElementById('root');
 if (root) {
   ReactDOM.createRoot(root).render(
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <App />
   );
 }

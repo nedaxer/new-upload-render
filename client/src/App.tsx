@@ -223,7 +223,7 @@ export default function App() {
             {/* Account Routes - with redirection for authenticated users */}
             <Route path="/account/login">
               {(params) => (
-                <AuthRedirect>
+                <AuthRedirect redirectTo="/dashboard">
                   <Login {...params} />
                 </AuthRedirect>
               )}
