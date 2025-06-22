@@ -51,11 +51,12 @@ export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const [activeTab, setActiveTab] = useState<'users' | 'funds' | 'transactions'>('users');
+  
+  const [activeTab, setActiveTab] = useState('users');
   const [showAddFundsModal, setShowAddFundsModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
-  const [deleteCountdown, setDeleteCountdown] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
+  const [deleteCountdown, setDeleteCountdown] = useState(60);
   
   const [addFundsForm, setAddFundsForm] = useState({
     userId: '',
@@ -65,106 +66,63 @@ export default function AdminPage() {
     sendAddress: ''
   });
 
-  // Check if user is admin
-  if (!user?.isAdmin) {
+  // Early return if not admin
+  if (user && !user.isAdmin) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-          <p className="text-gray-400 mb-4">You need admin privileges to access this page</p>
-          <Button onClick={() => setLocation('/mobile/home')} variant="outline">
-            Return to Home
+          <p className="text-gray-400 mb-4">You don't have admin privileges</p>
+          <Button onClick={() => setLocation('/mobile/home')}>
+            Go Back
           </Button>
         </div>
       </div>
     );
   }
 
-  // Fetch all users
+  // Fetch users
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
-    retry: false,
+    enabled: user?.isAdmin === true,
   });
 
-  // Fetch admin transactions
+  // Fetch transactions
   const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
     queryKey: ['/api/admin/transactions'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/transactions', {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch transactions');
-      return response.json();
-    },
-    retry: false,
-  });
-
-  // Delete user mutation
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to delete user');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "User Deletion Scheduled",
-        description: "User will be deleted in 1 minute",
-        variant: "default",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      setShowDeleteConfirm(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete user",
-        variant: "destructive",
-      });
-    },
+    enabled: user?.isAdmin === true,
   });
 
   // Add funds mutation
   const addFundsMutation = useMutation({
-    mutationFn: async (data: typeof addFundsForm) => {
-      const response = await fetch('/api/admin/add-funds', {
+    mutationFn: async (formData: typeof addFundsForm) => {
+      return await apiRequest('/api/admin/add-funds', {
         method: 'POST',
         body: JSON.stringify({
-          userId: parseInt(data.userId),
-          cryptoSymbol: data.cryptoSymbol,
-          network: data.network,
-          usdAmount: parseFloat(data.usdAmount),
-          sendAddress: data.sendAddress
+          targetUserId: parseInt(formData.userId),
+          cryptoSymbol: formData.cryptoSymbol,
+          network: formData.network,
+          usdAmount: parseFloat(formData.usdAmount),
+          sendAddress: formData.sendAddress
         }),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to add funds');
-      return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Funds Added Successfully",
-        description: "User will receive notification immediately",
-        variant: "default",
+        title: "Success",
+        description: "Funds added successfully",
+      });
+      setShowAddFundsModal(false);
+      setAddFundsForm({
+        userId: '',
+        cryptoSymbol: '',
+        network: '',
+        usdAmount: '',
+        sendAddress: ''
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/transactions'] });
-      setShowAddFundsModal(false);
-      setAddFundsForm({ userId: '', cryptoSymbol: '', network: '', usdAmount: '', sendAddress: '' });
     },
     onError: (error: any) => {
       toast({
@@ -175,25 +133,54 @@ export default function AdminPage() {
     },
   });
 
-  const handleDeleteUser = (userId: number) => {
-    setShowDeleteConfirm(userId);
-    setDeleteCountdown(60);
-    
-    const interval = setInterval(() => {
-      setDeleteCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          deleteUserMutation.mutate(userId);
-          return 0;
-        }
-        return prev - 1;
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      return await apiRequest(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
       });
-    }, 1000);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+      setShowDeleteConfirm(false);
+      setDeleteUserId(null);
+      setDeleteCountdown(60);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete countdown effect
+  useEffect(() => {
+    if (showDeleteConfirm && deleteCountdown > 0) {
+      const timer = setTimeout(() => {
+        setDeleteCountdown(deleteCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (showDeleteConfirm && deleteCountdown === 0 && deleteUserId) {
+      deleteUserMutation.mutate(deleteUserId);
+    }
+  }, [showDeleteConfirm, deleteCountdown, deleteUserId, deleteUserMutation]);
+
+  const startDelete = (userId: number) => {
+    setDeleteUserId(userId);
+    setDeleteCountdown(60);
+    setShowDeleteConfirm(true);
   };
 
   const cancelDelete = () => {
-    setShowDeleteConfirm(null);
-    setDeleteCountdown(0);
+    setShowDeleteConfirm(false);
+    setDeleteUserId(null);
+    setDeleteCountdown(60);
   };
 
   const handleAddFunds = () => {
@@ -264,25 +251,26 @@ export default function AdminPage() {
             }`}
           >
             <Clock className="w-4 h-4 inline mr-2" />
-            History
+            Transactions
           </button>
         </div>
       </div>
 
+      {/* Content */}
       <div className="p-4">
         {/* Users Tab */}
         {activeTab === 'users' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">User Management</h2>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Registered Users</h2>
               <div className="text-sm text-gray-400">
-                {(usersData as any)?.users?.length || 0} users
+                Total: {(usersData as any)?.users?.length || 0}
               </div>
             </div>
 
             {usersLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
+                <div className="animate-pulse">Loading users...</div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -291,40 +279,41 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium">{user.username}</span>
-                          <span className="text-xs bg-gray-800 px-2 py-1 rounded">
-                            ID: {user.id}
-                          </span>
-                          {user.isVerified && (
-                            <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
-                              Verified
-                            </span>
-                          )}
+                          <div className="font-medium">UID: {user.id}</div>
+                          <div className={`px-2 py-1 rounded-full text-xs ${
+                            user.isVerified ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'
+                          }`}>
+                            {user.isVerified ? 'Verified' : 'Unverified'}
+                          </div>
                         </div>
                         <div className="text-sm text-gray-400 mt-1">
-                          {user.firstName} {user.lastName}
+                          {user.username} • {user.email}
                         </div>
                         <div className="text-sm text-gray-400">
-                          {user.email}
+                          Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
                         </div>
-                        <div className="text-sm text-orange-500 font-medium mt-1">
-                          Balance: ${user.balance.toFixed(2)}
+                        <div className="text-xs text-gray-500 mt-1">
+                          Joined: {new Date(user.createdAt).toLocaleDateString()}
                         </div>
                       </div>
-                      
-                      {user.id !== user.id && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={deleteUserMutation.isPending}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => startDelete(user.id)}
+                        className="ml-4"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </Card>
                 ))}
+
+                {(!(usersData as any)?.users || (usersData as any).users.length === 0) && (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">No users found</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -332,9 +321,9 @@ export default function AdminPage() {
 
         {/* Add Funds Tab */}
         {activeTab === 'funds' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Add Funds to User</h2>
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold">Add Virtual Funds</h2>
               <Button
                 onClick={() => setShowAddFundsModal(true)}
                 className="bg-orange-600 hover:bg-orange-700"
@@ -344,37 +333,47 @@ export default function AdminPage() {
               </Button>
             </div>
 
-            <Card className="bg-gray-900 border-gray-800 p-4">
-              <div className="text-center py-8">
-                <DollarSign className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Fund Management</h3>
-                <p className="text-gray-400 mb-4">
-                  Add virtual funds to user accounts for demo trading
-                </p>
-                <Button
-                  onClick={() => setShowAddFundsModal(true)}
-                  className="bg-orange-600 hover:bg-orange-700"
-                >
-                  Get Started
-                </Button>
+            <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Virtual Fund Distribution</h3>
+              <div className="space-y-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span>Select user by UID from the dropdown</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span>Choose cryptocurrency and network</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span>Enter USD amount (converted to crypto using live prices)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span>Provide virtual send address</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Deposit notification will be created automatically</span>
+                </div>
               </div>
-            </Card>
+            </div>
           </div>
         )}
 
         {/* Transactions Tab */}
         {activeTab === 'transactions' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Transaction History</h2>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Fund Transactions</h2>
               <div className="text-sm text-gray-400">
-                {(transactionsData as any)?.transactions?.length || 0} transactions
+                Total: {(transactionsData as any)?.transactions?.length || 0}
               </div>
             </div>
 
             {transactionsLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
+                <div className="animate-pulse">Loading transactions...</div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -383,15 +382,15 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium">
-                            {tx.cryptoAmount?.toFixed(8)} {tx.cryptoSymbol}
-                          </span>
-                          <span className="text-xs bg-gray-800 px-2 py-1 rounded">
+                          <div className="font-medium">{tx.cryptoSymbol}</div>
+                          <div className="px-2 py-1 bg-blue-900 text-blue-400 rounded-full text-xs">
                             {tx.network}
-                          </span>
-                          <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs ${
+                            tx.status === 'completed' ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'
+                          }`}>
                             {tx.status}
-                          </span>
+                          </div>
                         </div>
                         <div className="text-sm text-gray-400 mt-1">
                           To: {tx.targetUserUsername} ({tx.targetUserEmail})
@@ -512,7 +511,7 @@ export default function AdminPage() {
 
             {/* Send Address */}
             <div>
-              <Label>Send Address (Virtual)</Label>
+              <Label>Virtual Send Address</Label>
               <Input
                 value={addFundsForm.sendAddress}
                 onChange={(e) => setAddFundsForm({ ...addFundsForm, sendAddress: e.target.value })}
