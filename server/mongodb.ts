@@ -26,7 +26,7 @@ export async function connectToDatabase() {
     try {
       await createInitialData();
     } catch (error) {
-      console.log('Initial data creation already completed or failed:', error);
+      console.log('Error creating initial data:', error);
     }
     
     return mongoose.connection;
@@ -70,6 +70,8 @@ async function createInitialData() {
       });
       await testUser.save();
       console.log('Created test user with username: testuser, password: password');
+    } else {
+      console.log('Test user already exists, skipping creation');
     }
     
     // Check if admin user already exists
@@ -88,6 +90,8 @@ async function createInitialData() {
       });
       await adminUser.save();
       console.log('Created admin user with username: admin, password: password');
+    } else {
+      console.log('Admin user already exists, skipping creation');
     }
     
     // Create only USD currency for fiat broker
@@ -163,6 +167,13 @@ async function createInitialData() {
       ];
       
       for (const userData of demoUsers) {
+        // Check if user already exists
+        const existingUser = await User.findOne({ username: userData.username });
+        if (existingUser) {
+          console.log(`User ${userData.username} already exists, skipping...`);
+          continue;
+        }
+        
         const user = new User({
           uid: userData.uid,
           username: userData.username,
@@ -176,18 +187,17 @@ async function createInitialData() {
         });
         await user.save();
         
-        // Create balances for each demo user
-        const userBalances = [
-          { userId: user._id, currencyId: usdCurrency._id, amount: userData.funds.USD },
-          { userId: user._id, currencyId: btcCurrency._id, amount: userData.funds.BTC },
-          { userId: user._id, currencyId: ethCurrency._id, amount: userData.funds.ETH }
-        ];
-        
-        for (const balanceData of userBalances) {
-          const balance = new UserBalance(balanceData);
+        // Create USD balance for demo user (fiat broker only)
+        const existingBalance = await UserBalance.findOne({ userId: user._id, currencyId: usdCurrency._id });
+        if (!existingBalance) {
+          const balance = new UserBalance({
+            userId: user._id, 
+            currencyId: usdCurrency._id, 
+            amount: userData.funds.USD
+          });
           await balance.save();
         }
-        console.log(`Created demo user: ${userData.username} with funds`);
+        console.log(`Created demo user: ${userData.username} with USD balance`);
       }
     }
     
