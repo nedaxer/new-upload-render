@@ -1526,7 +1526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Cannot delete your own admin account' });
       }
 
-      // Set a 1-minute delay before actual deletion
+      // Set a 3-second delay before actual deletion
       setTimeout(async () => {
         try {
           await storage.deleteUser(userId);
@@ -1534,9 +1534,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           console.error('Error in delayed user deletion:', error);
         }
-      }, 60000); // 1 minute delay
+      }, 3000); // 3 seconds delay
 
-      res.json({ success: true, message: 'User deletion scheduled for 1 minute' });
+      res.json({ success: true, message: 'User deletion scheduled for 3 seconds' });
     } catch (error) {
       console.error('Error deleting user:', error);
       res.status(500).json({ success: false, message: 'Failed to delete user' });

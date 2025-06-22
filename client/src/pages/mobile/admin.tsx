@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Users, DollarSign, Trash2, Plus, Clock, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Users, DollarSign, Trash2, Plus, Clock, Shield, AlertTriangle, User } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -51,13 +51,15 @@ export default function AdminPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [activeTab, setActiveTab] = useState('users');
   const [showAddFundsModal, setShowAddFundsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
-  const [deleteCountdown, setDeleteCountdown] = useState(60);
-  
+  const [deleteCountdown, setDeleteCountdown] = useState(3);
+    const [searchUid, setSearchUid] = useState('');
+
+
   const [addFundsForm, setAddFundsForm] = useState({
     userId: '',
     cryptoSymbol: '',
@@ -97,8 +99,7 @@ export default function AdminPage() {
   // Add funds mutation
   const addFundsMutation = useMutation({
     mutationFn: async (formData: typeof addFundsForm) => {
-      return await apiRequest('/api/admin/add-funds', {
-        method: 'POST',
+      return await apiRequest('POST', '/api/admin/add-funds', {
         body: JSON.stringify({
           targetUserId: parseInt(formData.userId),
           cryptoSymbol: formData.cryptoSymbol,
@@ -136,9 +137,8 @@ export default function AdminPage() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      return await apiRequest(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-      });
+      const res = await apiRequest('DELETE', `/api/admin/delete-user/${userId}`);
+      return res.json();
     },
     onSuccess: () => {
       toast({
@@ -147,7 +147,7 @@ export default function AdminPage() {
       });
       setShowDeleteConfirm(false);
       setDeleteUserId(null);
-      setDeleteCountdown(60);
+      setDeleteCountdown(3);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
     onError: (error: any) => {
@@ -159,28 +159,31 @@ export default function AdminPage() {
     },
   });
 
-  // Delete countdown effect
+  // Countdown effect for delete confirmation
   useEffect(() => {
+    let interval: NodeJS.Timeout;
     if (showDeleteConfirm && deleteCountdown > 0) {
-      const timer = setTimeout(() => {
-        setDeleteCountdown(deleteCountdown - 1);
+      interval = setInterval(() => {
+        setDeleteCountdown(prev => prev - 1);
       }, 1000);
-      return () => clearTimeout(timer);
-    } else if (showDeleteConfirm && deleteCountdown === 0 && deleteUserId) {
-      deleteUserMutation.mutate(deleteUserId);
+    } else if (deleteCountdown === 0) {
+      setDeleteCountdown(3);
+      setShowDeleteConfirm(false);
+      setDeleteUserId(null);
     }
-  }, [showDeleteConfirm, deleteCountdown, deleteUserId, deleteUserMutation]);
+    return () => clearInterval(interval);
+  }, [showDeleteConfirm, deleteCountdown]);
 
   const startDelete = (userId: number) => {
     setDeleteUserId(userId);
-    setDeleteCountdown(60);
+    setDeleteCountdown(3);
     setShowDeleteConfirm(true);
   };
 
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
     setDeleteUserId(null);
-    setDeleteCountdown(60);
+    setDeleteCountdown(3);
   };
 
   const handleAddFunds = () => {
@@ -198,6 +201,10 @@ export default function AdminPage() {
 
   const selectedUser = (usersData as any)?.users?.find((u: User) => u.id.toString() === addFundsForm.userId);
   const selectedCrypto = cryptoOptions.find(c => c.symbol === addFundsForm.cryptoSymbol);
+
+    const filteredUsers = (usersData as any)?.users?.filter((user: User) =>
+        searchUid ? user.id.toString().includes(searchUid) : true
+    ) || [];
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -261,6 +268,18 @@ export default function AdminPage() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
+               {/* Search Input */}
+               <div className="mb-4">
+                    <Label htmlFor="search">Search by UID:</Label>
+                    <Input
+                        type="text"
+                        id="search"
+                        placeholder="Enter UID to search"
+                        value={searchUid}
+                        onChange={(e) => setSearchUid(e.target.value)}
+                        className="bg-gray-800 border-gray-700"
+                    />
+                </div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Registered Users</h2>
               <div className="text-sm text-gray-400">
@@ -274,39 +293,39 @@ export default function AdminPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {(usersData as any)?.users?.map((user: User) => (
-                  <Card key={user.id} className="bg-gray-900 border-gray-800 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2">
-                          <div className="font-medium">UID: {user.id}</div>
-                          <div className={`px-2 py-1 rounded-full text-xs ${
-                            user.isVerified ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'
-                          }`}>
-                            {user.isVerified ? 'Verified' : 'Unverified'}
+                {filteredUsers?.map((user: User) => (
+                      <Card key={user.id} className="bg-gray-900 border-gray-800 p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <div className="font-medium">UID: #{user.id.toString().padStart(8, '0')}</div>
+                              <div className={`px-2 py-1 rounded-full text-xs ${
+                                user.isVerified ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'
+                              }`}>
+                                {user.isVerified ? 'Verified' : 'Unverified'}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-400 mt-1">
+                              {user.username} • {user.email}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              Joined: {new Date(user.createdAt).toLocaleDateString()}
+                            </div>
                           </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => startDelete(user.id)}
+                            className="ml-4"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <div className="text-sm text-gray-400 mt-1">
-                          {user.username} • {user.email}
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Joined: {new Date(user.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => startDelete(user.id)}
-                        className="ml-4"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                      </Card>
+                    ))}
 
                 {(!(usersData as any)?.users || (usersData as any).users.length === 0) && (
                   <div className="text-center py-8">
@@ -424,7 +443,7 @@ export default function AdminPage() {
           <DialogHeader>
             <DialogTitle>Add Funds to User</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             {/* User Selection */}
             <div>
@@ -550,7 +569,7 @@ export default function AdminPage() {
                 <span>Delete User Confirmation</span>
               </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <p className="text-gray-300">
                 User will be permanently deleted in:

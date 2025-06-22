@@ -77,15 +77,23 @@ router.get("/users", requireAdmin, async (req: Request, res: Response) => {
     let query = {};
 
     if (search && typeof search === 'string') {
-      // Use MongoDB $or and $regex for search
-      query = {
-        $or: [
-          { username: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
-          { firstName: { $regex: search, $options: 'i' } },
-          { lastName: { $regex: search, $options: 'i' } }
-        ]
-      };
+      // Check if search is a number (UID search)
+      const searchNumber = parseInt(search.replace('#', ''), 10);
+      
+      if (!isNaN(searchNumber)) {
+        // Search by UID
+        query = { _id: searchNumber };
+      } else {
+        // Use MongoDB $or and $regex for text search
+        query = {
+          $or: [
+            { username: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } }
+          ]
+        };
+      }
     }
 
     // Find users and sort by creation date descending
