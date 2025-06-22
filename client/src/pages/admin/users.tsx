@@ -193,8 +193,8 @@ export default function AdminUsers() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search by name, email, or UID..."
-                  className="pl-10 w-[300px]"
+                  placeholder="Search users..."
+                  className="pl-10 w-[250px]"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -229,7 +229,6 @@ export default function AdminUsers() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>UID</TableHead>
                       <TableHead>User</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Status</TableHead>
@@ -240,9 +239,6 @@ export default function AdminUsers() {
                   <TableBody>
                     {users.map((user: any) => (
                       <TableRow key={user.id}>
-                        <TableCell className="font-mono text-sm">
-                          #{user.id.toString().padStart(8, '0')}
-                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <div className="bg-gray-200 rounded-full p-1">

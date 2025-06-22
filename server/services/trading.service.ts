@@ -88,7 +88,7 @@ class TradingService {
         .values({
           userId,
           currencyId,
-          balance: amount < 0 ? 0 : amount, // Ensure balance never starts negative
+          balance: amount,
           updatedAt: new Date()
         })
         .returning();

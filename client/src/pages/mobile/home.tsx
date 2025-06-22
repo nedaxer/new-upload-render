@@ -27,8 +27,7 @@ import {
   TrendingDown,
   User,
   QrCode,
-  Star,
-  Shield
+  Star
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
@@ -494,14 +493,6 @@ export default function MobileHome() {
           </Link>
         </div>
         <div className="flex items-center space-x-3">
-          {/* Admin Toggle - Only show if user is admin */}
-          {user?.isAdmin && (
-            <Link href="/mobile/admin">
-              <div className="relative cursor-pointer">
-                <Shield className="w-6 h-6 text-orange-500 hover:text-orange-400 transition-colors" />
-              </div>
-            </Link>
-          )}
           <div className="relative">
             <div onClick={handleHelperClick}>
               <Link href="/mobile/chatbot">
@@ -518,10 +509,10 @@ export default function MobileHome() {
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
-              {(notificationData as any)?.unreadCount > 0 && (
+              {notificationData?.data?.unreadCount > 0 && (
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-xs">
-                    {(notificationData as any).unreadCount > 9 ? '9+' : (notificationData as any).unreadCount}
+                    {notificationData.data.unreadCount > 9 ? '9+' : notificationData.data.unreadCount}
                   </span>
                 </div>
               )}

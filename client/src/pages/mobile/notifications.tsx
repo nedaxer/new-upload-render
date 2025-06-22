@@ -1,235 +1,177 @@
 import { useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
+import { Link } from 'wouter';
+import { ArrowLeft, Settings, CheckCheck } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Check, ChevronRight } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/language-context';
 
-interface Notification {
-  id: number;
-  type: string;
-  title: string;
-  message: string;
-  cryptoSymbol?: string;
-  amount?: number;
-  address?: string;
-  txHash?: string;
-  timestamp?: string;
-  isRead: boolean;
-  createdAt: string;
-}
-
-export default function NotificationsPage() {
-  const [, setLocation] = useLocation();
-  const { user } = useAuth();
-  const { toast } = useToast();
+export default function MobileNotifications() {
+  const [activeTab, setActiveTab] = useState('All');
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('System Notification');
+  const { t } = useLanguage();
 
   // Fetch notifications
-  const { data: notificationsData, isLoading } = useQuery({
-    queryKey: ['/api/notifications'],
-    queryFn: async () => {
-      const response = await fetch('/api/notifications', {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch notifications');
-      return response.json();
-    },
-    retry: false,
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => apiRequest('/api/users/notifications'),
   });
 
-  // Mark as read mutation
+  // Mark notification as read mutation
   const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to mark as read');
-      return response.json();
-    },
+    mutationFn: (notificationId: string) => 
+      apiRequest(`/api/users/notifications/${notificationId}/read`, {
+        method: 'PUT'
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-    },
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] });
+    }
   });
 
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.isRead) {
-      markAsReadMutation.mutate(notification.id);
-    }
-    
-    // Navigate to asset history if it's a deposit notification
-    if (notification.type === 'deposit') {
-      setLocation(`/mobile/asset-history?notificationId=${notification.id}`);
+  const notificationTabs = [
+    'All',
+    t('system_notification'),
+    t('latest_events'),
+    t('announcement'),
+    t('rewards')
+  ];
+
+  const handleReadAll = async () => {
+    if (notifications?.data) {
+      const unreadNotifications = notifications.data.filter((n: any) => !n.read);
+      for (const notification of unreadNotifications) {
+        markAsReadMutation.mutate(notification.id.toString());
+      }
     }
   };
-
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    
-    if (diffMins < 60) {
-      return `${String(date.getHours()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-    } else {
-      return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-    }
-  };
-
-  const notifications = (notificationsData as any)?.notifications || [];
-  const systemNotifications = notifications.filter((n: Notification) => n.type === 'deposit' || n.type === 'system');
 
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-black/90 backdrop-blur-sm border-b border-gray-800 z-10">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation('/mobile/home')}
-              className="text-white hover:bg-gray-800"
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <Link href="/mobile">
+          <ArrowLeft className="w-6 h-6 text-white" />
+        </Link>
+        <h1 className="text-lg font-semibold">{t('notifications')}</h1>
+        <div className="flex items-center space-x-3">
+          <button onClick={handleReadAll}>
+            <CheckCheck className="w-6 h-6 text-gray-400" />
+          </button>
+          <Link href="/mobile/notification-settings">
+            <Settings className="w-6 h-6 text-gray-400" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Notification Tabs */}
+      <div className="px-4 py-4">
+        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
+          {notificationTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`whitespace-nowrap pb-2 px-2 text-sm ${
+                activeTab === tab
+                  ? 'text-orange-500 border-b-2 border-orange-500'
+                  : 'text-gray-400 hover:text-white'
+              }`}
             >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-semibold">Notification Center</h1>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex border-b border-gray-800">
-          <div className="px-4 text-sm text-gray-400">All 1</div>
-          <button
-            onClick={() => setActiveTab('System Notification')}
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'System Notification'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            System Notification
-          </button>
-          <button
-            onClick={() => setActiveTab('Latest Events')}
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'Latest Events'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Latest Events
-          </button>
-          <button
-            onClick={() => setActiveTab('Announcement')}
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'Announcement'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Announcement
-          </button>
-          <button
-            onClick={() => setActiveTab('Reward')}
-            className={`flex-1 py-3 px-4 text-center font-medium ${
-              activeTab === 'Reward'
-                ? 'text-orange-500 border-b-2 border-orange-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Reward
-          </button>
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="p-4">
-        {/* System Notification Tab */}
-        {activeTab === 'System Notification' && (
-          <div className="space-y-3">
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-              </div>
-            ) : systemNotifications.length > 0 ? (
-              systemNotifications.map((notification: Notification) => (
-                <Card 
-                  key={notification.id} 
-                  className="bg-gray-900 border-gray-800 p-4 cursor-pointer hover:bg-gray-800 transition-colors"
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-semibold text-white">{notification.title}</h3>
-                        {!notification.isRead && (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                        )}
-                      </div>
-                      
-                      <div className="text-sm text-gray-300 mb-3 whitespace-pre-line">
-                        {notification.message}
-                      </div>
-                      
-                      {notification.cryptoSymbol && notification.amount && (
-                        <div className="text-sm text-orange-500 font-medium mb-2">
-                          Deposit amount: {notification.amount.toFixed(8)} {notification.cryptoSymbol}
-                        </div>
-                      )}
-                      
-                      {notification.address && (
-                        <div className="text-xs text-gray-400 mb-2">
-                          Deposit address: {notification.address}
-                        </div>
-                      )}
-                      
-                      {notification.timestamp && (
-                        <div className="text-xs text-gray-400 mb-2">
-                          Timestamp: {notification.timestamp}
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-gray-500">
-                          {formatTimestamp(notification.createdAt)}
-                        </div>
-                        {notification.type === 'deposit' && (
-                          <div className="flex items-center space-x-1 text-orange-500">
-                            <span className="text-xs">View More</span>
-                            <ChevronRight className="w-3 h-3" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {notification.isRead && (
-                      <Check className="w-4 h-4 text-green-500 ml-3 flex-shrink-0" />
+      {/* Notifications Content */}
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center px-4 py-20">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading notifications...</p>
+          </div>
+        </div>
+      ) : notifications?.data && notifications.data.length > 0 ? (
+        <div className="px-4 space-y-3">
+          {notifications.data
+            .filter((notification: any) => 
+              activeTab === 'All' || 
+              notification.type === activeTab.toLowerCase().replace(' notification', '').replace(' events', '').replace('latest ', '')
+            )
+            .map((notification: any) => (
+              <Card 
+                key={notification.id} 
+                className={`border-gray-700 p-4 cursor-pointer hover:bg-gray-800 transition-colors ${
+                  notification.read ? 'bg-gray-900' : 'bg-gray-800'
+                }`}
+                onClick={() => !notification.read && markAsReadMutation.mutate(notification.id.toString())}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-300' : 'text-white'}`}>
+                    {notification.title}
+                  </h3>
+                  <div className="flex items-center space-x-2">
+                    {!notification.read && (
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     )}
+                    <span className="text-xs text-gray-500">
+                      {new Date(notification.timestamp).toLocaleDateString()}
+                    </span>
                   </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-2">No notifications yet</div>
-                <div className="text-sm text-gray-500">You'll see deposit confirmations and system messages here</div>
+                </div>
+                <p className="text-gray-400 text-xs mb-2">
+                  {notification.message}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 text-xs capitalize">
+                    {notification.type} Notification
+                  </span>
+                  <Button variant="ghost" size="sm" className="text-orange-500 text-xs p-0 h-auto">
+                    View More →
+                  </Button>
+                </div>
+              </Card>
+            ))}
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center px-4 py-20">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                <span className="text-gray-500 text-2xl">🔔</span>
               </div>
-            )}
+            </div>
+            <h3 className="text-gray-300 text-lg font-medium mb-2">No Notifications</h3>
+            <p className="text-gray-500 text-sm max-w-xs">
+              You're all caught up! New notifications will appear here.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Other tabs - empty for now */}
-        {activeTab !== 'System Notification' && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">No {activeTab.toLowerCase()} yet</div>
-            <div className="text-sm text-gray-500">This section is currently empty</div>
+      {/* Sample notification structure (commented out since you want it empty) */}
+      {/*
+      <div className="px-4 space-y-3">
+        <Card className="bg-gray-900 border-gray-700 p-4">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-white font-medium text-sm">Deposit Confirmed</h3>
+            <span className="text-xs text-gray-500">Yesterday 21:43</span>
           </div>
-        )}
+          <p className="text-gray-400 text-xs mb-2">
+            Dear valued Nedaxer trader,<br/>
+            Your deposit has been confirmed.<br/>
+            Deposit amount: 0.00049602 BNB
+          </p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-500 text-xs">System Notification</span>
+            <Button variant="ghost" size="sm" className="text-orange-500 text-xs p-0 h-auto">
+              View More →
+            </Button>
+          </div>
+        </Card>
       </div>
+      */}
     </div>
   );
 }

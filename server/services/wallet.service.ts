@@ -165,7 +165,7 @@ class WalletService {
         const balance = new UserBalance({
           userId,
           currencyId: currency._id,
-          amount: 0, // Always start with zero balance - deposits required
+          amount: 0,
           createdAt: new Date(),
           updatedAt: new Date()
         });

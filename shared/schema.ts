@@ -343,8 +343,6 @@ export const adminCredits = mysqlTable("admin_credits", {
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
-
-
 export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
   user: one(users, {
     fields: [adminCredits.userId],
@@ -359,8 +357,6 @@ export const adminCreditsRelations = relations(adminCredits, ({ one }) => ({
     references: [users.id]
   })
 }));
-
-
 
 // Referral earnings
 export const referralEarnings = mysqlTable("referral_earnings", {
@@ -393,55 +389,6 @@ export const userPreferences = mysqlTable("user_preferences", {
   lastSelectedTab: varchar("last_selected_tab", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
-
-// User notifications system
-export const notifications = mysqlTable("notifications", {
-  id: int("id").primaryKey().autoincrement(),
-  userId: int("user_id").notNull().references(() => users.id),
-  type: varchar("type", { length: 50 }).notNull(), // deposit, withdrawal, trade, system
-  title: varchar("title", { length: 255 }).notNull(),
-  message: text("message").notNull(),
-  cryptoSymbol: varchar("crypto_symbol", { length: 10 }), // BTC, ETH, etc.
-  amount: double("amount"),
-  address: text("address"),
-  txHash: text("tx_hash"),
-  timestamp: varchar("timestamp", { length: 100 }),
-  isRead: boolean("is_read").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-
-export const notificationsRelations = relations(notifications, ({ one }) => ({
-  user: one(users, {
-    fields: [notifications.userId],
-    references: [users.id]
-  })
-}));
-
-// Admin transaction history
-export const adminTransactions = mysqlTable("admin_transactions", {
-  id: int("id").primaryKey().autoincrement(),
-  adminId: int("admin_id").notNull().references(() => users.id),
-  targetUserId: int("target_user_id").notNull().references(() => users.id),
-  type: varchar("type", { length: 50 }).notNull(), // add_funds, delete_user
-  cryptoSymbol: varchar("crypto_symbol", { length: 10 }), // BTC, ETH, USDT, etc.
-  network: varchar("network", { length: 50 }), // BEP20, ERC20, etc.
-  usdAmount: double("usd_amount"), // Amount in USD
-  cryptoAmount: double("crypto_amount"), // Equivalent crypto amount
-  sendAddress: text("send_address"), // Virtual send address
-  status: varchar("status", { length: 20 }).default("completed").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
-
-export const adminTransactionsRelations = relations(adminTransactions, ({ one }) => ({
-  admin: one(users, {
-    fields: [adminTransactions.adminId],
-    references: [users.id]
-  }),
-  targetUser: one(users, {
-    fields: [adminTransactions.targetUserId],
-    references: [users.id]
-  })
-}));
 
 // Insert schemas using zod
 export const insertUserSchema = createInsertSchema(users).omit({

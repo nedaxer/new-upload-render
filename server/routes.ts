@@ -8,7 +8,7 @@ import MemoryStore from "memorystore";
 import { sendVerificationEmail, sendWelcomeEmail } from "./email";
 import { WebSocketServer, WebSocket } from "ws";
 import { db } from "./db";
-import { users, currencies, userBalances, transactions, stakingRates, stakingPositions, adminTransactions, notifications } from "../shared/schema";
+import { users, currencies, userBalances, transactions, stakingRates, stakingPositions } from "../shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 import adminPanelRoutes from "./api/admin-panel-routes";
 import marketDataRoutes from "./api/market-data-routes";
@@ -16,7 +16,6 @@ import futuresTradingRoutes from "./api/futures-trading-routes";
 import spotTradingRoutes from "./api/spot-trading-routes";
 import referralRoutes from "./api/referral-routes";
 import chatbotRoutes from "./api/chatbot-routes";
-
 
 // Extend express-session types to include userId
 declare module "express-session" {
@@ -63,33 +62,6 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
       success: false,
       message: "Account not verified",
       needsVerification: true
-    });
-  }
-
-  next();
-};
-
-// Middleware to check if user is admin
-const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.session.userId) {
-    return res.status(401).json({
-      success: false,
-      message: "Authentication required"
-    });
-  }
-
-  const user = await storage.getUser(req.session.userId);
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: "User not found"
-    });
-  }
-
-  if (!user.isAdmin) {
-    return res.status(403).json({
-      success: false,
-      message: "Admin access required"
     });
   }
 
@@ -1364,91 +1336,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Create admin transactions table
-  app.post('/api/create-admin-table', async (req, res) => {
-    try {
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS admin_transactions (
-          id INT PRIMARY KEY AUTO_INCREMENT,
-          admin_id INT NOT NULL,
-          target_user_id INT NOT NULL,
-          type VARCHAR(50) NOT NULL,
-          crypto_symbol VARCHAR(10) NOT NULL,
-          network VARCHAR(50) NOT NULL,
-          usd_amount DOUBLE NOT NULL,
-          crypto_amount DOUBLE NOT NULL,
-          send_address TEXT NOT NULL,
-          status VARCHAR(20) DEFAULT 'completed',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (admin_id) REFERENCES users(id),
-          FOREIGN KEY (target_user_id) REFERENCES users(id)
-        )
-      `);
-
-      // Create notifications table
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS notifications (
-          id INT PRIMARY KEY AUTO_INCREMENT,
-          user_id INT NOT NULL,
-          type VARCHAR(50) NOT NULL,
-          title VARCHAR(255) NOT NULL,
-          message TEXT NOT NULL,
-          crypto_symbol VARCHAR(10),
-          amount DOUBLE,
-          address TEXT,
-          tx_hash VARCHAR(255),
-          timestamp VARCHAR(50),
-          is_read BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-      `);
-
-      res.json({ success: true, message: 'Admin tables created successfully' });
-    } catch (error) {
-      console.error('Error creating admin table:', error);
-      res.status(500).json({ success: false, message: 'Failed to create admin table' });
-    }
-  });
-
-  // Setup admin user - create the admin account
-  app.get('/api/setup-admin', async (req, res) => {
-    try {
-      const adminUser = {
-        username: 'robinstephen003@outlook.com',
-        email: 'robinstephen003@outlook.com', 
-        password: 'admin123',
-        firstName: 'Robin',
-        lastName: 'Stephen'
-      };
-
-      // Check if admin already exists by email
-      const existingAdmin = await storage.getUserByEmail(adminUser.email);
-
-      if (!existingAdmin) {
-        const newAdmin = await storage.createUser(adminUser);
-        await storage.markUserAsVerified(newAdmin.id);
-
-        // Set as admin
-        await storage.updateUserProfile(newAdmin.id, { isAdmin: true });
-
-        res.json({ success: true, message: 'Admin user created and verified', adminId: newAdmin.id });
-      } else {
-        // Direct password update for existing admin (plain text for testing)
-        await db.update(users).set({ password: adminUser.password }).where(eq(users.id, existingAdmin.id));
-
-        // Update existing user to admin if not already
-        if (!existingAdmin.isAdmin) {
-          await storage.updateUserProfile(existingAdmin.id, { isAdmin: true });
-        }
-        res.json({ success: true, message: 'Admin password updated directly', adminId: existingAdmin.id });
-      }
-    } catch (error) {
-      console.error('Error creating admin user:', error);
-      res.status(500).json({ success: false, message: 'Failed to create admin user' });
-    }
-  });
-
   // Get current authenticated user
   app.get('/api/auth/user', async (req, res) => {
     try {
@@ -1484,188 +1371,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: "Internal server error"
       });
-    }
-  });
-
-  // ===== ADMIN API ROUTES =====
-
-  // Get all users (admin only)
-  app.get('/api/admin/users', requireAdmin, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      const usersWithBalances = await Promise.all(
-        users.map(async (user) => {
-          const balance = await storage.getUserBalance(user.id, 'USD');
-          return {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            isVerified: user.isVerified,
-            createdAt: user.createdAt,
-            balance: balance
-          };
-        })
-      );
-
-      res.json({ success: true, users: usersWithBalances });
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch users' });
-    }
-  });
-
-  // Delete user (admin only) - with 1 minute delay
-  app.delete('/api/admin/users/:userId', requireAdmin, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const adminId = req.session.userId as number;
-
-      if (userId === adminId) {
-        return res.status(400).json({ success: false, message: 'Cannot delete your own admin account' });
-      }
-
-      // Set a 3-second delay before actual deletion
-      setTimeout(async () => {
-        try {
-          await storage.deleteUser(userId);
-          console.log(`User ${userId} deleted by admin ${adminId}`);
-        } catch (error) {
-          console.error('Error in delayed user deletion:', error);
-        }
-      }, 3000); // 3 seconds delay
-
-      res.json({ success: true, message: 'User deletion scheduled for 3 seconds' });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      res.status(500).json({ success: false, message: 'Failed to delete user' });
-    }
-  });
-
-  // Add funds to user (admin only)
-  app.post('/api/admin/add-funds', requireAdmin, async (req, res) => {
-    try {
-      const adminId = req.session.userId as number;
-      const { targetUserId, cryptoSymbol, network, usdAmount, sendAddress } = req.body;
-
-      if (!targetUserId || !cryptoSymbol || !network || !usdAmount || !sendAddress) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'All fields are required: targetUserId, cryptoSymbol, network, usdAmount, sendAddress' 
-        });
-      }
-
-      // Get crypto price from CoinGecko to calculate crypto amount
-      const cryptoPrice = await getCryptoPriceFromCoinGecko(cryptoSymbol);
-      const cryptoAmount = usdAmount / cryptoPrice;
-
-      const success = await storage.addFundsToUser(
-        adminId, 
-        targetUserId, 
-        cryptoSymbol, 
-        network, 
-        usdAmount, 
-        cryptoAmount, 
-        sendAddress
-      );
-
-      if (success) {
-        res.json({ 
-          success: true, 
-          message: 'Funds added successfully',
-          details: {
-            usdAmount,
-            cryptoAmount: cryptoAmount.toFixed(8),
-            cryptoSymbol,
-            network
-          }
-        });
-      } else {
-        res.status(500).json({ success: false, message: 'Failed to add funds' });
-      }
-    } catch (error) {
-      console.error('Error adding funds:', error);
-      res.status(500).json({ success: false, message: 'Failed to add funds' });
-    }
-  });
-
-  // Get admin transaction history
-  app.get('/api/admin/transactions', requireAdmin, async (req, res) => {
-    try {
-      const adminId = req.session.userId as number;
-      const transactions = await storage.getAdminTransactions(adminId);
-      res.json({ success: true, transactions });
-    } catch (error) {
-      console.error('Error fetching admin transactions:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch transactions' });
-    }
-  });
-
-  // Helper function to get crypto price from CoinGecko
-  async function getCryptoPriceFromCoinGecko(symbol: string): Promise<number> {
-    try {
-      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${getCoinGeckoId(symbol)}&vs_currencies=usd&x_cg_demo_api_key=${process.env.COINGECKO_API_KEY}`);
-      const data = await response.json();
-      const coinId = getCoinGeckoId(symbol);
-      return data[coinId]?.usd || 1;
-    } catch (error) {
-      console.error('Error fetching crypto price:', error);
-      return 1; // Fallback price
-    }
-  }
-
-  function getCoinGeckoId(symbol: string): string {
-    const mapping: { [key: string]: string } = {
-      'BTC': 'bitcoin',
-      'ETH': 'ethereum',
-      'BNB': 'binancecoin',
-      'USDT': 'tether',
-      'USDC': 'usd-coin',
-      'ADA': 'cardano',
-      'SOL': 'solana',
-      'XRP': 'ripple',
-      'DOT': 'polkadot'
-    };
-    return mapping[symbol.toUpperCase()] || 'bitcoin';
-  }
-
-  // ===== USER NOTIFICATION ROUTES =====
-
-  // Get user notifications
-  app.get('/api/notifications', requireAuth, async (req, res) => {
-    try {
-      const userId = req.session.userId as number;
-      const notifications = await storage.getUserNotifications(userId);
-      res.json({ success: true, notifications });
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch notifications' });
-    }
-  });
-
-  // Mark notification as read
-  app.patch('/api/notifications/:id/read', requireAuth, async (req, res) => {
-    try {
-      const notificationId = parseInt(req.params.id);
-      await storage.markNotificationAsRead(notificationId);
-      res.json({ success: true, message: 'Notification marked as read' });
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-      res.status(500).json({ success: false, message: 'Failed to mark notification as read' });
-    }
-  });
-
-  // Get user balance
-  app.get('/api/user/balance/:currency', requireAuth, async (req, res) => {
-    try {
-      const userId = req.session.userId as number;
-      const currency = req.params.currency.toUpperCase();
-      const balance = await storage.getUserBalance(userId, currency);
-      res.json({ success: true, balance, currency });
-    } catch (error) {
-      console.error('Error fetching balance:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch balance' });
     }
   });
 
@@ -1832,7 +1537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getCoinGeckoPrices } = await import('./coingecko-api.js');
       const tickers = await getCoinGeckoPrices();
-
+      
       // Transform tickers to include sentiment
       const tickersWithSentiment = tickers.map(ticker => ({
         ...ticker,
@@ -1903,7 +1608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Live market data endpoints (using CoinGecko as data source)
-
+  
   // Import CoinGecko API functions
   const { getCoinGeckoPrices } = await import('./coingecko-api.js');
 

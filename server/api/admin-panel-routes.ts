@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { db } from "../db";
 import { users, currencies, userBalances, adminCredits, stakingRates, transactions } from "../../shared/schema";
-import { eq, desc, sum, count, sql } from "drizzle-orm";
+import { eq, desc, sum, count } from "drizzle-orm";
 import { z } from "zod";
 
 const router = Router();
@@ -60,40 +60,17 @@ router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
 // Get all users for admin management
 router.get("/users", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { search } = req.query;
-    let query = db.select({
+    const allUsers = await db.select({
       id: users.id,
       username: users.username,
       email: users.email,
       firstName: users.firstName,
       lastName: users.lastName,
       isVerified: users.isVerified,
-      isAdmin: users.isAdmin,
       kycStatus: users.kycStatus,
       totalPortfolioValue: users.totalPortfolioValue,
       createdAt: users.createdAt
-    }).from(users);
-
-    if (search && typeof search === 'string') {
-      // Check if search is a number (UID search)
-      const searchNumber = parseInt(search.replace('#', ''), 10);
-      
-      if (!isNaN(searchNumber)) {
-        // Search by UID
-        query = query.where(eq(users.id, searchNumber));
-      } else {
-        // Search by text fields
-        const searchPattern = `%${search}%`;
-        query = query.where(
-          sql`${users.username} ILIKE ${searchPattern} OR 
-              ${users.email} ILIKE ${searchPattern} OR 
-              ${users.firstName} ILIKE ${searchPattern} OR 
-              ${users.lastName} ILIKE ${searchPattern}`
-        );
-      }
-    }
-
-    const allUsers = await query.orderBy(desc(users.createdAt));
+    }).from(users).orderBy(desc(users.createdAt));
 
     res.json({
       success: true,
