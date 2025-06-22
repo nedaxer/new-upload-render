@@ -5,7 +5,8 @@ import { insertMongoUserSchema, userDataSchema } from "@shared/mongo-schema";
 import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
-import { connectToDatabase } from "./mongodb";
+import MongoStore from "connect-mongodb-session";
+import { connectToDatabase, getMongoClient } from "./mongodb";
 import { getCoinGeckoPrices } from "./coingecko-api";
 import { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email";
 import crypto from "crypto";
@@ -41,18 +42,29 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup sessions with MongoDB or memory store
-  const MemoryStoreSession = MemoryStore(session);
+  // Connect to MongoDB first
+  await connectToDatabase();
+  
+  // Setup MongoDB session store
+  const MongoDBStore = MongoStore(session);
+  const store = new MongoDBStore({
+    uri: 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer',
+    collection: 'sessions'
+  });
+
+  // Handle session store errors
+  store.on('error', function(error) {
+    console.log('Session store error:', error);
+  });
+
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+    secret: process.env.SESSION_SECRET || 'nedaxer-trading-platform-secret-2025',
     resave: false,
     saveUninitialized: false,
-    store: new MemoryStoreSession({
-      checkPeriod: 86400000 // prune expired entries every 24h
-    }),
+    store: store,
     cookie: {
       secure: false, // Set to true if using HTTPS
-      httpOnly: false, // Allow client access to session cookies
+      httpOnly: true, // Keep secure but allow browser access
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       sameSite: 'lax' // Allow cross-site requests
     }
