@@ -58,6 +58,7 @@ export default function AdminPage() {
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
   const [deleteCountdown, setDeleteCountdown] = useState(3);
     const [searchUid, setSearchUid] = useState('');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
 
 
   const [addFundsForm, setAddFundsForm] = useState({
@@ -122,6 +123,7 @@ export default function AdminPage() {
         usdAmount: '',
         sendAddress: ''
       });
+      setUserSearchQuery('');
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/transactions'] });
     },
