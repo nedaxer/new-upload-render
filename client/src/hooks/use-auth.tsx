@@ -58,6 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (data.success && data.user) {
           return { user: data.user };
+        } else if (data && (data._id || data.id)) {
+          // Handle direct user object response (MongoDB format with _id)
+          return { user: data };
         } else {
           return { user: null };
         }
@@ -90,9 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Login successful, updating cache with user:', data.user);
       // Update the auth user data in the cache immediately
       queryClient.setQueryData(["/api/auth/user"], { user: data.user });
-      // Force immediate cache invalidation and refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+      // Don't invalidate immediately - let the cache persist to avoid race conditions
     },
   });
 
