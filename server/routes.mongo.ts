@@ -52,8 +52,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }),
     cookie: {
       secure: false, // Set to true if using HTTPS
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+      httpOnly: false, // Allow client access to session cookies
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      sameSite: 'lax' // Allow cross-site requests
     }
   }));
 

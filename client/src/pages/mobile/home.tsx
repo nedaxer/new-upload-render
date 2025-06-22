@@ -100,10 +100,32 @@ export default function MobileHome() {
 
   // Fetch user favorites
   const { data: userFavorites } = useQuery<string[]>({
-    queryKey: ['/api/user/favorites'],
+    queryKey: ['/api/favorites'],
     enabled: !!user,
     retry: false
   });
+
+  // Fetch user wallet balance data
+  const { data: walletData, isLoading: walletLoading, error: walletError } = useQuery({
+    queryKey: ['/api/wallet/summary'],
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Fetch user balances
+  const { data: balanceData } = useQuery({
+    queryKey: ['/api/balances'],
+    enabled: !!user,
+    refetchInterval: 30000,
+  });
+
+  // Debug logging for wallet data
+  React.useEffect(() => {
+    console.log('Mobile Home - Wallet Data:', walletData);
+    console.log('Mobile Home - Wallet Loading:', walletLoading);
+    console.log('Mobile Home - Wallet Error:', walletError);
+    console.log('Mobile Home - User:', user);
+  }, [walletData, walletLoading, walletError, user]);
 
   // Fetch currency conversion rates
   const { data: conversionData } = useQuery({
@@ -421,6 +443,20 @@ export default function MobileHome() {
     );
   }
 
+  // Show loading state while user data is being fetched
+  if (!user) {
+    return (
+      <MobileLayout>
+        <div className="flex items-center justify-center min-h-screen bg-gray-900">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading your account...</p>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   const handleQRScan = () => {
     // Check if device has camera access
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -561,7 +597,13 @@ export default function MobileHome() {
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {showBalance ? convertToSelectedCurrency(0.51) : '****'}
+              {walletLoading ? (
+                <div className="w-24 h-8 bg-gray-700 animate-pulse rounded"></div>
+              ) : showBalance ? (
+                walletData?.data?.totalUSDValue ? 
+                  convertToSelectedCurrency(walletData.data.totalUSDValue) : 
+                  convertToSelectedCurrency(10000)
+              ) : '****'}
             </span>
             <button 
               onClick={() => setCurrentView('currency-selection')}
