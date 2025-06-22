@@ -156,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Automatically verify the user
-      await storage.markUserAsVerified(newUser._id);
+      await storage.markUserAsVerified(newUser._id.toString());
 
       console.log(`User created with ID: ${newUser._id}`);
 
@@ -190,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Set session to automatically log user in after registration
-      req.session.userId = newUser._id;
+      req.session.userId = newUser._id.toString();
 
       console.log(`Registration and auto-login successful for user: ${email}`);
 
@@ -377,6 +377,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get preferences error:', error);
       res.status(500).json({ success: false, message: "Failed to get preferences" });
+    }
+  });
+
+  // User balance endpoints for mobile app
+  app.get('/api/balances', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      // Import models
+      const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
+      
+      // Get user balances with currency details
+      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      
+      const formattedBalances = balances.map(balance => ({
+        id: balance._id,
+        balance: balance.amount,
+        currency: {
+          id: balance.currencyId._id,
+          symbol: balance.currencyId.symbol,
+          name: balance.currencyId.name,
+          type: 'crypto',
+          isActive: balance.currencyId.isActive
+        }
+      }));
+
+      res.json({
+        success: true,
+        balances: formattedBalances
+      });
+    } catch (error) {
+      console.error('Balances fetch error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch balances"
+      });
+    }
+  });
+
+  // Get user wallet summary for mobile home
+  app.get('/api/wallet/summary', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      // Import models
+      const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
+      
+      // Get user balances
+      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      
+      let totalUSDValue = 0;
+      const assets = [];
+      
+      for (const balance of balances) {
+        const currency = balance.currencyId;
+        let usdValue = balance.amount;
+        
+        // Simple price conversion (in real app, you'd get from price API)
+        if (currency.symbol === 'BTC') {
+          usdValue = balance.amount * 45000; // Approximate BTC price
+        } else if (currency.symbol === 'ETH') {
+          usdValue = balance.amount * 2500; // Approximate ETH price
+        }
+        
+        totalUSDValue += usdValue;
+        
+        if (balance.amount > 0) {
+          assets.push({
+            symbol: currency.symbol,
+            name: currency.name,
+            balance: balance.amount,
+            usdValue: usdValue
+          });
+        }
+      }
+      
+      res.json({
+        success: true,
+        data: {
+          totalUSDValue: totalUSDValue,
+          assets: assets,
+          assetCount: assets.length
+        }
+      });
+    } catch (error) {
+      console.error('Wallet summary error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch wallet summary"
+      });
     }
   });
 
