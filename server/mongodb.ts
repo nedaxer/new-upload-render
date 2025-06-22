@@ -90,13 +90,9 @@ async function createInitialData() {
       console.log('Created admin user with username: admin, password: password');
     }
     
-    // Create currencies
+    // Create only USD currency for fiat broker
     const currencies = [
-      { symbol: 'USD', name: 'US Dollar', isActive: true },
-      { symbol: 'BTC', name: 'Bitcoin', isActive: true },
-      { symbol: 'ETH', name: 'Ethereum', isActive: true },
-      { symbol: 'BNB', name: 'Binance Coin', isActive: true },
-      { symbol: 'USDT', name: 'Tether', isActive: true }
+      { symbol: 'USD', name: 'US Dollar', isActive: true }
     ];
     
     for (const currencyData of currencies) {
@@ -108,35 +104,33 @@ async function createInitialData() {
     }
     console.log('Currencies initialized:', currencies.map(c => c.symbol).join(', '));
     
-    // Get currency IDs
+    // Get USD currency (only currency we need for fiat broker)
     const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-    const btcCurrency = await Currency.findOne({ symbol: 'BTC' });
-    const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
     
-    if (usdCurrency && btcCurrency && ethCurrency && testUser) {
-      // Create balances for test user with comprehensive fund management
-      const balances = [
-        { userId: testUser._id, currencyId: usdCurrency._id, amount: 50000 },
-        { userId: testUser._id, currencyId: btcCurrency._id, amount: 2.5 },
-        { userId: testUser._id, currencyId: ethCurrency._id, amount: 25 }
-      ];
-      
-      for (const balanceData of balances) {
-        const balance = new UserBalance(balanceData);
-        await balance.save();
+    // Get users for balance initialization
+    const testUser = await User.findOne({ username: 'testuser' });
+    const adminUser = await User.findOne({ username: 'admin' });
+    
+    if (usdCurrency && testUser && adminUser) {
+      // Create USD balances for users - Default to $0 (users must deposit to have balance)
+      const existingTestBalance = await UserBalance.findOne({ userId: testUser._id, currencyId: usdCurrency._id });
+      if (!existingTestBalance) {
+        const testBalance = new UserBalance({
+          userId: testUser._id, 
+          currencyId: usdCurrency._id, 
+          amount: 0 // Start with $0 - users must deposit
+        });
+        await testBalance.save();
       }
-      console.log('Created initial balances for test user');
       
-      // Create balances for admin user with higher amounts
-      const adminBalances = [
-        { userId: adminUser._id, currencyId: usdCurrency._id, amount: 100000 },
-        { userId: adminUser._id, currencyId: btcCurrency._id, amount: 5.0 },
-        { userId: adminUser._id, currencyId: ethCurrency._id, amount: 50 }
-      ];
-      
-      for (const balanceData of adminBalances) {
-        const balance = new UserBalance(balanceData);
-        await balance.save();
+      const existingAdminBalance = await UserBalance.findOne({ userId: adminUser._id, currencyId: usdCurrency._id });
+      if (!existingAdminBalance) {
+        const adminBalance = new UserBalance({
+          userId: adminUser._id, 
+          currencyId: usdCurrency._id, 
+          amount: 0 // Start with $0 - admin can add funds through admin panel
+        });
+        await adminBalance.save();
       }
       console.log('Created initial balances for admin user');
       

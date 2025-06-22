@@ -398,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User balance endpoints for mobile app
+  // User balance endpoints for fiat broker (USD only)
   app.get('/api/balances', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
@@ -407,24 +407,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
       
-      // Get user balances with currency details
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+      if (!usdCurrency) {
+        return res.status(500).json({ success: false, message: 'USD currency not found' });
+      }
       
-      const formattedBalances = balances.map(balance => ({
-        id: balance._id,
-        balance: balance.amount,
-        currency: {
-          id: balance.currencyId._id,
-          symbol: balance.currencyId.symbol,
-          name: balance.currencyId.name,
-          type: 'crypto',
-          isActive: balance.currencyId.isActive
-        }
-      }));
-
-      res.json({
-        success: true,
-        balances: formattedBalances
+      let balance = await UserBalance.findOne({ 
+        userId: userId, 
+        currencyId: usdCurrency._id 
+      });
+      
+      // Create balance record if doesn't exist (default to $0)
+      if (!balance) {
+        balance = new UserBalance({
+          userId: userId,
+          currencyId: usdCurrency._id,
+          amount: 0
+        });
+        await balance.save();
+      }
+      
+      res.json({ 
+        success: true, 
+        data: { 
+          usdBalance: balance.amount,
+          availableBalance: balance.amount,
+          currency: 'USD'
+        } 
       });
     } catch (error) {
       console.error('Balances fetch error:', error);
@@ -435,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user wallet summary for mobile home
+  // Get user wallet summary for fiat broker
   app.get('/api/wallet/summary', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
@@ -444,49 +453,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
       
-      // Get user balances
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
-      
-      let totalUSDValue = 0;
-      const assets = [];
-      
-      for (const balance of balances) {
-        const currency = balance.currencyId;
-        let usdValue = balance.amount;
-        
-        // Simple price conversion (in real app, you'd get from price API)
-        if (currency.symbol === 'BTC') {
-          usdValue = balance.amount * 45000; // Approximate BTC price
-        } else if (currency.symbol === 'ETH') {
-          usdValue = balance.amount * 2500; // Approximate ETH price
-        }
-        
-        totalUSDValue += usdValue;
-        
-        if (balance.amount > 0) {
-          assets.push({
-            symbol: currency.symbol,
-            name: currency.name,
-            balance: balance.amount,
-            usdValue: usdValue
-          });
-        }
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+      if (!usdCurrency) {
+        return res.status(500).json({ success: false, message: 'USD currency not found' });
       }
       
-      res.json({
-        success: true,
-        data: {
-          totalUSDValue: totalUSDValue,
-          assets: assets,
-          assetCount: assets.length
-        }
+      let balance = await UserBalance.findOne({ 
+        userId: userId, 
+        currencyId: usdCurrency._id 
       });
+      
+      // Create balance record if doesn't exist (default to $0)
+      if (!balance) {
+        balance = new UserBalance({
+          userId: userId,
+          currencyId: usdCurrency._id,
+          amount: 0
+        });
+        await balance.save();
+      }
+      
+      const walletSummary = {
+        totalBalance: balance.amount,
+        availableBalance: balance.amount,
+        lockedBalance: 0,
+        portfolioChange24h: 0,
+        portfolioChangePercent: 0
+      };
+      
+      res.json({ success: true, data: walletSummary });
     } catch (error) {
-      console.error('Wallet summary error:', error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to fetch wallet summary"
-      });
+      console.error('Wallet summary fetch error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch wallet summary' });
     }
   });
 

@@ -33,6 +33,13 @@ export default function MobileAssets() {
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
   const [activeTab, setActiveTab] = useState('assets'); // Only 'assets' tab now
+  
+  // Fetch user USD balance
+  const { data: balanceData, isLoading: balanceLoading } = useQuery({
+    queryKey: ['/api/balances'],
+    staleTime: 30000,
+    retry: 1
+  });
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
@@ -315,10 +322,10 @@ export default function MobileAssets() {
 
 
 
-      {/* Total Assets */}
+      {/* USD Balance Display */}
       <div className="px-4 pb-6">
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-400 text-sm">Total Assets</span>
+          <span className="text-gray-400 text-sm">Account Balance</span>
           <button onClick={() => setShowBalance(!showBalance)}>
             {showBalance ? (
               <Eye className="w-4 h-4 text-gray-400" />
@@ -331,18 +338,19 @@ export default function MobileAssets() {
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {showBalance ? convertToSelectedCurrency(0.51) : '****'}
+              {showBalance ? (
+                balanceData?.data?.usdBalance !== undefined
+                  ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2 
+                    })}`
+                  : '$0.00'
+              ) : '****'}
             </span>
-            <button 
-              onClick={() => setCurrentView('currency-selection')}
-              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
-            >
-              <span>{selectedCurrency}</span>
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <span className="text-gray-400 text-lg">USD</span>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? '0.00000484' : '****'} BTC</span>
+            <span>{balanceData?.data?.usdBalance === 0 ? 'Deposit crypto to start trading' : 'Available for trading'}</span>
           </div>
         </div>
 
@@ -415,32 +423,75 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* Portfolio Circle Chart */}
+      {/* USD Fiat Balance Section */}
       <div className="px-4">
-        <h3 className="text-white font-medium mb-6 text-sm">Portfolio Distribution</h3>
+        <h3 className="text-white font-medium mb-6 text-sm">Account Overview</h3>
         
-        {/* Circular Portfolio Chart */}
-        <div className="relative flex flex-col items-center mb-8">
-          {/* Donut Chart Container */}
-          <div className="relative w-80 h-80 mb-6">
-            {/* Authentic Crypto Color Donut Chart */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 200 200">
-                <defs>
-                  {/* Authentic crypto gradients */}
-                  <linearGradient id="bitcoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f7931a" />
-                    <stop offset="100%" stopColor="#ff8c00" />
-                  </linearGradient>
-                  <linearGradient id="ethereumAuth" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#627eea" />
-                    <stop offset="100%" stopColor="#4169e1" />
-                  </linearGradient>
-                  <linearGradient id="litecoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#bfbbbb" />
-                    <stop offset="100%" stopColor="#a6a6a6" />
-                  </linearGradient>
-                  <linearGradient id="iotaAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+        <div className="bg-gray-800 rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl font-bold">$</span>
+              </div>
+              <div>
+                <div className="text-white font-medium text-lg">USD Balance</div>
+                <div className="text-gray-400 text-sm">Available for Trading</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-right">
+            <div className="text-white font-bold text-3xl mb-1">
+              {showBalance ? (
+                balanceData?.data?.usdBalance !== undefined
+                  ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2 
+                    })}`
+                  : '$0.00'
+              ) : '••••••'}
+            </div>
+            <div className="text-gray-400 text-sm">Fiat Balance • Ready to Trade</div>
+          </div>
+          
+          {balanceData?.data?.usdBalance === 0 && (
+            <div className="mt-4 p-4 bg-orange-900/20 border border-orange-500/30 rounded-lg">
+              <p className="text-orange-300 text-sm text-center">
+                Deposit cryptocurrency to receive USD balance for trading
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="px-4 pb-6">
+        <div className="grid grid-cols-3 gap-4">
+          <Button 
+            onClick={() => setCurrentView('crypto-selection')}
+            className="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
+          >
+            <ArrowDown className="w-6 h-6" />
+            <span className="text-sm">Deposit</span>
+          </Button>
+          
+          <Button 
+            onClick={handleComingSoon}
+            className="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
+          >
+            <ArrowUp className="w-6 h-6" />
+            <span className="text-sm">Withdraw</span>
+          </Button>
+          
+          <Button 
+            onClick={handleComingSoon}
+            className="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
+          >
+            <ArrowDownUp className="w-6 h-6" />
+            <span className="text-sm">Transfer</span>
+          </Button>
+        </div>
+      </div>
                     <stop offset="0%" stopColor="#131f37" />
                     <stop offset="100%" stopColor="#1a2332" />
                   </linearGradient>
