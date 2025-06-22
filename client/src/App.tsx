@@ -241,6 +241,9 @@ export default function App() {
               {() => <Redirect to="/mobile" />}
             </Route>
 
+            {/* Dashboard Route - Protected */}
+            <ProtectedRoute path="/dashboard" component={LegacyDashboard} />
+
             {/* Trading Platform Routes - Protected */}
             <ProtectedRoute path="/spot-trading" component={SpotTrading} />
             <ProtectedRoute path="/futures" component={Futures} />
