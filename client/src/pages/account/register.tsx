@@ -153,11 +153,11 @@ export default function Register() {
       // Store email as username in localStorage for convenience
       localStorage.setItem('lastUsername', data.user.email);
       
-      // Immediate redirect to dashboard
-      console.log('Taking user to dashboard');
+      // Immediate redirect to mobile home page
+      console.log('Taking user to mobile home page');
       
       // Use wouter's setLocation for proper routing
-      setLocation('/dashboard');
+      setLocation('/mobile');
       
     } catch (error) {
       console.error('Registration error:', error);

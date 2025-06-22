@@ -160,6 +160,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`User created with ID: ${newUser._id}`);
 
+      // Create initial fund balances for new user
+      try {
+        const { Currency } = await import('./models/Currency');
+        const { UserBalance } = await import('./models/UserBalance');
+        
+        // Get currencies
+        const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+        const btcCurrency = await Currency.findOne({ symbol: 'BTC' });
+        const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
+        
+        if (usdCurrency && btcCurrency && ethCurrency) {
+          // Create starter balances for new user
+          const starterBalances = [
+            { userId: newUser._id, currencyId: usdCurrency._id, amount: 10000 }, // $10,000 starter
+            { userId: newUser._id, currencyId: btcCurrency._id, amount: 0.1 },   // 0.1 BTC starter
+            { userId: newUser._id, currencyId: ethCurrency._id, amount: 2 }      // 2 ETH starter
+          ];
+          
+          for (const balanceData of starterBalances) {
+            const balance = new UserBalance(balanceData);
+            await balance.save();
+          }
+          console.log('Created starter fund balances for new user');
+        }
+      } catch (balanceError) {
+        console.warn('Could not create starter balances:', balanceError);
+        // Don't fail registration if balance creation fails
+      }
+
       // Set session to automatically log user in after registration
       req.session.userId = newUser._id;
 
