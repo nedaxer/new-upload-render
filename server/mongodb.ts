@@ -54,35 +54,41 @@ async function createInitialData() {
     // Import UID generation utility
     const { generateUID } = await import('./utils/uid');
     
-    // Create test user with UID
-    const testUser = new User({
-      uid: generateUID(),
-      username: 'testuser',
-      email: 'test@example.com',
-      password: hashedPassword, // Freshly hashed 'password'
-      firstName: 'Test',
-      lastName: 'User',
-      isVerified: true,
-      isAdmin: false,
-      createdAt: new Date()
-    });
-    await testUser.save();
-    console.log('Created test user with username: testuser, password: password');
+    // Check if test user already exists
+    const existingTestUser = await User.findOne({ username: 'testuser' });
+    if (!existingTestUser) {
+      const testUser = new User({
+        uid: generateUID(),
+        username: 'testuser',
+        email: 'test@example.com',
+        password: hashedPassword, // Freshly hashed 'password'
+        firstName: 'Test',
+        lastName: 'User',
+        isVerified: true,
+        isAdmin: false,
+        createdAt: new Date()
+      });
+      await testUser.save();
+      console.log('Created test user with username: testuser, password: password');
+    }
     
-    // Create admin user with UID
-    const adminUser = new User({
-      uid: generateUID(),
-      username: 'admin',
-      email: 'admin@example.com',
-      password: hashedPassword, // Same hashed password
-      firstName: 'Admin',
-      lastName: 'User',
-      isVerified: true,
-      isAdmin: true,
-      createdAt: new Date()
-    });
-    await adminUser.save();
-    console.log('Created admin user with username: admin, password: password');
+    // Check if admin user already exists
+    const existingAdminUser = await User.findOne({ username: 'admin' });
+    if (!existingAdminUser) {
+      const adminUser = new User({
+        uid: generateUID(),
+        username: 'admin',
+        email: 'admin@example.com',
+        password: hashedPassword, // Same hashed password
+        firstName: 'Admin',
+        lastName: 'User',
+        isVerified: true,
+        isAdmin: true,
+        createdAt: new Date()
+      });
+      await adminUser.save();
+      console.log('Created admin user with username: admin, password: password');
+    }
     
     // Create currencies
     const currencies = [
@@ -94,10 +100,13 @@ async function createInitialData() {
     ];
     
     for (const currencyData of currencies) {
-      const currency = new Currency(currencyData);
-      await currency.save();
+      const existingCurrency = await Currency.findOne({ symbol: currencyData.symbol });
+      if (!existingCurrency) {
+        const currency = new Currency(currencyData);
+        await currency.save();
+      }
     }
-    console.log('Created currencies:', currencies.map(c => c.symbol).join(', '));
+    console.log('Currencies initialized:', currencies.map(c => c.symbol).join(', '));
     
     // Get currency IDs
     const usdCurrency = await Currency.findOne({ symbol: 'USD' });

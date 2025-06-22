@@ -92,41 +92,43 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch real-time price data
-  const { data: priceData } = useQuery({
-    queryKey: ['/api/crypto/prices'],
+  // Fetch real-time price data with improved error handling using cached endpoint
+  const { data: priceData, isLoading: priceLoading } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
     refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 25000, // Consider data fresh for 25 seconds
+    retry: 2,
+    retryDelay: 1000
   });
 
-  // Fetch user favorites
+  // Fetch user favorites only when user is available
   const { data: userFavorites } = useQuery<string[]>({
     queryKey: ['/api/favorites'],
     enabled: !!user,
-    retry: false
+    retry: 1,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Fetch user wallet balance data
+  // Fetch user wallet balance data with optimized loading
   const { data: walletData, isLoading: walletLoading, error: walletError } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 60000, // Reduced frequency to 60 seconds
+    staleTime: 30000,
+    retry: 1
   });
 
-  // Fetch user balances
-  const { data: balanceData } = useQuery({
+  // Fetch user balances with optimized loading
+  const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['/api/balances'],
     enabled: !!user,
-    refetchInterval: 30000,
+    refetchInterval: 60000, // Reduced frequency to 60 seconds
+    staleTime: 30000,
+    retry: 1
   });
 
-  // Debug logging for wallet data
-  React.useEffect(() => {
-    console.log('Mobile Home - Wallet Data:', walletData);
-    console.log('Mobile Home - Wallet Loading:', walletLoading);
-    console.log('Mobile Home - Wallet Error:', walletError);
-    console.log('Mobile Home - User:', user);
-    console.log('Mobile Home - Balance Data:', balanceData);
-  }, [walletData, walletLoading, walletError, user, balanceData]);
+  // Show loading state for critical data
+  const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
 
   // Fetch currency conversion rates
   const { data: conversionData } = useQuery({

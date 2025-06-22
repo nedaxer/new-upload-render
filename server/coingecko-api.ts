@@ -200,9 +200,10 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
         include_market_cap: 'true'
       },
       headers: {
-        'x-cg-demo-api-key': API_KEY
+        'x-cg-demo-api-key': API_KEY,
+        'Accept': 'application/json'
       },
-      timeout: 15000
+      timeout: 10000
     });
 
     // Transform data to match our crypto pairs

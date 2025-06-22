@@ -85,6 +85,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add realtime prices endpoint with caching
+  const { getRealtimePrices } = await import('./api/realtime-prices');
+  app.get('/api/crypto/realtime-prices', getRealtimePrices);
+
   // Auth endpoint to get current user data
   app.get('/api/auth/user', async (req: Request, res: Response) => {
     try {
