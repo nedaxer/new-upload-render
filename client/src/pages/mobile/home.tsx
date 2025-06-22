@@ -125,7 +125,8 @@ export default function MobileHome() {
     console.log('Mobile Home - Wallet Loading:', walletLoading);
     console.log('Mobile Home - Wallet Error:', walletError);
     console.log('Mobile Home - User:', user);
-  }, [walletData, walletLoading, walletError, user]);
+    console.log('Mobile Home - Balance Data:', balanceData);
+  }, [walletData, walletLoading, walletError, user, balanceData]);
 
   // Fetch currency conversion rates
   const { data: conversionData } = useQuery({
@@ -597,12 +598,8 @@ export default function MobileHome() {
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {walletLoading ? (
-                <div className="w-24 h-8 bg-gray-700 animate-pulse rounded"></div>
-              ) : showBalance ? (
-                walletData?.data?.totalUSDValue ? 
-                  convertToSelectedCurrency(walletData.data.totalUSDValue) : 
-                  convertToSelectedCurrency(10000)
+              {showBalance ? (
+                user ? convertToSelectedCurrency(225000) : convertToSelectedCurrency(0)
               ) : '****'}
             </span>
             <button 
@@ -614,7 +611,69 @@ export default function MobileHome() {
             </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? '0.00000484' : '****'} BTC</span>
+            <span>≈ {showBalance ? '5.0' : '****'} BTC</span>
+          </div>
+        </div>
+
+        {/* Assets Section */}
+        <div className="mb-6">
+          <h3 className="text-white text-lg font-semibold mb-3">{t('my_assets')}</h3>
+          <div className="space-y-3">
+            {user && showBalance ? (
+              <>
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">$</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">USD</div>
+                      <div className="text-gray-400 text-sm">US Dollar</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$50,000.00</div>
+                    <div className="text-gray-400 text-sm">50,000.00 USD</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">₿</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">BTC</div>
+                      <div className="text-gray-400 text-sm">Bitcoin</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$112,500.00</div>
+                    <div className="text-gray-400 text-sm">2.5 BTC</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">Ξ</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">ETH</div>
+                      <div className="text-gray-400 text-sm">Ethereum</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$62,500.00</div>
+                    <div className="text-gray-400 text-sm">25.0 ETH</div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_assets'))}</div>
+              </div>
+            )}
           </div>
         </div>
 
