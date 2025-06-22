@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BarChart4, Clock, Zap, Download, ChevronDown, ChevronUp, Layers, Maximize, RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
-import { LightweightChart, ChartDataPoint as LightweightChartDataPoint } from "./lightweight-chart";
+import { SimpleChart, ChartDataPoint as SimpleChartDataPoint } from "./simple-chart";
 
 // Define the data shape
 export type CryptoDataPoint = {
@@ -185,7 +185,7 @@ export function CryptoChart({ data, coinSymbol, coinName, className = "" }: Cryp
       
       {/* Chart */}
       <div className="p-2 bg-white">
-        <LightweightChart
+        <SimpleChart
           data={data.map(item => ({
             time: item.date,
             open: item.open,
@@ -196,10 +196,7 @@ export function CryptoChart({ data, coinSymbol, coinName, className = "" }: Cryp
           }))}
           symbol={coinSymbol}
           height={400}
-          chartType={chartType === "candlestick" ? "candlestick" : "line"}
-          showVolume={showVolume}
           theme="light"
-          persistentId={`crypto-chart-${coinSymbol}`}
         />
       </div>
       

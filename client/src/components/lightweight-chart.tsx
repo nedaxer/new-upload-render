@@ -1,9 +1,5 @@
-
 import { useEffect, useRef, memo } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, LineData } from 'lightweight-charts';
-
-// Global chart instances cache to persist across re-renders
-const chartInstancesCache = new Map<string, IChartApi>();
+import { createChart, ColorType } from 'lightweight-charts';
 
 export interface ChartDataPoint {
   time: string;
@@ -21,7 +17,7 @@ interface LightweightChartProps {
   chartType?: 'candlestick' | 'line';
   showVolume?: boolean;
   theme?: 'light' | 'dark';
-  persistentId?: string; // Add optional persistent ID
+  persistentId?: string;
 }
 
 export const LightweightChart = memo(({
@@ -34,191 +30,148 @@ export const LightweightChart = memo(({
   persistentId
 }: LightweightChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
-  const chartKey = persistentId || `${symbol}-${chartType}`;
+  const chartRef = useRef<any>(null);
+  const seriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return;
 
-    // Check if we have a cached chart instance
-    const cachedChart = chartInstancesCache.get(chartKey);
-    if (cachedChart && persistentId) {
-      // Reuse existing chart
-      chartRef.current = cachedChart;
-      
-      // Move chart to current container
-      const chartDiv = chartContainerRef.current.querySelector('.tv-lightweight-charts');
-      if (!chartDiv && cachedChart.chartElement) {
-        chartContainerRef.current.appendChild(cachedChart.chartElement());
-      }
-      
-      // Update chart size
-      cachedChart.applyOptions({
+    try {
+      // Chart configuration
+      const chartOptions = {
+        layout: {
+          background: { type: ColorType.Solid, color: theme === 'dark' ? '#1a1a1a' : '#ffffff' },
+          textColor: theme === 'dark' ? '#d1d4dc' : '#191919',
+        },
+        grid: {
+          vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e1e1e1' },
+          horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e1e1e1' },
+        },
+        crosshair: {
+          mode: 1,
+        },
+        rightPriceScale: {
+          borderColor: theme === 'dark' ? '#485c7b' : '#cccccc',
+        },
+        timeScale: {
+          borderColor: theme === 'dark' ? '#485c7b' : '#cccccc',
+          timeVisible: true,
+          secondsVisible: false,
+        },
         width: chartContainerRef.current.clientWidth,
         height,
-      });
-      
-      return;
-    }
+      };
 
-    // Chart configuration
-    const chartOptions = {
-      layout: {
-        background: { type: ColorType.Solid, color: theme === 'dark' ? '#1a1a1a' : '#ffffff' },
-        textColor: theme === 'dark' ? '#d1d4dc' : '#191919',
-      },
-      grid: {
-        vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e1e1e1' },
-        horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e1e1e1' },
-      },
-      crosshair: {
-        mode: 1,
-      },
-      rightPriceScale: {
-        borderColor: theme === 'dark' ? '#485c7b' : '#cccccc',
-      },
-      timeScale: {
-        borderColor: theme === 'dark' ? '#485c7b' : '#cccccc',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-    };
+      // Create chart
+      const chart = createChart(chartContainerRef.current, chartOptions);
+      chartRef.current = chart;
 
-    // Create chart
-    const chart = createChart(chartContainerRef.current, {
-      ...chartOptions,
-      width: chartContainerRef.current.clientWidth,
-      height,
-    });
+      // Prepare data
+      const chartData = data.map(item => ({
+        time: item.time,
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close,
+      }));
 
-    chartRef.current = chart;
-    
-    // Cache chart instance if persistent ID is provided
-    if (persistentId) {
-      chartInstancesCache.set(chartKey, chart);
-    }
+      const lineData = data.map(item => ({
+        time: item.time,
+        value: item.close,
+      }));
 
-    // Prepare data
-    const chartData = data.map(item => ({
-      time: item.time,
-      open: item.open,
-      high: item.high,
-      low: item.low,
-      close: item.close,
-    })) as CandlestickData[];
-
-    const lineData = data.map(item => ({
-      time: item.time,
-      value: item.close,
-    })) as LineData[];
-
-    const volumeData = data.map(item => ({
-      time: item.time,
-      value: item.volume || 0,
-      color: item.close >= item.open ? '#26a69a' : '#ef5350',
-    }));
-
-    // Add price series
-    if (chartType === 'candlestick') {
-      const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderVisible: false,
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
-      });
-      candlestickSeries.setData(chartData);
-      candlestickSeriesRef.current = candlestickSeries;
-    } else {
-      const lineSeries = chart.addLineSeries({
-        color: '#0033a0',
-        lineWidth: 2,
-      });
-      lineSeries.setData(lineData);
-      lineSeriesRef.current = lineSeries;
-    }
-
-    // Add volume series if enabled
-    if (showVolume) {
-      const volumeSeries = chart.addHistogramSeries({
-        color: '#26a69a',
-        priceFormat: {
-          type: 'volume',
-        },
-        priceScaleId: '',
-        scaleMargins: {
-          top: 0.8,
-          bottom: 0,
-        },
-      });
-      volumeSeries.setData(volumeData);
-      volumeSeriesRef.current = volumeSeries;
-    }
-
-    // Fit content
-    chart.timeScale().fitContent();
-
-    // Handle resize
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({
-          width: chartContainerRef.current.clientWidth,
+      // Add price series
+      let series;
+      if (chartType === 'candlestick') {
+        series = chart.addCandlestickSeries({
+          upColor: '#26a69a',
+          downColor: '#ef5350',
+          borderVisible: false,
+          wickUpColor: '#26a69a',
+          wickDownColor: '#ef5350',
         });
+        series.setData(chartData);
+      } else {
+        series = chart.addLineSeries({
+          color: '#0033a0',
+          lineWidth: 2,
+        });
+        series.setData(lineData);
       }
-    };
+      seriesRef.current = series;
 
-    window.addEventListener('resize', handleResize);
+      // Add volume series if enabled and data available
+      if (showVolume && data.some(item => item.volume)) {
+        const volumeData = data.map(item => ({
+          time: item.time,
+          value: item.volume || 0,
+          color: item.close >= item.open ? '#26a69a' : '#ef5350',
+        }));
 
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      
-      // Only remove chart if not persistent
-      if (!persistentId) {
+        const volumeSeries = chart.addHistogramSeries({
+          color: '#26a69a',
+          priceFormat: {
+            type: 'volume',
+          },
+          priceScaleId: '',
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
+        });
+        volumeSeries.setData(volumeData);
+        volumeSeriesRef.current = volumeSeries;
+      }
+
+      // Fit content
+      chart.timeScale().fitContent();
+
+      // Handle resize
+      const handleResize = () => {
+        if (chartContainerRef.current) {
+          chart.applyOptions({
+            width: chartContainerRef.current.clientWidth,
+          });
+        }
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      // Cleanup
+      return () => {
+        window.removeEventListener('resize', handleResize);
         chart.remove();
         chartRef.current = null;
-        candlestickSeriesRef.current = null;
-        lineSeriesRef.current = null;
+        seriesRef.current = null;
         volumeSeriesRef.current = null;
+      };
+    } catch (error) {
+      console.error('Chart initialization error:', error);
+      
+      // Display error message in the chart container
+      if (chartContainerRef.current) {
+        chartContainerRef.current.innerHTML = `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: ${height}px;
+            background: ${theme === 'dark' ? '#1a1a1a' : '#ffffff'};
+            color: ${theme === 'dark' ? '#d1d4dc' : '#191919'};
+            border: 1px solid ${theme === 'dark' ? '#2a2a2a' : '#e1e1e1'};
+            border-radius: 8px;
+            font-family: system-ui, -apple-system, sans-serif;
+          ">
+            <div style="text-align: center;">
+              <div style="font-size: 16px; margin-bottom: 8px;">Chart Loading Error</div>
+              <div style="font-size: 14px; opacity: 0.7;">Unable to load ${symbol} chart</div>
+            </div>
+          </div>
+        `;
       }
-    };
-  }, [data, height, chartType, showVolume, theme]);
-
-  // Update data when props change
-  useEffect(() => {
-    if (!data.length) return;
-
-    const chartData = data.map(item => ({
-      time: item.time,
-      open: item.open,
-      high: item.high,
-      low: item.low,
-      close: item.close,
-    })) as CandlestickData[];
-
-    const lineData = data.map(item => ({
-      time: item.time,
-      value: item.close,
-    })) as LineData[];
-
-    if (chartType === 'candlestick' && candlestickSeriesRef.current) {
-      candlestickSeriesRef.current.setData(chartData);
-    } else if (chartType === 'line' && lineSeriesRef.current) {
-      lineSeriesRef.current.setData(lineData);
     }
-
-    if (showVolume && volumeSeriesRef.current) {
-      const volumeData = data.map(item => ({
-        time: item.time,
-        value: item.volume || 0,
-        color: item.close >= item.open ? '#26a69a' : '#ef5350',
-      }));
-      volumeSeriesRef.current.setData(volumeData);
-    }
-  }, [data, chartType, showVolume]);
+  }, [data, height, chartType, showVolume, theme, symbol]);
 
   return (
     <div className="w-full">
