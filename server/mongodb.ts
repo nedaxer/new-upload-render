@@ -105,11 +105,11 @@ async function createInitialData() {
     const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
     
     if (usdCurrency && btcCurrency && ethCurrency && testUser) {
-      // Create balances for test user
+      // Create balances for test user with comprehensive fund management
       const balances = [
-        { userId: testUser._id, currencyId: usdCurrency._id, amount: 10000 },
-        { userId: testUser._id, currencyId: btcCurrency._id, amount: 0.5 },
-        { userId: testUser._id, currencyId: ethCurrency._id, amount: 5 }
+        { userId: testUser._id, currencyId: usdCurrency._id, amount: 50000 },
+        { userId: testUser._id, currencyId: btcCurrency._id, amount: 2.5 },
+        { userId: testUser._id, currencyId: ethCurrency._id, amount: 25 }
       ];
       
       for (const balanceData of balances) {
@@ -117,6 +117,75 @@ async function createInitialData() {
         await balance.save();
       }
       console.log('Created initial balances for test user');
+      
+      // Create balances for admin user with higher amounts
+      const adminBalances = [
+        { userId: adminUser._id, currencyId: usdCurrency._id, amount: 100000 },
+        { userId: adminUser._id, currencyId: btcCurrency._id, amount: 5.0 },
+        { userId: adminUser._id, currencyId: ethCurrency._id, amount: 50 }
+      ];
+      
+      for (const balanceData of adminBalances) {
+        const balance = new UserBalance(balanceData);
+        await balance.save();
+      }
+      console.log('Created initial balances for admin user');
+      
+      // Create additional demo users with various fund levels
+      const demoUsers = [
+        {
+          uid: generateUID(),
+          username: 'trader1',
+          email: 'trader1@example.com',
+          firstName: 'Professional',
+          lastName: 'Trader',
+          funds: { USD: 25000, BTC: 1.2, ETH: 15 }
+        },
+        {
+          uid: generateUID(),
+          username: 'investor1',
+          email: 'investor1@example.com',
+          firstName: 'Long Term',
+          lastName: 'Investor',
+          funds: { USD: 75000, BTC: 3.8, ETH: 40 }
+        },
+        {
+          uid: generateUID(),
+          username: 'whale1',
+          email: 'whale1@example.com',
+          firstName: 'Crypto',
+          lastName: 'Whale',
+          funds: { USD: 500000, BTC: 15.5, ETH: 200 }
+        }
+      ];
+      
+      for (const userData of demoUsers) {
+        const user = new User({
+          uid: userData.uid,
+          username: userData.username,
+          email: userData.email,
+          password: hashedPassword,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          isVerified: true,
+          isAdmin: false,
+          createdAt: new Date()
+        });
+        await user.save();
+        
+        // Create balances for each demo user
+        const userBalances = [
+          { userId: user._id, currencyId: usdCurrency._id, amount: userData.funds.USD },
+          { userId: user._id, currencyId: btcCurrency._id, amount: userData.funds.BTC },
+          { userId: user._id, currencyId: ethCurrency._id, amount: userData.funds.ETH }
+        ];
+        
+        for (const balanceData of userBalances) {
+          const balance = new UserBalance(balanceData);
+          await balance.save();
+        }
+        console.log(`Created demo user: ${userData.username} with funds`);
+      }
     }
     
     console.log('Initial data creation completed successfully');

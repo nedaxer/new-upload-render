@@ -31,6 +31,7 @@ import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
+import { chartCache } from '@/utils/chart-cache';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
@@ -50,13 +51,16 @@ export default function MobileTrade() {
   const [amount, setAmount] = useState(0);
   const [location, navigate] = useLocation();
 
-  // Chart state
+  // Chart state with persistent caching
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
   const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
+  
+  // Chart loading states
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
+  const [chartError, setChartError] = useState<string | null>(null);
 
   // Initialize selected pair from sessionStorage, user preferences, or defaults
   useEffect(() => {
@@ -65,16 +69,19 @@ export default function MobileTrade() {
       const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
       const tabFromStorage = sessionStorage.getItem('selectedTab');
       
+      // Check cached chart data
+      const lastCachedSymbol = chartCache.getLastSymbol();
+      
       // Also check URL parameters as fallback
       const currentLocation = location.includes('?') ? location : window.location.search;
       const urlParams = new URLSearchParams(currentLocation.split('?')[1] || '');
       const symbolFromUrl = urlParams.get('symbol');
       const tabFromUrl = urlParams.get('tab');
       
-      let symbolToUse = symbolFromStorage || symbolFromUrl;
+      let symbolToUse = symbolFromStorage || symbolFromUrl || lastCachedSymbol;
       let tabToUse = tabFromStorage || tabFromUrl;
       
-      // If no symbol from navigation, try to load from user preferences
+      // If no symbol from navigation or cache, try to load from user preferences
       if (!symbolToUse) {
         try {
           const preferencesResponse = await fetch('/api/user/preferences');
@@ -183,11 +190,11 @@ export default function MobileTrade() {
     }
   }, [selectedTab, isTradingViewReady, selectedPair.tradingViewSymbol]);
 
-  const [chartError, setChartError] = useState(false);
+  // Remove duplicate chartError declaration
   const chartWidget = useRef<any>(null);
   const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
   const tradingViewScript = useRef<HTMLScriptElement | null>(null);
-  const chartCache = useRef<Map<string, any>>(new Map());
+  const localChartCache = useRef<Map<string, any>>(new Map());
 
   // Global chart widget cache to persist across ALL navigation
   const getGlobalChartWidget = useCallback(() => {
@@ -554,7 +561,7 @@ export default function MobileTrade() {
     script.onerror = () => {
       console.error('Failed to load TradingView script');
       setIsChartLoading(false);
-      setChartError(true);
+      setChartError('Failed to load TradingView script');
     };
 
     document.head.appendChild(script);
@@ -859,7 +866,7 @@ export default function MobileTrade() {
                   <p className="text-sm mt-2">Unable to load chart data</p>
                   <button 
                     onClick={() => {
-                      setChartError(false);
+                      setChartError(null);
                       setIsTradingViewReady(false);
                       setTimeout(() => {
                         if ((window as any).TradingView) {
