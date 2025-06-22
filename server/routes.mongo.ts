@@ -10,6 +10,7 @@ import { connectToDatabase, getMongoClient } from "./mongodb";
 import { getCoinGeckoPrices } from "./coingecko-api";
 import { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email";
 import crypto from "crypto";
+import chatbotRoutes from "./api/chatbot-routes";
 
 // Extend express-session types to include userId
 declare module "express-session" {
@@ -484,6 +485,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Register chatbot routes
+  app.use('/api/chatbot', chatbotRoutes);
 
   const httpServer = createServer(app);
   return httpServer;
