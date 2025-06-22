@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertUserSchema } from "@shared/schema";
+import { mongoStorage as storage } from "./mongoStorage";
+import { insertMongoUserSchema, userDataSchema } from "@shared/mongo-schema";
 import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -20,7 +20,7 @@ import chatbotRoutes from "./api/chatbot-routes";
 // Extend express-session types to include userId
 declare module "express-session" {
   interface SessionData {
-    userId: number;
+    userId: string;
   }
 }
 
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Validate input with zod schema
-      const result = insertUserSchema.safeParse(req.body);
+      const result = insertMongoUserSchema.safeParse(req.body);
 
       if (!result.success) {
         console.log('Registration validation failed:', result.error.format());
@@ -438,12 +438,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Automatically verify the user
-      await storage.markUserAsVerified(newUser.id);
+      await storage.markUserAsVerified(newUser._id.toString());
 
-      console.log(`User created with ID: ${newUser.id}`);
+      console.log(`User created with ID: ${newUser._id}`);
 
       // Set session to automatically log user in after registration
-      req.session.userId = newUser.id;
+      req.session.userId = newUser._id.toString();
 
       console.log(`Registration and auto-login successful for user: ${email}`);
 

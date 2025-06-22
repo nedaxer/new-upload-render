@@ -14,6 +14,16 @@ export interface IMongoStorage {
   setResetPasswordCode(userId: string, code: string, expiresAt: Date): Promise<void>;
   verifyResetPasswordCode(userId: string, code: string): Promise<boolean>;
   updatePassword(userId: string, newPassword: string): Promise<boolean>;
+  updateUserProfile(userId: string, updates: Partial<IUser>): Promise<void>;
+  
+  // Favorites management
+  addFavorite(userId: string, cryptoPairSymbol: string, cryptoId: string): Promise<void>;
+  removeFavorite(userId: string, cryptoPairSymbol: string): Promise<void>;
+  getUserFavorites(userId: string): Promise<string[]>;
+  
+  // User preferences management
+  updateUserPreferences(userId: string, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void>;
+  getUserPreferences(userId: string): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null>;
 }
 
 export class MongoStorage implements IMongoStorage {
@@ -51,13 +61,35 @@ export class MongoStorage implements IMongoStorage {
 
   async createUser(userData: InsertUser): Promise<IUser> {
     try {
-      // Import auth service
+      // Import auth service and UID utility
       const { authService } = await import('./services/auth.service');
+      const { generateUID } = await import('./utils/uid');
       
       // Hash the password
       const hashedPassword = await authService.hashPassword(userData.password);
       
+      // Generate unique UID
+      let uid = generateUID();
+      let isUidUnique = false;
+      let attempts = 0;
+      
+      // Ensure UID is unique (max 10 attempts)
+      while (!isUidUnique && attempts < 10) {
+        const existingUser = await User.findOne({ uid });
+        if (!existingUser) {
+          isUidUnique = true;
+        } else {
+          uid = generateUID();
+          attempts++;
+        }
+      }
+      
+      if (!isUidUnique) {
+        throw new Error('Failed to generate unique UID after 10 attempts');
+      }
+      
       const newUser = new User({
+        uid,
         username: userData.username,
         email: userData.email,
         password: hashedPassword, // Store hashed password
@@ -161,6 +193,70 @@ export class MongoStorage implements IMongoStorage {
     } catch (error) {
       console.error('Error updating password:', error);
       return false;
+    }
+  }
+
+  async updateUserProfile(userId: string, updates: Partial<IUser>): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, updates);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+
+  // Favorites management - stored as array in user document
+  async addFavorite(userId: string, cryptoPairSymbol: string, cryptoId: string): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { favorites: cryptoPairSymbol }
+      });
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      throw error;
+    }
+  }
+
+  async removeFavorite(userId: string, cryptoPairSymbol: string): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        $pull: { favorites: cryptoPairSymbol }
+      });
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      throw error;
+    }
+  }
+
+  async getUserFavorites(userId: string): Promise<string[]> {
+    try {
+      const user = await User.findById(userId).select('favorites');
+      return user?.favorites || [];
+    } catch (error) {
+      console.error('Error getting user favorites:', error);
+      return [];
+    }
+  }
+
+  // User preferences management - stored as embedded document
+  async updateUserPreferences(userId: string, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
+    try {
+      await User.findByIdAndUpdate(userId, {
+        $set: { preferences }
+      });
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      throw error;
+    }
+  }
+
+  async getUserPreferences(userId: string): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
+    try {
+      const user = await User.findById(userId).select('preferences');
+      return user?.preferences || null;
+    } catch (error) {
+      console.error('Error getting user preferences:', error);
+      return null;
     }
   }
 }

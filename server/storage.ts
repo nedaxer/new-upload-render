@@ -466,5 +466,8 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Using PostgreSQL database storage
-export const storage = new DatabaseStorage();
+// Import MongoDB storage
+import { mongoStorage } from "./mongoStorage";
+
+// Using MongoDB storage with Atlas
+export const storage = mongoStorage;

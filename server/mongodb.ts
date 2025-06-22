@@ -13,23 +13,14 @@ export async function connectToDatabase() {
   }
 
   try {
-    console.log('Connecting to MongoDB...');
+    console.log('Connecting to MongoDB Atlas...');
     
-    // Always use in-memory MongoDB for now to avoid connection issues
-    if (true) {
-      // Create MongoDB Memory Server
-      mongoMemoryServer = await MongoMemoryServer.create();
-      mongoUri = mongoMemoryServer.getUri();
-      console.log('Using in-memory MongoDB server');
-    } else {
-      // Use MongoDB URI from environment variables or default to localhost
-      const envUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/nedaxer';
-      mongoUri = envUri;
-      console.log('Using remote MongoDB server');
-    }
+    // Use your MongoDB Atlas connection string
+    mongoUri = 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+    console.log('Using MongoDB Atlas cluster');
     
     await mongoose.connect(mongoUri);
-    console.log('MongoDB connection established successfully');
+    console.log('MongoDB Atlas connection established successfully');
     
     // Add default data for our in-memory database
     try {
@@ -60,8 +51,12 @@ async function createInitialData() {
     // Create the hashed password
     const hashedPassword = await authService.hashPassword('password');
     
-    // Create test user
+    // Import UID generation utility
+    const { generateUID } = await import('./utils/uid');
+    
+    // Create test user with UID
     const testUser = new User({
+      uid: generateUID(),
       username: 'testuser',
       email: 'test@example.com',
       password: hashedPassword, // Freshly hashed 'password'
@@ -74,8 +69,9 @@ async function createInitialData() {
     await testUser.save();
     console.log('Created test user with username: testuser, password: password');
     
-    // Create admin user
+    // Create admin user with UID
     const adminUser = new User({
+      uid: generateUID(),
       username: 'admin',
       email: 'admin@example.com',
       password: hashedPassword, // Same hashed password
@@ -138,13 +134,8 @@ export async function getMongoClient() {
   }
 
   try {
-    // Make sure MongoDB memory server is started if needed
-    if (!mongoUri) {
-      await connectToDatabase();
-    }
-    
-    // Ensure mongoUri is defined
-    const connectionString = mongoUri || 'mongodb://localhost:27017/nedaxer';
+    // Use your MongoDB Atlas connection string
+    const connectionString = 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
     const client = new MongoClient(connectionString);
     await client.connect();
     cachedClient = client;

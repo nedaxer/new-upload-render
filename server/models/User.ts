@@ -1,11 +1,19 @@
 import mongoose, { Document, Schema, model } from 'mongoose';
 
 export interface IUser extends Document {
+  uid: string;
   username: string;
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  profilePicture?: string;
+  favorites?: string[];
+  preferences?: {
+    lastSelectedPair?: string;
+    lastSelectedCrypto?: string;
+    lastSelectedTab?: string;
+  };
   verificationCode?: string;
   verificationCodeExpires?: Date;
   resetPasswordCode?: string;
@@ -17,6 +25,12 @@ export interface IUser extends Document {
 
 const userSchema = new Schema(
   {
+    uid: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
     username: {
       type: String,
       required: true,
@@ -41,6 +55,19 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    profilePicture: {
+      type: String,
+      default: null,
+    },
+    favorites: {
+      type: [String],
+      default: [],
+    },
+    preferences: {
+      lastSelectedPair: String,
+      lastSelectedCrypto: String,
+      lastSelectedTab: String,
     },
     verificationCode: {
       type: String,
@@ -77,6 +104,7 @@ const userSchema = new Schema(
 );
 
 // Create indexes for faster lookups
+userSchema.index({ uid: 1 }, { unique: true });
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
 

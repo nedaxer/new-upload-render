@@ -1,6 +1,6 @@
 import 'dotenv/config'; // Load environment variables from .env file
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes"; // Using PostgreSQL routes
+import { registerRoutes } from "./routes.mongo"; // Using PostgreSQL routes
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();

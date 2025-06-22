@@ -23,11 +23,11 @@ Nedaxer is a comprehensive cryptocurrency trading platform built with modern web
 - **Email**: Nodemailer with multiple provider support (Zoho Mail configured)
 
 ### Database Strategy
-The application now uses MySQL as the primary database:
-- **Database**: MySQL hosted on sql7.freesqldatabase.com
-- **ORM**: Drizzle ORM with MySQL adapter (schema defined in `shared/schema.ts`)
-- **Connection**: Connection pool with mysql2 driver for optimal performance
-- **Schema**: Complete trading platform schema with users, currencies, transactions, staking, and futures trading support
+The application now uses MongoDB Atlas as the primary database:
+- **Database**: MongoDB Atlas cluster (mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/)
+- **ODM**: Mongoose with MongoDB native driver for optimal performance
+- **Schema**: MongoDB collections with users (including UID system), balances, charts, and all trading platform data
+- **Connection**: Direct connection to MongoDB Atlas with automatic failover and scaling
 
 ## Key Components
 
