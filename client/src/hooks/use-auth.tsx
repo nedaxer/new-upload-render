@@ -112,11 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Remove any persisted data
       localStorage.removeItem('authToken');
       sessionStorage.clear();
-      
-      // Clear app state manager
-      if (typeof window !== 'undefined' && (window as any).appStateManager) {
-        (window as any).appStateManager.clear();
-      }
     },
     onError: () => {
       // Even on error, clear the cache and local data
@@ -124,11 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(["/api/auth/user"], { user: null });
       localStorage.removeItem('authToken');
       sessionStorage.clear();
-      
-      // Clear app state manager
-      if (typeof window !== 'undefined' && (window as any).appStateManager) {
-        (window as any).appStateManager.clear();
-      }
     },
   });
 

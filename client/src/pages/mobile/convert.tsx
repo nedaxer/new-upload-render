@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+// import { useCachedQuery } from '@/lib/cache-manager';
+// import { usePersistentState } from '@/hooks/use-persistent-state';
 
 interface CryptoCurrency {
   id: string;
@@ -25,14 +27,26 @@ export default function MobileConvert() {
   const [showToDropdown, setShowToDropdown] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
 
-  const { data: cryptoData, isLoading } = useQuery<CryptoCurrency[]>({
+  const { data: cryptoData, isLoading, error } = useQuery({
     queryKey: ['/api/crypto/prices'],
-    refetchInterval: 3000, // Update every 3 seconds for real-time rates
-    retry: 3
+    queryFn: async (): Promise<CryptoCurrency[]> => {
+      const response = await fetch('/api/crypto/prices');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch crypto data: ${response.statusText}`);
+      }
+      const result = await response.json();
+      // Ensure we return an array
+      return Array.isArray(result.data) ? result.data : [];
+    },
+    refetchInterval: 60000, // Refetch every minute
+    retry: 3,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 seconds cache
   });
 
-  const fromCrypto = cryptoData?.find(crypto => crypto.id === fromCurrency);
-  const toCrypto = cryptoData?.find(crypto => crypto.id === toCurrency);
+  const fromCrypto = Array.isArray(cryptoData) ? cryptoData.find(crypto => crypto.id === fromCurrency) : null;
+  const toCrypto = Array.isArray(cryptoData) ? cryptoData.find(crypto => crypto.id === toCurrency) : null;
 
   useEffect(() => {
     if (fromCrypto && toCrypto && fromAmount) {
@@ -81,7 +95,7 @@ export default function MobileConvert() {
     setShowDropdown: (show: boolean) => void;
     label: string;
   }) => {
-    const selected = cryptoData?.find(crypto => crypto.id === selectedCurrency);
+    const selected = Array.isArray(cryptoData) ? cryptoData.find(crypto => crypto.id === selectedCurrency) : null;
     
     return (
       <div className="relative">
@@ -105,7 +119,7 @@ export default function MobileConvert() {
           </div>
         </button>
         
-        {showDropdown && cryptoData && (
+        {showDropdown && Array.isArray(cryptoData) && cryptoData.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg max-h-60 overflow-y-auto z-50">
             {cryptoData.slice(0, 20).map((crypto) => (
               <button
@@ -132,11 +146,11 @@ export default function MobileConvert() {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || !Array.isArray(cryptoData)) {
     return (
       <MobileLayout>
         <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
-          <button onClick={() => navigate('/mobile/trade')} className="text-gray-400 hover:text-white">
+          <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h2 className="text-lg font-semibold text-white">Convert</h2>
@@ -153,11 +167,31 @@ export default function MobileConvert() {
     );
   }
 
+  if (error || !cryptoData || cryptoData.length === 0) {
+    return (
+      <MobileLayout>
+        <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+          <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <h2 className="text-lg font-semibold text-white">Convert</h2>
+          <div className="w-6 h-6" />
+        </div>
+        <div className="p-4 text-center">
+          <div className="text-gray-400 mb-4">Unable to load cryptocurrency data</div>
+          <Button onClick={() => window.location.reload()} className="bg-orange-500 hover:bg-orange-600">
+            Retry
+          </Button>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
-        <button onClick={() => navigate('/mobile/trade')} className="text-gray-400 hover:text-white">
+        <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h2 className="text-lg font-semibold text-white">Convert</h2>

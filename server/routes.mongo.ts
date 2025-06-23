@@ -316,6 +316,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId!;
       const { username, firstName, lastName, profilePicture } = req.body;
 
+      console.log('Profile update request:', { 
+        userId, 
+        hasProfilePicture: !!profilePicture,
+        profilePictureLength: profilePicture?.length 
+      });
+
+      // Validate profile picture format if provided
+      if (profilePicture && !profilePicture.startsWith('data:image/')) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid image format. Please use a valid image file."
+        });
+      }
+
+      // Update user profile in MongoDB
       await storage.updateUserProfile(userId, {
         username,
         firstName,
@@ -323,7 +338,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profilePicture
       });
 
-      res.json({ success: true, message: "Profile updated successfully" });
+      // Get updated user data to return
+      const updatedUser = await storage.getUser(userId);
+
+      console.log('Profile updated successfully for user:', userId);
+
+      res.json({ 
+        success: true, 
+        message: "Profile updated successfully",
+        user: {
+          _id: updatedUser?._id,
+          uid: updatedUser?.uid,
+          username: updatedUser?.username,
+          email: updatedUser?.email,
+          firstName: updatedUser?.firstName,
+          lastName: updatedUser?.lastName,
+          profilePicture: updatedUser?.profilePicture,
+          isVerified: updatedUser?.isVerified
+        }
+      });
     } catch (error) {
       console.error('Profile update error:', error);
       res.status(500).json({ success: false, message: "Failed to update profile" });

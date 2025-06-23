@@ -35,19 +35,21 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
+// import { useAppState } from '@/lib/app-state';
+// import { usePersistentState } from '@/hooks/use-persistent-state';
 
 export default function MobileHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const { state, updateState } = useAppState();
-  const [showBalance, setShowBalance] = usePersistentState('home_show_balance', true);
-  const [selectedTab, setSelectedTab] = usePersistentState('home_selected_tab', 'Exchange');
-  const [currentView, setCurrentView] = usePersistentState('home_current_view', 'home');
-  const [selectedCrypto, setSelectedCrypto] = usePersistentState('home_selected_crypto', '');
-  const [selectedChain, setSelectedChain] = usePersistentState('home_selected_chain', '');
-  const [selectedCurrency, setSelectedCurrency] = usePersistentState('home_selected_currency', 'USD');
+  // const { state, updateState } = useAppState();
+  const [showBalance, setShowBalance] = useState(true);
+  const [selectedTab, setSelectedTab] = useState('Exchange');
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedCrypto, setSelectedCrypto] = useState('');
+  const [selectedChain, setSelectedChain] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
@@ -62,7 +64,7 @@ export default function MobileHome() {
 
     // Listen for profile updates from other components
     const handleProfileUpdate = () => {
-      // Use setQueryData instead of invalidateQueries to prevent refetch
+      // Use setQueryData instead of invalidateQueries to prevent unnecessary refetch
       const currentUser = queryClient.getQueryData(['/api/auth/user']);
       if (currentUser) {
         queryClient.setQueryData(['/api/auth/user'], currentUser);

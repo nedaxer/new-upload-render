@@ -198,7 +198,17 @@ export class MongoStorage implements IMongoStorage {
 
   async updateUserProfile(userId: string, updates: Partial<IUser>): Promise<void> {
     try {
-      await User.findByIdAndUpdate(userId, updates);
+      console.log('MongoDB updateUserProfile called:', { userId, updates: Object.keys(updates) });
+      
+      const updateData: any = {};
+      
+      if (updates.username) updateData.username = updates.username;
+      if (updates.firstName) updateData.firstName = updates.firstName;  
+      if (updates.lastName) updateData.lastName = updates.lastName;
+      if (updates.profilePicture !== undefined) updateData.profilePicture = updates.profilePicture;
+      
+      await User.findByIdAndUpdate(userId, updateData, { new: true });
+      console.log('Profile updated successfully in MongoDB for user:', userId);
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;

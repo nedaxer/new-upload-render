@@ -55,8 +55,10 @@ export default function MobileProfile() {
   // Profile picture upload mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { profilePicture?: string }) => {
-      const response = await fetch('/api/user/update-profile', {
-        method: 'PATCH',
+      console.log('Updating profile with data:', { hasProfilePicture: !!data.profilePicture });
+      
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -65,24 +67,41 @@ export default function MobileProfile() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
         throw new Error(errorData.message || 'Failed to update profile');
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('Profile update response:', result);
+      return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      // Force a hard refresh of all user-related data
-      queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+    onSuccess: (data) => {
+      console.log('Profile update successful:', data);
+      
+      // Update the user data in React Query cache immediately
+      queryClient.setQueryData(['/api/auth/user'], (oldData: any) => {
+        if (oldData?.user) {
+          return {
+            ...oldData,
+            user: {
+              ...oldData.user,
+              profilePicture: data.user?.profilePicture || data.profilePicture
+            }
+          };
+        }
+        return oldData;
+      });
+      
       // Trigger global profile update event for synchronization
       window.dispatchEvent(new CustomEvent('profileUpdated'));
+      
       toast({
         title: t('profile_updated') || 'Profile Updated',
         description: t('picture_updated_success') || 'Profile picture updated successfully'
       });
     },
     onError: (error: any) => {
+      console.error('Profile update error:', error);
       toast({
         title: t('updateFailed') || 'Update Failed',
         description: error.message || t('picture_update_failed') || 'Failed to update profile picture',
@@ -94,6 +113,12 @@ export default function MobileProfile() {
   const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log('File selected for upload:', { 
+        name: file.name, 
+        size: file.size, 
+        type: file.type 
+      });
+
       if (!file.type.startsWith('image/')) {
         toast({
           title: t('invalidFileType') || 'Invalid File Type',
@@ -115,9 +140,11 @@ export default function MobileProfile() {
       const reader = new FileReader();
       reader.onload = () => {
         const base64 = reader.result as string;
+        console.log('File converted to base64, length:', base64.length);
         updateProfileMutation.mutate({ profilePicture: base64 });
       };
       reader.onerror = () => {
+        console.error('FileReader error');
         toast({
           title: t('uploadFailed') || 'Upload Failed',
           description: t('failed_to_read_image') || 'Failed to read image file',
@@ -131,11 +158,7 @@ export default function MobileProfile() {
   // Listen for profile updates from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
-      // Use setQueryData instead of invalidateQueries to prevent unnecessary refetch
-      const currentUser = queryClient.getQueryData(['/api/auth/user']);
-      if (currentUser) {
-        queryClient.setQueryData(['/api/auth/user'], currentUser);
-      }
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -318,13 +341,8 @@ export default function MobileProfile() {
                 }).catch(err => console.log('Backup failed:', err));
               }
               
-              // Clear React Query cache and app state
+              // Clear all caches before logout
               queryClient.clear();
-              
-              // Clear app state manager
-              if (typeof window !== 'undefined' && (window as any).appStateManager) {
-                (window as any).appStateManager.clear();
-              }
               
               // Perform logout
               await logoutMutation.mutateAsync();

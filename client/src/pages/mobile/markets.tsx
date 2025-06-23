@@ -19,9 +19,6 @@ import { useQuery } from '@tanstack/react-query';
 import { hapticLight } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
 import { CRYPTO_PAIRS, CryptoPair, getPairDisplayName } from '@/lib/crypto-pairs';
-import { useAppState } from '@/lib/app-state';
-import { useCachedQuery } from '@/lib/cache-manager';
-import { usePersistentState } from '@/hooks/use-persistent-state';
 
 interface CryptoTicker {
   symbol: string;
@@ -85,13 +82,19 @@ const getSentimentIcon = (sentiment: string) => {
 export default function MobileMarkets() {
   const [, navigate] = useLocation();
   const { t } = useLanguage();
-  const { state, updateFavorites, updateMarketData, isMarketDataFresh } = useAppState();
-  const [searchQuery, setSearchQuery] = usePersistentState('markets_search_query', '');
-  const [activeTab, setActiveTab] = usePersistentState('markets_active_tab', 'Hot');
-  const [activeMarketType, setActiveMarketType] = usePersistentState('markets_active_type', 'Spot');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState('Hot');
+  const [activeMarketType, setActiveMarketType] = useState('Spot');
 
-  // Use app state for favorites
-  const favoriteCoins = state.favoriteCoins;
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favoriteCoins');
+    if (savedFavorites) {
+      setFavoriteCoins(JSON.parse(savedFavorites));
+    }
+  }, []);
 
   // Toggle favorite status
   const toggleFavorite = (symbol: string) => {
@@ -100,29 +103,25 @@ export default function MobileMarkets() {
       ? favoriteCoins.filter(id => id !== symbol)
       : [...favoriteCoins, symbol];
     
-    updateFavorites(newFavorites);
+    setFavoriteCoins(newFavorites);
+    localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
   };
 
-  // Fetch live market data with enhanced caching
-  const { data: marketData, isLoading, refetch, error } = useCachedQuery(
-    ['/api/crypto/realtime-prices'],
-    async (): Promise<CoinGeckoResponse> => {
+  // Fetch live market data from CoinGecko API (10-second auto-refresh)
+  const { data: marketData, isLoading, refetch, error } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
+    queryFn: async (): Promise<CoinGeckoResponse> => {
       const response = await fetch('/api/crypto/realtime-prices');
       if (!response.ok) {
         throw new Error(`Failed to fetch market data: ${response.statusText}`);
       }
       const data = await response.json();
-      updateMarketData(data);
+      setLastUpdate(new Date());
       return data;
     },
-    {
-      cacheExpiry: 30000, // 30 seconds cache
-      refetchInterval: 60000, // Refetch every minute instead of 30 seconds
-      retry: 1,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+    refetchInterval: 10000, // Refresh every 10 seconds
+    retry: 3,
+  });
 
   // Process comprehensive crypto pairs with live price data
   const processedMarkets = CRYPTO_PAIRS.map((pair: CryptoPair) => {
