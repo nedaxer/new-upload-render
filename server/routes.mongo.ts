@@ -444,41 +444,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
       
-      // Get user balances
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      // Find USD currency first
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
       
-      let totalUSDValue = 0;
-      const assets = [];
-      
-      for (const balance of balances) {
-        const currency = balance.currencyId;
-        let usdValue = balance.amount;
-        
-        // Simple price conversion (in real app, you'd get from price API)
-        if (currency.symbol === 'BTC') {
-          usdValue = balance.amount * 45000; // Approximate BTC price
-        } else if (currency.symbol === 'ETH') {
-          usdValue = balance.amount * 2500; // Approximate ETH price
-        }
-        
-        totalUSDValue += usdValue;
-        
-        if (balance.amount > 0) {
-          assets.push({
-            symbol: currency.symbol,
-            name: currency.name,
-            balance: balance.amount,
-            usdValue: usdValue
-          });
-        }
+      if (!usdCurrency) {
+        return res.json({
+          success: true,
+          data: {
+            totalUSDValue: 0,
+            usdBalance: 0
+          }
+        });
       }
+      
+      // Get only USD balance for the user
+      const usdBalance = await UserBalance.findOne({ 
+        userId, 
+        currencyId: usdCurrency._id 
+      });
+      
+      // Default to 0 USD if no balance exists
+      const totalUSDValue = usdBalance?.amount || 0;
       
       res.json({
         success: true,
         data: {
           totalUSDValue: totalUSDValue,
-          assets: assets,
-          assetCount: assets.length
+          usdBalance: totalUSDValue
         }
       });
     } catch (error) {

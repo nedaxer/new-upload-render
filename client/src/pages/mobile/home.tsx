@@ -92,7 +92,16 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch real-time price data with improved error handling using cached endpoint
+  // Fetch user wallet summary
+  const { data: walletData, isLoading: walletLoading } = useQuery({
+    queryKey: ['/api/wallet/summary'],
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 25000, // Consider data fresh for 25 seconds
+    retry: 2,
+  });
+
+  // Fetch real-time price data with improved error handling for BTC conversion
   const { data: priceData, isLoading: priceLoading } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -109,14 +118,7 @@ export default function MobileHome() {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Fetch user wallet balance data with optimized loading
-  const { data: walletData, isLoading: walletLoading, error: walletError } = useQuery({
-    queryKey: ['/api/wallet/summary'],
-    enabled: !!user,
-    refetchInterval: 60000, // Reduced frequency to 60 seconds
-    staleTime: 30000,
-    retry: 1
-  });
+
 
   // Fetch user balances with optimized loading
   const { data: balanceData, isLoading: balanceLoading } = useQuery({
@@ -392,6 +394,25 @@ export default function MobileHome() {
     { key: 'Turnover', label: t('turnover') }
   ];
 
+  // Get BTC price for USD to BTC conversion
+  const getBTCPrice = () => {
+    if (!priceData?.data || !Array.isArray(priceData.data)) return 0;
+    const btcTicker = priceData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
+    return btcTicker ? parseFloat(btcTicker.price) : 45000; // Fallback to 45k if not found
+  };
+
+  // Get user's USD balance
+  const getUserUSDBalance = () => {
+    return walletData?.data?.usdBalance || 0;
+  };
+
+  // Convert USD to BTC
+  const convertUSDToBTC = (usdAmount: number) => {
+    const btcPrice = getBTCPrice();
+    if (btcPrice === 0) return 0;
+    return usdAmount / btcPrice;
+  };
+
   const handleHelperClick = () => {
     if (!showHelperTooltip) {
       setShowHelperTooltip(true);
@@ -601,7 +622,7 @@ export default function MobileHome() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                user ? convertToSelectedCurrency(225000) : convertToSelectedCurrency(0)
+                user ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(getUserUSDBalance()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
               ) : '****'}
             </span>
             <button 
@@ -613,64 +634,37 @@ export default function MobileHome() {
             </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? '5.0' : '****'} BTC</span>
+            <span>≈ {showBalance ? 
+              (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
+              '********'
+            } BTC</span>
           </div>
         </div>
 
-        {/* Assets Section */}
+        {/* Assets Section - Only USD */}
         <div className="mb-6">
           <h3 className="text-white text-lg font-semibold mb-3">{t('my_assets')}</h3>
           <div className="space-y-3">
             {user && showBalance ? (
-              <>
-                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">$</span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">USD</div>
-                      <div className="text-gray-400 text-sm">US Dollar</div>
-                    </div>
+              <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">$</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">$50,000.00</div>
-                    <div className="text-gray-400 text-sm">50,000.00 USD</div>
+                  <div>
+                    <div className="text-white font-medium">USD</div>
+                    <div className="text-gray-400 text-sm">US Dollar</div>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">₿</span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">BTC</div>
-                      <div className="text-gray-400 text-sm">Bitcoin</div>
-                    </div>
+                <div className="text-right">
+                  <div className="text-white font-medium">
+                    ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">$112,500.00</div>
-                    <div className="text-gray-400 text-sm">2.5 BTC</div>
+                  <div className="text-gray-400 text-sm">
+                    {getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-bold">Ξ</span>
-                    </div>
-                    <div>
-                      <div className="text-white font-medium">ETH</div>
-                      <div className="text-gray-400 text-sm">Ethereum</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">$62,500.00</div>
-                    <div className="text-gray-400 text-sm">25.0 ETH</div>
-                  </div>
-                </div>
-              </>
+              </div>
             ) : (
               <div className="text-center py-8">
                 <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_assets'))}</div>
