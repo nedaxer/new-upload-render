@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User balance endpoints for mobile app
+  // User balance endpoints for mobile app (USD only)
   app.get('/api/balances', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
@@ -402,20 +402,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
       
-      // Get user balances with currency details
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      // Get only USD currency
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
       
-      const formattedBalances = balances.map(balance => ({
-        id: balance._id,
-        balance: balance.amount,
+      if (!usdCurrency) {
+        return res.json({
+          success: true,
+          balances: []
+        });
+      }
+      
+      // Get only USD balance for the user
+      const usdBalance = await UserBalance.findOne({ 
+        userId, 
+        currencyId: usdCurrency._id 
+      });
+      
+      const formattedBalances = usdBalance ? [{
+        id: usdBalance._id,
+        balance: usdBalance.amount,
         currency: {
-          id: balance.currencyId._id,
-          symbol: balance.currencyId.symbol,
-          name: balance.currencyId.name,
-          type: 'crypto',
-          isActive: balance.currencyId.isActive
+          id: usdCurrency._id,
+          symbol: usdCurrency.symbol,
+          name: usdCurrency.name,
+          type: 'fiat',
+          isActive: usdCurrency.isActive
         }
-      }));
+      }] : [];
 
       res.json({
         success: true,
@@ -430,19 +443,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset all user balances to $0.00 (admin function)
+  // Reset all user balances to $0.00 and remove crypto balances
   app.post('/api/balances/reset-all', async (req: Request, res: Response) => {
     try {
       const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
       
-      // Reset all user balances to $0.00
-      await UserBalance.updateMany({}, { $set: { amount: 0, updatedAt: new Date() } });
+      // Get USD currency
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
       
-      console.log('Reset all user balances to $0.00');
+      if (usdCurrency) {
+        // Remove all non-USD balances
+        await UserBalance.deleteMany({ 
+          currencyId: { $ne: usdCurrency._id } 
+        });
+        
+        // Reset all USD balances to $0.00
+        await UserBalance.updateMany(
+          { currencyId: usdCurrency._id }, 
+          { $set: { amount: 0, updatedAt: new Date() } }
+        );
+      }
+      
+      console.log('Reset all user balances to $0.00 USD only');
       
       res.json({
         success: true,
-        message: 'All user balances reset to $0.00'
+        message: 'All user balances reset to $0.00 USD only'
       });
     } catch (error) {
       console.error('Error resetting balances:', error);
