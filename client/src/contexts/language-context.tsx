@@ -307,6 +307,12 @@ const TRANSLATIONS: Record<string, any> = {
     'futures_trading': 'Futures Trading',
     'kyc_verification': 'KYC Verification',
     'logout': 'Logout',
+    'account_balance': 'Account Balance',
+    'updated_realtime': 'Updated in real-time',
+    'usd_balance': 'USD Balance',
+    'btc_equivalent': 'BTC Equivalent',
+    'btc_price': 'BTC Price',
+    'login_to_view_balance': 'Login to view balance',
     // Profile specific
     'profile_main_account': 'Main Account',
     'profile_switch_create_account': 'Switch/Create Account',

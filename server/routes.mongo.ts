@@ -178,32 +178,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`User created with ID: ${newUser._id}`);
 
-      // Create initial fund balances for new user
+      // Create starter balance for new users (USD balance only)
       try {
-        const { Currency } = await import('./models/Currency');
         const { UserBalance } = await import('./models/UserBalance');
         
-        // Get currencies
-        const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-        const btcCurrency = await Currency.findOne({ symbol: 'BTC' });
-        const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
+        // Create zero USD balance for new user
+        const existingBalance = await UserBalance.findOne({ userId: newUser._id });
         
-        if (usdCurrency && btcCurrency && ethCurrency) {
-          // Create starter balances for new user
-          const starterBalances = [
-            { userId: newUser._id, currencyId: usdCurrency._id, amount: 10000 }, // $10,000 starter
-            { userId: newUser._id, currencyId: btcCurrency._id, amount: 0.1 },   // 0.1 BTC starter
-            { userId: newUser._id, currencyId: ethCurrency._id, amount: 2 }      // 2 ETH starter
-          ];
-          
-          for (const balanceData of starterBalances) {
-            const balance = new UserBalance(balanceData);
-            await balance.save();
-          }
-          console.log('Created starter fund balances for new user');
+        if (!existingBalance) {
+          const balance = new UserBalance({
+            userId: newUser._id,
+            usdBalance: 0, // Start with zero balance
+          });
+          await balance.save();
+          console.log('Created starter USD balance for new user');
         }
       } catch (balanceError) {
-        console.warn('Could not create starter balances:', balanceError);
+        console.warn('Could not create starter balance:', balanceError);
         // Don't fail registration if balance creation fails
       }
 
@@ -405,32 +396,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
-      const { Currency } = await import('./models/Currency');
       
-      // Get user balances with currency details
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      // Get user USD balance
+      const userBalance = await UserBalance.findOne({ userId });
       
-      const formattedBalances = balances.map(balance => ({
-        id: balance._id,
-        balance: balance.amount,
-        currency: {
-          id: balance.currencyId._id,
-          symbol: balance.currencyId.symbol,
-          name: balance.currencyId.name,
-          type: 'crypto',
-          isActive: balance.currencyId.isActive
-        }
-      }));
+      const usdBalance = userBalance ? userBalance.usdBalance : 0;
 
       res.json({
         success: true,
-        balances: formattedBalances
+        usdBalance: usdBalance
       });
     } catch (error) {
-      console.error('Balances fetch error:', error);
+      console.error('Balance fetch error:', error);
       res.status(500).json({
         success: false,
-        message: "Failed to fetch balances"
+        message: "Failed to fetch balance"
       });
     }
   });
@@ -442,43 +422,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
-      const { Currency } = await import('./models/Currency');
       
-      // Get user balances
-      const balances = await UserBalance.find({ userId }).populate('currencyId');
+      // Get user USD balance
+      const userBalance = await UserBalance.findOne({ userId });
+      const usdBalance = userBalance ? userBalance.usdBalance : 0;
       
-      let totalUSDValue = 0;
-      const assets = [];
-      
-      for (const balance of balances) {
-        const currency = balance.currencyId;
-        let usdValue = balance.amount;
-        
-        // Simple price conversion (in real app, you'd get from price API)
-        if (currency.symbol === 'BTC') {
-          usdValue = balance.amount * 45000; // Approximate BTC price
-        } else if (currency.symbol === 'ETH') {
-          usdValue = balance.amount * 2500; // Approximate ETH price
+      // Get BTC price for conversion display
+      let btcPrice = 45000; // Fallback price
+      try {
+        const { getCoinGeckoPrices } = await import('./coingecko-api');
+        const prices = await getCoinGeckoPrices();
+        const btcData = prices.find(p => p.symbol === 'BTC');
+        if (btcData) {
+          btcPrice = btcData.price;
         }
-        
-        totalUSDValue += usdValue;
-        
-        if (balance.amount > 0) {
-          assets.push({
-            symbol: currency.symbol,
-            name: currency.name,
-            balance: balance.amount,
-            usdValue: usdValue
-          });
-        }
+      } catch (priceError) {
+        console.warn('Could not fetch BTC price, using fallback:', priceError);
       }
+      
+      const btcEquivalent = usdBalance / btcPrice;
       
       res.json({
         success: true,
         data: {
-          totalUSDValue: totalUSDValue,
-          assets: assets,
-          assetCount: assets.length
+          usdBalance: usdBalance,
+          btcEquivalent: btcEquivalent,
+          btcPrice: btcPrice
         }
       });
     } catch (error) {

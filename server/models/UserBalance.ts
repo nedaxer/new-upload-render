@@ -2,8 +2,7 @@ import mongoose, { Document, Schema, model } from 'mongoose';
 
 export interface IUserBalance extends Document {
   userId: mongoose.Types.ObjectId;
-  currencyId: string;
-  amount: number;
+  usdBalance: number; // Main balance in USD
   updatedAt: Date;
   createdAt: Date;
 }
@@ -15,12 +14,7 @@ const userBalanceSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    currencyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Currency',
-      required: true,
-    },
-    amount: {
+    usdBalance: {
       type: Number,
       required: true,
       default: 0,
@@ -39,8 +33,8 @@ const userBalanceSchema = new Schema(
   }
 );
 
-// Create a compound index for querying by user and currency
-userBalanceSchema.index({ userId: 1, currencyId: 1 }, { unique: true });
+// Create a unique index for user balances
+userBalanceSchema.index({ userId: 1 }, { unique: true });
 
 // Export the UserBalance model
 export const UserBalance = mongoose.models.UserBalance || model<IUserBalance>('UserBalance', userBalanceSchema);
