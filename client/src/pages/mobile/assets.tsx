@@ -25,10 +25,12 @@ import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
+import { useAuth } from '@/hooks/use-auth';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -47,6 +49,23 @@ export default function MobileAssets() {
       setSelectedCurrency(savedCurrency);
     }
   }, []);
+
+  // Fetch user wallet summary for real-time balance
+  const { data: walletData, isLoading: walletLoading } = useQuery({
+    queryKey: ['/api/wallet/summary'],
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 25000, // Consider data fresh for 25 seconds
+    retry: 2,
+  });
+
+  // Fetch real-time price data for BTC conversion
+  const { data: priceData, isLoading: priceLoading } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 25000, // Consider data fresh for 25 seconds
+    retry: 2,
+  });
 
   // Default conversion rates - can be enhanced with real API later
   const conversionRates = {
@@ -158,6 +177,25 @@ export default function MobileAssets() {
       'NZD': 'NZ$'
     };
     return symbols[currency] || currency;
+  };
+
+  // Get BTC price for USD to BTC conversion
+  const getBTCPrice = () => {
+    if (!priceData?.data || !Array.isArray(priceData.data)) return 0;
+    const btcTicker = priceData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
+    return btcTicker ? parseFloat(btcTicker.price) : 45000; // Fallback to 45k if not found
+  };
+
+  // Get user's USD balance
+  const getUserUSDBalance = () => {
+    return walletData?.data?.usdBalance || 0;
+  };
+
+  // Convert USD to BTC
+  const convertUSDToBTC = (usdAmount: number) => {
+    const btcPrice = getBTCPrice();
+    if (btcPrice === 0) return 0;
+    return usdAmount / btcPrice;
   };
 
   const handleDepositClick = () => {
@@ -331,7 +369,9 @@ export default function MobileAssets() {
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {showBalance ? convertToSelectedCurrency(0.51) : '****'}
+              {showBalance ? (
+                user ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(getUserUSDBalance())}` : `${getCurrencySymbol(selectedCurrency)}0.00`
+              ) : '****'}
             </span>
             <button 
               onClick={() => setCurrentView('currency-selection')}
@@ -342,7 +382,10 @@ export default function MobileAssets() {
             </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? '0.00000484' : '****'} BTC</span>
+            <span>≈ {showBalance ? 
+              (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
+              '********'
+            } BTC</span>
           </div>
         </div>
 
