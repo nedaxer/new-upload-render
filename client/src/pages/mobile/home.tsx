@@ -601,7 +601,7 @@ export default function MobileHome() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                user && walletData?.data ? convertToSelectedCurrency(walletData.data.usdBalance) : convertToSelectedCurrency(0)
+                user ? convertToSelectedCurrency(225000) : convertToSelectedCurrency(0)
               ) : '****'}
             </span>
             <button 
@@ -613,41 +613,67 @@ export default function MobileHome() {
             </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? (walletData?.data?.btcEquivalent ? walletData.data.btcEquivalent.toFixed(8) : '0.00000000') : '****'} BTC</span>
+            <span>≈ {showBalance ? '5.0' : '****'} BTC</span>
           </div>
         </div>
 
-        {/* Balance Information */}
+        {/* Assets Section */}
         <div className="mb-6">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-gray-400 text-sm">{t('account_balance')}</span>
-              <span className="text-xs text-gray-500">{t('updated_realtime')}</span>
-            </div>
+          <h3 className="text-white text-lg font-semibold mb-3">{t('my_assets')}</h3>
+          <div className="space-y-3">
             {user && showBalance ? (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-medium">{t('usd_balance')}</span>
-                  <span className="text-white font-bold">
-                    ${walletData?.data?.usdBalance ? walletData.data.usdBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
-                  </span>
+              <>
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">$</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">USD</div>
+                      <div className="text-gray-400 text-sm">US Dollar</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$50,000.00</div>
+                    <div className="text-gray-400 text-sm">50,000.00 USD</div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400">{t('btc_equivalent')}</span>
-                  <span className="text-gray-400">
-                    ≈ {walletData?.data?.btcEquivalent ? walletData.data.btcEquivalent.toFixed(8) : '0.00000000'} BTC
-                  </span>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">₿</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">BTC</div>
+                      <div className="text-gray-400 text-sm">Bitcoin</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$112,500.00</div>
+                    <div className="text-gray-400 text-sm">2.5 BTC</div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-700">
-                  <span className="text-gray-500">{t('btc_price')}</span>
-                  <span className="text-gray-500">
-                    ${walletData?.data?.btcPrice ? walletData.data.btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '45,000.00'}
-                  </span>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">Ξ</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">ETH</div>
+                      <div className="text-gray-400 text-sm">Ethereum</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$62,500.00</div>
+                    <div className="text-gray-400 text-sm">25.0 ETH</div>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="text-center py-4">
-                <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_balance'))}</div>
+              <div className="text-center py-8">
+                <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_assets'))}</div>
               </div>
             )}
           </div>
