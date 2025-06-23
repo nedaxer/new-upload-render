@@ -2,7 +2,7 @@ import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { CheckCircle, ArrowRight, Building, Users, GraduationCap, Shield } from "lucide-react";
-import companyPhoto from "@assets/company photo.jpg";
+// import companyPhoto from "@assets/company photo.jpg";
 
 export default function About() {
   const companyValues = [
@@ -100,11 +100,12 @@ export default function About() {
             </div>
             
             {/* Company Image */}
-            <img 
-              src={companyPhoto} 
-              alt="Nedaxer Headquarters at sunset" 
-              className="w-full"
-            />
+            <div className="w-full h-64 bg-gradient-to-r from-[#0033a0] to-[#ff5900] rounded-lg flex items-center justify-center">
+              <div className="text-white text-center">
+                <Building className="h-16 w-16 mx-auto mb-4" />
+                <h3 className="text-xl font-bold">Nedaxer Headquarters</h3>
+              </div>
+            </div>
           </div>
         </div>
         
