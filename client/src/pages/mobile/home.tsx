@@ -601,102 +601,81 @@ export default function MobileHome() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                balanceData?.data?.usdBalance !== undefined
-                  ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}`
-                  : '$0.00'
+                user ? convertToSelectedCurrency(225000) : convertToSelectedCurrency(0)
               ) : '****'}
             </span>
-            <span className="text-gray-400 text-lg">USD</span>
+            <button 
+              onClick={() => setCurrentView('currency-selection')}
+              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+            >
+              <span>{selectedCurrency}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>{t('available_balance')}</span>
+            <span>≈ {showBalance ? '5.0' : '****'} BTC</span>
           </div>
         </div>
 
-        {/* Account Summary - Fiat Broker */}
+        {/* Assets Section */}
         <div className="mb-6">
-          <h3 className="text-white text-lg font-semibold mb-3">{t('account_balance')}</h3>
+          <h3 className="text-white text-lg font-semibold mb-3">{t('my_assets')}</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg font-bold">$</span>
+            {user && showBalance ? (
+              <>
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">$</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">USD</div>
+                      <div className="text-gray-400 text-sm">US Dollar</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$50,000.00</div>
+                    <div className="text-gray-400 text-sm">50,000.00 USD</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-white font-medium text-lg">USD Balance</div>
-                  <div className="text-gray-400 text-sm">{t('available_for_trading')}</div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">₿</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">BTC</div>
+                      <div className="text-gray-400 text-sm">Bitcoin</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$112,500.00</div>
+                    <div className="text-gray-400 text-sm">2.5 BTC</div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-white font-bold text-xl">
-                  {showBalance ? (
-                    balanceData?.data?.usdBalance !== undefined
-                      ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
-                          minimumFractionDigits: 2, 
-                          maximumFractionDigits: 2 
-                        })}`
-                      : '$0.00'
-                  ) : '••••••'}
+                
+                <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">Ξ</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">ETH</div>
+                      <div className="text-gray-400 text-sm">Ethereum</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-medium">$62,500.00</div>
+                    <div className="text-gray-400 text-sm">25.0 ETH</div>
+                  </div>
                 </div>
-                <div className="text-gray-400 text-sm">{t('fiat_balance')}</div>
-              </div>
-            </div>
-            
-            {balanceData?.data?.usdBalance === 0 && (
-              <div className="p-4 bg-orange-900/20 border border-orange-500/30 rounded-lg">
-                <p className="text-orange-300 text-sm text-center">
-                  {t('deposit_crypto_to_start_trading') || 'Deposit cryptocurrency to start trading'}
-                </p>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_assets'))}</div>
               </div>
             )}
-          </div>
-        </div>
-        {/* Quick Actions */}
-        <div className="px-4 pb-6">
-          <div className="grid grid-cols-4 gap-4">
-            <button 
-              onClick={handleDepositClick}
-              className="flex flex-col items-center space-y-2 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <ArrowUp className="w-6 h-6 text-orange-500" />
-              <span className="text-xs text-gray-300">{t('deposit')}</span>
-            </button>
-            
-            <button 
-              onClick={() => {
-                setComingSoonFeature('Withdraw');
-                setComingSoonOpen(true);
-              }}
-              className="flex flex-col items-center space-y-2 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <ArrowDown className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-300">{t('withdraw')}</span>
-            </button>
-            
-            <button 
-              onClick={() => {
-                setComingSoonFeature('Transfer');
-                setComingSoonOpen(true);
-              }}
-              className="flex flex-col items-center space-y-2 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <ArrowDownUp className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-300">{t('transfer')}</span>
-            </button>
-            
-            <button 
-              onClick={() => {
-                setComingSoonFeature('History');
-                setComingSoonOpen(true);
-              }}
-              className="flex flex-col items-center space-y-2 p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <CreditCard className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-300">{t('history')}</span>
-            </button>
           </div>
         </div>
 

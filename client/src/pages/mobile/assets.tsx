@@ -33,13 +33,6 @@ export default function MobileAssets() {
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
   const [activeTab, setActiveTab] = useState('assets'); // Only 'assets' tab now
-  
-  // Fetch user USD balance
-  const { data: balanceData, isLoading: balanceLoading } = useQuery({
-    queryKey: ['/api/balances'],
-    staleTime: 30000,
-    retry: 1
-  });
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
@@ -322,10 +315,10 @@ export default function MobileAssets() {
 
 
 
-      {/* USD Balance Display */}
+      {/* Total Assets */}
       <div className="px-4 pb-6">
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-gray-400 text-sm">Account Balance</span>
+          <span className="text-gray-400 text-sm">Total Assets</span>
           <button onClick={() => setShowBalance(!showBalance)}>
             {showBalance ? (
               <Eye className="w-4 h-4 text-gray-400" />
@@ -338,19 +331,18 @@ export default function MobileAssets() {
         <div className="mb-4">
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
-              {showBalance ? (
-                balanceData?.data?.usdBalance !== undefined
-                  ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}`
-                  : '$0.00'
-              ) : '****'}
+              {showBalance ? convertToSelectedCurrency(0.51) : '****'}
             </span>
-            <span className="text-gray-400 text-lg">USD</span>
+            <button 
+              onClick={() => setCurrentView('currency-selection')}
+              className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
+            >
+              <span>{selectedCurrency}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>{balanceData?.data?.usdBalance === 0 ? 'Deposit crypto to start trading' : 'Available for trading'}</span>
+            <span>≈ {showBalance ? '0.00000484' : '****'} BTC</span>
           </div>
         </div>
 
@@ -423,75 +415,261 @@ export default function MobileAssets() {
         </div>
       </div>
 
-      {/* USD Fiat Balance Section */}
+      {/* Portfolio Circle Chart */}
       <div className="px-4">
-        <h3 className="text-white font-medium mb-6 text-sm">Account Overview</h3>
+        <h3 className="text-white font-medium mb-6 text-sm">Portfolio Distribution</h3>
         
-        <div className="bg-gray-800 rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xl font-bold">$</span>
+        {/* Circular Portfolio Chart */}
+        <div className="relative flex flex-col items-center mb-8">
+          {/* Donut Chart Container */}
+          <div className="relative w-80 h-80 mb-6">
+            {/* Authentic Crypto Color Donut Chart */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 200 200">
+                <defs>
+                  {/* Authentic crypto gradients */}
+                  <linearGradient id="bitcoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f7931a" />
+                    <stop offset="100%" stopColor="#ff8c00" />
+                  </linearGradient>
+                  <linearGradient id="ethereumAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#627eea" />
+                    <stop offset="100%" stopColor="#4169e1" />
+                  </linearGradient>
+                  <linearGradient id="litecoinAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#bfbbbb" />
+                    <stop offset="100%" stopColor="#a6a6a6" />
+                  </linearGradient>
+                  <linearGradient id="iotaAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#131f37" />
+                    <stop offset="100%" stopColor="#1a2332" />
+                  </linearGradient>
+                  <linearGradient id="moneroAuth" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ff6600" />
+                    <stop offset="100%" stopColor="#cc5500" />
+                  </linearGradient>
+                </defs>
+                
+                {/* Clean background */}
+                <circle cx="100" cy="100" r="70" fill="transparent" stroke="#1f2937" strokeWidth="20" opacity="0.3" />
+                
+                {/* Bitcoin segment (49.5%) - Authentic Orange */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#bitcoinAuth)"
+                  strokeWidth="20"
+                  strokeDasharray="217.8 222.2"
+                  strokeDashoffset="0"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_0.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #f7931a60)' }}
+                />
+                
+                {/* Ethereum segment (24.5%) - Authentic Blue */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#ethereumAuth)"
+                  strokeWidth="20"
+                  strokeDasharray="107.9 332.1"
+                  strokeDashoffset="-217.8"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #627eea60)' }}
+                />
+                
+                {/* Litecoin segment (4.7%) - Authentic Silver */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#litecoinAuth)"
+                  strokeWidth="20"
+                  strokeDasharray="20.7 419.3"
+                  strokeDashoffset="-325.7"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_1.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #bfbbbb60)' }}
+                />
+                
+                {/* IOTA segment (4.3%) - Authentic Dark Blue */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#iotaAuth)"
+                  strokeWidth="20"
+                  strokeDasharray="18.9 421.1"
+                  strokeDashoffset="-346.4"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #131f3760)' }}
+                />
+                
+                {/* Monero segment (3.1%) - Authentic Orange-Red */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#moneroAuth)"
+                  strokeWidth="20"
+                  strokeDasharray="13.7 426.3"
+                  strokeDashoffset="-365.3"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_2.5s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #ff660060)' }}
+                />
+                
+                {/* Others combined (15.9%) - Mixed Colors */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="#8b949e"
+                  strokeWidth="20"
+                  strokeDasharray="61.3 378.7"
+                  strokeDashoffset="-379"
+                  className="opacity-0 animate-[segmentDraw_1.5s_ease-out_3s_forwards]"
+                  style={{ filter: 'drop-shadow(0 0 8px #8b949e40)' }}
+                />
+              </svg>
+              
+              {/* Center content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 animate-[fadeIn_1s_ease-out_4s_forwards]">
+                <div className="text-xl font-bold text-white">
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
+                </div>
+                <div className="text-xs text-gray-400">Total Value</div>
               </div>
-              <div>
-                <div className="text-white font-medium text-lg">USD Balance</div>
-                <div className="text-gray-400 text-sm">Available for Trading</div>
-              </div>
+            </div>
+            
+            {/* Enhanced connecting lines with authentic colors */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 320 320">
+              {/* Bitcoin line - Authentic Orange */}
+              <line 
+                x1="243" y1="160" x2="300" y2="160" 
+                stroke="#f7931a" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_4.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #f7931a80)' }}
+              />
+              
+              {/* Ethereum line - Authentic Blue */}
+              <line 
+                x1="118" y1="242" x2="65" y2="295" 
+                stroke="#627eea" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #627eea80)' }}
+              />
+              
+              {/* Litecoin line - Authentic Silver */}
+              <line 
+                x1="77" y1="160" x2="20" y2="160" 
+                stroke="#bfbbbb" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_5.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #bfbbbb80)' }}
+              />
+              
+              {/* IOTA line - Authentic Dark Blue */}
+              <line 
+                x1="105" y1="105" x2="60" y2="60" 
+                stroke="#131f37" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_6s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #131f3780)' }}
+              />
+              
+              {/* Monero line - Authentic Orange-Red */}
+              <line 
+                x1="160" y1="77" x2="160" y2="20" 
+                stroke="#ff6600" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_6.5s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #ff660080)' }}
+              />
+              
+              {/* Others line - Mixed Gray */}
+              <line 
+                x1="225" y1="105" x2="280" y2="65" 
+                stroke="#8b949e" 
+                strokeWidth="3" 
+                strokeDasharray="6,3"
+                className="opacity-0 animate-[lineAppear_0.8s_ease-out_7s_forwards]"
+                style={{ filter: 'drop-shadow(0 0 4px #8b949e80)' }}
+              />
+            </svg>
+            
+            {/* Crypto labels with authentic colors */}
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_4.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#f7931a' }}>Bitcoin</div>
+              <div className="text-white text-xs">49.5%</div>
+            </div>
+            
+            <div className="absolute left-4 bottom-4 opacity-0 animate-[labelSlide_0.6s_ease-out_5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#627eea' }}>Ethereum</div>
+              <div className="text-white text-xs">24.5%</div>
+            </div>
+            
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 animate-[labelSlide_0.6s_ease-out_5.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#bfbbbb' }}>Litecoin</div>
+              <div className="text-white text-xs">4.7%</div>
+            </div>
+            
+            <div className="absolute left-4 top-4 opacity-0 animate-[labelSlide_0.6s_ease-out_6s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#131f37' }}>IOTA</div>
+              <div className="text-white text-xs">4.3%</div>
+            </div>
+            
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center opacity-0 animate-[labelSlide_0.6s_ease-out_6.5s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#ff6600' }}>Monero</div>
+              <div className="text-white text-xs">3.1%</div>
+            </div>
+            
+            <div className="absolute right-4 top-4 text-right opacity-0 animate-[labelSlide_0.6s_ease-out_7s_forwards]">
+              <div className="text-sm font-bold" style={{ color: '#8b949e' }}>Others</div>
+              <div className="text-white text-xs">15.9%</div>
             </div>
           </div>
-          
-          <div className="text-right">
-            <div className="text-white font-bold text-3xl mb-1">
-              {showBalance ? (
-                balanceData?.data?.usdBalance !== undefined
-                  ? `$${balanceData.data.usdBalance.toLocaleString('en-US', { 
-                      minimumFractionDigits: 2, 
-                      maximumFractionDigits: 2 
-                    })}`
-                  : '$0.00'
-              ) : '••••••'}
-            </div>
-            <div className="text-gray-400 text-sm">Fiat Balance • Ready to Trade</div>
+        </div>
+        
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-gray-400 text-xs mb-1">24h Change</div>
+            <div className="text-green-500 text-lg font-bold">+2.4%</div>
           </div>
-          
-          {balanceData?.data?.usdBalance === 0 && (
-            <div className="mt-4 p-4 bg-orange-900/20 border border-orange-500/30 rounded-lg">
-              <p className="text-orange-300 text-sm text-center">
-                Deposit cryptocurrency to receive USD balance for trading
-              </p>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-gray-400 text-xs mb-1">Total Profit</div>
+            <div className="text-orange-500 text-lg font-bold">
+              {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.12) : '+***'}
             </div>
-          )}
+          </div>
         </div>
       </div>
-      
-      {/* Action Buttons */}
-      <div className="px-4 pb-6">
-        <div className="grid grid-cols-3 gap-4">
-          <Button 
-            onClick={() => setCurrentView('crypto-selection')}
-            className="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
-          >
-            <ArrowDown className="w-6 h-6" />
-            <span className="text-sm">Deposit</span>
-          </Button>
-          
-          <Button 
-            onClick={handleComingSoon}
-            className="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
-          >
-            <ArrowUp className="w-6 h-6" />
-            <span className="text-sm">Withdraw</span>
-          </Button>
-          
-          <Button 
-            onClick={handleComingSoon}
-            className="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg flex flex-col items-center space-y-2"
-          >
-            <ArrowDownUp className="w-6 h-6" />
-            <span className="text-sm">Transfer</span>
-          </Button>
-        </div>
-      </div>
+
+      {/* Modals */}
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        onSelectMethod={handlePaymentMethodSelect}
+      />
+
+      <ComingSoonModal
+        isOpen={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        feature={comingSoonFeature}
+      />
     </MobileLayout>
   );
 }

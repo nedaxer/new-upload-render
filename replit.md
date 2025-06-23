@@ -117,9 +117,9 @@ The application now uses MongoDB Atlas as the primary database:
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes
+## Changelog
 
-- June 22, 2025. Converted to fiat-only crypto broker: removed crypto asset management from home and assets pages, modified database to store only USD balances (no crypto holdings), updated balance APIs to handle USD-only transactions, users deposit crypto but receive USD for trading, all user balances reset to $0 by default requiring deposits to trade, integrated CoinGecko API with caching for market price data
+Changelog:
 - June 22, 2025. Implemented complete user identification system with mixed alphanumeric UIDs: added UID field to PostgreSQL users table with unique constraint, created UID generation utility for mixed alphanumeric codes up to 10 characters, updated database storage interface to automatically generate unique UIDs during user creation, integrated UID display on mobile profile and settings pages, implemented copy-to-clipboard functionality for UIDs, migrated from MySQL to PostgreSQL database with proper schema updates
 - June 21, 2025. Implemented comprehensive favorites and chart memory system: added PostgreSQL database tables for user favorites and preferences, created API endpoints for managing favorites and user chart preferences, implemented real-time favorites functionality on home page crypto cards with star toggle, added chart pair persistence so users return to their last selected cryptocurrency when reopening trade page, enhanced navigation from markets and home page to trade page with proper symbol passing, favorites are stored in database and persist across user sessions
 - June 21, 2025. Fixed mobile navigation and authentication: removed authentication protection from all mobile routes to enable direct access to trading features, fixed 404 errors when navigating from markets page to trade page, implemented open access for mobile app routes allowing users to test market-to-chart navigation without login requirements, enhanced sentiment labels with proper Bullish/Bearish color coding
