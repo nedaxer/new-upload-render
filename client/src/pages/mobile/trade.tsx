@@ -32,24 +32,31 @@ import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
 import { chartCache } from '@/utils/chart-cache';
+import { useAppState } from '@/lib/app-state';
+import { useNavigationCache } from '@/lib/navigation-cache';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
-  const [selectedTab, setSelectedTab] = useState('Charts');
-  const [selectedTradingType, setSelectedTradingType] = useState('Spot');
-  const [selectedCrypto, setSelectedCrypto] = useState('bitcoin');
-  const [tradingViewSymbol, setTradingViewSymbol] = useState('BINANCE:BTCUSDT');
-  const [selectedPair, setSelectedPair] = useState<CryptoPair>(CRYPTO_PAIRS[0]); // Default to BTC
+  const { state: appState, updateChartState } = useAppState();
+  const { isReturning, preserveState, getPreservedState } = useNavigationCache('/mobile/trade');
+  const [location, navigate] = useLocation();
+  
+  // Initialize state from preserved state or defaults
+  const preservedState = getPreservedState();
+  const [selectedTimeframe, setSelectedTimeframe] = useState(preservedState?.selectedTimeframe || '15m');
+  const [selectedTab, setSelectedTab] = useState(preservedState?.selectedTab || 'Charts');
+  const [selectedTradingType, setSelectedTradingType] = useState(preservedState?.selectedTradingType || 'Spot');
+  const [selectedCrypto, setSelectedCrypto] = useState(preservedState?.selectedCrypto || 'bitcoin');
+  const [tradingViewSymbol, setTradingViewSymbol] = useState(preservedState?.tradingViewSymbol || 'BINANCE:BTCUSDT');
+  const [selectedPair, setSelectedPair] = useState<CryptoPair>(preservedState?.selectedPair || CRYPTO_PAIRS[0]);
   const [showPairSelector, setShowPairSelector] = useState(false);
   const [showAlerts, setShowAlerts] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
-  const [tradeMode, setTradeMode] = useState('Buy'); // 'Buy' or 'Sell'
+  const [tradeMode, setTradeMode] = useState('Buy');
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
-  const [location, navigate] = useLocation();
 
   // Chart state with persistent caching
   const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
@@ -62,15 +69,21 @@ export default function MobileTrade() {
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
 
-  // Initialize selected pair from sessionStorage, user preferences, or defaults
+  // Initialize selected pair from sessionStorage, user preferences, or preserved state
   useEffect(() => {
+    // If returning to this page and we have preserved state, skip reload
+    if (isReturning && preservedState) {
+      console.log('Returning to trade page, using preserved state');
+      return;
+    }
+
     const loadInitialState = async () => {
       // Check sessionStorage first (for navigation from markets page)
       const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
       const tabFromStorage = sessionStorage.getItem('selectedTab');
       
-      // Check cached chart data
-      const lastCachedSymbol = chartCache.getLastSymbol();
+      // Check app state for chart data
+      const chartState = appState.chartState;
       
       // Also check URL parameters as fallback
       const currentLocation = location.includes('?') ? location : window.location.search;
@@ -78,16 +91,16 @@ export default function MobileTrade() {
       const symbolFromUrl = urlParams.get('symbol');
       const tabFromUrl = urlParams.get('tab');
       
-      let symbolToUse = symbolFromStorage || symbolFromUrl || lastCachedSymbol;
+      let symbolToUse = symbolFromStorage || symbolFromUrl || chartState.currentSymbol;
       let tabToUse = tabFromStorage || tabFromUrl;
       
       // If no symbol from navigation or cache, try to load from user preferences
-      if (!symbolToUse) {
+      if (!symbolToUse || symbolToUse === 'BTCUSDT') {
         try {
           const preferencesResponse = await fetch('/api/user/preferences');
           if (preferencesResponse.ok) {
             const preferences = await preferencesResponse.json();
-            symbolToUse = preferences.lastSelectedPair;
+            symbolToUse = preferences.lastSelectedPair || symbolToUse;
             tabToUse = tabToUse || preferences.lastSelectedTab || 'Charts';
           }
         } catch (error) {
@@ -95,58 +108,72 @@ export default function MobileTrade() {
         }
       }
       
-      console.log('Trade page params:', { 
+      console.log('Trade page initialization:', { 
         symbolFromStorage, 
         tabFromStorage, 
         symbolFromUrl, 
         tabFromUrl, 
         symbolToUse,
         tabToUse,
-        location 
+        isReturning,
+        preservedState: !!preservedState
       });
       
       // Set tab if specified
       if (tabToUse === 'Charts') {
         setSelectedTab('Charts');
-        console.log('Setting tab to Charts');
       }
       
       if (symbolToUse) {
         const pair = findPairBySymbol(symbolToUse);
-        console.log('Found pair for symbol:', symbolToUse, pair);
         
         if (pair) {
           setSelectedPair(pair);
           setCurrentSymbol(pair.symbol);
           setTradingViewSymbol(pair.tradingViewSymbol);
           
+          // Update app state
+          updateChartState({
+            currentSymbol: pair.symbol,
+            isReady: true
+          });
+          
           // Update price for the new pair
           updatePrice(pair.symbol);
           
-          // Ensure Charts tab is selected when coming from home page
           if (tabToUse === 'Charts') {
             setSelectedTab('Charts');
             
-            // Load chart immediately if TradingView is ready, otherwise wait
             if (isTradingViewReady) {
-              console.log('TradingView ready, loading chart for:', pair.tradingViewSymbol);
-              loadChart(pair.tradingViewSymbol, true);
-            } else {
-              console.log('TradingView not ready, will load chart when ready');
+              loadChart(pair.tradingViewSymbol, false); // Don't force reload
             }
           }
-        } else {
-          console.log('No pair found for symbol:', symbolToUse, 'using default BTC');
         }
       }
       
-      // Clear sessionStorage after use to prevent stale data
+      // Clear sessionStorage after use
       sessionStorage.removeItem('selectedSymbol');
       sessionStorage.removeItem('selectedTab');
     };
     
     loadInitialState();
-  }, [location]);
+  }, [location, isReturning]);
+
+  // Preserve state when navigating away
+  useEffect(() => {
+    const currentState = {
+      selectedTimeframe,
+      selectedTab,
+      selectedTradingType,
+      selectedCrypto,
+      tradingViewSymbol,
+      selectedPair,
+      currentSymbol,
+      currentPrice,
+      currentTicker
+    };
+    preserveState(currentState);
+  }, [selectedTimeframe, selectedTab, selectedTradingType, selectedCrypto, tradingViewSymbol, selectedPair]);
 
   // Update chart when selected pair changes or when Charts tab is selected
   useEffect(() => {

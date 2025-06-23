@@ -41,15 +41,16 @@ export default function MobileHome() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [showBalance, setShowBalance] = useState(true);
-  const [selectedTab, setSelectedTab] = useState('Exchange');
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
+  const { state, updateState } = useAppState();
+  const [showBalance, setShowBalance] = usePersistentState('home_show_balance', true);
+  const [selectedTab, setSelectedTab] = usePersistentState('home_selected_tab', 'Exchange');
+  const [currentView, setCurrentView] = usePersistentState('home_current_view', 'home');
+  const [selectedCrypto, setSelectedCrypto] = usePersistentState('home_selected_crypto', '');
+  const [selectedChain, setSelectedChain] = usePersistentState('home_selected_chain', '');
+  const [selectedCurrency, setSelectedCurrency] = usePersistentState('home_selected_currency', 'USD');
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
-  const [selectedCrypto, setSelectedCrypto] = useState('');
-  const [selectedChain, setSelectedChain] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
 
   // Load currency from localStorage and listen for profile updates
@@ -61,7 +62,11 @@ export default function MobileHome() {
 
     // Listen for profile updates from other components
     const handleProfileUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      // Use setQueryData instead of invalidateQueries to prevent refetch
+      const currentUser = queryClient.getQueryData(['/api/auth/user']);
+      if (currentUser) {
+        queryClient.setQueryData(['/api/auth/user'], currentUser);
+      }
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);

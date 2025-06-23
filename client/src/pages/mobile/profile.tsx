@@ -131,7 +131,11 @@ export default function MobileProfile() {
   // Listen for profile updates from other components
   useEffect(() => {
     const handleProfileUpdate = () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      // Use setQueryData instead of invalidateQueries to prevent unnecessary refetch
+      const currentUser = queryClient.getQueryData(['/api/auth/user']);
+      if (currentUser) {
+        queryClient.setQueryData(['/api/auth/user'], currentUser);
+      }
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -314,8 +318,13 @@ export default function MobileProfile() {
                 }).catch(err => console.log('Backup failed:', err));
               }
               
-              // Clear all caches before logout
+              // Clear React Query cache and app state
               queryClient.clear();
+              
+              // Clear app state manager
+              if (typeof window !== 'undefined' && (window as any).appStateManager) {
+                (window as any).appStateManager.clear();
+              }
               
               // Perform logout
               await logoutMutation.mutateAsync();
