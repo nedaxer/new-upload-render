@@ -178,32 +178,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`User created with ID: ${newUser._id}`);
 
-      // Create initial fund balances for new user
+      // Create only USD balance with $0.00 for new user
       try {
         const { Currency } = await import('./models/Currency');
         const { UserBalance } = await import('./models/UserBalance');
         
-        // Get currencies
+        // Get USD currency only
         const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-        const btcCurrency = await Currency.findOne({ symbol: 'BTC' });
-        const ethCurrency = await Currency.findOne({ symbol: 'ETH' });
         
-        if (usdCurrency && btcCurrency && ethCurrency) {
-          // Create starter balances for new user
-          const starterBalances = [
-            { userId: newUser._id, currencyId: usdCurrency._id, amount: 10000 }, // $10,000 starter
-            { userId: newUser._id, currencyId: btcCurrency._id, amount: 0.1 },   // 0.1 BTC starter
-            { userId: newUser._id, currencyId: ethCurrency._id, amount: 2 }      // 2 ETH starter
-          ];
+        if (usdCurrency) {
+          // Create $0.00 USD balance for new user
+          const zeroBalance = new UserBalance({
+            userId: newUser._id, 
+            currencyId: usdCurrency._id, 
+            amount: 0
+          });
           
-          for (const balanceData of starterBalances) {
-            const balance = new UserBalance(balanceData);
-            await balance.save();
-          }
-          console.log('Created starter fund balances for new user');
+          await zeroBalance.save();
+          console.log('Created $0.00 USD balance for new user');
         }
       } catch (balanceError) {
-        console.warn('Could not create starter balances:', balanceError);
+        console.warn('Could not create initial balance:', balanceError);
         // Don't fail registration if balance creation fails
       }
 
@@ -431,6 +426,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: "Failed to fetch balances"
+      });
+    }
+  });
+
+  // Reset all user balances to $0.00 (admin function)
+  app.post('/api/balances/reset-all', async (req: Request, res: Response) => {
+    try {
+      const { UserBalance } = await import('./models/UserBalance');
+      
+      // Reset all user balances to $0.00
+      await UserBalance.updateMany({}, { $set: { amount: 0, updatedAt: new Date() } });
+      
+      console.log('Reset all user balances to $0.00');
+      
+      res.json({
+        success: true,
+        message: 'All user balances reset to $0.00'
+      });
+    } catch (error) {
+      console.error('Error resetting balances:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to reset balances'
       });
     }
   });
