@@ -641,37 +641,7 @@ export default function MobileHome() {
           </div>
         </div>
 
-        {/* Assets Section - Only USD */}
-        <div className="mb-6">
-          <h3 className="text-white text-lg font-semibold mb-3">{t('my_assets')}</h3>
-          <div className="space-y-3">
-            {user && showBalance ? (
-              <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">$</span>
-                  </div>
-                  <div>
-                    <div className="text-white font-medium">USD</div>
-                    <div className="text-gray-400 text-sm">US Dollar</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-white font-medium">
-                    ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-gray-400 text-sm">
-                    {getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="text-gray-400">{user ? (t('hidden_balance')) : (t('login_to_view_assets'))}</div>
-              </div>
-            )}
-          </div>
-        </div>
+
 
         {/* Promotional Banner */}
         <Card className="bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600 p-4 mb-4">
