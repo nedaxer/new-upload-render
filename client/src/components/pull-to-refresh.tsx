@@ -17,9 +17,10 @@ interface PullToRefreshProps {
   disabled?: boolean;
 }
 
-const PULL_THRESHOLD = 120;
-const LETTER_THRESHOLD = 100;
-const MAX_PULL_DISTANCE = 180;
+const LETTER_COMPLETE_THRESHOLD = 90;
+const LOGO_START_THRESHOLD = 100;
+const PULL_THRESHOLD = 160;
+const MAX_PULL_DISTANCE = 200;
 const letters = [letterN, letterE1, letterD, letterA, letterX, letterE2, letterR];
 
 export function PullToRefresh({ children, onRefresh, disabled = false }: PullToRefreshProps) {
@@ -52,12 +53,14 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     if (deltaY > 0) {
       e.preventDefault();
       
-      // Apply resistance to the pull with progressive resistance
+      // Apply progressive resistance for slower, smoother pull
       let resistance;
-      if (deltaY <= LETTER_THRESHOLD) {
-        resistance = deltaY * 0.9;
+      if (deltaY <= LETTER_COMPLETE_THRESHOLD) {
+        resistance = deltaY * 0.7; // Slower initial pull for letters
+      } else if (deltaY <= LOGO_START_THRESHOLD) {
+        resistance = LETTER_COMPLETE_THRESHOLD + (deltaY - LETTER_COMPLETE_THRESHOLD) * 0.6;
       } else {
-        resistance = LETTER_THRESHOLD + (deltaY - LETTER_THRESHOLD) * 0.4;
+        resistance = LOGO_START_THRESHOLD + (deltaY - LOGO_START_THRESHOLD) * 0.5; // Even slower for logo
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
       
@@ -76,6 +79,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
     setIsPulling(false);
 
+    // Only trigger refresh if pulled all the way to the threshold
     if (pullDistance >= PULL_THRESHOLD) {
       setIsRefreshing(true);
       try {
@@ -120,14 +124,39 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   }, [isPulling, startY, pullDistance, isRefreshing, disabled]);
 
   const getVisibleLetters = () => {
-    if (pullDistance < 15) return 0;
-    const progress = Math.min((pullDistance - 15) / 85, 1);
+    if (pullDistance < 10) return 0;
+    const progress = Math.min((pullDistance - 10) / (LETTER_COMPLETE_THRESHOLD - 10), 1);
     const letterCount = Math.ceil(progress * letters.length);
     return letterCount;
   };
 
-  const showRefreshLogo = pullDistance >= PULL_THRESHOLD;
+  const getLetterOpacity = () => {
+    if (pullDistance < LETTER_COMPLETE_THRESHOLD) return 1;
+    if (pullDistance < LOGO_START_THRESHOLD) {
+      // Fade out letters between LETTER_COMPLETE_THRESHOLD and LOGO_START_THRESHOLD
+      const fadeProgress = (pullDistance - LETTER_COMPLETE_THRESHOLD) / (LOGO_START_THRESHOLD - LETTER_COMPLETE_THRESHOLD);
+      return 1 - fadeProgress;
+    }
+    return 0;
+  };
+
+  const getLogoOpacity = () => {
+    if (pullDistance < LOGO_START_THRESHOLD) return 0;
+    const progress = Math.min((pullDistance - LOGO_START_THRESHOLD) / (PULL_THRESHOLD - LOGO_START_THRESHOLD), 1);
+    return progress;
+  };
+
+  const getLogoScale = () => {
+    if (pullDistance < LOGO_START_THRESHOLD) return 0.3;
+    const progress = Math.min((pullDistance - LOGO_START_THRESHOLD) / (PULL_THRESHOLD - LOGO_START_THRESHOLD), 1);
+    return 0.3 + (progress * 0.7); // Scale from 0.3 to 1.0
+  };
+
+  const showRefreshLogo = pullDistance >= LOGO_START_THRESHOLD;
   const visibleLetterCount = getVisibleLetters();
+  const letterOpacity = getLetterOpacity();
+  const logoOpacity = getLogoOpacity();
+  const logoScale = getLogoScale();
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
@@ -135,7 +164,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       <div 
         className="relative overflow-hidden transition-all duration-300 ease-out bg-gray-900"
         style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 180 : 0) : 0
+          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 200 : 0) : 0
         }}
       >
         <AnimatePresence>
@@ -146,37 +175,52 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               exit={{ opacity: 0 }}
               className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900"
             >
-              {/* Show NEDAXER letters first when pulling down */}
-              {pullDistance > 0 && pullDistance < PULL_THRESHOLD && !isRefreshing && (
-                <div className="flex items-center justify-center space-x-2 px-4 w-full">
+              {/* Show NEDAXER letters progressively coming together */}
+              {pullDistance > 0 && letterOpacity > 0 && !isRefreshing && (
+                <div 
+                  className="flex items-center justify-center space-x-1 px-4 w-full transition-all duration-500 ease-out"
+                  style={{
+                    opacity: letterOpacity,
+                    transform: `scale(${Math.min(1, pullDistance / LETTER_COMPLETE_THRESHOLD)})`
+                  }}
+                >
                   {letters.map((letter, index) => (
                     <img
                       key={index}
                       src={letter}
                       alt={`Letter ${index + 1}`}
-                      className="h-12 w-auto flex-shrink-0 transition-all duration-200"
+                      className="h-14 w-auto flex-shrink-0 transition-all duration-300 ease-out"
                       style={{
-                        opacity: index < visibleLetterCount ? 1 : 0.2,
-                        transform: `scale(${index < visibleLetterCount ? 1 : 0.7}) translateY(${index < visibleLetterCount ? 0 : 10}px)`
+                        opacity: index < visibleLetterCount ? 1 : 0.1,
+                        transform: `
+                          scale(${index < visibleLetterCount ? 1 : 0.6}) 
+                          translateY(${index < visibleLetterCount ? 0 : 15}px)
+                          translateX(${index < visibleLetterCount ? 0 : (index - visibleLetterCount + 1) * 10}px)
+                        `
                       }}
                     />
                   ))}
                 </div>
               )}
 
-              {/* Show large refresh logo when threshold reached */}
-              {(showRefreshLogo || isRefreshing) && (
-                <div className="flex items-center justify-center h-full w-full">
+              {/* Show large refresh logo emerging from buried state */}
+              {showRefreshLogo && (
+                <div 
+                  className="flex items-center justify-center h-full w-full transition-all duration-700 ease-out"
+                  style={{
+                    opacity: logoOpacity,
+                    transform: `scale(${logoScale}) translateY(${30 - (logoOpacity * 30)}px)`
+                  }}
+                >
                   <img
                     src={refreshLogo}
                     alt="Refresh Logo"
-                    className="object-contain transition-all duration-300"
+                    className="object-contain"
                     style={{
-                      height: '90%',
+                      height: '95%',
                       width: 'auto',
-                      maxWidth: '90%',
-                      opacity: showRefreshLogo || isRefreshing ? 1 : 0,
-                      transform: `scale(${showRefreshLogo || isRefreshing ? 1 : 0.5})`
+                      maxWidth: '95%',
+                      filter: `brightness(${0.7 + (logoOpacity * 0.3)})` // Darker when buried, brighter when revealed
                     }}
                   />
                 </div>
@@ -184,8 +228,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
               {/* Refreshing text */}
               {isRefreshing && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-                  <p className="text-orange-400 text-sm font-medium text-center">
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                  <p className="text-orange-400 text-base font-medium text-center animate-pulse">
                     Refreshing...
                   </p>
                 </div>
