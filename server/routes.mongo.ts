@@ -89,6 +89,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { getRealtimePrices } = await import('./api/realtime-prices');
   app.get('/api/crypto/realtime-prices', getRealtimePrices);
 
+  // Crypto news endpoint using RSS feeds
+  app.get('/api/crypto/news', async (req: Request, res: Response) => {
+    try {
+      const Parser = require('rss-parser');
+      const parser = new Parser();
+
+      const feeds = {
+        'CoinDesk': 'https://www.coindesk.com/arc/outboundfeeds/rss/',
+        'CoinTelegraph': 'https://cointelegraph.com/rss',
+        'Decrypt': 'https://decrypt.co/feed',
+        'Bitcoin Magazine': 'https://bitcoinmagazine.com/.rss/full',
+        'CryptoSlate': 'https://cryptoslate.com/feed/',
+        'CryptoBriefing': 'https://cryptobriefing.com/feed/',
+        'Google News - Crypto': 'https://news.google.com/rss/search?q=crypto'
+      };
+
+      const allNews = [];
+      const fetchPromises = [];
+
+      for (const [source, url] of Object.entries(feeds)) {
+        const fetchPromise = parser.parseURL(url)
+          .then((feed: any) => {
+            return feed.items.slice(0, 5).map((item: any) => ({
+              title: item.title || 'No Title',
+              description: item.contentSnippet || item.summary || item.content || 'No description available',
+              url: item.link || '#',
+              source: { name: source },
+              publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
+              urlToImage: item.enclosure?.url || item.media?.thumbnail?.url || null
+            }));
+          })
+          .catch((error: any) => {
+            console.error(`Error fetching ${source}:`, error.message);
+            return []; // Return empty array on error
+          });
+        
+        fetchPromises.push(fetchPromise);
+      }
+
+      const results = await Promise.all(fetchPromises);
+      
+      // Flatten and combine all news articles
+      for (const articles of results) {
+        allNews.push(...articles);
+      }
+
+      // Sort by publication date (newest first)
+      allNews.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+      // Return top 30 articles
+      res.json(allNews.slice(0, 30));
+    } catch (error) {
+      console.error('Error fetching crypto news:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch crypto news',
+        error: error.message 
+      });
+    }
+  });
+
   // Auth endpoint to get current user data
   app.get('/api/auth/user', async (req: Request, res: Response) => {
     try {
