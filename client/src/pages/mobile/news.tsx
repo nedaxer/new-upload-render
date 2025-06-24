@@ -215,24 +215,10 @@ export default function MobileNews() {
                         alt={article.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        crossOrigin="anonymous"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          const originalSrc = target.getAttribute('data-original-src') || target.src;
-                          
-                          // Try without crossOrigin first
-                          if (target.crossOrigin) {
-                            target.crossOrigin = '';
-                            target.src = '';
-                            target.src = originalSrc;
-                            target.setAttribute('data-original-src', originalSrc);
-                            return;
-                          }
-                          
-                          // If still fails, use fallback
                           target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0OEM0NC40MTgzIDQ4IDQ4IDQ0LjQxODMgNDggNDBDNDggMzUuNTgxNyA0NC40MTgzIDMyIDQwIDMyQzM1LjU4MTcgMzIgMzIgMzUuNTgxNyAzMiA0MEMzMiA0NC40MTgzIDM1LjU4MTcgNDggNDAgNDhaIiBmaWxsPSIjOUI5QjlCIi8+CjxwYXRoIGQ9Ik0yNCA1NkM0MCA1NiA1NiA1NiA1NiA1NlY0OEg0MFYzMkgyNFY1NloiIGZpbGw9IiM5QjlCOUIiLz4KPC9zdmc+';
                           target.className = "w-full h-full object-cover bg-gray-200";
-                          target.crossOrigin = '';
                         }}
                       />
                     ) : (
