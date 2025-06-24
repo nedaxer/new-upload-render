@@ -68,6 +68,7 @@ export default function MobileTrade() {
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
   const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render trigger
   
   // Chart loading states
   const [isChartLoading, setIsChartLoading] = useState(false);
@@ -552,11 +553,15 @@ export default function MobileTrade() {
   const handlePairSelectionModal = useCallback((pair: CryptoPair) => {
     console.log('Pair selected from modal:', pair);
     
-    // Update state immediately
+    // Immediately update all UI states first for instant visual feedback
     setSelectedPair(pair);
     setCurrentSymbol(pair.symbol);
     setTradingViewSymbol(pair.tradingViewSymbol);
     setShowPairSelectorModal(false);
+    
+    // Set a temporary price display to show immediate feedback
+    setCurrentPrice('--');
+    setCurrentTicker(null);
     
     // Update persistent storage immediately
     const chartState = {
@@ -568,6 +573,13 @@ export default function MobileTrade() {
     };
     localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
     
+    // Force immediate UI refresh to show the new pair name in header
+    setForceUpdate(prev => prev + 1); // Trigger re-render immediately
+    const coinPriceElement = document.getElementById('coin-price');
+    if (coinPriceElement) {
+      coinPriceElement.textContent = '--';
+    }
+    
     // Update chart symbol on persistent widget
     const globalWidget = (window as any).nedaxerGlobalChart;
     if (globalWidget && globalWidget.widget && globalWidget.isReady) {
@@ -577,27 +589,24 @@ export default function MobileTrade() {
           console.log('Chart symbol changed to', pair.symbol);
           globalWidget.currentSymbol = pair.symbol;
           
-          // Force UI update after chart symbol change
-          setCurrentSymbol(pair.symbol);
-          setSelectedPair(pair);
+          // Update price after chart is ready
+          updatePrice(pair.symbol);
         });
       } catch (error) {
         console.log('Failed to change symbol on persistent chart, reloading');
         loadChart(pair.tradingViewSymbol, true);
+        // Still update price even if chart fails
+        updatePrice(pair.symbol);
       }
     } else if (isTradingViewReady) {
       // Load chart if widget doesn't exist
       loadChart(pair.tradingViewSymbol, false);
+      // Update price immediately while chart loads
+      updatePrice(pair.symbol);
+    } else {
+      // Update price even if chart isn't ready
+      updatePrice(pair.symbol);
     }
-    
-    // Update price immediately
-    updatePrice(pair.symbol);
-    
-    // Force re-render by updating a state that triggers UI updates
-    setTimeout(() => {
-      setCurrentSymbol(pair.symbol);
-      setSelectedPair(pair);
-    }, 100);
   }, [isTradingViewReady, loadChart, selectedTimeframe]);
 
   // Add preload hints and load TradingView script with maximum optimization
@@ -947,13 +956,13 @@ export default function MobileTrade() {
               }}
             >
               <div className="flex items-center gap-1">
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-white" key={`pair-${forceUpdate}`}>
                   {getPairDisplayName(selectedPair)}
                 </span>
                 <ChevronDown className="w-3 h-3 text-gray-400" />
               </div>
               <div className="text-sm font-bold text-green-400">
-                $<span id="coin-price">{currentPrice || '--'}</span>
+                $<span id="coin-price" key={`price-${forceUpdate}`}>{currentPrice || '--'}</span>
               </div>
             </div>
             <div className="text-right text-xs leading-tight text-gray-300">
