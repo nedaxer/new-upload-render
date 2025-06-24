@@ -45,7 +45,7 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Connect to MongoDB first
   await connectToDatabase();
-  
+
   // Setup MongoDB session store
   const MongoDBStore = MongoStore(session);
   const store = new MongoDBStore({
@@ -122,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return feed.items.slice(0, 5).map((item: any) => {
               // Enhanced image extraction
               let imageUrl = null;
-              
+
               // Try multiple image sources
               if (item.enclosure?.url && (item.enclosure.type?.includes('image') || item.enclosure.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
                 imageUrl = item.enclosure.url;
@@ -145,11 +145,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   imageUrl = imgMatch[1];
                 }
               }
-              
+
+              // Source-specific image handling
+              if (!imageUrl) {
+                switch (source) {
+                  case 'CoinDesk':
+                    // CoinDesk often has images in the description
+                    if (item.description) {
+                      const cdImg = item.description.match(/src="([^"]*coindesk[^"]*)"/i);
+                      if (cdImg) imageUrl = cdImg[1];
+                    }
+                    break;
+                  case 'CoinTelegraph':
+                    // CoinTelegraph uses specific image patterns
+                    if (item.description) {
+                      const ctImg = item.description.match(/src="([^"]*cointelegraph[^"]*)"/i);
+                      if (ctImg) imageUrl = ctImg[1];
+                    }
+                    break;
+                  case 'CryptoBriefing':
+                    // CryptoBriefing specific handling
+                    if (item.description) {
+                      const cbImg = item.description.match(/src="([^"]*cryptobriefing[^"]*)"/i);
+                      if (cbImg) imageUrl = cbImg[1];
+                    }
+                    break;
+                  case 'BeInCrypto':
+                    // BeInCrypto specific handling
+                    if (item.description) {
+                      const bicImg = item.description.match(/src="([^"]*beincrypto[^"]*)"/i);
+                      if (bicImg) imageUrl = bicImg[1];
+                    }
+                    break;
+                }
+              }
+
               return {
-                title: item.title || 'No Title',
-                description: item.contentSnippet || item.summary || item.content?.replace(/<[^>]*>/g, '') || 'No description available',
-                url: item.link || '#',
+                title: item.title || 'No title',
+                description: item.contentSnippet || item.summary || 'No description available',
+                url: item.link || item.guid || '#',
                 source: { name: source },
                 publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
                 urlToImage: imageUrl
@@ -160,12 +194,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error(`Error fetching ${source}:`, error.message);
             return []; // Return empty array on error
           });
-        
+
         fetchPromises.push(fetchPromise);
       }
 
       const results = await Promise.all(fetchPromises);
-      
+
       // Flatten and combine all news articles
       for (const articles of results) {
         allNews.push(...articles);
@@ -279,10 +313,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const { Currency } = await import('./models/Currency');
         const { UserBalance } = await import('./models/UserBalance');
-        
+
         // Get USD currency only
         const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-        
+
         if (usdCurrency) {
           // Create $0.00 USD balance for new user
           const zeroBalance = new UserBalance({
@@ -290,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             currencyId: usdCurrency._id, 
             amount: 0
           });
-          
+
           await zeroBalance.save();
           console.log('Created $0.00 USD balance for new user');
         }
@@ -527,27 +561,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/balances', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
-      
+
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
-      
+
       // Get only USD currency
       const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-      
+
       if (!usdCurrency) {
         return res.json({
           success: true,
           balances: []
         });
       }
-      
+
       // Get only USD balance for the user
       const usdBalance = await UserBalance.findOne({ 
         userId, 
         currencyId: usdCurrency._id 
       });
-      
+
       const formattedBalances = usdBalance ? [{
         id: usdBalance._id,
         balance: usdBalance.amount,
@@ -578,25 +612,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
-      
+
       // Get USD currency
       const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-      
+
       if (usdCurrency) {
         // Remove all non-USD balances
         await UserBalance.deleteMany({ 
           currencyId: { $ne: usdCurrency._id } 
         });
-        
+
         // Reset all USD balances to $0.00
         await UserBalance.updateMany(
           { currencyId: usdCurrency._id }, 
           { $set: { amount: 0, updatedAt: new Date() } }
         );
       }
-      
+
       console.log('Reset all user balances to $0.00 USD only');
-      
+
       res.json({
         success: true,
         message: 'All user balances reset to $0.00 USD only'
@@ -614,14 +648,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/wallet/summary', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
-      
+
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
-      
+
       // Find USD currency first
       const usdCurrency = await Currency.findOne({ symbol: 'USD' });
-      
+
       if (!usdCurrency) {
         return res.json({
           success: true,
@@ -631,16 +665,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
       }
-      
+
       // Get only USD balance for the user
       const usdBalance = await UserBalance.findOne({ 
         userId, 
         currencyId: usdCurrency._id 
       });
-      
+
       // Default to 0 USD if no balance exists
       const totalUSDValue = usdBalance?.amount || 0;
-      
+
       res.json({
         success: true,
         data: {
@@ -663,3 +697,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+```
+The code has been modified to include source-specific image handling in the news feed parsing logic.
