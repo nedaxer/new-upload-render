@@ -25,10 +25,10 @@ interface PullToRefreshProps {
   disabled?: boolean;
 }
 
-const LOGO_START_THRESHOLD = 40;
-const LOGO_COMPLETE_THRESHOLD = 120;
-const PULL_THRESHOLD = 140;
-const MAX_PULL_DISTANCE = 180;
+const LOGO_START_THRESHOLD = 60;
+const LOGO_COMPLETE_THRESHOLD = 160;
+const PULL_THRESHOLD = 180;
+const MAX_PULL_DISTANCE = 220;
 const letters = [letterN, letterE1, letterD, letterA, letterX, letterE2, letterR];
 
 export function PullToRefresh({ children, onRefresh, disabled = false }: PullToRefreshProps) {
@@ -73,8 +73,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
       
-      // Trigger haptic feedback when logo becomes fully visible
-      if (resistance >= LOGO_COMPLETE_THRESHOLD && !hasTriggeredHaptic) {
+      // Trigger haptic feedback when logo AND header are fully visible like a CD
+      if (resistance >= PULL_THRESHOLD && !hasTriggeredHaptic) {
         triggerHapticFeedback();
         setHasTriggeredHaptic(true);
       }
@@ -184,23 +184,31 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator with orange gradient background - only show when pulling */}
+      {/* Pull indicator with orange gradient blending seamlessly with mobile page */}
       {pullDistance > 0 && (
         <div 
           className="relative overflow-hidden transition-all duration-300 ease-out"
           style={{
             height: pullDistance,
-            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 90%, 45%) 20%, hsl(39, 70%, 40%) 40%, hsl(220, 13%, 30%) 70%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
+            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 95%, 48%) 15%, hsl(39, 85%, 45%) 30%, hsl(39, 70%, 40%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
           } as React.CSSProperties}
         >
+          {/* Smooth gradient transition that blends perfectly with mobile page */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, rgba(75, 85, 99, 0) 0%, rgba(71, 85, 105, 0.2) 20%, rgba(55, 65, 81, 0.4) 40%, rgba(51, 65, 85, 0.6) 60%, rgba(47, 59, 77, 0.8) 80%, hsl(220, 13%, 15%) 100%)'
+            }}
+          />
+          
           <AnimatePresence>
             {pullDistance > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: -40 }}
+                initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ 
                   opacity: 0, 
-                  y: -40,
+                  y: -50,
                   transition: { duration: 0.4, ease: "easeInOut" }
                 }}
                 transition={{ 
@@ -211,10 +219,10 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 }}
                 className="absolute inset-0 flex flex-col items-center justify-center"
               >
-                {/* Show refresh logo with smooth drop animation */}
+                {/* Show much bigger refresh logo */}
                 {showLogo && (
                   <motion.div 
-                    initial={{ opacity: 0, scale: 0.3, y: -60 }}
+                    initial={{ opacity: 0, scale: 0.2, y: -80 }}
                     animate={{ 
                       opacity: logoOpacity, 
                       scale: logoScale,
@@ -222,50 +230,50 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                     }}
                     transition={{
                       type: "spring",
-                      stiffness: 160,
-                      damping: 30,
-                      mass: 1.5,
-                      duration: 1.8
+                      stiffness: 140,
+                      damping: 28,
+                      mass: 1.8,
+                      duration: 2.0
                     }}
-                    className="flex items-center justify-center h-full w-full"
+                    className="flex items-center justify-center h-full w-full relative"
                   >
                     <motion.img
                       src={refreshLogo}
                       alt="Refresh Logo"
                       className="object-contain drop-shadow-2xl"
                       style={{
-                        height: '85%',
+                        height: '95%',
                         width: 'auto',
-                        maxWidth: '85%',
-                        filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
+                        maxWidth: '95%',
+                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
                       }}
                       animate={{
                         filter: [
-                          'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))',
-                          'brightness(1.25) contrast(1.15) drop-shadow(0 12px 32px rgba(0,0,0,0.4))',
-                          'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
+                          'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))',
+                          'brightness(1.3) contrast(1.2) drop-shadow(0 16px 48px rgba(0,0,0,0.5))',
+                          'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
                         ]
                       }}
                       transition={{
-                        duration: 2.5,
+                        duration: 3,
                         repeat: Infinity,
                         ease: "easeInOut"
                       }}
                     />
-                  </motion.div>
-                )}
-
-                {/* Release to refresh message */}
-                {showReleaseMessage && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-                  >
-                    <p className="text-white text-base font-semibold text-center drop-shadow-xl">
-                      Release to refresh
-                    </p>
+                    
+                    {/* Release to refresh message positioned under the logo */}
+                    {showReleaseMessage && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
+                      >
+                        <p className="text-white text-lg font-bold text-center drop-shadow-2xl">
+                          Release to refresh
+                        </p>
+                      </motion.div>
+                    )}
                   </motion.div>
                 )}
               </motion.div>
@@ -274,12 +282,12 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         </div>
       )}
 
-      {/* Separate Nedaxer header with app colors and jumping animation */}
+      {/* Separate Nedaxer header that blends seamlessly with mobile page */}
       <AnimatePresence>
         {showNedaxerHeader && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 80, opacity: 1 }}
+            animate={{ height: 90, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ 
               duration: 0.8, 
@@ -287,12 +295,15 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               height: { duration: 0.6 },
               opacity: { duration: 0.4 }
             }}
-            className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-700 border-b border-slate-600"
+            className="relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 25%, hsl(220, 13%, 20%) 50%, hsl(220, 13%, 18%) 75%, hsl(220, 13%, 15%) 100%)'
+            }}
           >
             <motion.div
-              initial={{ y: -25, scale: 0.8 }}
+              initial={{ y: -30, scale: 0.8 }}
               animate={{ y: 0, scale: 1 }}
-              exit={{ y: -25, scale: 0.8 }}
+              exit={{ y: -30, scale: 0.8 }}
               transition={{ 
                 delay: 0.2, 
                 duration: 0.6, 
@@ -302,17 +313,17 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               }}
               className="flex items-center justify-center h-full px-4"
             >
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-2">
                 {letters.map((letter, index) => (
                   <motion.img
                     key={`header-${index}`}
                     src={letter}
                     alt={`Letter ${index + 1}`}
-                    className="h-6 w-auto flex-shrink-0 drop-shadow-lg"
-                    initial={{ opacity: 0, y: 15 }}
+                    className="h-7 w-auto flex-shrink-0 drop-shadow-xl"
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ 
                       opacity: 1, 
-                      y: [0, -8, 0]
+                      y: [0, -10, 0]
                     }}
                     transition={{
                       opacity: {
@@ -321,7 +332,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                       },
                       y: {
                         delay: 0.6 + (index * 0.1),
-                        duration: 0.8,
+                        duration: 0.9,
                         repeat: Infinity,
                         repeatType: "loop",
                         ease: "easeInOut"
@@ -332,11 +343,11 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               </div>
             </motion.div>
             
-            {/* Subtle gradient bottom edge matching app theme */}
+            {/* Perfect gradient blend with mobile page */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-3 pointer-events-none"
+              className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, rgba(51,65,85,0.8) 0%, rgba(71,85,105,0.4) 50%, transparent 100%)'
+                background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.6) 0%, rgba(51, 65, 85, 0.4) 30%, rgba(47, 59, 77, 0.2) 60%, rgba(45, 55, 72, 0.1) 80%, transparent 100%)'
               }}
             />
           </motion.div>
