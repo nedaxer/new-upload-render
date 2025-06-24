@@ -258,14 +258,14 @@ export default function MobileNews() {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = getSourceLogo(article.source?.name || 'Crypto News');
-                          target.className = "w-full h-full object-contain p-2 bg-white";
+                          target.className = "w-full h-full object-contain p-2 bg-white rounded-lg";
                         }}
                       />
                     ) : (
                       <img 
                         src={getSourceLogo(article.source?.name || 'Crypto News')}
                         alt={article.source?.name || 'News'}
-                        className="w-full h-full object-contain p-2 bg-white"
+                        className="w-full h-full object-contain p-2 bg-white rounded-lg"
                       />
                     )}
                   </div>
