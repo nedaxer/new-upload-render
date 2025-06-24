@@ -52,7 +52,19 @@ export default function MobileTrade() {
   const [location, navigate] = useLocation();
 
   // Chart state with persistent caching
-  const [currentSymbol, setCurrentSymbol] = useState('BTCUSDT');
+  const [currentSymbol, setCurrentSymbol] = useState(() => {
+    // Initialize from stored state or sessionStorage
+    const stored = localStorage.getItem('nedaxer_chart_state');
+    const sessionSymbol = sessionStorage.getItem('selectedSymbol');
+    if (sessionSymbol) return sessionSymbol;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return parsed.currentSymbol || 'BTCUSDT';
+      } catch (e) {}
+    }
+    return 'BTCUSDT';
+  });
   const [currentPrice, setCurrentPrice] = useState<string>('');
   const [currentTicker, setCurrentTicker] = useState<any>(null);
   const [showPairSelectorModal, setShowPairSelectorModal] = useState(false);
@@ -62,15 +74,16 @@ export default function MobileTrade() {
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
 
-  // Initialize selected pair from sessionStorage, user preferences, or defaults
+  // Initialize selected pair from persistent storage
   useEffect(() => {
     const loadInitialState = async () => {
       // Check sessionStorage first (for navigation from markets page)
       const symbolFromStorage = sessionStorage.getItem('selectedSymbol');
       const tabFromStorage = sessionStorage.getItem('selectedTab');
       
-      // Check cached chart data
-      const lastCachedSymbol = chartCache.getLastSymbol();
+      // Check persistent chart state
+      const chartState = JSON.parse(localStorage.getItem('nedaxer_chart_state') || '{}');
+      const persistentSymbol = chartState.currentSymbol;
       
       // Also check URL parameters as fallback
       const currentLocation = location.includes('?') ? location : window.location.search;
@@ -78,7 +91,7 @@ export default function MobileTrade() {
       const symbolFromUrl = urlParams.get('symbol');
       const tabFromUrl = urlParams.get('tab');
       
-      let symbolToUse = symbolFromStorage || symbolFromUrl || lastCachedSymbol;
+      let symbolToUse = symbolFromStorage || symbolFromUrl || persistentSymbol;
       let tabToUse = tabFromStorage || tabFromUrl;
       
       // If no symbol from navigation or cache, try to load from user preferences
@@ -120,6 +133,16 @@ export default function MobileTrade() {
           setCurrentSymbol(pair.symbol);
           setTradingViewSymbol(pair.tradingViewSymbol);
           
+          // Save to persistent storage immediately
+          const chartState = {
+            currentSymbol: pair.symbol,
+            tradingViewSymbol: pair.tradingViewSymbol,
+            timeframe: selectedTimeframe,
+            lastUpdated: Date.now(),
+            isChartMounted: false
+          };
+          localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+          
           // Update price for the new pair
           updatePrice(pair.symbol);
           
@@ -127,10 +150,22 @@ export default function MobileTrade() {
           if (tabToUse === 'Charts') {
             setSelectedTab('Charts');
             
-            // Load chart immediately if TradingView is ready, otherwise wait
-            if (isTradingViewReady) {
+            // Check if global chart exists and can be reused
+            const globalWidget = (window as any).nedaxerGlobalChart;
+            if (globalWidget && globalWidget.widget && globalWidget.isReady) {
+              console.log('Reusing existing global chart, updating symbol');
+              try {
+                globalWidget.widget.setSymbol(pair.tradingViewSymbol, () => {
+                  console.log('Chart symbol updated to:', pair.symbol);
+                  globalWidget.currentSymbol = pair.symbol;
+                });
+              } catch (error) {
+                console.log('Failed to update existing chart, will reload');
+                loadChart(pair.tradingViewSymbol, true);
+              }
+            } else if (isTradingViewReady) {
               console.log('TradingView ready, loading chart for:', pair.tradingViewSymbol);
-              loadChart(pair.tradingViewSymbol, true);
+              loadChart(pair.tradingViewSymbol, false);
             } else {
               console.log('TradingView not ready, will load chart when ready');
             }
@@ -153,22 +188,40 @@ export default function MobileTrade() {
     if (isTradingViewReady && selectedTab === 'Charts') {
       console.log('Chart update triggered for:', selectedPair.symbol, selectedPair.tradingViewSymbol);
       
-      const existingWidget = getGlobalChartWidget();
-      const chartState = getChartState();
+      const globalWidget = (window as any).nedaxerGlobalChart;
       
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        try {
-          console.log('Updating existing chart to:', selectedPair.tradingViewSymbol);
-          existingWidget.setSymbol(selectedPair.tradingViewSymbol, "15", () => {
-            console.log('Chart successfully updated to', selectedPair.symbol);
-            setChartState({ 
-              ...chartState, 
-              currentSymbol: selectedPair.symbol 
+      if (globalWidget && globalWidget.widget && globalWidget.isReady && globalWidget.iframe && globalWidget.iframe.contentWindow) {
+        // Check if symbol is different before updating
+        if (globalWidget.currentSymbol !== selectedPair.symbol) {
+          try {
+            console.log('Updating existing global chart to:', selectedPair.tradingViewSymbol);
+            globalWidget.widget.setSymbol(selectedPair.tradingViewSymbol, () => {
+              console.log('Chart successfully updated to', selectedPair.symbol);
+              globalWidget.currentSymbol = selectedPair.symbol;
+              
+              // Update persistent storage
+              const chartState = JSON.parse(localStorage.getItem('nedaxer_chart_state') || '{}');
+              chartState.currentSymbol = selectedPair.symbol;
+              chartState.tradingViewSymbol = selectedPair.tradingViewSymbol;
+              chartState.lastUpdated = Date.now();
+              localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
             });
-          });
-        } catch (error) {
-          console.log('Failed to update chart symbol, reloading chart:', error);
-          loadChart(selectedPair.tradingViewSymbol, true);
+          } catch (error) {
+            console.log('Failed to update chart symbol, reloading chart:', error);
+            loadChart(selectedPair.tradingViewSymbol, true);
+          }
+        } else {
+          console.log('Chart already showing correct symbol:', selectedPair.symbol);
+          
+          // Ensure chart is visible in current container
+          const chartContainer = document.getElementById('chart');
+          if (chartContainer && globalWidget.iframe) {
+            if (!chartContainer.contains(globalWidget.iframe)) {
+              chartContainer.appendChild(globalWidget.iframe);
+            }
+            globalWidget.iframe.style.display = 'block';
+            globalWidget.iframe.style.visibility = 'visible';
+          }
         }
       } else {
         console.log('Loading new chart for:', selectedPair.tradingViewSymbol);
@@ -413,12 +466,32 @@ export default function MobileTrade() {
         "crosshair_cursor"
       ],
       onChartReady: () => {
-        console.log('Chart ready and persistent');
-        setChartState({ 
-          isReady: true, 
-          currentSymbol: symbol, 
-          isVisible: true 
-        });
+        console.log('Chart ready and persistent for symbol:', symbol);
+        
+        // Initialize global chart state
+        if (!(window as any).nedaxerGlobalChart) {
+          (window as any).nedaxerGlobalChart = {};
+        }
+        
+        // Store widget globally
+        (window as any).nedaxerGlobalChart = {
+          widget,
+          iframe: widget.iframe || null,
+          isReady: true,
+          currentSymbol: symbol.replace('BINANCE:', '').replace('BYBIT:', '')
+        };
+        
+        // Update persistent storage
+        const chartState = {
+          currentSymbol: symbol.replace('BINANCE:', '').replace('BYBIT:', ''),
+          tradingViewSymbol: symbol,
+          timeframe: selectedTimeframe,
+          lastUpdated: Date.now(),
+          isChartMounted: true
+        };
+        localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+        
+        console.log('Global chart state initialized:', (window as any).nedaxerGlobalChart);
       }
     });
 
@@ -449,37 +522,41 @@ export default function MobileTrade() {
   };
 
   const handlePairSelectionModal = useCallback((pair: CryptoPair) => {
+    console.log('Pair selected from modal:', pair);
     setSelectedPair(pair);
     setCurrentSymbol(pair.symbol);
+    setShowPairSelectorModal(false);
+    
+    // Update persistent storage immediately
+    const chartState = {
+      currentSymbol: pair.symbol,
+      tradingViewSymbol: pair.tradingViewSymbol,
+      timeframe: selectedTimeframe,
+      lastUpdated: Date.now(),
+      isChartMounted: true
+    };
+    localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
     
     // Update chart symbol on persistent widget
-    if (isTradingViewReady) {
-      const existingWidget = getGlobalChartWidget();
-      const chartState = getChartState();
-      
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
-        try {
-          existingWidget.setSymbol(pair.tradingViewSymbol, "15", () => {
-            console.log('Symbol changed to', pair.symbol);
-            setChartState({ 
-              ...chartState, 
-              currentSymbol: pair.symbol 
-            });
-          });
-        } catch (error) {
-          console.log('Failed to change symbol on persistent chart');
-          setChartState({ 
-            ...chartState, 
-            currentSymbol: pair.symbol 
-          });
-        }
-      } else {
-        // Load chart if widget doesn't exist
-        loadChart(pair.tradingViewSymbol, false);
+    const globalWidget = (window as any).nedaxerGlobalChart;
+    if (globalWidget && globalWidget.widget && globalWidget.isReady) {
+      try {
+        console.log('Updating global chart to:', pair.tradingViewSymbol);
+        globalWidget.widget.setSymbol(pair.tradingViewSymbol, () => {
+          console.log('Chart symbol changed to', pair.symbol);
+          globalWidget.currentSymbol = pair.symbol;
+        });
+      } catch (error) {
+        console.log('Failed to change symbol on persistent chart, reloading');
+        loadChart(pair.tradingViewSymbol, true);
       }
+    } else if (isTradingViewReady) {
+      // Load chart if widget doesn't exist
+      loadChart(pair.tradingViewSymbol, false);
     }
+    
     updatePrice(pair.symbol);
-  }, [isTradingViewReady, loadChart, getGlobalChartWidget, getChartState, setChartState]);
+  }, [isTradingViewReady, loadChart, selectedTimeframe]);
 
   // Add preload hints and load TradingView script with maximum optimization
   useEffect(() => {
@@ -668,41 +745,45 @@ export default function MobileTrade() {
 
     if (tab === 'Charts') {
       // Always try to show existing chart first
-      const existingWidget = getGlobalChartWidget();
-      const chartState = getChartState();
+      const globalWidget = (window as any).nedaxerGlobalChart;
       
-      if (existingWidget && existingWidget.iframe && existingWidget.iframe.contentWindow) {
+      if (globalWidget && globalWidget.widget && globalWidget.isReady && globalWidget.iframe) {
         console.log('Chart widget exists globally, restoring to view - no reload needed');
         
         // Ensure chart is visible in the container
         const chartContainer = document.getElementById('chart');
         if (chartContainer) {
-          if (!chartContainer.querySelector('iframe') && existingWidget.iframe) {
+          if (!chartContainer.contains(globalWidget.iframe)) {
             // Move existing chart to container
-            chartContainer.appendChild(existingWidget.iframe);
+            chartContainer.appendChild(globalWidget.iframe);
           }
           
           // Make chart visible
-          if (existingWidget.iframe) {
-            existingWidget.iframe.style.display = 'block';
-            existingWidget.iframe.style.visibility = 'visible';
-          }
+          globalWidget.iframe.style.display = 'block';
+          globalWidget.iframe.style.visibility = 'visible';
         }
         
-        chartWidget.current = existingWidget;
-        setChartState({ ...chartState, isVisible: true });
+        chartWidget.current = globalWidget.widget;
+        console.log('Chart restored, current symbol:', globalWidget.currentSymbol);
       } else if (isTradingViewReady) {
         // Load chart only if TradingView is ready and no widget exists
+        const persistentSymbol = currentSymbol || 'BTCUSDT';
+        const tradingViewSymbol = `BINANCE:${persistentSymbol}`;
+        
+        console.log('Loading chart for tab change:', tradingViewSymbol);
         setTimeout(() => {
-          loadChart(`BYBIT:${currentSymbol}`, false);
+          loadChart(tradingViewSymbol, false);
         }, 100);
       }
     } else {
-      // When leaving Charts tab, keep chart in background but hidden
-      const chartState = getChartState();
-      setChartState({ ...chartState, isVisible: false });
+      // When leaving Charts tab, keep chart in background
+      const globalWidget = (window as any).nedaxerGlobalChart;
+      if (globalWidget && globalWidget.iframe) {
+        globalWidget.iframe.style.visibility = 'hidden';
+      }
+      console.log('Charts tab hidden, chart kept in background');
     }
-  }, [currentSymbol, loadChart, getGlobalChartWidget, getChartState, setChartState, isTradingViewReady]);
+  }, [currentSymbol, loadChart, isTradingViewReady]);
 
   const handleCryptoSymbolChange = (cryptoId: string) => {
     setSelectedCrypto(cryptoId);

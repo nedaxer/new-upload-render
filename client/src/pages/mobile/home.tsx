@@ -722,11 +722,26 @@ export default function MobileHome() {
               <div
                 key={`${market.pair}-${index}`}
                 onClick={() => {
-                  // Store the trading pair symbol for trade page (using the full pair symbol like BTCUSDT)
+                  // Store the trading pair symbol for trade page
                   const tradingSymbol = market.pair; // This should be like BTCUSDT, ETHUSDT, etc.
+                  const tradingViewSymbol = `BINANCE:${tradingSymbol}`;
+                  
+                  // Update persistent chart state
+                  const chartState = {
+                    currentSymbol: tradingSymbol,
+                    tradingViewSymbol: tradingViewSymbol,
+                    timeframe: '15m',
+                    lastUpdated: Date.now(),
+                    isChartMounted: false
+                  };
+                  localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+                  
+                  // Store in sessionStorage for immediate navigation
                   sessionStorage.setItem('selectedSymbol', tradingSymbol);
                   sessionStorage.setItem('selectedTab', 'Charts');
-                  console.log('Home page: Navigating to trade with symbol:', tradingSymbol);
+                  sessionStorage.setItem('tradingViewSymbol', tradingViewSymbol);
+                  
+                  console.log('Home page: Saved chart state and navigating to trade with symbol:', tradingSymbol);
                   
                   // Navigate to trade page
                   navigate('/mobile/trade');
