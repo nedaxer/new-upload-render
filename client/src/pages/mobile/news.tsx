@@ -119,17 +119,17 @@ export default function MobileNews() {
 
   return (
     <MobileLayout>
-      <div className="bg-gray-900 px-4 py-4">
+      <div className="bg-white px-4 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h1 className="text-white text-2xl font-bold">{t('news')}</h1>
+            <h1 className="text-black text-2xl font-bold">{t('news')}</h1>
             {isConnected && (
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             )}
           </div>
           <div className="flex items-center space-x-2">
             {lastUpdate && (
-              <span className="text-gray-400 text-xs">
+              <span className="text-gray-500 text-xs">
                 {lastUpdate.toLocaleTimeString()}
               </span>
             )}
@@ -138,24 +138,29 @@ export default function MobileNews() {
       </div>
 
       {isLoading && !newsData && (
-        <div className="px-4 space-y-4">
+        <div className="px-4 py-4 space-y-4 bg-gray-50 min-h-screen">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse">
-              <div className="h-4 bg-gray-700 rounded mb-2"></div>
-              <div className="h-3 bg-gray-700 rounded mb-2 w-3/4"></div>
-              <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+            <div key={i} className="bg-white rounded-lg p-4 animate-pulse border border-gray-200">
+              <div className="flex items-start space-x-4">
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-300 rounded mb-2 w-3/4"></div>
+                  <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                </div>
+                <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
+              </div>
             </div>
           ))}
         </div>
       )}
 
       {error && (
-        <div className="px-4 py-8">
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 text-center">
-            <div className="text-red-400 text-sm mb-2">
+        <div className="px-4 py-8 bg-gray-50 min-h-screen">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <div className="text-red-600 text-sm mb-2">
               Unable to fetch crypto news
             </div>
-            <div className="text-red-400 text-sm">
+            <div className="text-red-500 text-sm">
               Please check your internet connection
             </div>
           </div>
@@ -163,7 +168,7 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length > 0 && (
-        <div className="px-4 space-y-4">
+        <div className="px-4 py-4 space-y-3 bg-gray-50 min-h-screen">
 
           {displayNewsData.map((article, index) => (
             <a
@@ -171,41 +176,44 @@ export default function MobileNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 active:scale-[0.98]"
+              className="block bg-white rounded-lg p-4 hover:bg-gray-50 transition-colors border border-gray-200"
             >
-              {article.urlToImage && (
-                <div className="w-full h-32 overflow-hidden">
-                  <img
-                    src={article.urlToImage}
-                    alt={article.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-white font-medium text-sm leading-tight pr-3 flex-1 line-clamp-2">
+              <div className="flex items-start space-x-4">
+                {/* Content Section */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-black font-medium text-base mb-2 line-clamp-2 leading-tight">
                     {article.title}
-                  </h3>
-                  <ExternalLink className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                  </h2>
+                  
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <span>{article.source?.name || 'Crypto News'}</span>
+                    <span>•</span>
+                    <span>{formatDate(article.publishedAt)}</span>
+                  </div>
                 </div>
                 
-                <p className="text-gray-300 text-xs mb-3 leading-relaxed line-clamp-2">
-                  {article.description}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-blue-400 text-xs font-medium">
-                    {article.source?.name || 'Crypto News'}
-                  </span>
-                  <div className="flex items-center text-gray-500 text-xs">
-                    <Clock className="w-3 h-3 mr-1" />
-                    <span>{formatDate(article.publishedAt)}</span>
+                {/* Image Section */}
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden">
+                    {article.urlToImage ? (
+                      <img 
+                        src={article.urlToImage} 
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`fallback-icon w-full h-full flex items-center justify-center text-gray-400 text-xs ${article.urlToImage ? 'hidden' : 'flex'}`}>
+                      <div className="text-center">
+                        <div className="text-2xl mb-1">📰</div>
+                        <div>News</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
