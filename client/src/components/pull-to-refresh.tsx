@@ -64,28 +64,25 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     if (deltaY > 0) {
       e.preventDefault();
       
-      // Apply resistance for smooth pull
+      // Apply smooth resistance curve for natural feel
       let resistance;
       if (deltaY <= LOGO_START_THRESHOLD) {
-        resistance = deltaY * 0.8;
+        resistance = deltaY; // Direct 1:1 movement at start for smooth feel
+      } else if (deltaY <= LOGO_COMPLETE_THRESHOLD) {
+        resistance = LOGO_START_THRESHOLD + (deltaY - LOGO_START_THRESHOLD) * 0.85;
       } else {
-        resistance = LOGO_START_THRESHOLD + (deltaY - LOGO_START_THRESHOLD) * 0.6;
+        resistance = LOGO_COMPLETE_THRESHOLD + (deltaY - LOGO_COMPLETE_THRESHOLD) * 0.5;
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
       
-      // Trigger haptic feedback when logo AND header are fully visible like a CD
+      // Trigger haptic feedback when logo AND header are fully visible
       if (resistance >= PULL_THRESHOLD && !hasTriggeredHaptic) {
         triggerHapticFeedback();
         setHasTriggeredHaptic(true);
       }
       
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      
-      rafRef.current = requestAnimationFrame(() => {
-        setPullDistance(resistance);
-      });
+      // Direct update for smooth response
+      setPullDistance(resistance);
     }
   };
 
@@ -123,8 +120,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       // Smoothly reset pull distance if not refreshing
       const resetAnimation = () => {
         setPullDistance(prev => {
-          const newDistance = prev * 0.85;
-          if (newDistance > 1) {
+          const newDistance = prev * 0.9; // Slightly slower decay for smoother animation
+          if (newDistance > 2) {
             requestAnimationFrame(resetAnimation);
             return newDistance;
           }
@@ -187,10 +184,11 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       {/* Pull indicator with orange gradient blending seamlessly with mobile page */}
       {pullDistance > 0 && (
         <div 
-          className="relative overflow-hidden transition-all duration-300 ease-out"
+          className="relative overflow-hidden"
           style={{
             height: pullDistance,
-            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 95%, 48%) 15%, hsl(39, 85%, 45%) 30%, hsl(39, 70%, 40%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
+            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 95%, 48%) 15%, hsl(39, 85%, 45%) 30%, hsl(39, 70%, 40%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)',
+            transition: 'none'
           } as React.CSSProperties}
         >
           {/* Smooth gradient transition that blends perfectly with mobile page */}
