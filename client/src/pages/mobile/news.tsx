@@ -1,10 +1,9 @@
 import { MobileLayout } from '@/components/mobile-layout';
 import { useState, useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
-import { PullToRefreshWrapper } from '@/components/PullToRefreshWrapper';
 
 interface NewsArticle {
   title: string;
@@ -24,9 +23,8 @@ export default function MobileNews() {
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const queryClient = useQueryClient();
 
-  const { data: newsData, isLoading, error, refetch } = useQuery<NewsArticle[]>({
+  const { data: newsData, isLoading, error } = useQuery<NewsArticle[]>({
     queryKey: ['/api/crypto/news'],
     queryFn: async () => {
       const response = await fetch('/api/crypto/news');
@@ -41,13 +39,6 @@ export default function MobileNews() {
     staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
     gcTime: 15 * 60 * 1000 // Keep in cache for 15 minutes
   });
-
-  // Pull to refresh functionality
-  const handleRefresh = async () => {
-    console.log('Refreshing news...');
-    await refetch();
-    setLastUpdate(new Date());
-  };
 
   // WebSocket connection for real-time news updates
   useEffect(() => {
@@ -129,24 +120,23 @@ export default function MobileNews() {
 
   return (
     <MobileLayout>
-      <PullToRefreshWrapper onRefresh={handleRefresh} disabled={isLoading}>
-        <div className="bg-white px-4 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-black text-2xl font-bold">{t('news')}</h1>
-              {isConnected && (
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              {lastUpdate && (
-                <span className="text-gray-500 text-xs">
-                  {lastUpdate.toLocaleTimeString()}
-                </span>
-              )}
-            </div>
+      <div className="bg-white px-4 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <h1 className="text-black text-2xl font-bold">{t('news')}</h1>
+            {isConnected && (
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            {lastUpdate && (
+              <span className="text-gray-500 text-xs">
+                {lastUpdate.toLocaleTimeString()}
+              </span>
+            )}
           </div>
         </div>
+      </div>
 
       {isLoading && !newsData && (
         <div className="px-4 py-4 space-y-4 bg-gray-50 min-h-screen">
@@ -262,7 +252,6 @@ export default function MobileNews() {
           </Button>
         </div>
       )}
-      </PullToRefreshWrapper>
     </MobileLayout>
   );
 }
