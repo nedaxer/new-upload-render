@@ -183,22 +183,22 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator with black background and gradient transition */}
+      {/* Pull indicator with orange gradient background blending with app colors */}
       <div 
         className="relative overflow-hidden transition-all duration-500 ease-out"
         style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 160 : 0) : 0,
-          background: 'linear-gradient(180deg, #000000 0%, #000000 70%, #1f2937 85%, #374151 100%)'
+          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 200 : 0) : 0,
+          background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 90%, 45%) 20%, hsl(39, 70%, 40%) 40%, hsl(220, 13%, 30%) 70%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
         } as React.CSSProperties}
       >
         <AnimatePresence>
           {(pullDistance > 0 || isRefreshing) && (
             <motion.div
-              initial={{ opacity: 0, y: -30 }}
+              initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ 
                 opacity: 0, 
-                y: -30,
+                y: -40,
                 transition: { duration: 0.8, ease: "easeInOut" }
               }}
               transition={{ 
@@ -209,56 +209,45 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               }}
               className="absolute inset-0 flex flex-col items-center justify-center"
             >
-              {/* Show refresh logo with CD-like rotation and drop animation */}
+              {/* Show refresh logo with smooth drop animation (no rotation) */}
               {showLogo && !isRefreshing && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.2, y: -50, rotateY: -180 }}
+                  initial={{ opacity: 0, scale: 0.3, y: -60 }}
                   animate={{ 
                     opacity: logoOpacity, 
                     scale: logoScale,
-                    y: 0,
-                    rotateY: logoComplete ? 0 : -90
+                    y: 0
                   }}
                   transition={{
                     type: "spring",
-                    stiffness: 180,
-                    damping: 35,
-                    mass: 1.2,
-                    duration: 1.5
+                    stiffness: 160,
+                    damping: 30,
+                    mass: 1.5,
+                    duration: 1.8
                   }}
                   className="flex items-center justify-center h-full w-full"
-                  style={{ perspective: '1000px' }}
                 >
                   <motion.img
                     src={refreshLogo}
                     alt="Refresh Logo"
-                    className="object-contain drop-shadow-xl"
+                    className="object-contain drop-shadow-2xl"
                     style={{
-                      height: '70%',
+                      height: '85%',
                       width: 'auto',
-                      maxWidth: '70%',
-                      filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))',
-                      transformStyle: 'preserve-3d'
+                      maxWidth: '85%',
+                      filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
                     }}
                     animate={{
                       filter: [
-                        'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))',
-                        'brightness(1.3) contrast(1.2) drop-shadow(0 6px 16px rgba(255,255,255,0.15))',
-                        'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))'
-                      ],
-                      rotateZ: logoComplete ? [0, 5, -5, 0] : 0
+                        'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))',
+                        'brightness(1.25) contrast(1.15) drop-shadow(0 12px 32px rgba(0,0,0,0.4))',
+                        'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
+                      ]
                     }}
                     transition={{
-                      filter: {
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      },
-                      rotateZ: {
-                        duration: 0.8,
-                        repeat: logoComplete ? Infinity : 0,
-                        ease: "easeInOut"
-                      }
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
                     }}
                   />
                 </motion.div>
@@ -267,63 +256,35 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               {/* Release to refresh message */}
               {showReleaseMessage && !isRefreshing && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="absolute bottom-6 left-1/2 transform -translate-x-1/2"
+                  transition={{ delay: 0.4, duration: 0.8 }}
+                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
                 >
-                  <p className="text-white text-sm font-medium text-center drop-shadow-lg">
+                  <p className="text-white text-base font-semibold text-center drop-shadow-xl">
                     Release to refresh
                   </p>
-                </motion.div>
-              )}
-
-              {/* Refreshing state: Simple loading indicator without jumping letters */}
-              {isRefreshing && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="flex flex-col items-center justify-center h-full w-full"
-                >
-                  <motion.div
-                    className="w-12 h-12 border-4 border-white border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear"
-                    }}
-                  />
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-white text-sm font-medium text-center drop-shadow-lg mt-4"
-                  >
-                    Refreshing...
-                  </motion.p>
                 </motion.div>
               )}
             </motion.div>
           )}
         </AnimatePresence>
         
-        {/* Smooth gradient transition to match app color */}
+        {/* Smooth gradient transition blending orange with app colors */}
         <div 
-          className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
           style={{
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(31,41,55,0.6) 30%, rgba(55,65,81,0.4) 60%, rgba(75,85,99,0.2) 80%, transparent 100%)'
+            background: 'linear-gradient(180deg, rgba(251, 146, 60, 0.4) 0%, rgba(156, 163, 175, 0.3) 25%, rgba(75, 85, 99, 0.2) 50%, rgba(55, 65, 81, 0.1) 75%, transparent 100%)'
           }}
         />
       </div>
 
-      {/* Separate Nedaxer header with app-matching colors */}
+      {/* Separate Nedaxer header with app colors and jumping animation */}
       <AnimatePresence>
         {showNedaxerHeader && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 60, opacity: 1 }}
+            animate={{ height: 80, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ 
               duration: 0.8, 
@@ -334,9 +295,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-700 border-b border-slate-600"
           >
             <motion.div
-              initial={{ y: -20, scale: 0.8 }}
+              initial={{ y: -25, scale: 0.8 }}
               animate={{ y: 0, scale: 1 }}
-              exit={{ y: -20, scale: 0.8 }}
+              exit={{ y: -25, scale: 0.8 }}
               transition={{ 
                 delay: 0.2, 
                 duration: 0.6, 
@@ -346,20 +307,30 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               }}
               className="flex items-center justify-center h-full px-4"
             >
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1.5">
                 {letters.map((letter, index) => (
                   <motion.img
                     key={`header-${index}`}
                     src={letter}
                     alt={`Letter ${index + 1}`}
-                    className="h-4 w-auto flex-shrink-0 drop-shadow-md"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    className="h-6 w-auto flex-shrink-0 drop-shadow-lg"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: [0, -8, 0]
+                    }}
                     transition={{
-                      delay: 0.4 + (index * 0.08),
-                      duration: 0.4,
-                      type: "spring",
-                      stiffness: 300
+                      opacity: {
+                        delay: 0.4 + (index * 0.1),
+                        duration: 0.5
+                      },
+                      y: {
+                        delay: 0.6 + (index * 0.1),
+                        duration: 0.8,
+                        repeat: Infinity,
+                        repeatType: "loop",
+                        ease: "easeInOut"
+                      }
                     }}
                   />
                 ))}
@@ -368,9 +339,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             
             {/* Subtle gradient bottom edge matching app theme */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
+              className="absolute bottom-0 left-0 right-0 h-3 pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, rgba(51,65,85,0.6) 0%, rgba(71,85,105,0.3) 50%, transparent 100%)'
+                background: 'linear-gradient(180deg, rgba(51,65,85,0.8) 0%, rgba(71,85,105,0.4) 50%, transparent 100%)'
               }}
             />
           </motion.div>
