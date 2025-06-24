@@ -219,54 +219,28 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 }}
                 className="absolute inset-0 flex flex-col items-center justify-center"
               >
-                {/* Show logo scrolling down smoothly like being pulled */}
+                {/* Show logo scrolling down naturally with pull gesture */}
                 {showLogo && (
-                  <motion.div 
-                    className="flex items-center justify-center h-full w-full relative"
+                  <div 
+                    className="flex items-center justify-center w-full relative"
                     style={{
-                      transform: `translateY(${Math.max(-100 + (pullDistance / MAX_PULL_DISTANCE) * 100, -50)}px)`
+                      height: '100%',
+                      transform: `translateY(${Math.max(-pullDistance * 0.8, -pullDistance)}px)`
                     }}
                   >
-                    <motion.img
+                    <img
                       src={refreshLogo}
                       alt="Refresh Logo"
                       className="object-contain drop-shadow-2xl"
                       style={{
-                        height: '95%',
+                        height: 'calc(100% - 20px)',
                         width: 'auto',
-                        maxWidth: '95%',
+                        maxWidth: 'calc(100% - 20px)',
                         filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))',
-                        opacity: logoOpacity,
-                        transform: `scale(${logoScale})`
-                      }}
-                      animate={{
-                        filter: [
-                          'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))',
-                          'brightness(1.3) contrast(1.2) drop-shadow(0 16px 48px rgba(0,0,0,0.5))',
-                          'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
-                        ]
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
+                        opacity: logoOpacity
                       }}
                     />
-                    
-                    {/* Release to refresh message positioned under the logo */}
-                    {showReleaseMessage && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.8 }}
-                        className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
-                      >
-                        <p className="text-white text-lg font-bold text-center drop-shadow-2xl">
-                          Release to refresh
-                        </p>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                  </div>
                 )}
               </motion.div>
             )}
@@ -334,6 +308,20 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 ))}
               </div>
             </motion.div>
+            
+            {/* Release to refresh message positioned under the header */}
+            {showReleaseMessage && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+              >
+                <p className="text-white text-sm font-semibold text-center drop-shadow-xl">
+                  Release to refresh
+                </p>
+              </motion.div>
+            )}
             
             {/* Compact gradient blend with mobile page */}
             <div 
