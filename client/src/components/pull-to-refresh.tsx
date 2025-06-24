@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './pull-to-refresh-styles.css';
 
+// Add haptic feedback utility
+const triggerHapticFeedback = () => {
+  if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(50); // Light vibration for 50ms
+  }
+};
+
 // Import the assets
 import refreshLogo from '@assets/Refresh  app logo_1750782062607.png';
 import letterN from '@assets/20250618_001640_1750782086856.png';
@@ -19,9 +26,9 @@ interface PullToRefreshProps {
 }
 
 const LOGO_START_THRESHOLD = 40;
-const LOGO_COMPLETE_THRESHOLD = 140;
-const PULL_THRESHOLD = 160;
-const MAX_PULL_DISTANCE = 200;
+const LOGO_COMPLETE_THRESHOLD = 120;
+const PULL_THRESHOLD = 140;
+const MAX_PULL_DISTANCE = 180;
 const letters = [letterN, letterE1, letterD, letterA, letterX, letterE2, letterR];
 
 export function PullToRefresh({ children, onRefresh, disabled = false }: PullToRefreshProps) {
@@ -29,6 +36,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [startY, setStartY] = useState(0);
+  const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>();
 
@@ -63,6 +71,12 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
       
+      // Trigger haptic feedback when logo becomes fully visible
+      if (resistance >= LOGO_COMPLETE_THRESHOLD && !hasTriggeredHaptic) {
+        triggerHapticFeedback();
+        setHasTriggeredHaptic(true);
+      }
+      
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
@@ -77,14 +91,15 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     if (disabled || isRefreshing || !isPulling) return;
 
     setIsPulling(false);
+    setHasTriggeredHaptic(false);
 
     // Only trigger refresh if pulled all the way to the threshold
     if (pullDistance >= PULL_THRESHOLD) {
       setIsRefreshing(true);
       try {
         await onRefresh();
-        // Keep refreshing animation for 5 seconds
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        // Keep refreshing animation for 2 seconds as requested
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         console.error('Refresh failed:', error);
       } finally {
@@ -95,7 +110,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     // Smoothly reset pull distance
     const resetAnimation = () => {
       setPullDistance(prev => {
-        const newDistance = prev * 0.8;
+        const newDistance = prev * 0.85;
         if (newDistance > 1) {
           requestAnimationFrame(resetAnimation);
           return newDistance;
@@ -122,7 +137,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [isPulling, startY, pullDistance, isRefreshing, disabled]);
+  }, [isPulling, startY, pullDistance, isRefreshing, disabled, hasTriggeredHaptic]);
 
   const showLogo = pullDistance >= LOGO_START_THRESHOLD;
   const logoComplete = pullDistance >= LOGO_COMPLETE_THRESHOLD;
@@ -154,75 +169,118 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator - pushes content down to simulate scrolling */}
+      {/* Pull indicator with dark background and brand color edges */}
       <div 
-        className="relative overflow-hidden transition-all duration-300 ease-out bg-gray-900"
+        className="relative overflow-hidden transition-all duration-300 ease-out"
         style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 200 : 0) : 0,
-          '--animation-delay': '0s'
+          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 160 : 0) : 0,
+          background: `linear-gradient(180deg, 
+            hsl(39, 100%, 50%) 0%, 
+            hsl(39, 80%, 40%) 10%, 
+            rgb(17, 24, 39) 25%, 
+            rgb(17, 24, 39) 75%, 
+            hsl(39, 80%, 40%) 90%, 
+            hsl(39, 100%, 50%) 100%)`
         } as React.CSSProperties}
       >
         <AnimatePresence>
           {(pullDistance > 0 || isRefreshing) && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 200, 
+                damping: 20,
+                duration: 0.6
+              }}
+              className="absolute inset-0 flex flex-col items-center justify-center"
             >
               {/* No initial letters - removed as requested */}
 
-              {/* Show refresh logo */}
+              {/* Show refresh logo with smooth slide and scale animation */}
               {showLogo && !isRefreshing && (
-                <div 
-                  className="flex items-center justify-center h-full w-full transition-all duration-300 ease-out"
-                  style={{
-                    opacity: logoOpacity,
-                    transform: `scale(${logoScale})`
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                  animate={{ 
+                    opacity: logoOpacity, 
+                    scale: logoScale,
+                    y: 0
                   }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                    mass: 0.8
+                  }}
+                  className="flex items-center justify-center h-full w-full"
                 >
                   <img
                     src={refreshLogo}
                     alt="Refresh Logo"
-                    className="object-contain"
+                    className="object-contain drop-shadow-lg"
                     style={{
-                      height: '90%',
+                      height: '80%',
                       width: 'auto',
-                      maxWidth: '90%'
+                      maxWidth: '80%',
+                      filter: 'brightness(1.1) contrast(1.1)'
                     }}
                   />
-                </div>
+                </motion.div>
               )}
 
               {/* Release to refresh message */}
               {showReleaseMessage && !isRefreshing && (
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-                  <p className="text-orange-400 text-sm font-medium text-center">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute bottom-6 left-1/2 transform -translate-x-1/2"
+                >
+                  <p className="text-white text-sm font-medium text-center drop-shadow-md">
                     Release to refresh
                   </p>
-                </div>
+                </motion.div>
               )}
 
-              {/* Refreshing state: Show NEDAXER with jumping animation */}
+              {/* Refreshing state: Show NEDAXER with enhanced jumping animation */}
               {isRefreshing && (
-                <div className="flex flex-col items-center justify-center h-full w-full">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center h-full w-full"
+                >
                   <div className="flex items-center justify-center space-x-1 px-4 mb-4">
                     {letters.map((letter, index) => (
-                      <img
+                      <motion.img
                         key={index}
                         src={letter}
                         alt={`Letter ${index + 1}`}
-                        className="h-4 w-auto flex-shrink-0"
-                        style={{
-                          animation: `bounce 0.8s ease-in-out infinite ${index * 0.15}s`
+                        className="h-5 w-auto flex-shrink-0 drop-shadow-md"
+                        initial={{ y: 0 }}
+                        animate={{ 
+                          y: [0, -12, 0],
+                          scale: [1, 1.1, 1]
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          delay: index * 0.1,
+                          repeat: Infinity,
+                          repeatType: "loop",
+                          ease: "easeInOut"
                         }}
                       />
                     ))}
                   </div>
-                  <p className="text-orange-400 text-sm font-medium text-center">
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-white text-sm font-medium text-center drop-shadow-md"
+                  >
                     Refreshing...
-                  </p>
-                </div>
+                  </motion.p>
+                </motion.div>
               )}
             </motion.div>
           )}
