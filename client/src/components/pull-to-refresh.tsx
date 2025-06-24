@@ -163,25 +163,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               exit={{ opacity: 0 }}
               className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900"
             >
-              {/* Show NEDAXER letters with jumping animation when pulling or refreshing */}
-              {(showLetters && letterOpacity > 0 && !isRefreshing) && (
-                <div 
-                  className="flex items-center justify-center space-x-1 px-4 w-full"
-                  style={{ opacity: letterOpacity }}
-                >
-                  {letters.map((letter, index) => (
-                    <img
-                      key={index}
-                      src={letter}
-                      alt={`Letter ${index + 1}`}
-                      className="h-14 w-auto flex-shrink-0"
-                      style={{
-                        animation: `bounce 0.6s ease-in-out infinite ${index * 0.1}s`
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
+              {/* No initial letters - removed as requested */}
 
               {/* Show refresh logo */}
               {showLogo && !isRefreshing && (
