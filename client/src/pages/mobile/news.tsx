@@ -4,8 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
-import { NedaxerSpinner } from '@/components/NedaxerSpinner';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshWrapper } from '@/components/PullToRefreshWrapper';
 
 interface NewsArticle {
   title: string;
@@ -45,22 +44,10 @@ export default function MobileNews() {
 
   // Pull to refresh functionality
   const handleRefresh = async () => {
+    console.log('Refreshing news...');
     await refetch();
     setLastUpdate(new Date());
   };
-
-  const { 
-    containerRef, 
-    isRefreshing, 
-    isPulling,
-    pullProgress,
-    shouldShowSpinner,
-    shouldShowPullIndicator 
-  } = usePullToRefresh({
-    onRefresh: handleRefresh,
-    threshold: 100,
-    disabled: isLoading
-  });
 
   // WebSocket connection for real-time news updates
   useEffect(() => {
@@ -142,25 +129,7 @@ export default function MobileNews() {
 
   return (
     <MobileLayout>
-      {/* Nedaxer Spinner */}
-      <NedaxerSpinner 
-        isVisible={isRefreshing}
-        isPulling={shouldShowPullIndicator}
-        pullProgress={pullProgress}
-        onComplete={() => {
-          // Additional cleanup if needed
-        }}
-      />
-      
-      <div 
-        ref={containerRef}
-        className="h-full overflow-y-auto"
-        style={{ 
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          touchAction: 'pan-y' // Allow vertical panning
-        }}
-      >
+      <PullToRefreshWrapper onRefresh={handleRefresh} disabled={isLoading}>
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -293,7 +262,7 @@ export default function MobileNews() {
           </Button>
         </div>
       )}
-      </div>
+      </PullToRefreshWrapper>
     </MobileLayout>
   );
 }

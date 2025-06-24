@@ -8,6 +8,7 @@ import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { PullToRefreshWrapper } from '@/components/PullToRefreshWrapper';
 import { 
   Search, 
   Bell, 
@@ -145,6 +146,16 @@ export default function MobileHome() {
     queryFn: () => apiRequest('/api/market-data/conversion-rates'),
     refetchInterval: 300000, // Refetch every 5 minutes
   });
+
+  // Pull to refresh functionality
+  const handleRefresh = async () => {
+    console.log('Refreshing home data...');
+    // Trigger refetch of all data
+    queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/crypto/realtime-prices'] });
+  };
 
   const conversionRates = conversionData?.data || {
     'USD': 1,
@@ -542,6 +553,7 @@ export default function MobileHome() {
 
   return (
     <MobileLayout>
+      <PullToRefreshWrapper onRefresh={handleRefresh}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900">
         <div className="flex items-center space-x-3">
@@ -793,6 +805,7 @@ export default function MobileHome() {
         onClose={() => setComingSoonOpen(false)}
         feature={comingSoonFeature}
       />
+      </PullToRefreshWrapper>
     </MobileLayout>
   );
 }

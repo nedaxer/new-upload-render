@@ -2,6 +2,7 @@ import { MobileLayout } from '@/components/mobile-layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PullToRefreshWrapper } from '@/components/PullToRefreshWrapper';
 import { 
   TrendingUp,
   TrendingDown,
@@ -943,6 +944,7 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
+      <PullToRefreshWrapper onRefresh={handleRefresh} disabled={isLoading}>
       {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-gray-900 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
@@ -1596,6 +1598,7 @@ export default function MobileTrade() {
           </div>
         </div>
       )}
+      </PullToRefreshWrapper>
     </MobileLayout>
   );
 }

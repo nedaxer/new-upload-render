@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PullToRefreshWrapper } from '@/components/PullToRefreshWrapper';
 import { 
   Search, 
   Star,
@@ -105,6 +106,12 @@ export default function MobileMarkets() {
     
     setFavoriteCoins(newFavorites);
     localStorage.setItem('favoriteCoins', JSON.stringify(newFavorites));
+  };
+
+  // Pull to refresh functionality
+  const handleRefresh = async () => {
+    console.log('Refreshing markets data...');
+    await refetch();
   };
 
   // Fetch live market data from CoinGecko API (10-second auto-refresh)
@@ -233,6 +240,7 @@ export default function MobileMarkets() {
 
   return (
     <MobileLayout>
+      <PullToRefreshWrapper onRefresh={handleRefresh} disabled={isLoading}>
       {/* Search Bar */}
       <div className="p-4 bg-gray-900">
         <div className="relative">
@@ -336,6 +344,7 @@ export default function MobileMarkets() {
           ))
         )}
       </div>
+      </PullToRefreshWrapper>
     </MobileLayout>
   );
 }
