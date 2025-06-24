@@ -199,7 +199,7 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length > 0 && (
-        <div className="px-4 py-4 space-y-3 bg-gray-50 min-h-screen">
+        <div className="px-4 py-4 space-y-3 bg-gray-900 min-h-screen">
 
           {displayNewsData.map((article, index) => (
             <a
@@ -207,16 +207,16 @@ export default function MobileNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-white rounded-lg p-4 hover:bg-gray-50 transition-colors border border-gray-200"
+              className="block bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors border border-gray-700"
             >
               <div className="flex items-start space-x-4">
                 {/* Content Section */}
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-black font-medium text-base mb-2 line-clamp-2 leading-tight">
+                  <h2 className="text-white font-medium text-base mb-2 line-clamp-2 leading-tight">
                     {article.title}
                   </h2>
                   
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2 text-sm text-gray-400">
                     <span>{article.source?.name || 'Crypto News'}</span>
                     <span>•</span>
                     <span>{formatDate(article.publishedAt)}</span>
@@ -225,7 +225,7 @@ export default function MobileNews() {
                 
                 {/* Media Section */}
                 <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden relative">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg overflow-hidden relative">
                     {article.mediaType === 'video' && article.videoUrl ? (
                       <div className="relative w-full h-full">
                         <video 
@@ -258,14 +258,14 @@ export default function MobileNews() {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = getSourceLogo(article.source?.name || 'Crypto News');
-                          target.className = "w-full h-full object-contain p-2 bg-white rounded-lg";
+                          target.className = "w-full h-full object-contain p-2 bg-gray-800 rounded-lg";
                         }}
                       />
                     ) : (
                       <img 
                         src={getSourceLogo(article.source?.name || 'Crypto News')}
                         alt={article.source?.name || 'News'}
-                        className="w-full h-full object-contain p-2 bg-white rounded-lg"
+                        className="w-full h-full object-contain p-2 bg-gray-800 rounded-lg"
                       />
                     )}
                   </div>
@@ -279,8 +279,8 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length === 0 && (
-        <div className="px-4 py-12 text-center">
-          <div className="text-gray-400 mb-4">
+        <div className="px-4 py-12 text-center bg-gray-900 min-h-screen">
+          <div className="text-gray-500 mb-4">
             No articles available
           </div>
           <Button
