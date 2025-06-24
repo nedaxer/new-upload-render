@@ -286,15 +286,6 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               </div>
             </motion.div>
             
-            {/* Release to refresh message positioned under the header */}
-            {pullDistance >= PULL_THRESHOLD && (
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-                <p className="text-white text-sm font-semibold text-center drop-shadow-xl">
-                  Release to refresh
-                </p>
-              </div>
-            )}
-            
             {/* Compact gradient blend with mobile page */}
             <div 
               className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
@@ -302,6 +293,23 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.5) 0%, rgba(51, 65, 85, 0.3) 50%, transparent 100%)'
               }}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Release to refresh message shows with vibration - positioned outside header */}
+      <AnimatePresence>
+        {hasTriggeredHaptic && showNedaxerHeader && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="relative bg-transparent text-center py-2"
+          >
+            <p className="text-white text-sm font-semibold drop-shadow-xl">
+              Release to refresh
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
