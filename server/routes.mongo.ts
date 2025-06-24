@@ -105,10 +105,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'CoinDesk': 'https://www.coindesk.com/arc/outboundfeeds/rss/',
         'CoinTelegraph': 'https://cointelegraph.com/rss',
         'Decrypt': 'https://decrypt.co/feed',
-        'Bitcoin Magazine': 'https://bitcoinmagazine.com/.rss/full',
         'CryptoSlate': 'https://cryptoslate.com/feed/',
         'CryptoBriefing': 'https://cryptobriefing.com/feed/',
-        'Google News - Crypto': 'https://news.google.com/rss/search?q=crypto'
+        'BeInCrypto': 'https://beincrypto.com/feed/',
+        'CryptoNews': 'https://cryptonews.com/news/feed/',
+        'Google News - Crypto': 'https://news.google.com/rss/search?q=cryptocurrency',
+        'Google News - Bitcoin': 'https://news.google.com/rss/search?q=bitcoin'
       };
 
       const allNews = [];
@@ -117,14 +119,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const [source, url] of Object.entries(feeds)) {
         const fetchPromise = parser.parseURL(url)
           .then((feed: any) => {
-            return feed.items.slice(0, 5).map((item: any) => ({
-              title: item.title || 'No Title',
-              description: item.contentSnippet || item.summary || item.content || 'No description available',
-              url: item.link || '#',
-              source: { name: source },
-              publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
-              urlToImage: item.enclosure?.url || item.media?.thumbnail?.url || null
-            }));
+            return feed.items.slice(0, 5).map((item: any) => {
+              // Enhanced image extraction
+              let imageUrl = null;
+              
+              // Try multiple image sources
+              if (item.enclosure?.url && (item.enclosure.type?.includes('image') || item.enclosure.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
+                imageUrl = item.enclosure.url;
+              } else if (item['media:thumbnail']?.['$']?.url) {
+                imageUrl = item['media:thumbnail']['$'].url;
+              } else if (item['media:content']?.['$']?.url && item['media:content']['$'].medium === 'image') {
+                imageUrl = item['media:content']['$'].url;
+              } else if (item.image?.url) {
+                imageUrl = item.image.url;
+              } else if (item.content && typeof item.content === 'string') {
+                // Extract image from content
+                const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) {
+                  imageUrl = imgMatch[1];
+                }
+              } else if (item['content:encoded']) {
+                // Extract from encoded content
+                const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch) {
+                  imageUrl = imgMatch[1];
+                }
+              }
+              
+              return {
+                title: item.title || 'No Title',
+                description: item.contentSnippet || item.summary || item.content?.replace(/<[^>]*>/g, '') || 'No description available',
+                url: item.link || '#',
+                source: { name: source },
+                publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
+                urlToImage: imageUrl
+              };
+            });
           })
           .catch((error: any) => {
             console.error(`Error fetching ${source}:`, error.message);

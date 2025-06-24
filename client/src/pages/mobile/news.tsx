@@ -35,8 +35,9 @@ export default function MobileNews() {
     },
     retry: 2,
     retryDelay: 3000,
-    staleTime: 10 * 60 * 1000, // Consider data stale after 10 minutes
-    gcTime: 30 * 60 * 1000 // Keep in cache for 30 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes for fresh news
+    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
+    gcTime: 15 * 60 * 1000 // Keep in cache for 15 minutes
   });
 
   // WebSocket connection for real-time news updates
@@ -194,26 +195,39 @@ export default function MobileNews() {
                 
                 {/* Image Section */}
                 <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden">
+                  <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden relative">
                     {article.urlToImage ? (
-                      <img 
-                        src={article.urlToImage} 
-                        alt={article.title}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className={`fallback-icon w-full h-full flex items-center justify-center text-gray-400 text-xs ${article.urlToImage ? 'hidden' : 'flex'}`}>
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">📰</div>
-                        <div>News</div>
+                      <>
+                        <img 
+                          src={article.urlToImage} 
+                          alt={article.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'flex';
+                              fallback.classList.remove('hidden');
+                            }
+                          }}
+                        />
+                        <div className="fallback-icon absolute inset-0 hidden w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
+                          <div className="text-center">
+                            <div className="text-lg mb-1">📰</div>
+                            <div className="text-xs">News</div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
+                        <div className="text-center">
+                          <div className="text-lg mb-1">📰</div>
+                          <div className="text-xs">News</div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
