@@ -11,7 +11,7 @@ export function BottomNavigation() {
 
   const navItems = [
     { 
-      nameKey: 'dashboard', 
+      nameKey: 'home', 
       icon: Home, 
       path: '/mobile' 
     },
@@ -26,7 +26,7 @@ export function BottomNavigation() {
       path: '/mobile/trade' 
     },
     { 
-      nameKey: 'notifications', 
+      nameKey: 'news', 
       icon: Newspaper, 
       path: '/mobile/news' 
     },

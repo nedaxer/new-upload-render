@@ -150,17 +150,17 @@ export default function MobileNews() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-      <div className="bg-white px-4 py-4 border-b border-gray-200">
+      <div className="bg-gray-900 px-4 py-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <h1 className="text-black text-2xl font-bold">{t('news')}</h1>
+            <h1 className="text-white text-2xl font-bold">{t('news')}</h1>
             {isConnected && (
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             )}
           </div>
           <div className="flex items-center space-x-2">
             {lastUpdate && (
-              <span className="text-gray-500 text-xs">
+              <span className="text-gray-400 text-xs">
                 {lastUpdate.toLocaleTimeString()}
               </span>
             )}
@@ -169,16 +169,16 @@ export default function MobileNews() {
       </div>
 
       {isLoading && !newsData && (
-        <div className="px-4 py-4 space-y-4 bg-gray-50 min-h-screen">
+        <div className="px-4 py-4 space-y-4 bg-gray-900 min-h-screen">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-lg p-4 animate-pulse border border-gray-200">
+            <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse border border-gray-700">
               <div className="flex items-start space-x-4">
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-300 rounded mb-2 w-3/4"></div>
-                  <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-600 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-600 rounded mb-2 w-3/4"></div>
+                  <div className="h-3 bg-gray-600 rounded w-1/2"></div>
                 </div>
-                <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
+                <div className="w-20 h-20 bg-gray-600 rounded-lg"></div>
               </div>
             </div>
           ))}
@@ -186,12 +186,12 @@ export default function MobileNews() {
       )}
 
       {error && (
-        <div className="px-4 py-8 bg-gray-50 min-h-screen">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <div className="text-red-600 text-sm mb-2">
+        <div className="px-4 py-8 bg-gray-900 min-h-screen">
+          <div className="bg-red-900 border border-red-700 rounded-lg p-4 text-center">
+            <div className="text-red-300 text-sm mb-2">
               Unable to fetch crypto news
             </div>
-            <div className="text-red-500 text-sm">
+            <div className="text-red-400 text-sm">
               Please check your internet connection
             </div>
           </div>
