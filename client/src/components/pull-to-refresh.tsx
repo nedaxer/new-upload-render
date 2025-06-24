@@ -37,6 +37,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   const [isPulling, setIsPulling] = useState(false);
   const [startY, setStartY] = useState(0);
   const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
+  const [showNedaxerHeader, setShowNedaxerHeader] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>();
 
@@ -96,6 +98,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     // Only trigger refresh if pulled all the way to the threshold
     if (pullDistance >= PULL_THRESHOLD) {
       setIsRefreshing(true);
+      setIsReturning(true);
+      
       try {
         await onRefresh();
         // Keep refreshing animation for 2 seconds as requested
@@ -104,6 +108,15 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         console.error('Refresh failed:', error);
       } finally {
         setIsRefreshing(false);
+        // Show Nedaxer header after refresh completes
+        setTimeout(() => {
+          setShowNedaxerHeader(true);
+          // Hide Nedaxer header after 3 seconds
+          setTimeout(() => {
+            setShowNedaxerHeader(false);
+            setIsReturning(false);
+          }, 3000);
+        }, 500);
       }
     }
 
@@ -115,6 +128,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
           requestAnimationFrame(resetAnimation);
           return newDistance;
         }
+        setIsReturning(false);
         return 0;
       });
     };
@@ -169,40 +183,36 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator with dark background and brand color edges */}
+      {/* Pull indicator with pure black background */}
       <div 
-        className="relative overflow-hidden transition-all duration-300 ease-out"
+        className="relative overflow-hidden transition-all duration-500 ease-out"
         style={{
           height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 160 : 0) : 0,
-          background: `linear-gradient(180deg, 
-            hsl(39, 100%, 50%) 0%, 
-            hsl(39, 80%, 40%) 10%, 
-            rgb(17, 24, 39) 25%, 
-            rgb(17, 24, 39) 75%, 
-            hsl(39, 80%, 40%) 90%, 
-            hsl(39, 100%, 50%) 100%)`
+          background: '#000000'
         } as React.CSSProperties}
       >
         <AnimatePresence>
           {(pullDistance > 0 || isRefreshing) && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ 
+                opacity: 0, 
+                y: -30,
+                transition: { duration: 0.8, ease: "easeInOut" }
+              }}
               transition={{ 
                 type: "spring", 
-                stiffness: 200, 
-                damping: 20,
-                duration: 0.6
+                stiffness: 120, 
+                damping: 25,
+                duration: 1.2
               }}
               className="absolute inset-0 flex flex-col items-center justify-center"
             >
-              {/* No initial letters - removed as requested */}
-
-              {/* Show refresh logo with smooth slide and scale animation */}
+              {/* Show refresh logo with slow, smooth drop animation */}
               {showLogo && !isRefreshing && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                  initial={{ opacity: 0, scale: 0.2, y: -50 }}
                   animate={{ 
                     opacity: logoOpacity, 
                     scale: logoScale,
@@ -210,21 +220,34 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                   }}
                   transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 25,
-                    mass: 0.8
+                    stiffness: 180,
+                    damping: 35,
+                    mass: 1.2,
+                    duration: 1.5
                   }}
                   className="flex items-center justify-center h-full w-full"
                 >
-                  <img
+                  <motion.img
                     src={refreshLogo}
                     alt="Refresh Logo"
-                    className="object-contain drop-shadow-lg"
+                    className="object-contain drop-shadow-xl"
                     style={{
-                      height: '80%',
+                      height: '70%',
                       width: 'auto',
-                      maxWidth: '80%',
-                      filter: 'brightness(1.1) contrast(1.1)'
+                      maxWidth: '70%',
+                      filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))'
+                    }}
+                    animate={{
+                      filter: [
+                        'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))',
+                        'brightness(1.3) contrast(1.2) drop-shadow(0 6px 16px rgba(255,255,255,0.15))',
+                        'brightness(1.2) contrast(1.15) drop-shadow(0 4px 12px rgba(255,255,255,0.1))'
+                      ]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
                     }}
                   />
                 </motion.div>
@@ -233,11 +256,12 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               {/* Release to refresh message */}
               {showReleaseMessage && !isRefreshing && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
                   className="absolute bottom-6 left-1/2 transform -translate-x-1/2"
                 >
-                  <p className="text-white text-sm font-medium text-center drop-shadow-md">
+                  <p className="text-white text-sm font-medium text-center drop-shadow-lg">
                     Release to refresh
                   </p>
                 </motion.div>
@@ -246,8 +270,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               {/* Refreshing state: Show NEDAXER with enhanced jumping animation */}
               {isRefreshing && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                   className="flex flex-col items-center justify-center h-full w-full"
                 >
                   <div className="flex items-center justify-center space-x-1 px-4 mb-4">
@@ -256,15 +281,15 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                         key={index}
                         src={letter}
                         alt={`Letter ${index + 1}`}
-                        className="h-5 w-auto flex-shrink-0 drop-shadow-md"
-                        initial={{ y: 0 }}
+                        className="h-5 w-auto flex-shrink-0 drop-shadow-lg"
+                        initial={{ y: 0, scale: 1 }}
                         animate={{ 
-                          y: [0, -12, 0],
-                          scale: [1, 1.1, 1]
+                          y: [0, -15, 0],
+                          scale: [1, 1.15, 1]
                         }}
                         transition={{
-                          duration: 0.6,
-                          delay: index * 0.1,
+                          duration: 0.8,
+                          delay: index * 0.12,
                           repeat: Infinity,
                           repeatType: "loop",
                           ease: "easeInOut"
@@ -275,8 +300,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                   <motion.p 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-white text-sm font-medium text-center drop-shadow-md"
+                    transition={{ delay: 0.6 }}
+                    className="text-white text-sm font-medium text-center drop-shadow-lg"
                   >
                     Refreshing...
                   </motion.p>
@@ -285,7 +310,74 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Subtle gradient transition to main content */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none"
+          style={{
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)'
+          }}
+        />
       </div>
+
+      {/* Separate Nedaxer header that appears after refresh */}
+      <AnimatePresence>
+        {showNedaxerHeader && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 60, opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              ease: "easeInOut",
+              height: { duration: 0.6 },
+              opacity: { duration: 0.4 }
+            }}
+            className="relative overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800 border-b border-gray-700"
+          >
+            <motion.div
+              initial={{ y: -20, scale: 0.8 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: -20, scale: 0.8 }}
+              transition={{ 
+                delay: 0.2, 
+                duration: 0.6, 
+                type: "spring",
+                stiffness: 200,
+                damping: 20
+              }}
+              className="flex items-center justify-center h-full px-4"
+            >
+              <div className="flex items-center space-x-1">
+                {letters.map((letter, index) => (
+                  <motion.img
+                    key={`header-${index}`}
+                    src={letter}
+                    alt={`Letter ${index + 1}`}
+                    className="h-4 w-auto flex-shrink-0 drop-shadow-md"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: 0.4 + (index * 0.08),
+                      duration: 0.4,
+                      type: "spring",
+                      stiffness: 300
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+            
+            {/* Subtle gradient bottom edge */}
+            <div 
+              className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, rgba(31,41,55,0.5) 0%, transparent 100%)'
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
       <div className="relative z-10">
