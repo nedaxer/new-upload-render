@@ -95,15 +95,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import RSS parser with proper ES module handling
       const { default: Parser } = await import('rss-parser');
       const parser = new Parser({
-        timeout: 15000,
+        timeout: 20000,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Nedaxer-News-Aggregator/1.0)'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'application/rss+xml, application/xml, text/xml',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache'
         },
         customFields: {
           item: [
             ['media:content', 'mediaContent'],
             ['media:thumbnail', 'mediaThumbnail'],
-            ['content:encoded', 'contentEncoded']
+            ['content:encoded', 'contentEncoded'],
+            ['media:group', 'mediaGroup'],
+            ['enclosure', 'enclosure']
           ]
         }
       });
@@ -116,25 +121,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'CryptoBriefing': 'https://cryptobriefing.com/feed/',
         'BeInCrypto': 'https://beincrypto.com/feed/',
         'CryptoNews': 'https://cryptonews.com/news/feed/',
-        'Google News - Crypto': 'https://news.google.com/rss/search?q=cryptocurrency',
-        'Google News - Bitcoin': 'https://news.google.com/rss/search?q=bitcoin'
+        'Google News - Crypto': 'https://news.google.com/rss/search?q=cryptocurrency&hl=en-US&gl=US&ceid=US:en',
+        'Google News - Bitcoin': 'https://news.google.com/rss/search?q=bitcoin&hl=en-US&gl=US&ceid=US:en'
       };
 
       const allNews = [];
       const fetchPromises = [];
 
+      // Helper function to fetch RSS with proxy for region-restricted sources
+      const fetchRSSWithProxy = async (source: string, url: string) => {
+        if (source === 'BeInCrypto') {
+          try {
+            // Use a different approach for BeInCrypto
+            const response = await fetch(url, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/rss+xml, application/xml, text/xml',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://beincrypto.com',
+                'Origin': 'https://beincrypto.com'
+              }
+            });
+            
+            if (!response.ok) {
+              console.log(`BeInCrypto RSS not accessible (${response.status}), using alternative source`);
+              return null;
+            }
+            
+            const xmlText = await response.text();
+            return parser.parseString(xmlText);
+          } catch (error) {
+            console.log(`BeInCrypto RSS fetch failed:`, error.message);
+            return null;
+          }
+        } else {
+          return parser.parseURL(url);
+        }
+      };
+
       for (const [source, url] of Object.entries(feeds)) {
-        const fetchPromise = parser.parseURL(url)
+        const fetchPromise = fetchRSSWithProxy(source, url)
           .then((feed: any) => {
+            if (!feed) return [];
+            
             return feed.items.slice(0, 5).map((item: any) => {
               // Enhanced image extraction with source-specific handling
               let imageUrl = null;
               
+              // Enhanced media detection (image or video)
+              let mediaType = 'image';
+              let videoUrl = null;
+
               // Source-specific image extraction
               if (source === 'Google News - Crypto' || source === 'Google News - Bitcoin') {
-                // Google News specific handling
+                // Google News specific handling - extract from diverse sources
                 if (item.mediaContent) {
                   if (Array.isArray(item.mediaContent)) {
+                    // Look for video first, then image
+                    const videoContent = item.mediaContent.find((content: any) => 
+                      content['$']?.medium === 'video' || content['$']?.type?.includes('video')
+                    );
+                    if (videoContent?.['$']?.url) {
+                      videoUrl = videoContent['$'].url;
+                      mediaType = 'video';
+                    }
+                    
                     const imageContent = item.mediaContent.find((content: any) => 
                       content['$']?.medium === 'image' || content['$']?.type?.includes('image')
                     );
@@ -142,23 +193,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       imageUrl = imageContent['$'].url;
                     }
                   } else if (item.mediaContent['$']?.url) {
-                    imageUrl = item.mediaContent['$'].url;
-                  }
-                } else if (item.mediaThumbnail?.['$']?.url) {
-                  imageUrl = item.mediaThumbnail['$'].url;
-                } else if (item['media:content']) {
-                  if (Array.isArray(item['media:content'])) {
-                    const imageContent = item['media:content'].find((content: any) => 
-                      content['$']?.medium === 'image' || content['$']?.type?.includes('image')
-                    );
-                    if (imageContent?.['$']?.url) {
-                      imageUrl = imageContent['$'].url;
+                    if (item.mediaContent['$']?.medium === 'video' || item.mediaContent['$']?.type?.includes('video')) {
+                      videoUrl = item.mediaContent['$'].url;
+                      mediaType = 'video';
+                    } else {
+                      imageUrl = item.mediaContent['$'].url;
                     }
-                  } else if (item['media:content']['$']?.url) {
-                    imageUrl = item['media:content']['$'].url;
                   }
-                } else if (item['media:thumbnail']?.['$']?.url) {
-                  imageUrl = item['media:thumbnail']['$'].url;
+                }
+                
+                // Fallback to thumbnail
+                if (!imageUrl && item.mediaThumbnail?.['$']?.url) {
+                  imageUrl = item.mediaThumbnail['$'].url;
+                }
+                
+                // Try content scraping for Google News articles from external sources
+                if (!imageUrl && item.content) {
+                  const contentImgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                  if (contentImgMatch) {
+                    imageUrl = contentImgMatch[1];
+                  }
+                }
+                
+                // Extract from description for Google News
+                if (!imageUrl && item.description) {
+                  const descImgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+                  if (descImgMatch) {
+                    imageUrl = descImgMatch[1];
+                  }
+                }
+                
+                // Try to extract image URL from the article link for major news sources
+                if (!imageUrl && item.link) {
+                  const articleUrl = item.link;
+                  if (articleUrl.includes('reuters.com') || 
+                      articleUrl.includes('bloomberg.com') || 
+                      articleUrl.includes('cnbc.com') ||
+                      articleUrl.includes('cnn.com') ||
+                      articleUrl.includes('bbc.com')) {
+                    // For major news sources, try to construct a likely image URL
+                    const urlParts = articleUrl.split('/');
+                    const domain = urlParts[2];
+                    imageUrl = `https://${domain}/favicon.ico`; // Fallback to favicon
+                  }
                 }
               } else if (source === 'CryptoSlate') {
                 // CryptoSlate specific handling
@@ -180,7 +257,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
               } else if (source === 'BeInCrypto') {
-                // BeInCrypto specific handling
+                // BeInCrypto specific handling with video support
+                if (item.mediaContent) {
+                  if (Array.isArray(item.mediaContent)) {
+                    const videoContent = item.mediaContent.find((content: any) => 
+                      content['$']?.medium === 'video' || content['$']?.type?.includes('video')
+                    );
+                    if (videoContent?.['$']?.url) {
+                      videoUrl = videoContent['$'].url;
+                      mediaType = 'video';
+                    }
+                  }
+                }
+                
                 if (item.mediaThumbnail?.['$']?.url) {
                   imageUrl = item.mediaThumbnail['$'].url;
                 } else if (item['media:thumbnail']?.['$']?.url) {
@@ -194,6 +283,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 } else if (item['content:encoded']) {
                   const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+                
+                // Additional BeInCrypto image extraction from description
+                if (!imageUrl && item.description) {
+                  const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
                   if (imgMatch) {
                     imageUrl = imgMatch[1];
                   }
@@ -293,12 +390,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 url: item.link || '#',
                 source: { name: source },
                 publishedAt: item.pubDate || item.isoDate || new Date().toISOString(),
-                urlToImage: imageUrl
+                urlToImage: imageUrl,
+                mediaType: mediaType,
+                videoUrl: videoUrl
               };
             });
           })
           .catch((error: any) => {
             console.error(`Error fetching ${source}:`, error.message);
+            if (source === 'BeInCrypto') {
+              console.log('BeInCrypto may be region-blocked, skipping...');
+            }
             return []; // Return empty array on error
           });
         

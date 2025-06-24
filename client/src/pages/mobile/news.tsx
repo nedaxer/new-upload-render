@@ -15,6 +15,8 @@ interface NewsArticle {
   };
   publishedAt: string;
   urlToImage?: string;
+  mediaType?: 'image' | 'video';
+  videoUrl?: string;
 }
 
 export default function MobileNews() {
@@ -133,14 +135,19 @@ export default function MobileNews() {
   const getSourceIcon = (sourceName: string) => {
     const sourceIcons: { [key: string]: string } = {
       'CoinDesk': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 text-white text-xs font-bold">CD</div>',
-      'CoinTelegraph': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white text-xs font-bold">CT</div>',
+      'CoinTelegraph': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white text-xs font-bold">CT</div>', 
       'Decrypt': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700 text-white text-xs font-bold">DE</div>',
       'CryptoSlate': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-green-700 text-white text-xs font-bold">CS</div>',
       'CryptoBriefing': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500 to-red-700 text-white text-xs font-bold">CB</div>',
       'BeInCrypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500 to-yellow-600 text-white text-xs font-bold">BC</div>',
       'CryptoNews': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-white text-xs font-bold">CN</div>',
       'Google News - Crypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>',
-      'Google News - Bitcoin': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>'
+      'Google News - Bitcoin': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>',
+      'Reuters': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-600 to-red-800 text-white text-xs font-bold">RT</div>',
+      'Bloomberg': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-black to-gray-800 text-white text-xs font-bold">BB</div>',
+      'CNBC': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-700 to-blue-900 text-white text-xs font-bold">NC</div>',
+      'CNN': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-700 to-red-900 text-white text-xs font-bold">CN</div>',
+      'BBC': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500 to-red-700 text-white text-xs font-bold">BC</div>'
     };
     
     return sourceIcons[sourceName] || '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold">📰</div>';
@@ -222,10 +229,33 @@ export default function MobileNews() {
                   </div>
                 </div>
                 
-                {/* Image Section */}
+                {/* Media Section */}
                 <div className="flex-shrink-0">
                   <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden relative">
-                    {article.urlToImage ? (
+                    {article.mediaType === 'video' && article.videoUrl ? (
+                      <div className="relative w-full h-full">
+                        <video 
+                          src={article.videoUrl}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          onError={(e) => {
+                            const target = e.target as HTMLVideoElement;
+                            const parent = target.parentElement?.parentElement;
+                            if (parent) {
+                              parent.innerHTML = getSourceIcon(article.source?.name || 'Crypto News');
+                            }
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-black bg-opacity-60 rounded-full p-1">
+                            <div className="text-white text-xs">▶</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : article.urlToImage ? (
                       <img 
                         src={article.urlToImage} 
                         alt={article.title}
