@@ -17,13 +17,13 @@ import { CookieConsent } from '@/components/cookie-consent';
 import Home from '@/pages/home';
 import NotFound from '@/pages/not-found';
 
-// Trading Pages
-import SpotTrading from '@/pages/SpotTrading';
-import Futures from '@/pages/Futures';
-import Staking from '@/pages/Staking';
-import Deposit from '@/pages/Deposit';
-import Withdraw from '@/pages/Withdraw';
-import AdminPanel from '@/pages/AdminPanel';
+// Trading Pages (removed - using mobile interface only)
+// import SpotTrading from '@/pages/SpotTrading';
+// import Futures from '@/pages/Futures';
+// import Staking from '@/pages/Staking';
+// import Deposit from '@/pages/Deposit';
+// import Withdraw from '@/pages/Withdraw';
+// import AdminPanel from '@/pages/AdminPanel';
 
 // Company Pages
 import About from '@/pages/company/about';
@@ -77,7 +77,7 @@ import ForgotPassword from '@/pages/account/forgot-password';
 import VerifyAccount from '@/pages/account/verify';
 
 // Legacy Dashboard Pages (keeping for compatibility)
-import LegacyDashboard from '@/pages/dashboard';
+// import LegacyDashboard from '@/pages/dashboard';
 import Trade from '@/pages/dashboard/trade';
 import LegacyStaking from '@/pages/dashboard/staking';
 import LegacyDeposit from '@/pages/dashboard/deposit';
@@ -223,14 +223,14 @@ export default function App() {
             {/* Account Routes - with redirection for authenticated users */}
             <Route path="/account/login">
               {(params) => (
-                <AuthRedirect redirectTo="/dashboard">
+                <AuthRedirect redirectTo="/mobile">
                   <Login {...params} />
                 </AuthRedirect>
               )}
             </Route>
             <Route path="/account/register">
               {(params) => (
-                <AuthRedirect>
+                <AuthRedirect redirectTo="/mobile">
                   <Register {...params} />
                 </AuthRedirect>
               )}
@@ -241,15 +241,17 @@ export default function App() {
               {() => <Redirect to="/mobile" />}
             </Route>
 
-            {/* Dashboard Route - Protected */}
-            <ProtectedRoute path="/dashboard" component={LegacyDashboard} />
+            {/* Dashboard Route - Redirect to Mobile */}
+            <Route path="/dashboard">
+              {() => <Redirect to="/mobile" />}
+            </Route>
 
-            {/* Trading Platform Routes - Protected */}
-            <ProtectedRoute path="/spot-trading" component={SpotTrading} />
-            <ProtectedRoute path="/futures" component={Futures} />
-            <ProtectedRoute path="/staking" component={Staking} />
-            <ProtectedRoute path="/deposit" component={Deposit} />
-            <ProtectedRoute path="/withdraw" component={Withdraw} />
+            {/* Trading Platform Routes - Redirect to Mobile */}
+            <Route path="/spot-trading">{() => <Redirect to="/mobile/spot" />}</Route>
+            <Route path="/futures">{() => <Redirect to="/mobile/futures" />}</Route>
+            <Route path="/staking">{() => <Redirect to="/mobile/earn" />}</Route>
+            <Route path="/deposit">{() => <Redirect to="/mobile" />}</Route>
+            <Route path="/withdraw">{() => <Redirect to="/mobile" />}</Route>
 
             {/* Mobile App Routes - Open Access for Trading */}
             <Route path="/mobile" component={MobileHome} />
@@ -274,7 +276,7 @@ export default function App() {
 
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
-            <ProtectedRoute path="/admin-panel" component={AdminPanel} adminOnly={true} />
+            <ProtectedRoute path="/admin-panel" component={AdminDashboard} adminOnly={true} />
 
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />
