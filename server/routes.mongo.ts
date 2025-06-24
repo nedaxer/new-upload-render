@@ -89,6 +89,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { getRealtimePrices } = await import('./api/realtime-prices');
   app.get('/api/crypto/realtime-prices', getRealtimePrices);
 
+  // News source logo endpoint
+  app.get('/api/news/logo/:source', async (req: Request, res: Response) => {
+    try {
+      const { generateLogoSVG } = await import('./logo-service');
+      const sourceName = decodeURIComponent(req.params.source);
+      const logoSVG = generateLogoSVG(sourceName);
+      
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+      res.send(logoSVG);
+    } catch (error) {
+      console.error('Error generating logo:', error);
+      res.status(500).send('Error generating logo');
+    }
+  });
+
   // Crypto news endpoint using RSS feeds
   app.get('/api/crypto/news', async (req: Request, res: Response) => {
     try {
@@ -362,6 +378,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (imgMatch) {
                   imageUrl = imgMatch[1];
                 }
+              }
+              
+              // Enhanced fallback - use generated logo endpoint if no image found
+              if (!imageUrl) {
+                imageUrl = `/api/news/logo/${encodeURIComponent(source)}`;
               }
               
               // Clean up relative URLs

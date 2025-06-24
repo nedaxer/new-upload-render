@@ -132,25 +132,8 @@ export default function MobileNews() {
     }
   };
 
-  const getSourceIcon = (sourceName: string) => {
-    const sourceIcons: { [key: string]: string } = {
-      'CoinDesk': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 text-white text-xs font-bold">CD</div>',
-      'CoinTelegraph': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white text-xs font-bold">CT</div>', 
-      'Decrypt': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700 text-white text-xs font-bold">DE</div>',
-      'CryptoSlate': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-green-700 text-white text-xs font-bold">CS</div>',
-      'CryptoBriefing': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500 to-red-700 text-white text-xs font-bold">CB</div>',
-      'BeInCrypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500 to-yellow-600 text-white text-xs font-bold">BC</div>',
-      'CryptoNews': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-white text-xs font-bold">CN</div>',
-      'Google News - Crypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>',
-      'Google News - Bitcoin': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>',
-      'Reuters': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-600 to-red-800 text-white text-xs font-bold">RT</div>',
-      'Bloomberg': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-black to-gray-800 text-white text-xs font-bold">BB</div>',
-      'CNBC': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-700 to-blue-900 text-white text-xs font-bold">NC</div>',
-      'CNN': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-700 to-red-900 text-white text-xs font-bold">CN</div>',
-      'BBC': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500 to-red-700 text-white text-xs font-bold">BC</div>'
-    };
-    
-    return sourceIcons[sourceName] || '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold">📰</div>';
+  const getSourceLogo = (sourceName: string) => {
+    return `/api/news/logo/${encodeURIComponent(sourceName)}`;
   };
 
   return (
@@ -263,18 +246,15 @@ export default function MobileNews() {
                         loading="lazy"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          const parent = target.parentElement;
-                          if (parent) {
-                            parent.innerHTML = getSourceIcon(article.source?.name || 'Crypto News');
-                          }
+                          target.src = getSourceLogo(article.source?.name || 'Crypto News');
+                          target.className = "w-full h-full object-contain p-2 bg-white";
                         }}
                       />
                     ) : (
-                      <div 
-                        className="w-full h-full flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ 
-                          __html: getSourceIcon(article.source?.name || 'Crypto News') 
-                        }}
+                      <img 
+                        src={getSourceLogo(article.source?.name || 'Crypto News')}
+                        alt={article.source?.name || 'News'}
+                        className="w-full h-full object-contain p-2 bg-white"
                       />
                     )}
                   </div>
