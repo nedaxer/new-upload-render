@@ -187,7 +187,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
           className="relative overflow-hidden"
           style={{
             height: pullDistance,
-            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 95%, 48%) 15%, hsl(39, 85%, 45%) 30%, hsl(39, 70%, 40%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)',
+            background: 'linear-gradient(180deg, hsl(39, 90%, 45%) 0%, hsl(39, 85%, 42%) 15%, hsl(39, 75%, 38%) 30%, hsl(39, 65%, 35%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)',
             transition: 'none'
           } as React.CSSProperties}
         >
@@ -225,92 +225,95 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         </div>
       )}
 
-      {/* Compact Nedaxer header that blends seamlessly with mobile page */}
+      {/* Single Nedaxer header with release message */}
       <AnimatePresence>
         {showNedaxerHeader && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 50, opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ 
-              duration: 0.6, 
-              ease: "easeInOut",
-              height: { duration: 0.5 },
-              opacity: { duration: 0.3 }
-            }}
-            className="relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 50%, hsl(220, 13%, 15%) 100%)'
-            }}
-          >
+          <>
             <motion.div
-              initial={{ y: -20, scale: 0.9 }}
-              animate={{ y: 0, scale: 1 }}
-              exit={{ y: -20, scale: 0.9 }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 50, opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               transition={{ 
-                delay: 0.1, 
-                duration: 0.5, 
-                type: "spring",
-                stiffness: 250,
-                damping: 25
+                duration: 0.6, 
+                ease: "easeInOut",
+                height: { duration: 0.5 },
+                opacity: { duration: 0.3 }
               }}
-              className="flex items-center justify-center h-full px-3"
-            >
-              <div className="flex items-center space-x-1">
-                {letters.map((letter, index) => (
-                  <motion.img
-                    key={`header-${index}`}
-                    src={letter}
-                    alt={`Letter ${index + 1}`}
-                    className="h-4 w-auto flex-shrink-0 drop-shadow-lg"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: [0, -6, 0]
-                    }}
-                    transition={{
-                      opacity: {
-                        delay: 0.3 + (index * 0.08),
-                        duration: 0.4
-                      },
-                      y: {
-                        delay: 0.5 + (index * 0.08),
-                        duration: 0.7,
-                        repeat: Infinity,
-                        repeatType: "loop",
-                        ease: "easeInOut"
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-            
-            {/* Compact gradient blend with mobile page */}
-            <div 
-              className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
+              className="relative overflow-hidden"
               style={{
-                background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.5) 0%, rgba(51, 65, 85, 0.3) 50%, transparent 100%)'
+                background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 50%, hsl(220, 13%, 15%) 100%)'
               }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            >
+              <motion.div
+                initial={{ y: -20, scale: 0.9 }}
+                animate={{ y: 0, scale: 1 }}
+                exit={{ y: -20, scale: 0.9 }}
+                transition={{ 
+                  delay: 0.1, 
+                  duration: 0.5, 
+                  type: "spring",
+                  stiffness: 250,
+                  damping: 25
+                }}
+                className="flex items-center justify-center h-full px-3"
+              >
+                <div className="flex items-center space-x-1">
+                  {letters.map((letter, index) => (
+                    <motion.img
+                      key={`header-${index}`}
+                      src={letter}
+                      alt={`Letter ${index + 1}`}
+                      className="h-4 w-auto flex-shrink-0 drop-shadow-lg"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ 
+                        opacity: 1, 
+                        y: [0, -6, 0]
+                      }}
+                      transition={{
+                        opacity: {
+                          delay: 0.3 + (index * 0.08),
+                          duration: 0.4
+                        },
+                        y: {
+                          delay: 0.5 + (index * 0.08),
+                          duration: 0.7,
+                          repeat: Infinity,
+                          repeatType: "loop",
+                          ease: "easeInOut"
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+              
+              {/* Compact gradient blend with mobile page */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.5) 0%, rgba(51, 65, 85, 0.3) 50%, transparent 100%)'
+                }}
+              />
+            </motion.div>
 
-      {/* Release to refresh message shows with vibration - positioned outside header */}
-      <AnimatePresence>
-        {hasTriggeredHaptic && showNedaxerHeader && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="relative bg-transparent text-center py-2"
-          >
-            <p className="text-white text-sm font-semibold drop-shadow-xl">
-              Release to refresh
-            </p>
-          </motion.div>
+            {/* Release to refresh message positioned under header */}
+            {hasTriggeredHaptic && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="relative text-center py-2"
+                style={{
+                  background: 'linear-gradient(180deg, hsl(220, 13%, 18%) 0%, hsl(220, 13%, 15%) 100%)'
+                }}
+              >
+                <p className="text-white text-sm font-semibold drop-shadow-xl">
+                  Release to refresh
+                </p>
+              </motion.div>
+            )}
+          </>
         )}
       </AnimatePresence>
 
