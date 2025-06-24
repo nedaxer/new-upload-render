@@ -131,19 +131,26 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   const getLogoOpacity = () => {
     if (!showLogo) return 0;
     if (logoComplete) return 1;
-    const progress = (pullDistance - LOGO_START_THRESHOLD) / (LOGO_COMPLETE_THRESHOLD - LOGO_START_THRESHOLD);
+    const progress = Math.min(Math.max((pullDistance - LOGO_START_THRESHOLD) / (LOGO_COMPLETE_THRESHOLD - LOGO_START_THRESHOLD), 0), 1);
     return progress;
   };
 
   const getLogoScale = () => {
-    if (!showLogo) return 0.4;
+    if (!showLogo) return 0.3;
     if (logoComplete) return 1;
-    const progress = (pullDistance - LOGO_START_THRESHOLD) / (LOGO_COMPLETE_THRESHOLD - LOGO_START_THRESHOLD);
-    return 0.4 + (progress * 0.6);
+    const progress = Math.min(Math.max((pullDistance - LOGO_START_THRESHOLD) / (LOGO_COMPLETE_THRESHOLD - LOGO_START_THRESHOLD), 0), 1);
+    // Smooth easing for scale animation
+    const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+    return 0.3 + (easedProgress * 0.7);
+  };
+
+  const getScrollProgress = () => {
+    return Math.min(pullDistance / MAX_PULL_DISTANCE, 1);
   };
 
   const logoOpacity = getLogoOpacity();
   const logoScale = getLogoScale();
+  const scrollProgress = getScrollProgress();
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
