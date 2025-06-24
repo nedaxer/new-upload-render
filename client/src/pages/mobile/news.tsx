@@ -210,29 +210,17 @@ export default function MobileNews() {
                 <div className="flex-shrink-0">
                   <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden relative">
                     {article.urlToImage ? (
-                      <>
-                        <img 
-                          src={article.urlToImage} 
-                          alt={article.title}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
-                            if (fallback) {
-                              fallback.style.display = 'flex';
-                              fallback.classList.remove('hidden');
-                            }
-                          }}
-                        />
-                        <div className="fallback-icon absolute inset-0 hidden w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
-                          <div className="text-center">
-                            <div className="text-lg mb-1">📰</div>
-                            <div className="text-xs">News</div>
-                          </div>
-                        </div>
-                      </>
+                      <img 
+                        src={article.urlToImage} 
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0OEM0NC40MTgzIDQ4IDQ4IDQ0LjQxODMgNDggNDBDNDggMzUuNTgxNyA0NC40MTgzIDMyIDQwIDMyQzM1LjU4MTcgMzIgMzIgMzUuNTgxNyAzMiA0MEMzMiA0NC40MTgzIDM1LjU4MTcgNDggNDAgNDhaIiBmaWxsPSIjOUI5QjlCIi8+CjxwYXRoIGQ9Ik0yNCA1NkM0MCA1NiA1NiA1NiA1NiA1NlY0OEg0MFYzMkgyNFY1NloiIGZpbGw9IiM5QjlCOUIiLz4KPC9zdmc+';
+                          target.className = "w-full h-full object-cover bg-gray-200";
+                        }}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
                         <div className="text-center">
