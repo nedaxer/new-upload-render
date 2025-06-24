@@ -18,11 +18,11 @@ interface PullToRefreshProps {
   disabled?: boolean;
 }
 
-const LETTER_THRESHOLD = 30;
-const LOGO_START_THRESHOLD = 60;
-const LOGO_COMPLETE_THRESHOLD = 100;
-const PULL_THRESHOLD = 120;
-const MAX_PULL_DISTANCE = 140;
+const LETTER_THRESHOLD = 20;
+const LOGO_START_THRESHOLD = 80;
+const LOGO_COMPLETE_THRESHOLD = 140;
+const PULL_THRESHOLD = 160;
+const MAX_PULL_DISTANCE = 200;
 const letters = [letterN, letterE1, letterD, letterA, letterX, letterE2, letterR];
 
 export function PullToRefresh({ children, onRefresh, disabled = false }: PullToRefreshProps) {
@@ -84,8 +84,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       setIsRefreshing(true);
       try {
         await onRefresh();
-        // Keep refreshing animation for 3 seconds to match smaller header
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Keep refreshing animation for 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 5000));
       } catch (error) {
         console.error('Refresh failed:', error);
       } finally {
@@ -159,11 +159,11 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator - positioned to push content down */}
+      {/* Pull indicator - pushes content down to simulate scrolling */}
       <div 
         className="relative overflow-hidden transition-all duration-300 ease-out bg-gray-900"
         style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 120 : 0) : 0,
+          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 200 : 0) : 0,
           '--animation-delay': '0s'
         } as React.CSSProperties}
       >
@@ -209,9 +209,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                     alt="Refresh Logo"
                     className="object-contain"
                     style={{
-                      height: '70%',
+                      height: '90%',
                       width: 'auto',
-                      maxWidth: '70%'
+                      maxWidth: '90%'
                     }}
                   />
                 </div>
@@ -219,8 +219,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
               {/* Release to refresh message */}
               {showReleaseMessage && !isRefreshing && (
-                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
-                  <p className="text-orange-400 text-xs font-medium text-center">
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                  <p className="text-orange-400 text-sm font-medium text-center">
                     Release to refresh
                   </p>
                 </div>
@@ -235,7 +235,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                         key={index}
                         src={letter}
                         alt={`Letter ${index + 1}`}
-                        className="h-8 w-auto flex-shrink-0"
+                        className="h-4 w-auto flex-shrink-0"
                         style={{
                           animation: `bounce 0.8s ease-in-out infinite ${index * 0.15}s`
                         }}
