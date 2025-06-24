@@ -220,12 +220,12 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 className="absolute inset-0 flex flex-col items-center justify-center"
               >
                 {/* Show logo scrolling down naturally with pull gesture */}
-                {showLogo && (
+                {pullDistance > LOGO_START_THRESHOLD && (
                   <div 
                     className="flex items-center justify-center w-full relative"
                     style={{
                       height: '100%',
-                      transform: `translateY(${Math.max(-pullDistance * 0.8, -pullDistance)}px)`
+                      transform: `translateY(${Math.max(-120 + (pullDistance * 0.8), -60)}px)`
                     }}
                   >
                     <img
@@ -236,8 +236,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                         height: 'calc(100% - 20px)',
                         width: 'auto',
                         maxWidth: 'calc(100% - 20px)',
-                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))',
-                        opacity: logoOpacity
+                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
                       }}
                     />
                   </div>
@@ -310,17 +309,12 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             </motion.div>
             
             {/* Release to refresh message positioned under the header */}
-            {showReleaseMessage && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-              >
+            {pullDistance >= PULL_THRESHOLD && (
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10">
                 <p className="text-white text-sm font-semibold text-center drop-shadow-xl">
                   Release to refresh
                 </p>
-              </motion.div>
+              </div>
             )}
             
             {/* Compact gradient blend with mobile page */}
