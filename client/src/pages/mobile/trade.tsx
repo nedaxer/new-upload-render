@@ -129,6 +129,7 @@ export default function MobileTrade() {
         console.log('Found pair for symbol:', symbolToUse, pair);
         
         if (pair) {
+          console.log('Setting up new pair from navigation:', pair);
           setSelectedPair(pair);
           setCurrentSymbol(pair.symbol);
           setTradingViewSymbol(pair.tradingViewSymbol);
@@ -143,7 +144,7 @@ export default function MobileTrade() {
           };
           localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
           
-          // Update price for the new pair
+          // Update price for the new pair immediately
           updatePrice(pair.symbol);
           
           // Ensure Charts tab is selected when coming from home page
@@ -158,6 +159,11 @@ export default function MobileTrade() {
                 globalWidget.widget.setSymbol(pair.tradingViewSymbol, () => {
                   console.log('Chart symbol updated to:', pair.symbol);
                   globalWidget.currentSymbol = pair.symbol;
+                  
+                  // Force UI refresh after chart update
+                  setCurrentSymbol(pair.symbol);
+                  setSelectedPair(pair);
+                  updatePrice(pair.symbol);
                 });
               } catch (error) {
                 console.log('Failed to update existing chart, will reload');
@@ -205,6 +211,10 @@ export default function MobileTrade() {
               chartState.tradingViewSymbol = selectedPair.tradingViewSymbol;
               chartState.lastUpdated = Date.now();
               localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+              
+              // Force UI update after successful chart change
+              setCurrentSymbol(selectedPair.symbol);
+              updatePrice(selectedPair.symbol);
             });
           } catch (error) {
             console.log('Failed to update chart symbol, reloading chart:', error);
@@ -473,23 +483,29 @@ export default function MobileTrade() {
           (window as any).nedaxerGlobalChart = {};
         }
         
+        const cleanSymbol = symbol.replace('BINANCE:', '').replace('BYBIT:', '');
+        
         // Store widget globally
         (window as any).nedaxerGlobalChart = {
           widget,
           iframe: widget.iframe || null,
           isReady: true,
-          currentSymbol: symbol.replace('BINANCE:', '').replace('BYBIT:', '')
+          currentSymbol: cleanSymbol
         };
         
         // Update persistent storage
         const chartState = {
-          currentSymbol: symbol.replace('BINANCE:', '').replace('BYBIT:', ''),
+          currentSymbol: cleanSymbol,
           tradingViewSymbol: symbol,
           timeframe: selectedTimeframe,
           lastUpdated: Date.now(),
           isChartMounted: true
         };
         localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+        
+        // Update UI state to match chart
+        setCurrentSymbol(cleanSymbol);
+        updatePrice(cleanSymbol);
         
         console.log('Global chart state initialized:', (window as any).nedaxerGlobalChart);
       }
@@ -506,14 +522,26 @@ export default function MobileTrade() {
 
   const updatePrice = async (symbol: string) => {
     try {
+      console.log('Updating price for symbol:', symbol);
       const response = await fetch('/api/crypto/realtime-prices');
       const data = await response.json();
 
       if (data.success && data.data) {
         const ticker = data.data.find((t: any) => t.symbol === symbol);
         if (ticker) {
+          console.log('Found ticker for symbol:', symbol, ticker);
           setCurrentTicker(ticker);
           setCurrentPrice(ticker.price.toFixed(2));
+        } else {
+          console.log('No ticker found for symbol:', symbol);
+          // Fallback: try to find by removing 'USDT' suffix if it exists
+          const baseSymbol = symbol.replace('USDT', '');
+          const fallbackTicker = data.data.find((t: any) => t.symbol === baseSymbol);
+          if (fallbackTicker) {
+            console.log('Found fallback ticker:', fallbackTicker);
+            setCurrentTicker(fallbackTicker);
+            setCurrentPrice(fallbackTicker.price.toFixed(2));
+          }
         }
       }
     } catch (error) {
@@ -523,8 +551,11 @@ export default function MobileTrade() {
 
   const handlePairSelectionModal = useCallback((pair: CryptoPair) => {
     console.log('Pair selected from modal:', pair);
+    
+    // Update state immediately
     setSelectedPair(pair);
     setCurrentSymbol(pair.symbol);
+    setTradingViewSymbol(pair.tradingViewSymbol);
     setShowPairSelectorModal(false);
     
     // Update persistent storage immediately
@@ -545,6 +576,10 @@ export default function MobileTrade() {
         globalWidget.widget.setSymbol(pair.tradingViewSymbol, () => {
           console.log('Chart symbol changed to', pair.symbol);
           globalWidget.currentSymbol = pair.symbol;
+          
+          // Force UI update after chart symbol change
+          setCurrentSymbol(pair.symbol);
+          setSelectedPair(pair);
         });
       } catch (error) {
         console.log('Failed to change symbol on persistent chart, reloading');
@@ -555,7 +590,14 @@ export default function MobileTrade() {
       loadChart(pair.tradingViewSymbol, false);
     }
     
+    // Update price immediately
     updatePrice(pair.symbol);
+    
+    // Force re-render by updating a state that triggers UI updates
+    setTimeout(() => {
+      setCurrentSymbol(pair.symbol);
+      setSelectedPair(pair);
+    }, 100);
   }, [isTradingViewReady, loadChart, selectedTimeframe]);
 
   // Add preload hints and load TradingView script with maximum optimization
