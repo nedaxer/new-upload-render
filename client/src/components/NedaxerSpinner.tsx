@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 
 interface NedaxerSpinnerProps {
   isVisible: boolean;
+  isPulling?: boolean;
+  pullProgress?: number;
   onComplete?: () => void;
 }
 
-export function NedaxerSpinner({ isVisible, onComplete }: NedaxerSpinnerProps) {
+export function NedaxerSpinner({ isVisible, isPulling = false, pullProgress = 0, onComplete }: NedaxerSpinnerProps) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const letters = [
@@ -19,7 +21,7 @@ export function NedaxerSpinner({ isVisible, onComplete }: NedaxerSpinnerProps) {
   ];
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible || isPulling) {
       setIsAnimating(true);
     } else {
       // Delay hiding to allow fade out animation
@@ -29,47 +31,67 @@ export function NedaxerSpinner({ isVisible, onComplete }: NedaxerSpinnerProps) {
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, onComplete]);
+  }, [isVisible, isPulling, onComplete]);
 
-  if (!isAnimating && !isVisible) return null;
+  if (!isAnimating && !isVisible && !isPulling) return null;
+
+  // Calculate spinner position based on pull progress
+  const spinnerScale = isPulling ? Math.min(pullProgress * 1.2, 1) : 1;
+  const spinnerOpacity = isPulling ? Math.min(pullProgress * 1.5, 1) : isVisible ? 1 : 0;
+  const rotation = isPulling ? pullProgress * 180 : 0; // Rotate based on pull progress
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm transition-opacity duration-300 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
+      className={`fixed inset-0 z-50 flex items-start justify-center pt-20 transition-all duration-300 ${
+        isVisible ? 'bg-white/80 backdrop-blur-sm' : 'bg-transparent'
       }`}
+      style={{ 
+        opacity: spinnerOpacity,
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
     >
-      <div className="relative w-32 h-32">
+      <div 
+        className="relative w-24 h-24 transition-transform duration-200"
+        style={{ 
+          transform: `scale(${spinnerScale})`,
+        }}
+      >
         {/* Spinning circle container */}
         <div 
-          className={`absolute inset-0 animate-spin ${isVisible ? 'animate-spin' : ''}`}
-          style={{ animationDuration: '2s' }}
+          className={`absolute inset-0 transition-transform duration-200 ${
+            isVisible ? 'animate-spin' : ''
+          }`}
+          style={{ 
+            animationDuration: '2s',
+            transform: `rotate(${rotation}deg)`
+          }}
         >
           {letters.map((letter, index) => {
             const angle = (index * 360) / letters.length;
-            const radius = 50; // Distance from center
+            const radius = 40; // Distance from center
             const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
             const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
             
             return (
               <div
                 key={index}
-                className="absolute w-8 h-8 flex items-center justify-center"
+                className="absolute w-6 h-6 flex items-center justify-center"
                 style={{
-                  left: `calc(50% + ${x}px - 16px)`,
-                  top: `calc(50% + ${y}px - 16px)`,
-                  transform: `rotate(${-angle}deg)`, // Counter-rotate to keep letters upright
+                  left: `calc(50% + ${x}px - 12px)`,
+                  top: `calc(50% + ${y}px - 12px)`,
+                  transform: `rotate(${-angle - rotation}deg)`, // Counter-rotate to keep letters upright
                 }}
               >
                 <img
                   src={letter.src}
                   alt={letter.alt}
-                  className={`w-6 h-6 object-contain transition-transform duration-200 ${
-                    isVisible ? 'animate-pulse scale-110' : 'scale-100'
+                  className={`w-5 h-5 object-contain transition-all duration-200 ${
+                    isVisible ? 'animate-pulse' : ''
                   }`}
                   style={{
                     animationDelay: `${index * 0.1}s`,
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                    transform: `scale(${isPulling ? Math.min(pullProgress + 0.5, 1.2) : 1})`
                   }}
                 />
               </div>
@@ -79,18 +101,34 @@ export function NedaxerSpinner({ isVisible, onComplete }: NedaxerSpinnerProps) {
         
         {/* Center logo/indicator */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className={`w-4 h-4 bg-blue-500 rounded-full transition-transform duration-300 ${
-            isVisible ? 'animate-ping' : ''
-          }`} />
+          <div 
+            className={`w-3 h-3 bg-blue-500 rounded-full transition-all duration-300 ${
+              isVisible ? 'animate-ping' : ''
+            }`}
+            style={{
+              transform: `scale(${isPulling ? pullProgress : 1})`
+            }}
+          />
         </div>
       </div>
       
       {/* Loading text */}
-      <div className="absolute bottom-1/3 left-1/2 transform -translate-x-1/2">
-        <p className="text-gray-600 text-sm font-medium animate-pulse">
-          Loading...
-        </p>
-      </div>
+      {isVisible && (
+        <div className="absolute top-32 left-1/2 transform -translate-x-1/2">
+          <p className="text-gray-600 text-sm font-medium animate-pulse">
+            Refreshing...
+          </p>
+        </div>
+      )}
+      
+      {/* Pull indicator text */}
+      {isPulling && !isVisible && (
+        <div className="absolute top-32 left-1/2 transform -translate-x-1/2">
+          <p className="text-gray-500 text-xs font-medium">
+            {pullProgress >= 1 ? 'Release to refresh' : 'Pull to refresh'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

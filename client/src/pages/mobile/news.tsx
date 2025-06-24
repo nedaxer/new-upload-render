@@ -52,10 +52,13 @@ export default function MobileNews() {
   const { 
     containerRef, 
     isRefreshing, 
-    shouldShowSpinner 
+    isPulling,
+    pullProgress,
+    shouldShowSpinner,
+    shouldShowPullIndicator 
   } = usePullToRefresh({
     onRefresh: handleRefresh,
-    threshold: 80,
+    threshold: 100,
     disabled: isLoading
   });
 
@@ -141,7 +144,9 @@ export default function MobileNews() {
     <MobileLayout>
       {/* Nedaxer Spinner */}
       <NedaxerSpinner 
-        isVisible={shouldShowSpinner || isRefreshing} 
+        isVisible={isRefreshing}
+        isPulling={shouldShowPullIndicator}
+        pullProgress={pullProgress}
         onComplete={() => {
           // Additional cleanup if needed
         }}
@@ -152,7 +157,8 @@ export default function MobileNews() {
         className="h-full overflow-y-auto"
         style={{ 
           WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain'
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y' // Allow vertical panning
         }}
       >
         <div className="bg-white px-4 py-4 border-b border-gray-200">
