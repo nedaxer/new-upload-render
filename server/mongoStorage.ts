@@ -249,11 +249,36 @@ export class MongoStorage implements IMongoStorage {
   }
 
   // User preferences management - stored as embedded document
-  async updateUserPreferences(userId: string, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void> {
+  async updateUserPreferences(userId: string, preferences: { 
+    lastSelectedPair?: string; 
+    lastSelectedCrypto?: string; 
+    lastSelectedTab?: string;
+    chartSettings?: any;
+  }): Promise<void> {
     try {
+      const updateData: any = {};
+      
+      if (preferences.lastSelectedPair !== undefined) {
+        updateData['preferences.lastSelectedPair'] = preferences.lastSelectedPair;
+      }
+      if (preferences.lastSelectedCrypto !== undefined) {
+        updateData['preferences.lastSelectedCrypto'] = preferences.lastSelectedCrypto;
+      }
+      if (preferences.lastSelectedTab !== undefined) {
+        updateData['preferences.lastSelectedTab'] = preferences.lastSelectedTab;
+      }
+      if (preferences.chartSettings !== undefined) {
+        updateData['preferences.chartSettings'] = {
+          ...preferences.chartSettings,
+          lastUpdated: Date.now()
+        };
+      }
+
       await User.findByIdAndUpdate(userId, {
-        $set: { preferences }
+        $set: updateData
       });
+      
+      console.log('User preferences updated in MongoDB:', { userId, preferences: Object.keys(updateData) });
     } catch (error) {
       console.error('Error updating user preferences:', error);
       throw error;
