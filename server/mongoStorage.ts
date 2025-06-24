@@ -260,10 +260,24 @@ export class MongoStorage implements IMongoStorage {
     }
   }
 
-  async getUserPreferences(userId: string): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null> {
+  async getUserPreferences(userId: string): Promise<{ 
+    lastSelectedPair?: string; 
+    lastSelectedCrypto?: string; 
+    lastSelectedTab?: string;
+    chartSettings?: any;
+  } | null> {
     try {
       const user = await User.findById(userId).select('preferences');
-      return user?.preferences || null;
+      const preferences = user?.preferences || {};
+      
+      console.log('Retrieved user preferences from MongoDB:', { userId, preferences });
+      
+      return {
+        lastSelectedPair: preferences.lastSelectedPair,
+        lastSelectedCrypto: preferences.lastSelectedCrypto, 
+        lastSelectedTab: preferences.lastSelectedTab,
+        chartSettings: preferences.chartSettings
+      };
     } catch (error) {
       console.error('Error getting user preferences:', error);
       return null;
