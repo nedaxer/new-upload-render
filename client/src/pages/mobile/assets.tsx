@@ -7,6 +7,7 @@ import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { PullToRefresh } from '@/components/pull-to-refresh';
 import { 
   Eye, 
   EyeOff,
@@ -22,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useAuth } from '@/hooks/use-auth';
@@ -31,6 +32,7 @@ import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 export default function MobileAssets() {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -248,6 +250,19 @@ export default function MobileAssets() {
     setCurrentView('assets');
   };
 
+  // Handle pull-to-refresh
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/crypto/realtime-prices'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/balances'] })
+      ]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  };
+
   const handleQRScan = () => {
     // Check if device has camera access
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -343,8 +358,9 @@ export default function MobileAssets() {
   // Default assets page view
   return (
     <MobileLayout>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <PullToRefresh onRefresh={handleRefresh}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 bg-gray-900">
         <h1 className="text-xl font-bold text-white">My Assets</h1>
         <button onClick={handleQRScan} className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
           <QrCode className="w-4 h-4 text-gray-400" />
@@ -713,6 +729,7 @@ export default function MobileAssets() {
         onClose={() => setComingSoonOpen(false)}
         feature={comingSoonFeature}
       />
+      </PullToRefresh>
     </MobileLayout>
   );
 }

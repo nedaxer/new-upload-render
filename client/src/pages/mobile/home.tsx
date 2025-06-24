@@ -8,6 +8,7 @@ import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { PullToRefresh } from '@/components/pull-to-refresh';
 import { 
   Search, 
   Bell, 
@@ -429,6 +430,21 @@ export default function MobileHome() {
     }
   };
 
+  // Handle pull-to-refresh
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/crypto/realtime-prices'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/balances'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/favorites'] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] })
+      ]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  };
+
 
 
   // Show different views based on current state
@@ -542,8 +558,9 @@ export default function MobileHome() {
 
   return (
     <MobileLayout>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <PullToRefresh onRefresh={handleRefresh}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 bg-gray-900">
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
@@ -787,12 +804,13 @@ export default function MobileHome() {
         onSelectMethod={handlePaymentMethodSelect}
       />
 
-      {/* Coming Soon Modal */}
-      <ComingSoonModal
-        isOpen={comingSoonOpen}
-        onClose={() => setComingSoonOpen(false)}
-        feature={comingSoonFeature}
-      />
+        {/* Coming Soon Modal */}
+        <ComingSoonModal
+          isOpen={comingSoonOpen}
+          onClose={() => setComingSoonOpen(false)}
+          feature={comingSoonFeature}
+        />
+      </PullToRefresh>
     </MobileLayout>
   );
 }

@@ -1,9 +1,10 @@
 import { MobileLayout } from '@/components/mobile-layout';
 import { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
+import { PullToRefresh } from '@/components/pull-to-refresh';
 
 interface NewsArticle {
   title: string;
@@ -18,6 +19,7 @@ interface NewsArticle {
 
 export default function MobileNews() {
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [refreshKey, setRefreshKey] = useState(0);
   const [liveNewsData, setLiveNewsData] = useState<NewsArticle[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -97,6 +99,16 @@ export default function MobileNews() {
     };
   }, []);
 
+  // Handle pull-to-refresh
+  const handleRefresh = async () => {
+    try {
+      setRefreshKey(prev => prev + 1);
+      await queryClient.invalidateQueries({ queryKey: ['/api/crypto/news'] });
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  };
+
   // Use live news data if available, otherwise fall back to regular API data
   const displayNewsData = liveNewsData.length > 0 ? liveNewsData : newsData;
 
@@ -120,6 +132,7 @@ export default function MobileNews() {
 
   return (
     <MobileLayout>
+      <PullToRefresh onRefresh={handleRefresh}>
       <div className="bg-white px-4 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -252,6 +265,7 @@ export default function MobileNews() {
           </Button>
         </div>
       )}
+      </PullToRefresh>
     </MobileLayout>
   );
 }
