@@ -95,9 +95,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import RSS parser with proper ES module handling
       const { default: Parser } = await import('rss-parser');
       const parser = new Parser({
-        timeout: 10000,
+        timeout: 15000,
         headers: {
-          'User-Agent': 'Nedaxer-News-Aggregator/1.0'
+          'User-Agent': 'Mozilla/5.0 (compatible; Nedaxer-News-Aggregator/1.0)'
+        },
+        customFields: {
+          item: [
+            ['media:content', 'mediaContent'],
+            ['media:thumbnail', 'mediaThumbnail'],
+            ['content:encoded', 'contentEncoded']
+          ]
         }
       });
 
@@ -120,29 +127,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const fetchPromise = parser.parseURL(url)
           .then((feed: any) => {
             return feed.items.slice(0, 5).map((item: any) => {
-              // Enhanced image extraction
+              // Enhanced image extraction with source-specific handling
               let imageUrl = null;
               
-              // Try multiple image sources
-              if (item.enclosure?.url && (item.enclosure.type?.includes('image') || item.enclosure.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
-                imageUrl = item.enclosure.url;
-              } else if (item['media:thumbnail']?.['$']?.url) {
-                imageUrl = item['media:thumbnail']['$'].url;
-              } else if (item['media:content']?.['$']?.url && item['media:content']['$'].medium === 'image') {
-                imageUrl = item['media:content']['$'].url;
-              } else if (item.image?.url) {
-                imageUrl = item.image.url;
-              } else if (item.content && typeof item.content === 'string') {
-                // Extract image from content
-                const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+              // Source-specific image extraction
+              if (source === 'Google News - Crypto' || source === 'Google News - Bitcoin') {
+                // Google News specific handling
+                if (item.mediaContent) {
+                  if (Array.isArray(item.mediaContent)) {
+                    const imageContent = item.mediaContent.find((content: any) => 
+                      content['$']?.medium === 'image' || content['$']?.type?.includes('image')
+                    );
+                    if (imageContent?.['$']?.url) {
+                      imageUrl = imageContent['$'].url;
+                    }
+                  } else if (item.mediaContent['$']?.url) {
+                    imageUrl = item.mediaContent['$'].url;
+                  }
+                } else if (item.mediaThumbnail?.['$']?.url) {
+                  imageUrl = item.mediaThumbnail['$'].url;
+                } else if (item['media:content']) {
+                  if (Array.isArray(item['media:content'])) {
+                    const imageContent = item['media:content'].find((content: any) => 
+                      content['$']?.medium === 'image' || content['$']?.type?.includes('image')
+                    );
+                    if (imageContent?.['$']?.url) {
+                      imageUrl = imageContent['$'].url;
+                    }
+                  } else if (item['media:content']['$']?.url) {
+                    imageUrl = item['media:content']['$'].url;
+                  }
+                } else if (item['media:thumbnail']?.['$']?.url) {
+                  imageUrl = item['media:thumbnail']['$'].url;
+                }
+              } else if (source === 'CryptoSlate') {
+                // CryptoSlate specific handling
+                if (item.enclosure?.url) {
+                  imageUrl = item.enclosure.url;
+                } else if (item.mediaContent?.['$']?.url) {
+                  imageUrl = item.mediaContent['$'].url;
+                } else if (item['media:content']?.['$']?.url) {
+                  imageUrl = item['media:content']['$'].url;
+                } else if (item.contentEncoded) {
+                  const imgMatch = item.contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                } else if (item['content:encoded']) {
+                  const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+              } else if (source === 'BeInCrypto') {
+                // BeInCrypto specific handling
+                if (item.mediaThumbnail?.['$']?.url) {
+                  imageUrl = item.mediaThumbnail['$'].url;
+                } else if (item['media:thumbnail']?.['$']?.url) {
+                  imageUrl = item['media:thumbnail']['$'].url;
+                } else if (item.enclosure?.url) {
+                  imageUrl = item.enclosure.url;
+                } else if (item.contentEncoded) {
+                  const imgMatch = item.contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                } else if (item['content:encoded']) {
+                  const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+              } else if (source === 'CoinDesk') {
+                // CoinDesk specific handling
+                if (item.enclosure?.url && item.enclosure.type?.includes('image')) {
+                  imageUrl = item.enclosure.url;
+                } else if (item.mediaContent?.['$']?.url) {
+                  imageUrl = item.mediaContent['$'].url;
+                } else if (item['media:content']?.['$']?.url) {
+                  imageUrl = item['media:content']['$'].url;
+                } else if (item.contentEncoded) {
+                  const imgMatch = item.contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                } else if (item['content:encoded']) {
+                  const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+              } else if (source === 'CryptoBriefing') {
+                // CryptoBriefing specific handling
+                if (item.mediaThumbnail?.['$']?.url) {
+                  imageUrl = item.mediaThumbnail['$'].url;
+                } else if (item['media:thumbnail']?.['$']?.url) {
+                  imageUrl = item['media:thumbnail']['$'].url;
+                } else if (item.enclosure?.url) {
+                  imageUrl = item.enclosure.url;
+                } else if (item.contentEncoded) {
+                  const imgMatch = item.contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                } else if (item['content:encoded']) {
+                  const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+              } else {
+                // Generic image extraction for other sources
+                if (item.enclosure?.url && (item.enclosure.type?.includes('image') || item.enclosure.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
+                  imageUrl = item.enclosure.url;
+                } else if (item['media:thumbnail']?.['$']?.url) {
+                  imageUrl = item['media:thumbnail']['$'].url;
+                } else if (item['media:content']?.['$']?.url && item['media:content']['$'].medium === 'image') {
+                  imageUrl = item['media:content']['$'].url;
+                } else if (item.image?.url) {
+                  imageUrl = item.image.url;
+                } else if (item.content && typeof item.content === 'string') {
+                  const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                } else if (item['content:encoded']) {
+                  const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
+                  if (imgMatch) {
+                    imageUrl = imgMatch[1];
+                  }
+                }
+              }
+              
+              // Additional fallback image extraction from description
+              if (!imageUrl && item.description) {
+                const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
                 if (imgMatch) {
                   imageUrl = imgMatch[1];
                 }
-              } else if (item['content:encoded']) {
-                // Extract from encoded content
-                const imgMatch = item['content:encoded'].match(/<img[^>]+src="([^">]+)"/);
-                if (imgMatch) {
-                  imageUrl = imgMatch[1];
+              }
+              
+              // Clean up relative URLs
+              if (imageUrl && imageUrl.startsWith('//')) {
+                imageUrl = 'https:' + imageUrl;
+              } else if (imageUrl && imageUrl.startsWith('/')) {
+                // Handle relative URLs based on source domain
+                const domainMap = {
+                  'CoinDesk': 'https://www.coindesk.com',
+                  'CoinTelegraph': 'https://cointelegraph.com',
+                  'Decrypt': 'https://decrypt.co',
+                  'CryptoSlate': 'https://cryptoslate.com',
+                  'CryptoBriefing': 'https://cryptobriefing.com',
+                  'BeInCrypto': 'https://beincrypto.com',
+                  'CryptoNews': 'https://cryptonews.com'
+                };
+                const domain = domainMap[source];
+                if (domain) {
+                  imageUrl = domain + imageUrl;
                 }
               }
               

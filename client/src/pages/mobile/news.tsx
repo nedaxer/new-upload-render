@@ -130,6 +130,22 @@ export default function MobileNews() {
     }
   };
 
+  const getSourceIcon = (sourceName: string) => {
+    const sourceIcons: { [key: string]: string } = {
+      'CoinDesk': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 text-white text-xs font-bold">CD</div>',
+      'CoinTelegraph': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white text-xs font-bold">CT</div>',
+      'Decrypt': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700 text-white text-xs font-bold">DE</div>',
+      'CryptoSlate': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-500 to-green-700 text-white text-xs font-bold">CS</div>',
+      'CryptoBriefing': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-500 to-red-700 text-white text-xs font-bold">CB</div>',
+      'BeInCrypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-500 to-yellow-600 text-white text-xs font-bold">BC</div>',
+      'CryptoNews': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 text-white text-xs font-bold">CN</div>',
+      'Google News - Crypto': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>',
+      'Google News - Bitcoin': '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white text-xs font-bold">GN</div>'
+    };
+    
+    return sourceIcons[sourceName] || '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs font-bold">📰</div>';
+  };
+
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
@@ -208,26 +224,28 @@ export default function MobileNews() {
                 
                 {/* Image Section */}
                 <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden relative">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden relative">
                     {article.urlToImage ? (
                       <img 
                         src={article.urlToImage} 
                         alt={article.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-opacity duration-300"
                         loading="lazy"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0OEM0NC40MTgzIDQ4IDQ4IDQ0LjQxODMgNDggNDBDNDggMzUuNTgxNyA0NC40MTgzIDMyIDQwIDMyQzM1LjU4MTcgMzIgMzIgMzUuNTgxNyAzMiA0MEMzMiA0NC40MTgzIDM1LjU4MTcgNDggNDAgNDhaIiBmaWxsPSIjOUI5QjlCIi8+CjxwYXRoIGQ9Ik0yNCA1NkM0MCA1NiA1NiA1NiA1NiA1NlY0OEg0MFYzMkgyNFY1NloiIGZpbGw9IiM5QjlCOUIiLz4KPC9zdmc+';
-                          target.className = "w-full h-full object-cover bg-gray-200";
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = getSourceIcon(article.source?.name || 'Crypto News');
+                          }
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
-                        <div className="text-center">
-                          <div className="text-lg mb-1">📰</div>
-                          <div className="text-xs">News</div>
-                        </div>
-                      </div>
+                      <div 
+                        className="w-full h-full flex items-center justify-center"
+                        dangerouslySetInnerHTML={{ 
+                          __html: getSourceIcon(article.source?.name || 'Crypto News') 
+                        }}
+                      />
                     )}
                   </div>
                 </div>
