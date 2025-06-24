@@ -97,8 +97,13 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
     // Only trigger refresh if pulled all the way to the threshold
     if (pullDistance >= PULL_THRESHOLD) {
+      // Immediately reset pull distance to make logo return
+      setPullDistance(0);
       setIsRefreshing(true);
       setIsReturning(true);
+      
+      // Show Nedaxer header immediately
+      setShowNedaxerHeader(true);
       
       try {
         await onRefresh();
@@ -108,31 +113,27 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         console.error('Refresh failed:', error);
       } finally {
         setIsRefreshing(false);
-        // Show Nedaxer header after refresh completes
+        // Hide Nedaxer header after refresh completes
         setTimeout(() => {
-          setShowNedaxerHeader(true);
-          // Hide Nedaxer header after 3 seconds
-          setTimeout(() => {
-            setShowNedaxerHeader(false);
-            setIsReturning(false);
-          }, 3000);
+          setShowNedaxerHeader(false);
+          setIsReturning(false);
         }, 500);
       }
+    } else {
+      // Smoothly reset pull distance if not refreshing
+      const resetAnimation = () => {
+        setPullDistance(prev => {
+          const newDistance = prev * 0.85;
+          if (newDistance > 1) {
+            requestAnimationFrame(resetAnimation);
+            return newDistance;
+          }
+          setIsReturning(false);
+          return 0;
+        });
+      };
+      resetAnimation();
     }
-
-    // Smoothly reset pull distance
-    const resetAnimation = () => {
-      setPullDistance(prev => {
-        const newDistance = prev * 0.85;
-        if (newDistance > 1) {
-          requestAnimationFrame(resetAnimation);
-          return newDistance;
-        }
-        setIsReturning(false);
-        return 0;
-      });
-    };
-    resetAnimation();
   };
 
   useEffect(() => {
@@ -183,101 +184,95 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator with orange gradient background blending with app colors */}
-      <div 
-        className="relative overflow-hidden transition-all duration-500 ease-out"
-        style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 200 : 0) : 0,
-          background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 90%, 45%) 20%, hsl(39, 70%, 40%) 40%, hsl(220, 13%, 30%) 70%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
-        } as React.CSSProperties}
-      >
-        <AnimatePresence>
-          {(pullDistance > 0 || isRefreshing) && (
-            <motion.div
-              initial={{ opacity: 0, y: -40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ 
-                opacity: 0, 
-                y: -40,
-                transition: { duration: 0.8, ease: "easeInOut" }
-              }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 120, 
-                damping: 25,
-                duration: 1.2
-              }}
-              className="absolute inset-0 flex flex-col items-center justify-center"
-            >
-              {/* Show refresh logo with smooth drop animation (no rotation) */}
-              {showLogo && !isRefreshing && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.3, y: -60 }}
-                  animate={{ 
-                    opacity: logoOpacity, 
-                    scale: logoScale,
-                    y: 0
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 160,
-                    damping: 30,
-                    mass: 1.5,
-                    duration: 1.8
-                  }}
-                  className="flex items-center justify-center h-full w-full"
-                >
-                  <motion.img
-                    src={refreshLogo}
-                    alt="Refresh Logo"
-                    className="object-contain drop-shadow-2xl"
-                    style={{
-                      height: '85%',
-                      width: 'auto',
-                      maxWidth: '85%',
-                      filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
-                    }}
-                    animate={{
-                      filter: [
-                        'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))',
-                        'brightness(1.25) contrast(1.15) drop-shadow(0 12px 32px rgba(0,0,0,0.4))',
-                        'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
-                      ]
+      {/* Pull indicator with orange gradient background - only show when pulling */}
+      {pullDistance > 0 && (
+        <div 
+          className="relative overflow-hidden transition-all duration-300 ease-out"
+          style={{
+            height: pullDistance,
+            background: 'linear-gradient(180deg, hsl(39, 100%, 50%) 0%, hsl(39, 90%, 45%) 20%, hsl(39, 70%, 40%) 40%, hsl(220, 13%, 30%) 70%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)'
+          } as React.CSSProperties}
+        >
+          <AnimatePresence>
+            {pullDistance > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ 
+                  opacity: 0, 
+                  y: -40,
+                  transition: { duration: 0.4, ease: "easeInOut" }
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 120, 
+                  damping: 25,
+                  duration: 0.8
+                }}
+                className="absolute inset-0 flex flex-col items-center justify-center"
+              >
+                {/* Show refresh logo with smooth drop animation */}
+                {showLogo && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.3, y: -60 }}
+                    animate={{ 
+                      opacity: logoOpacity, 
+                      scale: logoScale,
+                      y: 0
                     }}
                     transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      ease: "easeInOut"
+                      type: "spring",
+                      stiffness: 160,
+                      damping: 30,
+                      mass: 1.5,
+                      duration: 1.8
                     }}
-                  />
-                </motion.div>
-              )}
+                    className="flex items-center justify-center h-full w-full"
+                  >
+                    <motion.img
+                      src={refreshLogo}
+                      alt="Refresh Logo"
+                      className="object-contain drop-shadow-2xl"
+                      style={{
+                        height: '85%',
+                        width: 'auto',
+                        maxWidth: '85%',
+                        filter: 'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
+                      }}
+                      animate={{
+                        filter: [
+                          'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))',
+                          'brightness(1.25) contrast(1.15) drop-shadow(0 12px 32px rgba(0,0,0,0.4))',
+                          'brightness(1.15) contrast(1.1) drop-shadow(0 8px 24px rgba(0,0,0,0.3))'
+                        ]
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  </motion.div>
+                )}
 
-              {/* Release to refresh message */}
-              {showReleaseMessage && !isRefreshing && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.8 }}
-                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-                >
-                  <p className="text-white text-base font-semibold text-center drop-shadow-xl">
-                    Release to refresh
-                  </p>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Smooth gradient transition blending orange with app colors */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
-          style={{
-            background: 'linear-gradient(180deg, rgba(251, 146, 60, 0.4) 0%, rgba(156, 163, 175, 0.3) 25%, rgba(75, 85, 99, 0.2) 50%, rgba(55, 65, 81, 0.1) 75%, transparent 100%)'
-          }}
-        />
-      </div>
+                {/* Release to refresh message */}
+                {showReleaseMessage && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.8 }}
+                    className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+                  >
+                    <p className="text-white text-base font-semibold text-center drop-shadow-xl">
+                      Release to refresh
+                    </p>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Separate Nedaxer header with app colors and jumping animation */}
       <AnimatePresence>
