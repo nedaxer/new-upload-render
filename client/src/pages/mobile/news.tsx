@@ -24,8 +24,8 @@ export default function MobileNews() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const { data: newsData, isLoading, error, refetch } = useQuery<NewsArticle[]>({
-    queryKey: ['/api/crypto/news', refreshKey],
+  const { data: newsData, isLoading, error } = useQuery<NewsArticle[]>({
+    queryKey: ['/api/crypto/news'],
     queryFn: async () => {
       const response = await fetch('/api/crypto/news');
       if (!response.ok) {
@@ -33,11 +33,10 @@ export default function MobileNews() {
       }
       return response.json();
     },
-    refetchInterval: 5 * 60 * 1000, // Fallback refresh every 5 minutes
-    retry: 3,
-    retryDelay: 2000,
-    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
-    gcTime: 10 * 60 * 1000 // Keep in cache for 10 minutes
+    retry: 2,
+    retryDelay: 3000,
+    staleTime: 10 * 60 * 1000, // Consider data stale after 10 minutes
+    gcTime: 30 * 60 * 1000 // Keep in cache for 30 minutes
   });
 
   // WebSocket connection for real-time news updates
@@ -100,11 +99,6 @@ export default function MobileNews() {
   // Use live news data if available, otherwise fall back to regular API data
   const displayNewsData = liveNewsData.length > 0 ? liveNewsData : newsData;
 
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-    refetch();
-  };
-
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -139,15 +133,6 @@ export default function MobileNews() {
                 {lastUpdate.toLocaleTimeString()}
               </span>
             )}
-            <Button
-              onClick={handleRefresh}
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
           </div>
         </div>
       </div>
@@ -170,28 +155,15 @@ export default function MobileNews() {
             <div className="text-red-400 text-sm mb-2">
               Unable to fetch crypto news
             </div>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              size="sm"
-              className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
-            >
-              Try Again
-            </Button>
+            <div className="text-red-400 text-sm">
+              Please check your internet connection
+            </div>
           </div>
         </div>
       )}
 
       {displayNewsData && displayNewsData.length > 0 && (
         <div className="px-4 space-y-4">
-          {isLoading && (
-            <div className="text-center py-2">
-              <div className="inline-flex items-center text-blue-400 text-sm">
-                <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
-                Updating news...
-              </div>
-            </div>
-          )}
 
           {displayNewsData.map((article, index) => (
             <a

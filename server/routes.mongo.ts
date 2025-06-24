@@ -92,8 +92,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Crypto news endpoint using RSS feeds
   app.get('/api/crypto/news', async (req: Request, res: Response) => {
     try {
-      const Parser = require('rss-parser');
-      const parser = new Parser();
+      // Import RSS parser with proper ES module handling
+      const { default: Parser } = await import('rss-parser');
+      const parser = new Parser({
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Nedaxer-News-Aggregator/1.0'
+        }
+      });
 
       const feeds = {
         'CoinDesk': 'https://www.coindesk.com/arc/outboundfeeds/rss/',
