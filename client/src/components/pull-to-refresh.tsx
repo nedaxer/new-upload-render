@@ -120,9 +120,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   }, [isPulling, startY, pullDistance, isRefreshing, disabled]);
 
   const getVisibleLetters = () => {
-    if (pullDistance < 30) return 0;
-    const progress = Math.min((pullDistance - 30) / 100, 1);
-    const letterCount = Math.round(progress * letters.length);
+    if (pullDistance < 20) return 0;
+    const progress = Math.min((pullDistance - 20) / 80, 1);
+    const letterCount = Math.ceil(progress * letters.length);
     return letterCount;
   };
 
@@ -135,7 +135,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       <div 
         className="relative overflow-hidden transition-all duration-300 ease-out bg-gray-900"
         style={{
-          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 140 : 0) : 0
+          height: pullDistance > 0 || isRefreshing ? Math.max(pullDistance, isRefreshing ? 160 : 0) : 0
         }}
       >
         <AnimatePresence>
@@ -144,26 +144,19 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center"
-              className="bg-gray-900"
+              className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900"
             >
               {!showRefreshLogo && !isRefreshing && (
-                <div className="flex items-center justify-center space-x-1 px-4">
+                <div className="flex items-center justify-center space-x-1 px-4 w-full">
                   {letters.map((letter, index) => (
                     <motion.img
                       key={index}
                       src={letter}
                       alt={`Letter ${index + 1}`}
-                      className="h-8 w-auto flex-shrink-0"
-                      initial={{ opacity: 0, y: -10, scale: 0.9 }}
-                      animate={{ 
-                        opacity: index < visibleLetterCount ? 1 : 0.3, 
-                        y: 0, 
-                        scale: index < visibleLetterCount ? 1 : 0.9
-                      }}
-                      transition={{ 
-                        duration: 0.2,
-                        delay: index * 0.03
+                      className="h-10 w-auto flex-shrink-0"
+                      style={{
+                        opacity: index < visibleLetterCount ? 1 : 0,
+                        transform: `scale(${index < visibleLetterCount ? 1 : 0.8})`
                       }}
                     />
                   ))}
@@ -171,42 +164,27 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               )}
 
               {(showRefreshLogo || isRefreshing) && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: 1,
-                    rotate: isRefreshing ? 360 : 0
-                  }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 260, 
-                    damping: 20,
-                    rotate: { 
-                      duration: isRefreshing ? 1.5 : 0, 
-                      repeat: isRefreshing ? Infinity : 0,
-                      ease: "linear"
-                    }
+                <div 
+                  className="flex items-center justify-center"
+                  style={{
+                    opacity: showRefreshLogo || isRefreshing ? 1 : 0,
+                    transform: `scale(${showRefreshLogo || isRefreshing ? 1 : 0.3}) translateY(${showRefreshLogo || isRefreshing ? 0 : 30}px)`
                   }}
                 >
                   <img
                     src={refreshLogo}
                     alt="Refresh Logo"
-                    className="h-16 w-16 object-contain"
+                    className="h-24 w-24 object-contain"
                   />
-                </motion.div>
+                </div>
               )}
 
               {isRefreshing && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-2"
-                >
-                  <p className="text-orange-400 text-sm font-medium">
+                <div className="mt-3">
+                  <p className="text-orange-400 text-sm font-medium text-center">
                     Refreshing...
                   </p>
-                </motion.div>
+                </div>
               )}
             </motion.div>
           )}
