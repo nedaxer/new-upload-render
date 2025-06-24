@@ -1,15 +1,15 @@
-// Logo service for news sources - provides actual logos from local assets
+// Logo service for news sources - provides actual logos from uploaded brand assets
 export const getNewsSourceLogo = (sourceName: string): string | null => {
   const logoUrls: { [key: string]: string } = {
-    'CoinDesk': '/logos/coindesk.svg',
+    'CoinDesk': '/logos/coindesk.png',
     'CoinTelegraph': 'https://cointelegraph.com/favicon.ico',
     'Decrypt': 'https://decrypt.co/favicon.ico', 
-    'CryptoSlate': '/logos/cryptoslate.svg',
-    'CryptoBriefing': '/logos/cryptobriefing.svg',
-    'BeInCrypto': '/logos/beincrypto.svg',
+    'CryptoSlate': '/logos/cryptoslate.jpg',
+    'CryptoBriefing': '/logos/cryptobriefing.png',
+    'BeInCrypto': '/logos/beincrypto.jpg',
     'CryptoNews': 'https://cryptonews.com/favicon.ico',
-    'Google News - Crypto': '/logos/google-news.svg',
-    'Google News - Bitcoin': '/logos/google-news.svg',
+    'Google News - Crypto': '/logos/google-news.jpg',
+    'Google News - Bitcoin': '/logos/google-news.jpg',
     'Reuters': 'https://www.reuters.com/favicon.ico',
     'Bloomberg': 'https://www.bloomberg.com/favicon.ico',
     'CNBC': 'https://www.cnbc.com/favicon.ico',

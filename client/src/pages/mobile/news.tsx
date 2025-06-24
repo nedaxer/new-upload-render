@@ -134,12 +134,12 @@ export default function MobileNews() {
 
   const getSourceLogo = (sourceName: string) => {
     const logoMap: { [key: string]: string } = {
-      'CoinDesk': '/logos/coindesk.svg',
-      'CryptoSlate': '/logos/cryptoslate.svg',
-      'CryptoBriefing': '/logos/cryptobriefing.svg',
-      'BeInCrypto': '/logos/beincrypto.svg',
-      'Google News - Crypto': '/logos/google-news.svg',
-      'Google News - Bitcoin': '/logos/google-news.svg',
+      'CoinDesk': '/logos/coindesk.png',
+      'CryptoSlate': '/logos/cryptoslate.jpg',
+      'CryptoBriefing': '/logos/cryptobriefing.png',
+      'BeInCrypto': '/logos/beincrypto.jpg',
+      'Google News - Crypto': '/logos/google-news.jpg',
+      'Google News - Bitcoin': '/logos/google-news.jpg',
       'CoinTelegraph': 'https://cointelegraph.com/favicon.ico',
       'Decrypt': 'https://decrypt.co/favicon.ico',
       'CryptoNews': 'https://cryptonews.com/favicon.ico'
