@@ -18,8 +18,7 @@ interface PullToRefreshProps {
   disabled?: boolean;
 }
 
-const LETTER_THRESHOLD = 20;
-const LOGO_START_THRESHOLD = 80;
+const LOGO_START_THRESHOLD = 40;
 const LOGO_COMPLETE_THRESHOLD = 140;
 const PULL_THRESHOLD = 160;
 const MAX_PULL_DISTANCE = 200;
@@ -125,19 +124,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     };
   }, [isPulling, startY, pullDistance, isRefreshing, disabled]);
 
-  const showLetters = pullDistance >= LETTER_THRESHOLD;
   const showLogo = pullDistance >= LOGO_START_THRESHOLD;
   const logoComplete = pullDistance >= LOGO_COMPLETE_THRESHOLD;
   const showReleaseMessage = pullDistance >= PULL_THRESHOLD;
-
-  const getLetterOpacity = () => {
-    if (!showLetters) return 0;
-    if (!showLogo) return 1;
-    if (logoComplete) return 0;
-    // Fade out as logo appears
-    const fadeProgress = (pullDistance - LOGO_START_THRESHOLD) / (LOGO_COMPLETE_THRESHOLD - LOGO_START_THRESHOLD);
-    return 1 - fadeProgress;
-  };
 
   const getLogoOpacity = () => {
     if (!showLogo) return 0;
@@ -153,7 +142,6 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
     return 0.4 + (progress * 0.6);
   };
 
-  const letterOpacity = getLetterOpacity();
   const logoOpacity = getLogoOpacity();
   const logoScale = getLogoScale();
 
