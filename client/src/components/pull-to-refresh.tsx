@@ -219,23 +219,13 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                 }}
                 className="absolute inset-0 flex flex-col items-center justify-center"
               >
-                {/* Show much bigger refresh logo */}
+                {/* Show logo scrolling down smoothly like being pulled */}
                 {showLogo && (
                   <motion.div 
-                    initial={{ opacity: 0, scale: 0.2, y: -80 }}
-                    animate={{ 
-                      opacity: logoOpacity, 
-                      scale: logoScale,
-                      y: 0
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 140,
-                      damping: 28,
-                      mass: 1.8,
-                      duration: 2.0
-                    }}
                     className="flex items-center justify-center h-full w-full relative"
+                    style={{
+                      transform: `translateY(${Math.max(-100 + (pullDistance / MAX_PULL_DISTANCE) * 100, -50)}px)`
+                    }}
                   >
                     <motion.img
                       src={refreshLogo}
@@ -245,7 +235,9 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                         height: '95%',
                         width: 'auto',
                         maxWidth: '95%',
-                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
+                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))',
+                        opacity: logoOpacity,
+                        transform: `scale(${logoScale})`
                       }}
                       animate={{
                         filter: [
@@ -282,57 +274,57 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         </div>
       )}
 
-      {/* Separate Nedaxer header that blends seamlessly with mobile page */}
+      {/* Compact Nedaxer header that blends seamlessly with mobile page */}
       <AnimatePresence>
         {showNedaxerHeader && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 90, opacity: 1 }}
+            animate={{ height: 50, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ 
-              duration: 0.8, 
+              duration: 0.6, 
               ease: "easeInOut",
-              height: { duration: 0.6 },
-              opacity: { duration: 0.4 }
+              height: { duration: 0.5 },
+              opacity: { duration: 0.3 }
             }}
             className="relative overflow-hidden"
             style={{
-              background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 25%, hsl(220, 13%, 20%) 50%, hsl(220, 13%, 18%) 75%, hsl(220, 13%, 15%) 100%)'
+              background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 50%, hsl(220, 13%, 15%) 100%)'
             }}
           >
             <motion.div
-              initial={{ y: -30, scale: 0.8 }}
+              initial={{ y: -20, scale: 0.9 }}
               animate={{ y: 0, scale: 1 }}
-              exit={{ y: -30, scale: 0.8 }}
+              exit={{ y: -20, scale: 0.9 }}
               transition={{ 
-                delay: 0.2, 
-                duration: 0.6, 
+                delay: 0.1, 
+                duration: 0.5, 
                 type: "spring",
-                stiffness: 200,
-                damping: 20
+                stiffness: 250,
+                damping: 25
               }}
-              className="flex items-center justify-center h-full px-4"
+              className="flex items-center justify-center h-full px-3"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 {letters.map((letter, index) => (
                   <motion.img
                     key={`header-${index}`}
                     src={letter}
                     alt={`Letter ${index + 1}`}
-                    className="h-7 w-auto flex-shrink-0 drop-shadow-xl"
-                    initial={{ opacity: 0, y: 20 }}
+                    className="h-4 w-auto flex-shrink-0 drop-shadow-lg"
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ 
                       opacity: 1, 
-                      y: [0, -10, 0]
+                      y: [0, -6, 0]
                     }}
                     transition={{
                       opacity: {
-                        delay: 0.4 + (index * 0.1),
-                        duration: 0.5
+                        delay: 0.3 + (index * 0.08),
+                        duration: 0.4
                       },
                       y: {
-                        delay: 0.6 + (index * 0.1),
-                        duration: 0.9,
+                        delay: 0.5 + (index * 0.08),
+                        duration: 0.7,
                         repeat: Infinity,
                         repeatType: "loop",
                         ease: "easeInOut"
@@ -343,11 +335,11 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               </div>
             </motion.div>
             
-            {/* Perfect gradient blend with mobile page */}
+            {/* Compact gradient blend with mobile page */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none"
+              className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
               style={{
-                background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.6) 0%, rgba(51, 65, 85, 0.4) 30%, rgba(47, 59, 77, 0.2) 60%, rgba(45, 55, 72, 0.1) 80%, transparent 100%)'
+                background: 'linear-gradient(180deg, rgba(55, 65, 81, 0.5) 0%, rgba(51, 65, 85, 0.3) 50%, transparent 100%)'
               }}
             />
           </motion.div>
