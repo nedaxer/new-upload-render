@@ -380,9 +380,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
               
-              // Enhanced fallback - use generated logo endpoint if no image found
+              // Enhanced fallback - use actual brand logos if no image found
               if (!imageUrl) {
-                imageUrl = `/api/news/logo/${encodeURIComponent(source)}`;
+                const logoMap: { [key: string]: string } = {
+                  'CoinDesk': '/logos/coindesk.svg',
+                  'CryptoSlate': '/logos/cryptoslate.svg',
+                  'CryptoBriefing': '/logos/cryptobriefing.svg',
+                  'BeInCrypto': '/logos/beincrypto.svg',
+                  'Google News - Crypto': '/logos/google-news.svg',
+                  'Google News - Bitcoin': '/logos/google-news.svg',
+                  'CoinTelegraph': 'https://cointelegraph.com/favicon.ico',
+                  'Decrypt': 'https://decrypt.co/favicon.ico',
+                  'CryptoNews': 'https://cryptonews.com/favicon.ico'
+                };
+                imageUrl = logoMap[source] || `/api/news/logo/${encodeURIComponent(source)}`;
               }
               
               // Clean up relative URLs

@@ -1,15 +1,15 @@
-// Logo service for news sources - provides actual logos when images are missing
+// Logo service for news sources - provides actual logos from local assets
 export const getNewsSourceLogo = (sourceName: string): string | null => {
   const logoUrls: { [key: string]: string } = {
-    'CoinDesk': 'https://www.coindesk.com/favicon.ico',
+    'CoinDesk': '/logos/coindesk.svg',
     'CoinTelegraph': 'https://cointelegraph.com/favicon.ico',
     'Decrypt': 'https://decrypt.co/favicon.ico', 
-    'CryptoSlate': 'https://cryptoslate.com/wp-content/uploads/2019/05/cryptoslate-logo-light.png',
-    'CryptoBriefing': 'https://cryptobriefing.com/wp-content/uploads/2019/10/cb-logo-white.png',
-    'BeInCrypto': 'https://beincrypto.com/wp-content/uploads/2020/04/beincrypto-logo.png',
+    'CryptoSlate': '/logos/cryptoslate.svg',
+    'CryptoBriefing': '/logos/cryptobriefing.svg',
+    'BeInCrypto': '/logos/beincrypto.svg',
     'CryptoNews': 'https://cryptonews.com/favicon.ico',
-    'Google News - Crypto': 'https://news.google.com/favicon.ico',
-    'Google News - Bitcoin': 'https://news.google.com/favicon.ico',
+    'Google News - Crypto': '/logos/google-news.svg',
+    'Google News - Bitcoin': '/logos/google-news.svg',
     'Reuters': 'https://www.reuters.com/favicon.ico',
     'Bloomberg': 'https://www.bloomberg.com/favicon.ico',
     'CNBC': 'https://www.cnbc.com/favicon.ico',

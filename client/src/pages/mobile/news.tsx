@@ -133,7 +133,18 @@ export default function MobileNews() {
   };
 
   const getSourceLogo = (sourceName: string) => {
-    return `/api/news/logo/${encodeURIComponent(sourceName)}`;
+    const logoMap: { [key: string]: string } = {
+      'CoinDesk': '/logos/coindesk.svg',
+      'CryptoSlate': '/logos/cryptoslate.svg',
+      'CryptoBriefing': '/logos/cryptobriefing.svg',
+      'BeInCrypto': '/logos/beincrypto.svg',
+      'Google News - Crypto': '/logos/google-news.svg',
+      'Google News - Bitcoin': '/logos/google-news.svg',
+      'CoinTelegraph': 'https://cointelegraph.com/favicon.ico',
+      'Decrypt': 'https://decrypt.co/favicon.ico',
+      'CryptoNews': 'https://cryptonews.com/favicon.ico'
+    };
+    return logoMap[sourceName] || `/api/news/logo/${encodeURIComponent(sourceName)}`;
   };
 
   return (
