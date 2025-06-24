@@ -201,49 +201,29 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             }}
           />
           
-          <AnimatePresence>
-            {pullDistance > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ 
-                  opacity: 0, 
-                  y: -50,
-                  transition: { duration: 0.4, ease: "easeInOut" }
+          {/* Logo mounted on background without animations */}
+          {pullDistance > LOGO_START_THRESHOLD && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div 
+                className="flex items-center justify-center w-full relative"
+                style={{
+                  height: '100%'
                 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 120, 
-                  damping: 25,
-                  duration: 0.8
-                }}
-                className="absolute inset-0 flex flex-col items-center justify-center"
               >
-                {/* Show logo scrolling down naturally with pull gesture */}
-                {pullDistance > LOGO_START_THRESHOLD && (
-                  <div 
-                    className="flex items-center justify-center w-full relative"
-                    style={{
-                      height: '100%',
-                      transform: `translateY(${Math.max(-120 + (pullDistance * 0.8), -60)}px)`
-                    }}
-                  >
-                    <img
-                      src={refreshLogo}
-                      alt="Refresh Logo"
-                      className="object-contain drop-shadow-2xl"
-                      style={{
-                        height: 'calc(100% - 20px)',
-                        width: 'auto',
-                        maxWidth: 'calc(100% - 20px)',
-                        filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
-                      }}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <img
+                  src={refreshLogo}
+                  alt="Refresh Logo"
+                  className="object-contain drop-shadow-2xl"
+                  style={{
+                    height: 'calc(100% - 10px)',
+                    width: 'auto',
+                    maxWidth: 'calc(100% - 10px)',
+                    filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
