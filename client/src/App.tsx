@@ -83,10 +83,7 @@ import LegacyStaking from '@/pages/dashboard/staking';
 import LegacyDeposit from '@/pages/dashboard/deposit';
 
 // Admin Pages
-import AdminLogin from '@/pages/admin/login';
-import AdminDashboard from '@/pages/admin/dashboard';
-import AdminUsers from '@/pages/admin/users';
-import AdminStaking from '@/pages/admin/staking';
+import AdminPortal from '@/pages/admin-portal';
 
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
@@ -107,8 +104,7 @@ import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
-import MobileAdminLogin from '@/pages/mobile/admin-login';
-import MobileAdminDashboard from '@/pages/mobile/admin-dashboard';
+
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -275,12 +271,10 @@ export default function App() {
             <Route path="/mobile/security" component={MobileSecurity} />
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
-            <Route path="/mobile/admin-login" component={MobileAdminLogin} />
-            <Route path="/mobile/admin" component={MobileAdminDashboard} />
 
-            {/* Secret Admin Routes - Protected with admin flag */}
-            <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
-            <ProtectedRoute path="/admin-panel" component={AdminDashboard} adminOnly={true} />
+
+            {/* Admin Portal Route */}
+            <Route path="/admin-portal" component={AdminPortal} />
 
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />

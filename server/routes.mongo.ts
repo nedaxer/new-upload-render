@@ -481,23 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ success: false, message: "Not authenticated" });
       }
 
-      // Handle hardcoded admin user
-      if (req.session.userId === 'ADMIN001') {
-        return res.json({
-          _id: 'ADMIN001',
-          uid: 'ADMIN001',
-          username: 'nedaxer.us@gmail.com',
-          email: 'nedaxer.us@gmail.com',
-          firstName: 'System',
-          lastName: 'Administrator',
-          profilePicture: null,
-          favorites: [],
-          preferences: {},
-          isVerified: true,
-          isAdmin: true,
-          createdAt: new Date().toISOString()
-        });
-      }
+      // Standard user lookup from MongoDB
 
       const user = await mongoStorage.getUser(req.session.userId);
       if (!user) {
@@ -868,23 +852,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       
-      // Handle hardcoded admin user
-      if (userId === 'ADMIN001') {
-        return res.json({
-          success: true,
-          balances: [{
-            id: 'admin-usd-balance',
-            balance: 0,
-            currency: {
-              id: 'usd-currency',
-              symbol: 'USD',
-              name: 'US Dollar',
-              type: 'fiat',
-              isActive: true
-            }
-          }]
-        });
-      }
+      // Standard balance lookup
       
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
@@ -973,16 +941,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       
-      // Handle hardcoded admin user
-      if (userId === 'ADMIN001') {
-        return res.json({
-          success: true,
-          data: {
-            totalUSDValue: 0,
-            usdBalance: 0
-          }
-        });
-      }
+      // Standard wallet summary
       
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
@@ -1058,7 +1017,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/users/add-funds', requireAdmin, async (req: Request, res: Response) => {
+  // New Admin Portal Authentication
+  app.post('/api/admin/login', async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Simple admin credentials check
+      if (email === 'admin@nedaxer.com' && password === 'NedaxerAdmin2025') {
+        req.session.adminAuthenticated = true;
+        
+        res.json({
+          success: true,
+          message: "Admin authentication successful"
+        });
+      } else {
+        res.status(401).json({
+          success: false,
+          message: "Invalid admin credentials"
+        });
+      }
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ success: false, message: "Login failed" });
+    }
+  });
+
+  // Admin middleware for new portal
+  const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session?.adminAuthenticated) {
+      return res.status(401).json({ success: false, message: "Admin authentication required" });
+    }
+    next();
+  };
+
+  // Admin user search
+  app.get('/api/admin/users/search', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.length < 1) {
+        return res.json([]);
+      }
+
+      const users = await mongoStorage.searchUsers(query);
+      res.json(users);
+    } catch (error) {
+      console.error('Admin user search error:', error);
+      res.status(500).json({ success: false, message: "Failed to search users" });
+    }
+  });
+
+  // Admin add funds
+  app.post('/api/admin/users/add-funds', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const { userId, amount } = req.body;
       
@@ -1066,10 +1075,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "Valid user ID and amount required" });
       }
 
-      await storage.addFundsToUser(userId, parseFloat(amount));
+      await mongoStorage.addFundsToUser(userId, parseFloat(amount));
       
-      // Send notification to user (simplified version)
-      console.log(`Notification: User ${userId} received $${amount} virtual USD funds`);
+      console.log(`✓ Admin added $${amount} to user ${userId}`);
+      console.log(`📧 Notification: User received $${amount} virtual USD funds`);
       
       res.json({ 
         success: true, 
@@ -1082,7 +1091,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/users/:userId', requireAdmin, async (req: Request, res: Response) => {
+  // Admin delete user
+  app.delete('/api/admin/users/:userId', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       
@@ -1090,8 +1100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "User ID required" });
       }
 
-      // Check if user exists and is not admin
-      const user = await storage.getUser(userId);
+      const user = await mongoStorage.getUser(userId);
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
@@ -1100,7 +1109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ success: false, message: "Cannot delete admin users" });
       }
 
-      await storage.deleteUser(userId);
+      await mongoStorage.deleteUser(userId);
+      console.log(`✓ Admin deleted user account: ${user.username}`);
       
       res.json({ success: true, message: "User account deleted successfully" });
     } catch (error) {

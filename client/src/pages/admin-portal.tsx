@@ -6,18 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
 import { 
   Search, 
   DollarSign, 
   Trash2, 
   UserCheck, 
-  Settings, 
   LogOut,
   User,
   Shield,
   Plus,
-  AlertTriangle
+  AlertTriangle,
+  Mail,
+  CreditCard
 } from "lucide-react";
 
 interface AdminUser {
@@ -32,43 +32,49 @@ interface AdminUser {
   balance: number;
 }
 
-export default function MobileAdminDashboard() {
+export default function AdminPortal() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [fundAmount, setFundAmount] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  // Check admin authentication
-  const { data: authUser, isLoading: authLoading } = useQuery({
-    queryKey: ["/api/auth/user"],
-    retry: false,
-  });
-
-  // Prevent mobile app animation
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('skipMobileAnimation', 'true');
-    }
-  }, []);
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (!authLoading && (!authUser || !authUser.isAdmin)) {
+  // Admin authentication
+  const adminLoginMutation = useMutation({
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Login failed");
+      return data;
+    },
+    onSuccess: () => {
+      setIsAuthenticated(true);
       toast({
-        title: "Access Denied",
-        description: "Admin privileges required",
+        title: "Admin Access Granted",
+        description: "Welcome to the admin portal",
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Login Failed",
+        description: error.message,
         variant: "destructive",
       });
-      setLocation('/mobile/admin-login');
-    }
-  }, [authUser, authLoading, toast, setLocation]);
+    },
+  });
 
   // Search users
   const { data: searchResults = [], isLoading: searchLoading } = useQuery({
     queryKey: ["/api/admin/users/search", searchQuery],
-    enabled: searchQuery.length > 0,
+    enabled: searchQuery.length > 0 && isAuthenticated,
   });
 
   // Add funds mutation
@@ -123,23 +129,29 @@ export default function MobileAdminDashboard() {
     },
   });
 
-  // Logout function
-  const handleLogout = async () => {
-    try {
-      await apiRequest("/api/auth/logout", { method: "POST" });
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminCredentials.email || !adminCredentials.password) {
       toast({
-        title: "Logged Out",
-        description: "Admin session ended successfully",
-        variant: "default",
-      });
-      setLocation('/mobile/admin-login');
-    } catch (error) {
-      toast({
-        title: "Logout Error",
-        description: "Failed to logout properly",
+        title: "Missing Credentials",
+        description: "Please enter both email and password",
         variant: "destructive",
       });
+      return;
     }
+    adminLoginMutation.mutate(adminCredentials);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAdminCredentials({ email: "", password: "" });
+    setSearchQuery("");
+    setSelectedUser(null);
+    toast({
+      title: "Logged Out",
+      description: "Admin session ended",
+      variant: "default",
+    });
   };
 
   const handleAddFunds = () => {
@@ -180,114 +192,147 @@ export default function MobileAdminDashboard() {
     }
   };
 
-  if (authLoading) {
+  // Login screen
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-orange-900">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-lg font-medium">Loading Admin Dashboard...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
+          <CardHeader className="text-center space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold text-white">Admin Portal</CardTitle>
+              <p className="text-blue-200 mt-2">Secure platform management</p>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Admin Email</label>
+                <Input
+                  type="email"
+                  value={adminCredentials.email}
+                  onChange={(e) => setAdminCredentials({...adminCredentials, email: e.target.value})}
+                  placeholder="Enter admin email"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
+                  disabled={adminLoginMutation.isPending}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Password</label>
+                <Input
+                  type="password"
+                  value={adminCredentials.password}
+                  onChange={(e) => setAdminCredentials({...adminCredentials, password: e.target.value})}
+                  placeholder="Enter admin password"
+                  className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
+                  disabled={adminLoginMutation.isPending}
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium"
+                disabled={adminLoginMutation.isPending}
+              >
+                {adminLoginMutation.isPending ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Authenticating...
+                  </div>
+                ) : (
+                  "Access Admin Portal"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!authUser?.isAdmin) {
-    return null; // Redirect handling is in useEffect
-  }
-
+  // Admin dashboard
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-orange-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-orange-200">Platform Management Console</p>
+              <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
+              <p className="text-blue-200">Platform Management Dashboard</p>
             </div>
           </div>
           <Button 
             onClick={handleLogout} 
             variant="outline" 
             size="sm"
-            className="border-orange-300 text-orange-300 hover:bg-orange-500 hover:text-white"
+            className="border-white/30 text-white hover:bg-white/20"
           >
             <LogOut className="w-4 h-4 mr-1" />
             Logout
           </Button>
         </div>
-
-        {/* Admin Info Card */}
-        <Card className="bg-white/10 backdrop-blur border-orange-300/30">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <Settings className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-white">{authUser.username}</p>
-                <p className="text-sm text-orange-200">System Administrator • UID: {authUser.uid}</p>
-              </div>
-              <Badge className="bg-orange-500 text-white">ADMIN</Badge>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* User Search */}
-      <Card className="mb-6 bg-white/10 backdrop-blur border-orange-300/30">
-        <CardHeader className="pb-3">
+      <Card className="mb-6 bg-white/10 backdrop-blur-lg border-white/20">
+        <CardHeader>
           <CardTitle className="flex items-center text-white">
-            <Search className="w-5 h-5 mr-2 text-orange-400" />
+            <Search className="w-5 h-5 mr-2 text-blue-400" />
             User Management
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <Input
-              placeholder="Search by email, username, or UID..."
+              placeholder="Search by email or UID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/20 border-orange-300/30 text-white placeholder:text-orange-200"
+              className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
             />
             
             {searchLoading && (
               <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500 mx-auto mb-2"></div>
-                <p className="text-orange-200">Searching users...</p>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                <p className="text-blue-200">Searching users...</p>
               </div>
             )}
 
             {searchResults.length > 0 && (
               <div className="space-y-3">
-                <p className="text-sm text-orange-200">{searchResults.length} user(s) found</p>
+                <p className="text-sm text-blue-200">{searchResults.length} user(s) found</p>
                 {searchResults.map((user: AdminUser) => (
                   <div
                     key={user._id}
                     className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
                       selectedUser?._id === user._id
-                        ? "bg-orange-500/30 border border-orange-400"
-                        : "bg-white/10 border border-orange-300/20 hover:bg-white/20"
+                        ? "bg-blue-500/30 border border-blue-400"
+                        : "bg-white/10 border border-white/20 hover:bg-white/20"
                     }`}
                     onClick={() => setSelectedUser(user)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                           <User className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <p className="font-medium text-white">{user.username}</p>
-                          <p className="text-sm text-orange-200">
-                            {user.firstName && user.lastName
-                              ? `${user.firstName} ${user.lastName}`
-                              : "No name set"
-                            } • UID: {user.uid}
+                          <p className="text-sm text-blue-200 flex items-center">
+                            <Mail className="w-3 h-3 mr-1" />
+                            {user.email}
                           </p>
-                          <p className="text-sm text-orange-300">Balance: ${user.balance.toFixed(2)}</p>
+                          <p className="text-sm text-blue-300 flex items-center">
+                            <CreditCard className="w-3 h-3 mr-1" />
+                            Balance: ${user.balance.toFixed(2)} • UID: {user.uid}
+                          </p>
                         </div>
                       </div>
                       <div className="flex flex-col items-end space-y-1">
@@ -309,7 +354,7 @@ export default function MobileAdminDashboard() {
 
             {searchQuery.length > 0 && searchResults.length === 0 && !searchLoading && (
               <div className="text-center py-8">
-                <p className="text-orange-200">No users found matching your search</p>
+                <p className="text-blue-200">No users found matching your search</p>
               </div>
             )}
           </div>
@@ -318,8 +363,8 @@ export default function MobileAdminDashboard() {
 
       {/* Fund Management */}
       {selectedUser && (
-        <Card className="mb-6 bg-white/10 backdrop-blur border-orange-300/30">
-          <CardHeader className="pb-3">
+        <Card className="mb-6 bg-white/10 backdrop-blur-lg border-white/20">
+          <CardHeader>
             <CardTitle className="flex items-center text-white">
               <DollarSign className="w-5 h-5 mr-2 text-green-400" />
               Fund Management
@@ -327,9 +372,9 @@ export default function MobileAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="p-4 bg-orange-500/20 rounded-lg border border-orange-400/30">
+              <div className="p-4 bg-blue-500/20 rounded-lg border border-blue-400/30">
                 <p className="font-medium text-white mb-1">Selected User: {selectedUser.username}</p>
-                <p className="text-sm text-orange-200">Current Balance: ${selectedUser.balance.toFixed(2)}</p>
+                <p className="text-sm text-blue-200">Current Balance: ${selectedUser.balance.toFixed(2)}</p>
               </div>
               
               <div className="flex space-x-3">
@@ -338,7 +383,7 @@ export default function MobileAdminDashboard() {
                   placeholder="Amount (USD)"
                   value={fundAmount}
                   onChange={(e) => setFundAmount(e.target.value)}
-                  className="flex-1 bg-white/20 border-orange-300/30 text-white placeholder:text-orange-200"
+                  className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-blue-200"
                 />
                 <Button
                   onClick={handleAddFunds}
@@ -363,10 +408,10 @@ export default function MobileAdminDashboard() {
         </Card>
       )}
 
-      {/* Danger Zone */}
+      {/* Account Deletion */}
       {selectedUser && (
-        <Card className="bg-red-900/20 backdrop-blur border-red-400/30">
-          <CardHeader className="pb-3">
+        <Card className="bg-red-900/20 backdrop-blur-lg border-red-400/30">
+          <CardHeader>
             <CardTitle className="flex items-center text-red-300">
               <AlertTriangle className="w-5 h-5 mr-2" />
               Danger Zone
