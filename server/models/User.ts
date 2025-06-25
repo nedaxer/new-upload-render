@@ -20,6 +20,7 @@ export interface IUser extends Document {
   resetPasswordCodeExpires?: Date;
   isVerified: boolean;
   isAdmin?: boolean;
+  balance?: number;
   createdAt: Date;
 }
 
@@ -92,6 +93,10 @@ const userSchema = new Schema(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    balance: {
+      type: Number,
+      default: 0,
     },
     createdAt: {
       type: Date,

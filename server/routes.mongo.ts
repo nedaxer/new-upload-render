@@ -42,6 +42,18 @@ const requireVerified = async (req: Request, res: Response, next: NextFunction) 
   next();
 };
 
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.session?.userId) {
+    return res.status(401).json({ success: false, message: "Not authenticated" });
+  }
+
+  const user = await storage.getUser(req.session.userId);
+  if (!user || !user.isAdmin) {
+    return res.status(403).json({ success: false, message: "Admin access required" });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Connect to MongoDB first
   await connectToDatabase();
@@ -929,6 +941,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: "Failed to fetch wallet summary"
       });
+    }
+  });
+
+  // Admin routes
+  app.get('/api/admin/users/search', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ success: false, message: "Search query required" });
+      }
+
+      const users = await storage.searchUsers(query);
+      
+      // Format users for response with balance
+      const formattedUsers = users.map(user => ({
+        _id: user._id,
+        uid: user.uid,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePicture: user.profilePicture,
+        isVerified: user.isVerified,
+        isAdmin: user.isAdmin,
+        balance: user.balance || 0,
+        createdAt: user.createdAt
+      }));
+
+      res.json({ success: true, users: formattedUsers });
+    } catch (error) {
+      console.error('Admin user search error:', error);
+      res.status(500).json({ success: false, message: "Failed to search users" });
+    }
+  });
+
+  app.post('/api/admin/users/add-funds', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { userId, amount } = req.body;
+      
+      if (!userId || !amount || amount <= 0) {
+        return res.status(400).json({ success: false, message: "Valid user ID and amount required" });
+      }
+
+      await storage.addFundsToUser(userId, parseFloat(amount));
+      
+      // Send notification to user (simplified version)
+      console.log(`Notification: User ${userId} received $${amount} virtual USD funds`);
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully added $${amount} to user account`,
+        notification: "Deposit successful: You've received virtual USD funds."
+      });
+    } catch (error) {
+      console.error('Admin add funds error:', error);
+      res.status(500).json({ success: false, message: "Failed to add funds" });
+    }
+  });
+
+  app.delete('/api/admin/users/:userId', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      if (!userId) {
+        return res.status(400).json({ success: false, message: "User ID required" });
+      }
+
+      // Check if user exists and is not admin
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      if (user.isAdmin) {
+        return res.status(403).json({ success: false, message: "Cannot delete admin users" });
+      }
+
+      await storage.deleteUser(userId);
+      
+      res.json({ success: true, message: "User account deleted successfully" });
+    } catch (error) {
+      console.error('Admin delete user error:', error);
+      res.status(500).json({ success: false, message: "Failed to delete user" });
     }
   });
 

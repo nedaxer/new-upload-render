@@ -24,6 +24,12 @@ export interface IMongoStorage {
   // User preferences management
   updateUserPreferences(userId: string, preferences: { lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string }): Promise<void>;
   getUserPreferences(userId: string): Promise<{ lastSelectedPair?: string; lastSelectedCrypto?: string; lastSelectedTab?: string } | null>;
+  
+  // Admin functions
+  searchUsers(query: string): Promise<IUser[]>;
+  addFundsToUser(userId: string, amount: number): Promise<void>;
+  deleteUser(userId: string): Promise<void>;
+  getUserBalance(userId: string): Promise<number>;
 }
 
 export class MongoStorage implements IMongoStorage {
@@ -306,6 +312,67 @@ export class MongoStorage implements IMongoStorage {
     } catch (error) {
       console.error('Error getting user preferences:', error);
       return null;
+    }
+  }
+
+  // Admin functions implementation
+  async searchUsers(query: string): Promise<IUser[]> {
+    try {
+      // Search by email or UID
+      const users = await User.find({
+        $or: [
+          { email: { $regex: query, $options: 'i' } },
+          { uid: { $regex: query, $options: 'i' } },
+          { username: { $regex: query, $options: 'i' } }
+        ]
+      }).select('-password -verificationCode -resetPasswordCode').limit(10);
+      
+      return users;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      return [];
+    }
+  }
+
+  async addFundsToUser(userId: string, amount: number): Promise<void> {
+    try {
+      // Get current balance from user's balance field (virtual USD)
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const currentBalance = user.balance || 0;
+      const newBalance = currentBalance + amount;
+
+      await User.findByIdAndUpdate(userId, {
+        balance: newBalance
+      });
+
+      console.log(`Added $${amount} to user ${userId}. New balance: $${newBalance}`);
+    } catch (error) {
+      console.error('Error adding funds to user:', error);
+      throw error;
+    }
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      await User.findByIdAndDelete(userId);
+      console.log(`User ${userId} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  }
+
+  async getUserBalance(userId: string): Promise<number> {
+    try {
+      const user = await User.findById(userId).select('balance');
+      return user?.balance || 0;
+    } catch (error) {
+      console.error('Error getting user balance:', error);
+      return 0;
     }
   }
 }

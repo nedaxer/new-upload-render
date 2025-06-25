@@ -21,6 +21,7 @@ export const mongoUserSchema = z.object({
   resetPasswordCodeExpires: z.date().optional(),
   isVerified: z.boolean().default(false),
   isAdmin: z.boolean().default(false),
+  balance: z.number().default(0),
   createdAt: z.date().default(() => new Date()),
 });
 
@@ -55,6 +56,7 @@ export const userDataSchema = z.object({
   }).optional(),
   isVerified: z.boolean(),
   isAdmin: z.boolean(),
+  balance: z.number(),
   createdAt: z.date(),
 });
 
