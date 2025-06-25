@@ -33,51 +33,34 @@ export interface IMongoStorage {
 }
 
 export class MongoStorage implements IMongoStorage {
-  private userCache: Map<string, { data: IUser; timestamp: number }> = new Map();
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
-
   constructor() {
     // No need to connect in constructor - app.ts already connects
-    console.log('MongoDB storage initialized with caching');
+    console.log('MongoDB storage initialized');
   }
 
   async getUser(id: string): Promise<IUser | null> {
     try {
-      // Check cache first
-      const cached = this.userCache.get(id);
-      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        console.log('MongoStorage: getUser served from cache:', id);
-        return cached.data;
-      }
-
       console.log('MongoStorage: getUser called with:', id);
-      // Fast query without lean() to avoid type issues
-      const user = await User.findById(id).select('-password -verificationCode -resetPasswordCode -resetPasswordCodeExpires -verificationCodeExpires');
-      
+      const user = await User.findById(id).select('-password');
       console.log('MongoStorage: getUser result:', user ? 'FOUND' : 'NOT FOUND');
       
       if (!user) return null;
       
-      const userData: any = {
+      const userData = {
         _id: user._id.toString(),
         uid: user.uid,
         username: user.username,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        password: '', // Not included in response
-        balance: user.balance || 0,
         isAdmin: user.isAdmin || false,
         isVerified: user.isVerified || false,
-        profilePicture: user.profilePicture || null,
+        profilePicture: user.profilePicture || null, // Ensure explicit null if not set
         preferences: user.preferences,
         favorites: user.favorites || [],
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
-      
-      // Cache the result
-      this.userCache.set(id, { data: userData, timestamp: Date.now() });
       
       console.log('MongoStorage: returning user data with profile picture:', {
         userId: userData._id,
@@ -299,12 +282,6 @@ export class MongoStorage implements IMongoStorage {
 
   async getUserFavorites(userId: string): Promise<string[]> {
     try {
-      // Check cache first
-      const cached = this.userCache.get(userId);
-      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        return cached.data.favorites || [];
-      }
-
       const user = await User.findById(userId).select('favorites');
       return user?.favorites || [];
     } catch (error) {

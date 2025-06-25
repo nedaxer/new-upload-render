@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { OptimizedImage, useImagePreloader } from './optimized-image';
 import nLetter from '@assets/20250618_001640_1750207793691.png';
 import eLetter1 from '@assets/20250618_001710_1750207793694.png';
 import dLetter from '@assets/20250618_001748_1750207793698.png';
@@ -20,6 +21,22 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [hideOriginals, setHideOriginals] = useState(false);
   const [showNedaxerLogo, setShowNedaxerLogo] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
+
+  // Critical images for immediate preloading
+  const criticalImages = [
+    backgroundImage,
+    nLetter,
+    eLetter1,
+    dLetter,
+    aLetter,
+    xLetter,
+    eLetter2,
+    rLetter,
+    nedaxerLogo
+  ];
+
+  // Preload critical images with priority
+  useImagePreloader(criticalImages, true);
 
   useEffect(() => {
     // Check if splash screen should be skipped (for admin portal)

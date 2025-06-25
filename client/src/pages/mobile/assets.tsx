@@ -44,34 +44,12 @@ export default function MobileAssets() {
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
-  // Load currency from localStorage and listen for immediate updates
+  // Load currency from localStorage
   useEffect(() => {
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
     }
-
-    // Listen for currency changes from localStorage (immediate updates)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'selectedCurrency' && e.newValue) {
-        setSelectedCurrency(e.newValue);
-      }
-    };
-
-    // Listen for custom currency change events (for same-window updates)
-    const handleCurrencyChange = (e: CustomEvent) => {
-      if (e.detail && e.detail.currency) {
-        setSelectedCurrency(e.detail.currency);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
-    };
   }, []);
 
   // Fetch user wallet summary for real-time balance
@@ -91,7 +69,7 @@ export default function MobileAssets() {
     retry: 2,
   });
 
-  // Fetch real-time currency conversion rates with 10-second auto-refresh
+  // Fetch real-time currency conversion rates from internal API
   const { data: conversionData } = useQuery({
     queryKey: ['/api/market-data/conversion-rates'],
     queryFn: async () => {
@@ -107,7 +85,7 @@ export default function MobileAssets() {
         throw error;
       }
     },
-    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    refetchInterval: 300000, // Refetch every 5 minutes
     staleTime: 240000, // Consider data fresh for 4 minutes
     retry: 2,
     retryDelay: 2000

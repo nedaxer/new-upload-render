@@ -10,8 +10,14 @@ import MongoStore from "connect-mongodb-session";
 import { connectToDatabase, getMongoClient } from "./mongodb";
 import { getCoinGeckoPrices } from "./coingecko-api";
 import { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./email";
+import { imageOptimizer } from "./image-optimizer";
+import { exchangeRateService } from "./exchange-rate-service";
+import { getNewsSourceLogo } from "./logo-service";
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
+import compression from "compression";
+import serveStatic from "serve-static";
+import Parser from 'rss-parser';
 
 // Extend express-session types to include userId
 declare module "express-session" {
@@ -84,85 +90,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Enable compression middleware for better performance
+  app.use(compression({
+    level: 6,
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      return req.method === 'GET' && res.getHeader('content-type')?.includes('text');
+    }
+  }));
+
+  // Serve optimized static assets with proper caching headers
+  app.use('/optimized', serveStatic('public/optimized', {
+    maxAge: '1y',
+    setHeaders: (res, path) => {
+      // Set aggressive caching for optimized images
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Vary', 'Accept-Encoding');
+      
+      // Add WebP/AVIF support headers
+      if (path.includes('.webp')) {
+        res.setHeader('Content-Type', 'image/webp');
+      } else if (path.includes('.avif')) {
+        res.setHeader('Content-Type', 'image/avif');
+      }
+    }
+  }));
+
+  // Serve regular static assets with moderate caching
+  app.use('/images', serveStatic('public/images', {
+    maxAge: '7d',
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+      res.setHeader('Vary', 'Accept-Encoding');
+    }
+  }));
+
   // Connect to MongoDB Atlas
   await connectToDatabase();
 
-  // OPTIMIZED: Single endpoint for all mobile app critical data
-  app.get('/api/mobile/app-data', requireAuth, async (req: Request, res: Response) => {
+  // Initialize image optimizer asynchronously to prevent startup blocking
+  setImmediate(async () => {
     try {
-      const userId = req.session.userId;
-      console.log('Loading all mobile app data for user:', userId);
-      
-      // Parallel execution of all critical data requests
-      const [prices, walletSummary, balances, favorites, exchangeRates] = await Promise.allSettled([
-        getCoinGeckoPrices(),
-        // Get wallet summary from UserBalance collection
-        (async () => {
-          const { MongoClient } = await import('mongodb');
-          const client = await getMongoClient();
-          const db = client.db('nedaxer');
-          const balanceDoc = await db.collection('UserBalance').findOne({ userId });
-          return {
-            totalUSDValue: balanceDoc?.usdBalance || 0,
-            usdBalance: balanceDoc?.usdBalance || 0
-          };
-        })(),
-        // Get balances
-        (async () => {
-          const { MongoClient } = await import('mongodb');
-          const client = await getMongoClient();
-          const db = client.db('nedaxer');
-          const balanceDoc = await db.collection('UserBalance').findOne({ userId });
-          return [{
-            id: balanceDoc?._id || 'default',
-            userId,
-            asset: 'USD',
-            balance: balanceDoc?.usdBalance || 0,
-            lockedBalance: 0
-          }];
-        })(),
-        // Get favorites from user document
-        storage.getUserFavorites(userId),
-        // Get exchange rates
-        (async () => {
-          try {
-            const response = await fetch('https://api.exchangerate.host/latest?base=USD');
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            console.error('Exchange rates fetch failed:', error);
-            return null;
-          }
-        })()
-      ]);
-
-      // Process results with fallbacks
-      const responseData = {
-        prices: prices.status === 'fulfilled' ? prices.value : [],
-        wallet: walletSummary.status === 'fulfilled' ? walletSummary.value : { totalUSDValue: 0, usdBalance: 0 },
-        balances: balances.status === 'fulfilled' ? balances.value : [],
-        favorites: favorites.status === 'fulfilled' ? favorites.value : [],
-        exchangeRates: exchangeRates.status === 'fulfilled' ? exchangeRates.value : null
-      };
-
-      console.log('Mobile app data loaded successfully for user:', userId);
-      res.json({ 
-        success: true, 
-        data: responseData,
-        timestamp: Date.now()
-      });
-
+      console.log('Starting background image optimization...');
+      await imageOptimizer.optimizeAllImages();
+      console.log('Background image optimization completed');
     } catch (error) {
-      console.error('Error loading mobile app data:', error);
+      console.error('Background image optimization failed:', error);
+    }
+  });
+
+  // Image optimization API endpoint
+  app.get('/api/images/optimize', async (req: Request, res: Response) => {
+    try {
+      const { src } = req.query;
+      
+      if (!src || typeof src !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Image source parameter is required' 
+        });
+      }
+
+      // Clean the src path (remove leading slash)
+      const cleanSrc = src.startsWith('/') ? src.slice(1) : src;
+      
+      const optimizedImage = await imageOptimizer.optimizeImage(cleanSrc);
+      
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+      res.json({
+        success: true,
+        ...optimizedImage
+      });
+    } catch (error) {
+      console.error('Image optimization API error:', error);
       res.status(500).json({ 
         success: false, 
-        message: 'Failed to load app data',
-        error: error.message 
+        message: 'Failed to optimize image' 
       });
     }
   });
 
-  // Crypto prices endpoint (kept for backwards compatibility)
+  // Crypto prices endpoint
   app.get('/api/crypto/prices', async (req: Request, res: Response) => {
     try {
       const prices = await getCoinGeckoPrices();

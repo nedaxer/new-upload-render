@@ -56,28 +56,12 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
 
-  // Load currency from localStorage and listen for immediate updates
+  // Load currency from localStorage and listen for profile updates
   useEffect(() => {
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
     }
-
-    // Listen for currency changes from localStorage (immediate updates)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'selectedCurrency' && e.newValue) {
-        setSelectedCurrency(e.newValue);
-      }
-    };
-
-    // Listen for custom currency change events (for same-window updates)
-    const handleCurrencyChange = (e: CustomEvent) => {
-      if (e.detail && e.detail.currency) {
-        setSelectedCurrency(e.detail.currency);
-        // Also update localStorage to ensure consistency
-        localStorage.setItem('selectedCurrency', e.detail.currency);
-      }
-    };
 
     // Listen for profile updates from other components
     const handleProfileUpdate = () => {
@@ -85,13 +69,8 @@ export default function MobileHome() {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
     window.addEventListener('profileUpdated', handleProfileUpdate);
-    
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
   }, [queryClient]);
@@ -118,41 +97,45 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Use cached data from MobileAppLoader (data already preloaded)
-  const { data: walletData } = useQuery({
+  // Fetch wallet data with optimized settings
+  const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
-    refetchInterval: 60000, // Reduced frequency since data is cached
-    staleTime: 60000,
+    refetchInterval: 30000,
+    staleTime: 25000,
     retry: 1,
   });
 
-  const { data: priceData } = useQuery({
+  // Fetch real-time prices - prioritize loading this first
+  const { data: priceData, isLoading: priceLoading } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
-    refetchInterval: 45000, // Reduced frequency since data is cached
-    staleTime: 40000,
+    refetchInterval: 30000,
+    staleTime: 25000,
     retry: 1,
+    retryDelay: 500
   });
 
+  // Fetch user favorites - lower priority, longer cache
   const { data: userFavorites } = useQuery<string[]>({
     queryKey: ['/api/favorites'],
     enabled: !!user,
     retry: 1,
-    staleTime: 10 * 60 * 1000 // Longer cache since data is preloaded
+    staleTime: 5 * 60 * 1000
   });
 
-  const { data: balanceData } = useQuery({
+  // Fetch user balances - defer loading to reduce initial wait
+  const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['/api/balances'],
     enabled: !!user,
-    refetchInterval: 120000, // Much less frequent since cached
-    staleTime: 90000,
+    refetchInterval: 60000,
+    staleTime: 30000,
     retry: 1
   });
 
-  // No loading states needed - data preloaded by MobileAppLoader
-  const isLoadingCriticalData = false;
+  // Since MobileAppLoader handles initial loading, we can be more relaxed here
+  const isLoadingCriticalData = false; // Handled by MobileAppLoader
 
-  // Fetch real-time currency conversion rates with 10-second auto-refresh
+  // Fetch real-time currency conversion rates from internal API
   const { data: conversionData, isError: conversionError } = useQuery({
     queryKey: ['/api/market-data/conversion-rates'],
     queryFn: async () => {
@@ -168,10 +151,10 @@ export default function MobileHome() {
         throw error;
       }
     },
-    refetchInterval: 10000, // Auto-refresh every 10 seconds
-    staleTime: 8000, // Consider data fresh for 8 seconds
+    refetchInterval: 300000, // Refetch every 5 minutes
+    staleTime: 240000, // Consider data fresh for 4 minutes
     retry: 2,
-    retryDelay: 1000
+    retryDelay: 2000
   });
 
   // Use real exchange rates or fallback to static rates
