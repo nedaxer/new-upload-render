@@ -9,6 +9,7 @@ export const mongoUserSchema = z.object({
   firstName: z.string().min(1).max(255),
   lastName: z.string().min(1).max(255),
   profilePicture: z.string().optional(),
+  updatedAt: z.date().optional(),
   favorites: z.array(z.string()).default([]),
   preferences: z.object({
     lastSelectedPair: z.string().optional(),

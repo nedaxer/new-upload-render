@@ -9,6 +9,7 @@ import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { PullToRefresh } from '@/components/pull-to-refresh';
+import { WelcomePopup } from '@/components/welcome-popup';
 import { 
   Search, 
   Bell, 
@@ -36,6 +37,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
+import { LoadingWithAnimation } from '@/components/loading-with-animation';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -55,6 +57,7 @@ export default function MobileHome() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -78,13 +81,23 @@ export default function MobileHome() {
     };
   }, [queryClient]);
 
-  // Show tooltip on login (when user data becomes available)
+  // Show welcome popup and tooltip on login (when user data becomes available)
   useEffect(() => {
-    if (user && user.username) {
+    if (user && user.username && balanceData) {
       // Check if this is a fresh login session
+      const hasShownWelcome = sessionStorage.getItem('hasShownWelcomePopup');
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
 
-      if (!hasShownTooltip) {
+      if (!hasShownWelcome) {
+        // Show welcome popup first
+        const timer = setTimeout(() => {
+          setShowWelcomePopup(true);
+          sessionStorage.setItem('hasShownWelcomePopup', 'true');
+        }, 1500);
+
+        return () => clearTimeout(timer);
+      } else if (!hasShownTooltip) {
+        // Show helper tooltip if welcome already shown
         const timer = setTimeout(() => {
           setShowHelperTooltip(true);
           sessionStorage.setItem('hasShownWelcomeTooltip', 'true');
@@ -98,7 +111,7 @@ export default function MobileHome() {
         return () => clearTimeout(timer);
       }
     }
-  }, [user]);
+  }, [user, balanceData]);
 
   // Fetch user wallet summary
   const { data: walletData, isLoading: walletLoading } = useQuery({

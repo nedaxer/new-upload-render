@@ -768,6 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          profilePicture: user.profilePicture, // Include profile picture in login response
           isVerified: user.isVerified,
           isAdmin: user.isAdmin
         }

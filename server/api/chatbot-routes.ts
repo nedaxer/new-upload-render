@@ -9,10 +9,18 @@ const token = process.env.GITHUB_TOKEN || '';
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1-mini";
 
-const client = ModelClient(
-  endpoint,
-  new AzureKeyCredential(token),
-);
+// Only initialize client if token is available
+let client: any = null;
+if (token) {
+  try {
+    client = ModelClient(
+      endpoint,
+      new AzureKeyCredential(token),
+    );
+  } catch (error) {
+    console.warn('Failed to initialize AI client:', error);
+  }
+}
 
 // Company knowledge base for Nedaxer
 const NEDAXER_KNOWLEDGE = `
@@ -128,22 +136,26 @@ Respond as Nedaxer Bot helping a user with their question about the platform.`
       content: message
     });
 
-    const response = await client.path("/chat/completions").post({
-      body: {
-        messages: contextMessages,
-        temperature: 0.7,
-        top_p: 1,
-        model: model,
-        max_tokens: 500
+    let responseContent = "I apologize, but I'm having trouble processing your request right now. Please try again or contact our human support team.";
+
+    if (client) {
+      const response = await client.path("/chat/completions").post({
+        body: {
+          messages: contextMessages,
+          temperature: 0.7,
+          top_p: 1,
+          model: model,
+          max_tokens: 500
+        }
+      });
+
+      if (!isUnexpected(response)) {
+        responseContent = response.body.choices[0]?.message?.content || responseContent;
       }
-    });
-
-    if (isUnexpected(response)) {
-      throw response.body.error;
+    } else {
+      // Fallback response when AI is not available
+      responseContent = "Hello! I'm here to help you with Nedaxer. While our AI assistant is temporarily unavailable, I can still provide basic information about our platform. What would you like to know about cryptocurrency trading, deposits, or our features?";
     }
-
-    const responseContent = response.body.choices[0]?.message?.content || 
-      "I apologize, but I'm having trouble processing your request right now. Please try again or contact our human support team.";
 
     res.json({ response: responseContent });
 

@@ -7,6 +7,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
+import { ProfileSyncHandler } from '@/components/profile-sync-handler';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
@@ -161,7 +162,8 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <AuthProvider>
+        <ProfileSyncHandler>
+          <AuthProvider>
           <Router hook={useHashLocation}>
             <Switch>
             {/* Home route with auth redirect */}
@@ -287,7 +289,8 @@ export default function App() {
         <Toaster />
         <CookieConsent />
         <PWAInstallPrompt />
-      </AuthProvider>
+        </AuthProvider>
+      </ProfileSyncHandler>
     </LanguageProvider>
   </QueryClientProvider>
   );
