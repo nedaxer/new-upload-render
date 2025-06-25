@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { AdminPullToRefresh } from "@/components/admin-pull-to-refresh";
 import { 
   Search, 
   DollarSign, 
@@ -246,6 +247,31 @@ export default function AdminPortal() {
     }
   };
 
+  // Admin dashboard refresh function
+  const handleAdminRefresh = async () => {
+    try {
+      // Invalidate and refetch all admin queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] }),
+        refetchUsers(),
+        searchQuery.length > 0 && refetchSearch()
+      ]);
+      
+      toast({
+        title: "Data Refreshed",
+        description: "Admin dashboard updated with latest data",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh admin data",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Login screen
   if (!isAuthenticated) {
     return (
@@ -310,7 +336,8 @@ export default function AdminPortal() {
 
   // Admin dashboard
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4">
+    <AdminPullToRefresh onRefresh={handleAdminRefresh}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -638,5 +665,6 @@ export default function AdminPortal() {
         </Card>
       )}
     </div>
+    </AdminPullToRefresh>
   );
 }
