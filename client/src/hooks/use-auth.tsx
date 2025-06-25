@@ -69,11 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { user: null };
       }
     },
-    refetchOnWindowFocus: true,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+    staleTime: 5 * 60 * 1000, // 5 minutes - profile data doesn't change often
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     retry: (failureCount, error) => {
       // Only retry if it's a network error, not auth errors
-      return failureCount < 2 && error?.message !== 'Not authenticated';
+      return failureCount < 1 && error?.message !== 'Not authenticated';
     },
   });
 
@@ -92,8 +93,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (data) => {
       console.log('Login successful, updating cache with user:', data.user);
       // Update the auth user data in the cache immediately
-      queryClient.setQueryData(["/api/auth/user"], { user: data.user });
-      // Don't invalidate immediately - let the cache persist to avoid race conditions
+      queryClient.setQueryData(["/api/auth/user"], data.user);
+      // Preload critical mobile app data
+      queryClient.prefetchQuery({
+        queryKey: ['/api/crypto/realtime-prices'],
+        staleTime: 30000
+      });
+      queryClient.prefetchQuery({
+        queryKey: ['/api/wallet/summary'],
+        staleTime: 30000
+      });
     },
   });
 

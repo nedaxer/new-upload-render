@@ -40,7 +40,35 @@ export class MongoStorage implements IMongoStorage {
 
   async getUser(id: string): Promise<IUser | null> {
     try {
-      return await User.findById(id);
+      console.log('MongoStorage: getUser called with:', id);
+      const user = await User.findById(id).select('-password');
+      console.log('MongoStorage: getUser result:', user ? 'FOUND' : 'NOT FOUND');
+      
+      if (!user) return null;
+      
+      const userData = {
+        _id: user._id.toString(),
+        uid: user.uid,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isAdmin: user.isAdmin || false,
+        isVerified: user.isVerified || false,
+        profilePicture: user.profilePicture || null, // Ensure explicit null if not set
+        preferences: user.preferences,
+        favorites: user.favorites || [],
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      
+      console.log('MongoStorage: returning user data with profile picture:', {
+        userId: userData._id,
+        hasProfilePicture: !!userData.profilePicture,
+        profilePictureLength: userData.profilePicture?.length
+      });
+      
+      return userData;
     } catch (error) {
       console.error('Error fetching user by ID:', error);
       return null;

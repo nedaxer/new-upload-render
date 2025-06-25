@@ -542,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth endpoint to get current user data
+  // Auth endpoint to get current user data with profile picture persistence
   app.get('/api/auth/user', async (req: Request, res: Response) => {
     try {
       if (!req.session?.userId) {
@@ -556,7 +556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ success: false, message: "User not found" });
       }
 
-      // Return user data without sensitive fields
+      // Ensure profile picture is properly included
       const userData = {
         _id: user._id,
         uid: user.uid,
@@ -564,13 +564,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        profilePicture: user.profilePicture,
+        profilePicture: user.profilePicture || null, // Explicit null for consistency
         favorites: user.favorites || [],
         preferences: user.preferences,
         isVerified: user.isVerified,
         isAdmin: user.isAdmin,
         createdAt: user.createdAt
       };
+
+      console.log('Auth user response:', { 
+        userId: user._id, 
+        hasProfilePicture: !!user.profilePicture,
+        profilePictureLength: user.profilePicture?.length 
+      });
 
       res.json(userData);
     } catch (error) {
@@ -672,7 +678,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
-          isVerified: true
+          isVerified: true,
+          profilePicture: null,
+          isAdmin: false
         }
       });
 
@@ -830,7 +838,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get updated user data to return
       const updatedUser = await storage.getUser(userId);
 
-      console.log('Profile updated successfully for user:', userId);
+      console.log('Profile updated successfully for user:', userId, {
+        hasProfilePicture: !!updatedUser?.profilePicture,
+        profilePictureLength: updatedUser?.profilePicture?.length
+      });
 
       res.json({ 
         success: true, 

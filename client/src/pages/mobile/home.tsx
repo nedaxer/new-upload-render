@@ -65,11 +65,8 @@ export default function MobileHome() {
 
     // Listen for profile updates from other components
     const handleProfileUpdate = () => {
-      // Use setQueryData instead of invalidateQueries to prevent unnecessary refetch
-      const currentUser = queryClient.getQueryData(['/api/auth/user']);
-      if (currentUser) {
-        queryClient.setQueryData(['/api/auth/user'], currentUser);
-      }
+      // Force a fresh fetch of user data when profile is updated
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);
@@ -100,45 +97,43 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch user wallet summary
+  // Fetch wallet data with optimized settings
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 25000, // Consider data fresh for 25 seconds
-    retry: 2,
+    refetchInterval: 30000,
+    staleTime: 25000,
+    retry: 1,
   });
 
-  // Fetch real-time price data with improved error handling for BTC conversion
+  // Fetch real-time prices - prioritize loading this first
   const { data: priceData, isLoading: priceLoading } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
-    refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 25000, // Consider data fresh for 25 seconds
-    retry: 2,
-    retryDelay: 1000
+    refetchInterval: 30000,
+    staleTime: 25000,
+    retry: 1,
+    retryDelay: 500
   });
 
-  // Fetch user favorites only when user is available
+  // Fetch user favorites - lower priority, longer cache
   const { data: userFavorites } = useQuery<string[]>({
     queryKey: ['/api/favorites'],
     enabled: !!user,
     retry: 1,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000
   });
 
-
-
-  // Fetch user balances with optimized loading
+  // Fetch user balances - defer loading to reduce initial wait
   const { data: balanceData, isLoading: balanceLoading } = useQuery({
     queryKey: ['/api/balances'],
     enabled: !!user,
-    refetchInterval: 60000, // Reduced frequency to 60 seconds
+    refetchInterval: 60000,
     staleTime: 30000,
     retry: 1
   });
 
-  // Show loading state for critical data
-  const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
+  // Optimized loading state - only show loading for essential data
+  const isLoadingCriticalData = priceLoading && (user && walletLoading);
 
   // Fetch currency conversion rates
   const { data: conversionData, isError: conversionError } = useQuery({
