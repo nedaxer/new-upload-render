@@ -373,27 +373,64 @@ export class MongoStorage implements IMongoStorage {
   async addFundsToUser(userId: string, amount: number): Promise<void> {
     try {
       const { User } = await import('./models/User');
+      const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
       
-      console.log(`Adding $${amount} to user ${userId}`);
+      console.log(`💰 Adding $${amount} to user ${userId}`);
       
-      // Get current user and balance
+      // Get current user
       const user = await User.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
 
-      const currentBalance = user.balance || 0;
-      const newBalance = currentBalance + amount;
+      // Find USD currency
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+      if (!usdCurrency) {
+        throw new Error('USD currency not found');
+      }
+
+      // Update balance in UserBalance collection (what mobile app uses)
+      const existingBalance = await UserBalance.findOne({ 
+        userId: userId, 
+        currencyId: usdCurrency._id 
+      });
       
-      // Update user's balance in User collection (primary source)
+      if (existingBalance) {
+        // Update existing balance
+        const currentAmount = existingBalance.amount || 0;
+        const newAmount = currentAmount + amount;
+        
+        await UserBalance.findOneAndUpdate(
+          { userId: userId, currencyId: usdCurrency._id },
+          { amount: newAmount, updatedAt: new Date() },
+          { new: true }
+        );
+        
+        console.log(`✅ UserBalance updated: $${currentAmount} → $${newAmount}`);
+      } else {
+        // Create new balance record
+        await UserBalance.create({
+          userId: userId,
+          currencyId: usdCurrency._id,
+          amount: amount
+        });
+        
+        console.log(`✅ New UserBalance created: $${amount}`);
+      }
+
+      // Also update User.balance field for consistency
+      const currentUserBalance = user.balance || 0;
+      const newUserBalance = currentUserBalance + amount;
+      
       await User.findByIdAndUpdate(userId, { 
-        balance: newBalance 
+        balance: newUserBalance 
       }, { new: true });
       
-      console.log(`User ${userId} balance updated: $${currentBalance} → $${newBalance}`);
+      console.log(`✅ User.balance updated: $${currentUserBalance} → $${newUserBalance}`);
       
     } catch (error) {
-      console.error('Error adding funds to user:', error);
+      console.error('❌ Error adding funds to user:', error);
       throw error;
     }
   }
