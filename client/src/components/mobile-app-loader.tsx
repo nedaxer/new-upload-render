@@ -51,10 +51,13 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
 
   // Preload exchange rates for currency conversion
   const { data: exchangeRates, isSuccess: ratesLoaded } = useQuery({
-    queryKey: ['exchange-rates'],
+    queryKey: ['/api/market-data/conversion-rates'],
     queryFn: async () => {
       try {
-        const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+        const response = await fetch('/api/market-data/conversion-rates');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return await response.json();
       } catch (error) {
         console.error('Failed to fetch exchange rates:', error);

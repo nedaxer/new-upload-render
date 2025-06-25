@@ -69,55 +69,77 @@ export default function MobileAssets() {
     retry: 2,
   });
 
-  // Default conversion rates - can be enhanced with real API later
-  const conversionRates = {
+  // Fetch real-time currency conversion rates from internal API
+  const { data: conversionData } = useQuery({
+    queryKey: ['/api/market-data/conversion-rates'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/market-data/conversion-rates');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch exchange rates:', error);
+        throw error;
+      }
+    },
+    refetchInterval: 300000, // Refetch every 5 minutes
+    staleTime: 240000, // Consider data fresh for 4 minutes
+    retry: 2,
+    retryDelay: 2000
+  });
+
+  // Use real exchange rates or fallback to static rates
+  const conversionRates = conversionData?.data || {
     'USD': 1,
-    'EUR': 0.85,
-    'GBP': 0.73,
-    'JPY': 110,
-    'CAD': 1.25,
-    'AUD': 1.35,
-    'CHF': 0.92,
-    'CNY': 6.45,
-    'INR': 75,
-    'KRW': 1200,
-    'BRL': 5.2,
-    'MXN': 20,
-    'RUB': 75,
-    'SGD': 1.35,
-    'HKD': 7.8,
-    'NOK': 8.5,
-    'SEK': 8.7,
-    'DKK': 6.3,
-    'PLN': 3.9,
-    'CZK': 22,
-    'HUF': 295,
-    'RON': 4.1,
-    'BGN': 1.66,
-    'TRY': 8.5,
-    'ZAR': 14.5,
-    'EGP': 15.7,
-    'MAD': 9.1,
-    'NGN': 411,
-    'KES': 108,
-    'UGX': 3550,
+    'EUR': 0.92,
+    'GBP': 0.79,
+    'JPY': 149.50,
+    'CAD': 1.36,
+    'AUD': 1.52,
+    'CHF': 0.88,
+    'CNY': 7.24,
+    'INR': 83.25,
+    'KRW': 1310,
+    'BRL': 5.95,
+    'MXN': 17.15,
+    'RUB': 92.50,
+    'SGD': 1.34,
+    'HKD': 7.83,
+    'NOK': 10.95,
+    'SEK': 10.85,
+    'DKK': 6.87,
+    'PLN': 4.05,
+    'CZK': 22.85,
+    'HUF': 360,
+    'RON': 4.58,
+    'BGN': 1.80,
+    'TRY': 29.45,
+    'ZAR': 18.75,
+    'EGP': 30.85,
+    'MAD': 10.15,
+    'NGN': 775,
+    'KES': 155,
+    'UGX': 3750,
     'AED': 3.67,
     'SAR': 3.75,
     'QAR': 3.64,
-    'KWD': 0.3,
+    'KWD': 0.31,
     'BHD': 0.377,
     'OMR': 0.385,
-    'ILS': 3.2,
-    'PKR': 155,
-    'BDT': 85,
-    'VND': 23000,
-    'THB': 32,
-    'MYR': 4.1,
-    'IDR': 14300,
-    'PHP': 50,
-    'TWD': 28,
-    'MOP': 8.1,
-    'NZD': 1.42
+    'ILS': 3.65,
+    'PKR': 278,
+    'BDT': 119,
+    'VND': 24350,
+    'THB': 35.25,
+    'MYR': 4.65,
+    'IDR': 15850,
+    'PHP': 55.75,
+    'TWD': 31.85,
+    'MOP': 8.08,
+    'NZD': 1.68
   };
 
   // Convert USD amounts to selected currency
