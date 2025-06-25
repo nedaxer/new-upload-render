@@ -1,6 +1,7 @@
 import * as bitcoin from 'bitcoinjs-lib';
 import { BIP32Factory } from 'bip32';
 import { hdkey } from 'ethereumjs-wallet';
+import { Wallet } from '@ethereumjs/wallet';
 import * as bip39 from 'bip39';
 import { UserWallet } from '../models/UserWallet';
 import { Currency } from '../models/Currency';
