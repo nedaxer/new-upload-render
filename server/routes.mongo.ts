@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { mongoStorage as storage } from "./mongoStorage";
+import bcrypt from "bcrypt";
 import { insertMongoUserSchema, userDataSchema } from "@shared/mongo-schema";
 import { z } from "zod";
 import session from "express-session";
@@ -626,16 +627,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Direct mongoose query without imports
-      const mongoose = require('mongoose');
-      const User = mongoose.connection.db.collection('users');
-      
-      const user = await User.findOne({ 
-        $or: [
-          { username: username },
-          { email: username }
-        ]
-      });
+      // Use existing mongoStorage instance
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        user = await storage.getUserByEmail(username);
+      }
 
       if (!user) {
         return res.status(401).json({ 
@@ -645,7 +641,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify password using bcrypt
-      const bcrypt = require('bcrypt');
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {

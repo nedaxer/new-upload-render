@@ -37,13 +37,15 @@ export default function AdminLogin() {
       return await response.json();
     },
     onSuccess: (data) => {
+      console.log('Login response:', data);
       if (data.success && data.user?.isAdmin) {
         toast({
           title: "Admin Login Successful",
           description: "Welcome to the admin dashboard",
           variant: "default",
         });
-        setLocation('/mobile/admin');
+        // Redirect to admin dashboard
+        window.location.href = '/mobile/admin';
       } else if (data.success && !data.user?.isAdmin) {
         toast({
           title: "Access Denied",
