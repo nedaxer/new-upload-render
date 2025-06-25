@@ -156,7 +156,16 @@ export default function App() {
 
   // Show loading indicator while routes are being set up
   if (isLoading) {
-    return <LoadingIndicator />;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-orange-500 to-blue-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
+            <span className="text-white font-bold text-xl">N</span>
+          </div>
+          <p className="text-white">Loading Nedaxer...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

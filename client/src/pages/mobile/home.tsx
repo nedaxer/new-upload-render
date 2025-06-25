@@ -153,6 +153,16 @@ export default function MobileHome() {
   // Show loading state for critical data
   const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
 
+  // Show loading animation for new users or slow loading - but only on first load
+  if (isLoadingCriticalData && !walletSummary && !balanceData) {
+    return (
+      <LoadingWithAnimation 
+        message="Setting up your account..."
+        showNedaxerLogo={true}
+      />
+    );
+  }
+
   // Fetch currency conversion rates
   const { data: conversionData, isError: conversionError } = useQuery({
     queryKey: ['conversion-rates'],

@@ -174,11 +174,14 @@ export default function Register() {
   // Show welcome animation if it's active
   if (showWelcomeAnimation) {
     return (
-      <WelcomeAnimation
-        isVisible={showWelcomeAnimation}
-        onComplete={handleWelcomeComplete}
-        userName={formData.firstName || 'there'}
-      />
+      <div className="min-h-screen">
+        <WelcomeAnimation
+          isVisible={showWelcomeAnimation}
+          onComplete={handleWelcomeComplete}
+          userName={formData.firstName || 'there'}
+          userBalance={0}
+        />
+      </div>
     );
   }
 
