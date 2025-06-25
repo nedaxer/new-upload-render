@@ -179,10 +179,6 @@ export default function MobileAdmin() {
           <p className="text-sm text-gray-600 mb-4">
             Please log in with admin credentials to access this panel.
           </p>
-          <div className="space-y-2 text-xs text-gray-500">
-            <p><strong>Admin Email:</strong> robinstephen003@outlook.com</p>
-            <p><strong>Admin Password:</strong> robinstephen003@outlook.com</p>
-          </div>
           <Button 
             onClick={() => window.location.href = '/mobile/admin-login'}
             className="w-full mt-4 bg-orange-500 hover:bg-orange-600"

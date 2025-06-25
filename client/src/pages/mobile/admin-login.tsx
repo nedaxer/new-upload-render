@@ -23,7 +23,10 @@ export default function AdminLogin() {
         headers: { 
           'Content-Type': 'application/json' 
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({
+          username: credentials.email,
+          password: credentials.password
+        }),
       });
       
       if (!response.ok) {
@@ -160,14 +163,9 @@ export default function AdminLogin() {
           </form>
           
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center mb-2">
+            <p className="text-xs text-gray-600 text-center">
               This is a secure admin area. Unauthorized access is prohibited.
             </p>
-            <div className="text-xs text-gray-500 mt-3 border-t pt-3">
-              <p><strong>Admin Credentials:</strong></p>
-              <p>Email: robinstephen003@outlook.com</p>
-              <p>Password: robinstephen003@outlook.com</p>
-            </div>
           </div>
         </CardContent>
       </Card>
