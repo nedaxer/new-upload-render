@@ -615,76 +615,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login endpoint  
+  // Login endpoint with hardcoded admin bypass
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
-      console.log('=== LOGIN DEBUG START ===');
-      console.log('Request body:', { username, hasPassword: !!password, passwordLength: password?.length });
       
       if (!username || !password) {
-        console.log('Missing credentials - username:', !!username, 'password:', !!password);
         return res.status(400).json({ 
           success: false, 
           message: "Username and password are required" 
         });
       }
 
-      console.log('Searching for user with username:', username);
+      // HARDCODED ADMIN LOGIN - bypasses MongoDB completely
+      const adminEmail = 'nedaxer.us@gmail.com';
+      const adminPassword = 'Nedaxer.us';
       
-      // Import User model directly
-      const { User } = await import('./models/User');
-      
-      const directUser = await User.findOne({ 
-        $or: [
-          { username: username },
-          { email: username }
-        ]
+      console.log('Checking admin login:', { 
+        inputEmail: username.toLowerCase(), 
+        adminEmail, 
+        emailMatch: username.toLowerCase() === adminEmail,
+        passwordMatch: password === adminPassword 
       });
       
-      console.log('User model query result:', directUser ? 'FOUND' : 'NOT FOUND');
-      
-      if (directUser) {
-        console.log('Found user:', {
-          username: directUser.username,
-          email: directUser.email,
-          isAdmin: directUser.isAdmin,
-          uid: directUser.uid
+      if (username.toLowerCase() === adminEmail && password === adminPassword) {
+        console.log('✓ Admin hardcoded login successful - bypassing all MongoDB checks');
+        
+        // Set admin session
+        req.session.userId = 'ADMIN001';
+        
+        const adminUser = {
+          _id: 'ADMIN001',
+          uid: 'ADMIN001', 
+          username: adminEmail,
+          email: adminEmail,
+          firstName: 'System',
+          lastName: 'Administrator',
+          isVerified: true,
+          isAdmin: true
+        };
+
+        return res.json({ 
+          success: true, 
+          message: "Admin login successful",
+          user: adminUser
         });
       }
-      
-      if (!directUser) {
-        console.log('User not found');
-        return res.status(401).json({ 
-          success: false, 
-          message: "Invalid credentials" 
-        });
+
+      // Regular user login through mongoStorage
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        user = await storage.getUserByEmail(username);
       }
-      
-      const user = directUser;
 
       if (!user) {
-        console.log('No user found with username or email:', username);
         return res.status(401).json({ 
           success: false, 
           message: "Invalid credentials" 
         });
       }
 
-      console.log('User found:', {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        uid: user.uid,
-        hasPassword: !!user.password,
-        passwordLength: user.password?.length
-      });
-
-      // Verify password using bcrypt
-      console.log('Comparing passwords...');
+      // Verify password for regular users
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password validation result:', isPasswordValid);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
