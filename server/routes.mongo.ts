@@ -618,7 +618,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
-      console.log('Login attempt:', { username, hasPassword: !!password });
       
       if (!username || !password) {
         return res.status(400).json({ 
@@ -627,34 +626,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Direct MongoDB lookup using existing connection
-      const mongoose = await import('mongoose');
-      const UserSchema = new mongoose.Schema({
-        uid: String,
-        username: String,
-        email: String,
-        password: String,
-        firstName: String,
-        lastName: String,
-        isVerified: Boolean,
-        isAdmin: Boolean,
-        balance: Number,
-      });
-      const User = mongoose.models.User || mongoose.model('User', UserSchema);
+      // Direct mongoose query without imports
+      const mongoose = require('mongoose');
+      const User = mongoose.connection.db.collection('users');
       
-      let user = await User.findOne({ 
+      const user = await User.findOne({ 
         $or: [
           { username: username },
           { email: username }
         ]
       });
-      
-      console.log('User found in DB:', user ? {
-        username: user.username,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isVerified: user.isVerified
-      } : null);
 
       if (!user) {
         return res.status(401).json({ 
@@ -664,9 +645,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify password using bcrypt
-      const bcrypt = await import('bcrypt');
-      const isPasswordValid = await bcrypt.default.compare(password, user.password);
-      console.log('Password validation result:', isPasswordValid);
+      const bcrypt = require('bcrypt');
+      const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
