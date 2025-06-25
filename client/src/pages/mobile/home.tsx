@@ -141,71 +141,87 @@ export default function MobileHome() {
   const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
 
   // Fetch currency conversion rates
-  const { data: conversionData } = useQuery({
+  const { data: conversionData, isError: conversionError } = useQuery({
     queryKey: ['conversion-rates'],
     queryFn: () => apiRequest('/api/market-data/conversion-rates'),
     refetchInterval: 300000, // Refetch every 5 minutes
+    staleTime: 240000, // Consider data fresh for 4 minutes
+    retry: 3,
+    retryDelay: 1000
   });
 
   const conversionRates = conversionData?.data || {
-    'USD': 1,
-    'EUR': 0.85,
-    'GBP': 0.73,
-    'JPY': 110,
-    'CAD': 1.25,
-    'AUD': 1.35,
-    'CHF': 0.92,
-    'CNY': 6.45,
-    'INR': 75,
-    'KRW': 1200,
-    'BRL': 5.2,
-    'MXN': 20,
-    'RUB': 75,
-    'SGD': 1.35,
-    'HKD': 7.8,
-    'NOK': 8.5,
-    'SEK': 8.7,
-    'DKK': 6.3,
-    'PLN': 3.9,
-    'CZK': 22,
-    'HUF': 295,
-    'RON': 4.1,
-    'BGN': 1.66,
-    'TRY': 8.5,
-    'ZAR': 14.5,
-    'EGP': 15.7,
-    'MAD': 9.1,
-    'NGN': 411,
-    'KES': 108,
-    'UGX': 3550,
-    'AED': 3.67,
-    'SAR': 3.75,
-    'QAR': 3.64,
-    'KWD': 0.3,
-    'BHD': 0.377,
-    'OMR': 0.385,
-    'ILS': 3.2,
-    'PKR': 155,
-    'BDT': 85,
-    'VND': 23000,
-    'THB': 32,
-    'MYR': 4.1,
-    'IDR': 14300,
-    'PHP': 50,
-    'TWD': 28,
-    'MOP': 8.1,
-    'NZD': 1.42
+    'USD': 1,           // Base currency
+    'EUR': 0.92,        // Euro
+    'GBP': 0.79,        // British Pound
+    'JPY': 149.50,      // Japanese Yen
+    'CAD': 1.36,        // Canadian Dollar
+    'AUD': 1.52,        // Australian Dollar
+    'CHF': 0.88,        // Swiss Franc
+    'CNY': 7.24,        // Chinese Yuan
+    'INR': 83.25,       // Indian Rupee
+    'KRW': 1310,        // South Korean Won
+    'BRL': 5.95,        // Brazilian Real
+    'MXN': 17.15,       // Mexican Peso
+    'RUB': 92.50,       // Russian Ruble
+    'SGD': 1.34,        // Singapore Dollar
+    'HKD': 7.83,        // Hong Kong Dollar
+    'NOK': 10.95,       // Norwegian Krone
+    'SEK': 10.85,       // Swedish Krona
+    'DKK': 6.87,        // Danish Krone
+    'PLN': 4.05,        // Polish Zloty
+    'CZK': 22.85,       // Czech Koruna
+    'HUF': 360,         // Hungarian Forint
+    'RON': 4.58,        // Romanian Leu
+    'BGN': 1.80,        // Bulgarian Lev
+    'TRY': 29.45,       // Turkish Lira
+    'ZAR': 18.75,       // South African Rand
+    'EGP': 30.85,       // Egyptian Pound
+    'MAD': 10.15,       // Moroccan Dirham
+    'NGN': 775,         // Nigerian Naira
+    'KES': 155,         // Kenyan Shilling
+    'UGX': 3750,        // Ugandan Shilling
+    'AED': 3.67,        // UAE Dirham
+    'SAR': 3.75,        // Saudi Riyal
+    'QAR': 3.64,        // Qatari Riyal
+    'KWD': 0.31,        // Kuwaiti Dinar
+    'BHD': 0.377,       // Bahraini Dinar
+    'OMR': 0.385,       // Omani Rial
+    'ILS': 3.65,        // Israeli Shekel
+    'PKR': 278,         // Pakistani Rupee
+    'BDT': 119,         // Bangladeshi Taka
+    'VND': 24350,       // Vietnamese Dong
+    'THB': 35.25,       // Thai Baht
+    'MYR': 4.65,        // Malaysian Ringgit
+    'IDR': 15850,       // Indonesian Rupiah
+    'PHP': 55.75,       // Philippine Peso
+    'TWD': 31.85,       // Taiwan Dollar
+    'MOP': 8.08,        // Macanese Pataca
+    'NZD': 1.68         // New Zealand Dollar
   };
 
   // Convert USD amounts to selected currency
   const convertToSelectedCurrency = (usdAmount: number): string => {
-    const rate = conversionRates[selectedCurrency] || 1;
+    if (!usdAmount || usdAmount === 0) return '0.00';
+    
+    const rate = conversionRates[selectedCurrency];
+    if (!rate) {
+      console.warn(`No conversion rate found for ${selectedCurrency}, using USD`);
+      return usdAmount.toFixed(2);
+    }
+    
     const convertedAmount = usdAmount * rate;
 
-    // Format based on currency
-    if (['JPY', 'KRW', 'VND', 'IDR', 'UGX', 'MMK', 'KHR', 'LAK'].includes(selectedCurrency)) {
+    // Format based on currency - currencies with no decimal places
+    if (['JPY', 'KRW', 'VND', 'IDR', 'UGX', 'HUF', 'NGN', 'KES'].includes(selectedCurrency)) {
       return Math.round(convertedAmount).toLocaleString();
-    } else {
+    } 
+    // Currencies with 3 decimal places
+    else if (['KWD', 'BHD', 'OMR'].includes(selectedCurrency)) {
+      return convertedAmount.toFixed(3);
+    }
+    // Most currencies with 2 decimal places
+    else {
       return convertedAmount.toFixed(2);
     }
   };
