@@ -1022,19 +1022,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
-      // Simple admin credentials check
       if (email === 'admin@nedaxer.com' && password === 'NedaxerAdmin2025') {
         req.session.adminAuthenticated = true;
-        
-        res.json({
-          success: true,
-          message: "Admin authentication successful"
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({ success: false, message: "Session save failed" });
+          }
+          res.json({ success: true, message: "Admin authentication successful" });
         });
       } else {
-        res.status(401).json({
-          success: false,
-          message: "Invalid admin credentials"
-        });
+        res.status(401).json({ success: false, message: "Invalid admin credentials" });
       }
     } catch (error) {
       console.error('Admin login error:', error);
@@ -1044,8 +1042,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin middleware for new portal
   const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+    console.log('Admin auth check:', { 
+      sessionExists: !!req.session, 
+      adminAuth: req.session?.adminAuthenticated,
+      sessionId: req.sessionID 
+    });
+    
     if (!req.session?.adminAuthenticated) {
-      return res.status(401).json({ success: false, message: "Admin authentication required" });
+      return res.status(401).json({ success: false, message: "Not authenticated" });
     }
     next();
   };

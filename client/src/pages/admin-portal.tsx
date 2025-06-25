@@ -85,16 +85,18 @@ export default function AdminPortal() {
     },
   });
 
-  // Search users
-  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
+  // Search users with real-time updates
+  const { data: searchResults = [], isLoading: searchLoading, refetch: refetchSearch } = useQuery({
     queryKey: ["/api/admin/users/search", searchQuery],
     enabled: searchQuery.length > 0 && isAuthenticated,
+    refetchInterval: searchQuery.length > 0 ? 2000 : false, // Refetch every 2 seconds when searching
   });
 
-  // Get all users for admin header
-  const { data: allUsers = [] } = useQuery({
+  // Get all users for admin header with auto-refresh
+  const { data: allUsers = [], refetch: refetchUsers } = useQuery({
     queryKey: ["/api/admin/users/all"],
     enabled: isAuthenticated,
+    refetchInterval: 5000, // Refresh every 5 seconds
   });
 
   // Copy user ID function
@@ -112,20 +114,20 @@ export default function AdminPortal() {
   // Add funds mutation
   const addFundsMutation = useMutation({
     mutationFn: async ({ userId, amount }: { userId: string; amount: number }) => {
-      return await apiRequest("/api/admin/users/add-funds", {
-        method: "POST",
-        body: JSON.stringify({ userId, amount }),
-      });
+      const response = await apiRequest("POST", "/api/admin/users/add-funds", { userId, amount });
+      return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Funds Added Successfully",
-        description: "User has been notified of the deposit",
+        description: `$${fundAmount} added to user account`,
         variant: "default",
       });
       setFundAmount("");
-      setSelectedUser(null);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchSearch();
+      refetchUsers();
     },
     onError: (error: any) => {
       toast({
@@ -139,18 +141,20 @@ export default function AdminPortal() {
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return await apiRequest(`/api/admin/users/${userId}`, {
-        method: "DELETE",
-      });
+      const response = await apiRequest("DELETE", `/api/admin/users/${userId}`);
+      return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Account Deleted",
-        description: "User account has been permanently deleted",
+        description: "User account permanently deleted from MongoDB",
         variant: "default",
       });
       setSelectedUser(null);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchSearch();
+      refetchUsers();
     },
     onError: (error: any) => {
       toast({
@@ -326,63 +330,85 @@ export default function AdminPortal() {
         {/* Users Overview Panel */}
         {showUsersList && (
           <Card className="mb-4 bg-white/10 backdrop-blur-lg border-white/20">
-            <CardHeader>
-              <CardTitle className="flex items-center text-white">
-                <Users className="w-5 h-5 mr-2 text-blue-400" />
-                Users Overview
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-white">
+                <div className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-blue-400" />
+                  Users Overview
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-200">
+                    {allUsers.length} Total Users
+                  </Badge>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-400">Live</span>
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {allUsers.slice(0, 9).map((user: AdminUser) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {allUsers.slice(0, 12).map((user: AdminUser) => (
                   <div
                     key={user._id}
-                    className="p-3 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
+                    className="p-3 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"
                     onClick={() => setSelectedUser(user)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-2 flex-1 min-w-0">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                           <User className="w-4 h-4 text-white" />
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-white truncate max-w-[120px]">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-white truncate">
                             {user.firstName && user.lastName 
                               ? `${user.firstName} ${user.lastName}` 
                               : user.username
                             }
                           </p>
-                          <p className="text-xs text-blue-200 flex items-center">
-                            <span className="truncate max-w-[100px]">{user.email}</span>
+                          <p className="text-xs text-blue-200 truncate">
+                            {user.email}
                           </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs text-green-400 font-medium">${user.balance.toFixed(2)}</p>
+                            <p className="text-xs text-blue-400">UID: {user.uid}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-green-400">${user.balance.toFixed(2)}</p>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-16 text-xs text-blue-300 hover:text-white p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyUserId(user.uid);
-                          }}
-                        >
-                          {copiedId === user.uid ? (
-                            <CheckCircle className="w-3 h-3" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-blue-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyUserId(user.uid);
+                        }}
+                      >
+                        {copiedId === user.uid ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
-              {allUsers.length > 9 && (
-                <p className="text-center text-blue-200 text-sm mt-4">
-                  Showing first 9 users. Use search below to find specific users.
-                </p>
+              {allUsers.length > 12 && (
+                <div className="text-center mt-4">
+                  <p className="text-blue-200 text-sm">
+                    Showing first 12 users • {allUsers.length - 12} more available
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2 text-blue-300 hover:text-white"
+                    onClick={() => setShowUsersList(false)}
+                  >
+                    Use search below to find specific users
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -399,12 +425,20 @@ export default function AdminPortal() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Input
-              placeholder="Search by name, email, username, or UID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-            />
+            <div className="relative">
+              <Input
+                placeholder="Search by name, email, username, or UID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/20 border-white/30 text-white placeholder:text-blue-200 pl-10"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-300" />
+              {searchLoading && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
             
             {searchLoading && (
               <div className="text-center py-4">
