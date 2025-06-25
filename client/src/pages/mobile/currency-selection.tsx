@@ -17,95 +17,27 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
 
   // Most used currencies
   const mostUsedCurrencies = [
-    { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
-    { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
-    { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
-    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
-    { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
-    { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' }
+    { code: 'USD', name: 'US Dollar' },
+    { code: 'EUR', name: 'Euro' },
+    { code: 'GBP', name: 'British Pound' },
+    { code: 'JPY', name: 'Japanese Yen' },
+    { code: 'CAD', name: 'Canadian Dollar' },
+    { code: 'AUD', name: 'Australian Dollar' }
   ];
 
-  // All available currencies with names and flags
-  const allCurrencies = [
-    // Major currencies
-    { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
-    { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
-    { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
-    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
-    { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
-    { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
-    { code: 'CHF', name: 'Swiss Franc', flag: '🇨🇭' },
-    { code: 'CNY', name: 'Chinese Yuan', flag: '🇨🇳' },
-    { code: 'INR', name: 'Indian Rupee', flag: '🇮🇳' },
-    { code: 'KRW', name: 'South Korean Won', flag: '🇰🇷' },
-    
-    // Asian currencies
-    { code: 'SGD', name: 'Singapore Dollar', flag: '🇸🇬' },
-    { code: 'HKD', name: 'Hong Kong Dollar', flag: '🇭🇰' },
-    { code: 'THB', name: 'Thai Baht', flag: '🇹🇭' },
-    { code: 'MYR', name: 'Malaysian Ringgit', flag: '🇲🇾' },
-    { code: 'IDR', name: 'Indonesian Rupiah', flag: '🇮🇩' },
-    { code: 'PHP', name: 'Philippine Peso', flag: '🇵🇭' },
-    { code: 'VND', name: 'Vietnamese Dong', flag: '🇻🇳' },
-    { code: 'TWD', name: 'Taiwan Dollar', flag: '🇹🇼' },
-    { code: 'PKR', name: 'Pakistani Rupee', flag: '🇵🇰' },
-    { code: 'BDT', name: 'Bangladeshi Taka', flag: '🇧🇩' },
-    { code: 'LKR', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
-    { code: 'NPR', name: 'Nepalese Rupee', flag: '🇳🇵' },
-    
-    // European currencies
-    { code: 'NOK', name: 'Norwegian Krone', flag: '🇳🇴' },
-    { code: 'SEK', name: 'Swedish Krona', flag: '🇸🇪' },
-    { code: 'DKK', name: 'Danish Krone', flag: '🇩🇰' },
-    { code: 'PLN', name: 'Polish Zloty', flag: '🇵🇱' },
-    { code: 'CZK', name: 'Czech Koruna', flag: '🇨🇿' },
-    { code: 'HUF', name: 'Hungarian Forint', flag: '🇭🇺' },
-    { code: 'RON', name: 'Romanian Leu', flag: '🇷🇴' },
-    { code: 'BGN', name: 'Bulgarian Lev', flag: '🇧🇬' },
-    { code: 'TRY', name: 'Turkish Lira', flag: '🇹🇷' },
-    { code: 'RUB', name: 'Russian Ruble', flag: '🇷🇺' },
-    { code: 'UAH', name: 'Ukrainian Hryvnia', flag: '🇺🇦' },
-    { code: 'ISK', name: 'Icelandic Króna', flag: '🇮🇸' },
-    
-    // Middle East & Africa
-    { code: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
-    { code: 'SAR', name: 'Saudi Riyal', flag: '🇸🇦' },
-    { code: 'QAR', name: 'Qatari Riyal', flag: '🇶🇦' },
-    { code: 'KWD', name: 'Kuwaiti Dinar', flag: '🇰🇼' },
-    { code: 'BHD', name: 'Bahraini Dinar', flag: '🇧🇭' },
-    { code: 'OMR', name: 'Omani Rial', flag: '🇴🇲' },
-    { code: 'ILS', name: 'Israeli Shekel', flag: '🇮🇱' },
-    { code: 'JOD', name: 'Jordanian Dinar', flag: '🇯🇴' },
-    { code: 'LBP', name: 'Lebanese Pound', flag: '🇱🇧' },
-    { code: 'EGP', name: 'Egyptian Pound', flag: '🇪🇬' },
-    { code: 'MAD', name: 'Moroccan Dirham', flag: '🇲🇦' },
-    { code: 'ZAR', name: 'South African Rand', flag: '🇿🇦' },
-    { code: 'NGN', name: 'Nigerian Naira', flag: '🇳🇬' },
-    { code: 'KES', name: 'Kenyan Shilling', flag: '🇰🇪' },
-    { code: 'UGX', name: 'Ugandan Shilling', flag: '🇺🇬' },
-    { code: 'TZS', name: 'Tanzanian Shilling', flag: '🇹🇿' },
-    { code: 'ETB', name: 'Ethiopian Birr', flag: '🇪🇹' },
-    { code: 'GHS', name: 'Ghanaian Cedi', flag: '🇬🇭' },
-    
-    // Americas
-    { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
-    { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
-    { code: 'ARS', name: 'Argentine Peso', flag: '🇦🇷' },
-    { code: 'CLP', name: 'Chilean Peso', flag: '🇨🇱' },
-    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
-    { code: 'PEN', name: 'Peruvian Sol', flag: '🇵🇪' },
-    { code: 'UYU', name: 'Uruguayan Peso', flag: '🇺🇾' },
-    { code: 'BOB', name: 'Bolivian Boliviano', flag: '🇧🇴' },
-    { code: 'PYG', name: 'Paraguayan Guaraní', flag: '🇵🇾' },
-    
-    // Oceania
-    { code: 'NZD', name: 'New Zealand Dollar', flag: '🇳🇿' },
-    { code: 'FJD', name: 'Fijian Dollar', flag: '🇫🇯' }
-  ].sort((a, b) => a.name.localeCompare(b.name));
+  // Additional currencies (without flags as requested)
+  const additionalCurrencies = [
+    'CHF', 'CNY', 'INR', 'KRW', 'SGD', 'HKD', 'THB', 'MYR', 'IDR', 'PHP', 
+    'VND', 'TWD', 'PKR', 'BDT', 'LKR', 'NPR', 'NOK', 'SEK', 'DKK', 'PLN', 
+    'CZK', 'HUF', 'RON', 'BGN', 'TRY', 'RUB', 'UAH', 'ISK', 'AED', 'SAR', 
+    'QAR', 'KWD', 'BHD', 'OMR', 'ILS', 'JOD', 'LBP', 'EGP', 'MAD', 'ZAR', 
+    'NGN', 'KES', 'UGX', 'TZS', 'ETB', 'GHS', 'BRL', 'MXN', 'ARS', 'CLP', 
+    'COP', 'PEN', 'UYU', 'BOB', 'PYG', 'NZD', 'FJD'
+  ].sort();
 
-  // Filter out most used from all currencies to show separately
-  const otherCurrencies = allCurrencies.filter(currency => 
-    !mostUsedCurrencies.some(used => used.code === currency.code)
+  // Filter out most used currencies from additional list
+  const otherCurrencies = additionalCurrencies.filter(currency => 
+    !mostUsedCurrencies.some(used => used.code === currency)
   );
 
   const handleCurrencySelect = (currency: string) => {
@@ -164,7 +96,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
         <div>
           <h2 className="text-gray-400 text-sm mb-3">More</h2>
           <div className="grid grid-cols-3 gap-3">
-            {moreCurrencies.map((currency) => (
+            {otherCurrencies.map((currency) => (
               <button
                 key={currency}
                 onClick={() => handleCurrencySelect(currency)}
