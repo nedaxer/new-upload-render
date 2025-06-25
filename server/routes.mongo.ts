@@ -1010,13 +1010,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get only USD balance for the user
-      const usdBalance = await UserBalance.findOne({ 
+      // Get only USD balance for the user, create if doesn't exist
+      let usdBalance = await UserBalance.findOne({ 
         userId, 
         currencyId: usdCurrency._id 
       });
       
-      const formattedBalances = usdBalance ? [{
+      // Create default USD balance for new users
+      if (!usdBalance) {
+        usdBalance = await UserBalance.create({
+          userId,
+          currencyId: usdCurrency._id,
+          amount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+      
+      const formattedBalances = [{
         id: usdBalance._id,
         balance: usdBalance.amount,
         currency: {
@@ -1026,7 +1037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: 'fiat',
           isActive: usdCurrency.isActive
         }
-      }] : [];
+      }];
 
       res.json({
         success: true,
@@ -1102,14 +1113,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get only USD balance for the user
-      const usdBalance = await UserBalance.findOne({ 
+      // Get only USD balance for the user, create if doesn't exist
+      let usdBalance = await UserBalance.findOne({ 
         userId, 
         currencyId: usdCurrency._id 
       });
       
-      // Default to 0 USD if no balance exists
-      const totalUSDValue = usdBalance?.amount || 0;
+      // Create default USD balance for new users
+      if (!usdBalance) {
+        usdBalance = await UserBalance.create({
+          userId,
+          currencyId: usdCurrency._id,
+          amount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
+      
+      const totalUSDValue = usdBalance.amount;
       
       res.json({
         success: true,

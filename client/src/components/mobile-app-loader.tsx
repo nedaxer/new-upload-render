@@ -20,29 +20,29 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     complete: false
   });
 
-  // Critical data queries with immediate execution
-  const { data: priceData, isSuccess: pricesLoaded } = useQuery({
+  // Critical data queries with immediate execution and fast timeout for new users
+  const { data: priceData, isSuccess: pricesLoaded, isError: pricesError } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
     enabled: !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
-  const { data: walletData, isSuccess: walletLoaded } = useQuery({
+  const { data: walletData, isSuccess: walletLoaded, isError: walletError } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
-  const { data: balanceData, isSuccess: balancesLoaded } = useQuery({
+  const { data: balanceData, isSuccess: balancesLoaded, isError: balancesError } = useQuery({
     queryKey: ['/api/balances'],
     enabled: !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
-  const { data: favoritesData, isSuccess: favoritesLoaded } = useQuery({
+  const { data: favoritesData, isSuccess: favoritesLoaded, isError: favoritesError } = useQuery({
     queryKey: ['/api/favorites'],
     enabled: !!user && isPreloading,
     retry: 1,
@@ -69,30 +69,49 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Update loading steps as data loads
+  // Update loading steps as data loads or fails
   useEffect(() => {
     setLoadingSteps(prev => ({
       ...prev,
-      prices: pricesLoaded,
-      wallet: walletLoaded,
-      balances: balancesLoaded,
-      favorites: favoritesLoaded,
+      prices: pricesLoaded || pricesError,
+      wallet: walletLoaded || walletError,
+      balances: balancesLoaded || balancesError,
+      favorites: favoritesLoaded || favoritesError,
       rates: ratesLoaded || true, // Don't block on rates failure
     }));
-  }, [pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, ratesLoaded]);
+  }, [pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, ratesLoaded, pricesError, walletError, balancesError, favoritesError]);
 
-  // Check if all critical data is loaded
+  // Check if all critical data is loaded or failed (for new users)
   useEffect(() => {
-    if (user && pricesLoaded && walletLoaded && balancesLoaded && favoritesLoaded && loadingSteps.rates) {
+    const allDataReady = (pricesLoaded || pricesError) && 
+                        (walletLoaded || walletError) && 
+                        (balancesLoaded || balancesError) && 
+                        (favoritesLoaded || favoritesError) && 
+                        loadingSteps.rates;
+
+    if (user && allDataReady) {
       // Add small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setLoadingSteps(prev => ({ ...prev, complete: true }));
         setIsPreloading(false);
-      }, 500);
+      }, 300);
       
       return () => clearTimeout(timer);
     }
-  }, [user, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates]);
+  }, [user, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates, pricesError, walletError, balancesError, favoritesError]);
+
+  // Emergency timeout for new users - don't wait more than 3 seconds
+  useEffect(() => {
+    if (user && isPreloading) {
+      const emergencyTimer = setTimeout(() => {
+        console.log('Emergency timeout - proceeding with available data for new user');
+        setLoadingSteps(prev => ({ ...prev, complete: true }));
+        setIsPreloading(false);
+      }, 3000);
+
+      return () => clearTimeout(emergencyTimer);
+    }
+  }, [user, isPreloading]);
 
   // If not authenticated, show children immediately
   if (!user) {
@@ -119,34 +138,29 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
           {/* Loading Steps */}
           <div className="space-y-2 min-w-64">
             <LoadingStep 
-              label="Loading market data" 
+              label="Loading market prices" 
               completed={loadingSteps.prices}
               active={!loadingSteps.prices}
             />
             <LoadingStep 
-              label="Preparing wallet" 
+              label="Setting up account" 
               completed={loadingSteps.wallet}
               active={loadingSteps.prices && !loadingSteps.wallet}
             />
             <LoadingStep 
-              label="Syncing balances" 
+              label="Preparing dashboard" 
               completed={loadingSteps.balances}
               active={loadingSteps.wallet && !loadingSteps.balances}
             />
             <LoadingStep 
-              label="Loading preferences" 
+              label="Loading user data" 
               completed={loadingSteps.favorites}
               active={loadingSteps.balances && !loadingSteps.favorites}
             />
             <LoadingStep 
-              label="Updating exchange rates" 
-              completed={loadingSteps.rates}
-              active={loadingSteps.favorites && !loadingSteps.rates}
-            />
-            <LoadingStep 
-              label="Finalizing account" 
+              label="Finalizing setup" 
               completed={loadingSteps.complete}
-              active={loadingSteps.rates && !loadingSteps.complete}
+              active={loadingSteps.favorites && !loadingSteps.complete}
             />
           </div>
 
