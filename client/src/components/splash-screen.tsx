@@ -92,15 +92,15 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     };
   }, []);
 
-  // Letters coming from side corners only
+  // Letters for 4-second launch animation
   const letters = [
     { src: nLetter, alt: 'N', from: { x: -windowSize.width, y: 0 }, delay: 0 },
-    { src: eLetter1, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 0.2 },
-    { src: dLetter, alt: 'D', from: { x: -windowSize.width, y: 0 }, delay: 0.4 },
-    { src: aLetter, alt: 'A', from: { x: windowSize.width, y: 0 }, delay: 0.6 },
-    { src: xLetter, alt: 'X', from: { x: -windowSize.width, y: 0 }, delay: 0.8 },
-    { src: eLetter2, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 1.0 },
-    { src: rLetter, alt: 'R', from: { x: -windowSize.width, y: 0 }, delay: 1.2 },
+    { src: eLetter1, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 0.1 },
+    { src: dLetter, alt: 'D', from: { x: -windowSize.width, y: 0 }, delay: 0.2 },
+    { src: aLetter, alt: 'A', from: { x: windowSize.width, y: 0 }, delay: 0.3 },
+    { src: xLetter, alt: 'X', from: { x: -windowSize.width, y: 0 }, delay: 0.4 },
+    { src: eLetter2, alt: 'E', from: { x: windowSize.width, y: 0 }, delay: 0.5 },
+    { src: rLetter, alt: 'R', from: { x: -windowSize.width, y: 0 }, delay: 0.6 },
   ];
 
   useEffect(() => {
@@ -108,18 +108,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const clonesTimer = setTimeout(() => {
       setHideOriginals(true);
       setShowClones(true);
-    }, 3500);
+    }, 1500); // 1.5 seconds for letters to arrange
 
     // Show NEDAXER logo after clones disappear
     const nedaxerLogoTimer = setTimeout(() => {
       setShowClones(false);
       setShowNedaxerLogo(true);
-    }, 6500); // 6.5 seconds
+    }, 2500); // 2.5 seconds total
 
+    // Complete animation after exactly 4 seconds
     const timer = setTimeout(() => {
       setShowLogo(false);
-      setTimeout(onComplete, 500); // Small delay for fade out
-    }, 15000); // 15 seconds
+      setTimeout(onComplete, 300); // Quick fade out
+    }, 4000); // Exactly 4 seconds
 
     return () => {
       clearTimeout(clonesTimer);
@@ -157,10 +158,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 }}
                 transition={{
                   delay: letter.delay,
-                  duration: hideOriginals ? 0.5 : 1.5,
+                  duration: hideOriginals ? 0.3 : 0.8,
                   type: "spring",
-                  stiffness: 100,
-                  damping: 20,
+                  stiffness: 120,
+                  damping: 15,
                   ease: "easeOut",
                 }}
                 className="relative"
@@ -240,62 +241,66 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2, duration: 1 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ delay: 1, duration: 0.8 }}
           >
             <div
-              className="w-80 h-32 rounded-full blur-3xl opacity-20"
+              className="w-80 h-32 rounded-full blur-3xl opacity-30"
               style={{
-                background: 'radial-gradient(ellipse, rgba(255,165,0,0.3) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse, rgba(255,165,0,0.4) 0%, transparent 70%)',
               }}
             />
           </motion.div>
 
-          {/* Cinematic title card effect */}
+          {/* Enhanced title card for 4-second animation */}
           <motion.div
             className="absolute bottom-16 sm:bottom-20 text-center z-20 px-4 max-w-full"
-            initial={{ opacity: 0, y: 50, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 3.5, duration: 1.2, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2, duration: 0.6, ease: "easeOut" }}
           >
-            <motion.div
-              className="relative"
+            <motion.h1 
+              className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wider mb-3"
               animate={{
-                filter: [
-                  'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
-                  'drop-shadow(0 0 20px rgba(255,255,255,0.6))',
-                  'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                textShadow: [
+                  '0 0 10px rgba(255,165,0,0.5)',
+                  '0 0 20px rgba(255,165,0,0.8)',
+                  '0 0 10px rgba(255,165,0,0.5)',
                 ],
               }}
               transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <h1 className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold tracking-wider mb-2 leading-tight">
-                CRYPTOCURRENCY TRADING PLATFORM
-              </h1>
-              <div className="w-full h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
-            </motion.div>
-            
-            <motion.p
-              className="text-orange-300 text-sm md:text-base font-light tracking-wider mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 1, 0.7] }}
-              transition={{
-                delay: 4,
                 duration: 2,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
             >
-              Initializing secure trading environment...
+              NEDAXER
+            </motion.h1>
+            
+            <motion.div
+              className="w-32 h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent mx-auto"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ delay: 2.5, duration: 0.8 }}
+            />
+            
+            <motion.p
+              className="text-orange-300 text-sm font-light tracking-wide mt-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 3, duration: 0.5 }}
+            >
+              Cryptocurrency Trading Platform
             </motion.p>
             
-            {/* Cinematic loading bars */}
-            <div className="flex justify-center space-x-2 mt-6">
-              {[0, 1, 2, 3, 4].map((i) => (
+            {/* Simplified loading indicator */}
+            <motion.div
+              className="flex justify-center space-x-1 mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 3.2, duration: 0.4 }}
+            >
+              {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
                   className="w-1 bg-orange-400 rounded-full"
@@ -312,24 +317,24 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   }}
                 />
               ))}
-            </div>
+            </motion.div>
           </motion.div>
 
-          {/* Progress bar */}
+          {/* Progress bar for 4-second animation */}
           <motion.div
             className="absolute bottom-8 left-8 right-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 3, duration: 0.5 }}
+            transition={{ delay: 1.5, duration: 0.3 }}
           >
             <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-white to-blue-200 rounded-full"
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-200 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{
-                  delay: 3,
-                  duration: 6.5,
+                  delay: 1.5,
+                  duration: 2.5,
                   ease: "easeOut",
                 }}
               />
