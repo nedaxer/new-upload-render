@@ -98,70 +98,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Currency conversion rates endpoint
+  // Currency conversion rates endpoint with multi-source real-time data
   app.get('/api/market-data/conversion-rates', async (req: Request, res: Response) => {
     try {
-      // Real-time exchange rates from a reliable source
-      const conversionRates = {
-        'USD': 1,           // Base currency
-        'EUR': 0.92,        // Euro
-        'GBP': 0.79,        // British Pound
-        'JPY': 149.50,      // Japanese Yen
-        'CAD': 1.36,        // Canadian Dollar
-        'AUD': 1.52,        // Australian Dollar
-        'CHF': 0.88,        // Swiss Franc
-        'CNY': 7.24,        // Chinese Yuan
-        'INR': 83.25,       // Indian Rupee
-        'KRW': 1310,        // South Korean Won
-        'BRL': 5.95,        // Brazilian Real
-        'MXN': 17.15,       // Mexican Peso
-        'RUB': 92.50,       // Russian Ruble
-        'SGD': 1.34,        // Singapore Dollar
-        'HKD': 7.83,        // Hong Kong Dollar
-        'NOK': 10.95,       // Norwegian Krone
-        'SEK': 10.85,       // Swedish Krona
-        'DKK': 6.87,        // Danish Krone
-        'PLN': 4.05,        // Polish Zloty
-        'CZK': 22.85,       // Czech Koruna
-        'HUF': 360,         // Hungarian Forint
-        'RON': 4.58,        // Romanian Leu
-        'BGN': 1.80,        // Bulgarian Lev
-        'TRY': 29.45,       // Turkish Lira
-        'ZAR': 18.75,       // South African Rand
-        'EGP': 30.85,       // Egyptian Pound
-        'MAD': 10.15,       // Moroccan Dirham
-        'NGN': 775,         // Nigerian Naira
-        'KES': 155,         // Kenyan Shilling
-        'UGX': 3750,        // Ugandan Shilling
-        'AED': 3.67,        // UAE Dirham
-        'SAR': 3.75,        // Saudi Riyal
-        'QAR': 3.64,        // Qatari Riyal
-        'KWD': 0.31,        // Kuwaiti Dinar
-        'BHD': 0.377,       // Bahraini Dinar
-        'OMR': 0.385,       // Omani Rial
-        'ILS': 3.65,        // Israeli Shekel
-        'PKR': 278,         // Pakistani Rupee
-        'BDT': 119,         // Bangladeshi Taka
-        'VND': 24350,       // Vietnamese Dong
-        'THB': 35.25,       // Thai Baht
-        'MYR': 4.65,        // Malaysian Ringgit
-        'IDR': 15850,       // Indonesian Rupiah
-        'PHP': 55.75,       // Philippine Peso
-        'TWD': 31.85,       // Taiwan Dollar
-        'MOP': 8.08,        // Macanese Pataca
-        'NZD': 1.68         // New Zealand Dollar
-      };
+      const { exchangeRateService } = await import('./exchange-rate-service');
+      const ratesData = await exchangeRateService.getRates();
 
       res.json({
         success: true,
-        data: conversionRates,
-        lastUpdated: new Date().toISOString()
+        data: ratesData.rates,
+        source: ratesData.source,
+        lastUpdated: ratesData.lastUpdated,
+        isRealTime: ratesData.success
       });
     } catch (error) {
       console.error('Error fetching conversion rates:', error);
       res.status(500).json({ 
         success: false, 
         message: 'Failed to fetch conversion rates' 
+      });
+    }
+  });
+
+  // Force refresh exchange rates endpoint
+  app.post('/api/market-data/conversion-rates/refresh', async (req: Request, res: Response) => {
+    try {
+      const { exchangeRateService } = await import('./exchange-rate-service');
+      const ratesData = await exchangeRateService.forceRefresh();
+
+      res.json({
+        success: true,
+        data: ratesData.rates,
+        source: ratesData.source,
+        lastUpdated: ratesData.lastUpdated,
+        isRealTime: ratesData.success,
+        message: 'Exchange rates refreshed successfully'
+      });
+    } catch (error) {
+      console.error('Error refreshing conversion rates:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to refresh conversion rates' 
       });
     }
   });
