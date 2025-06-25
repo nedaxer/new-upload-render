@@ -639,9 +639,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Import auth service for password verification
-      const { authService } = await import('./services/auth.service');
-      const isPasswordValid = await authService.verifyPassword(password, user.password);
+      // Verify password using bcrypt
+      const bcrypt = require('bcrypt');
+      const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
