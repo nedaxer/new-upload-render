@@ -13,15 +13,32 @@ type LoginData = {
   password: string;
 };
 
-type UserData = Pick<User, "id" | "username" | "firstName" | "lastName" | "email" | "isAdmin" | "profilePicture">;
+type UserData = Pick<
+  User,
+  | "id"
+  | "username"
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "isAdmin"
+  | "profilePicture"
+>;
 
 type AuthContextType = {
   user: UserData | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<{ success: boolean; user: UserData }, Error, LoginData>;
+  loginMutation: UseMutationResult<
+    { success: boolean; user: UserData },
+    Error,
+    LoginData
+  >;
   logoutMutation: UseMutationResult<{ success: boolean }, Error, void>;
-  registerMutation: UseMutationResult<{ success: boolean; user: UserData }, Error, InsertUser>;
+  registerMutation: UseMutationResult<
+    { success: boolean; user: UserData },
+    Error,
+    InsertUser
+  >;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -45,17 +62,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             "Content-Type": "application/json",
           },
         });
-        
+
         // Check if the response is JSON
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-          console.log('Auth query: Non-JSON response received');
+          console.log("Auth query: Non-JSON response received");
           return { user: null };
         }
-        
+
         const data = await res.json();
-        console.log('Auth query response:', data);
-        
+        console.log("Auth query response:", data);
+
         if (data.success && data.user) {
           return { user: data.user };
         } else if (data && (data._id || data.id)) {
@@ -65,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { user: null };
         }
       } catch (err) {
-        console.log('Auth query error:', err);
+        console.log("Auth query error:", err);
         return { user: null };
       }
     },
@@ -74,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     retry: (failureCount, error) => {
       // Only retry if it's a network error, not auth errors
-      return failureCount < 1 && error?.message !== 'Not authenticated';
+      return failureCount < 1 && error?.message !== "Not authenticated";
     },
   });
 
@@ -83,48 +100,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/auth/login", credentials);
       const data = await res.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || "Login failed");
       }
-      
+
       return data;
     },
     onSuccess: async (data) => {
-      console.log('Login successful, updating cache with user:', data.user);
+      console.log("Login successful, updating cache with user:", data.user);
       // Update the auth user data in the cache immediately
       queryClient.setQueryData(["/api/auth/user"], data.user);
-      
+
       // Aggressively preload all critical mobile app data
       await Promise.allSettled([
         queryClient.prefetchQuery({
-          queryKey: ['/api/crypto/realtime-prices'],
-          staleTime: 30000
+          queryKey: ["/api/crypto/realtime-prices"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/wallet/summary'],
-          staleTime: 30000
+          queryKey: ["/api/wallet/summary"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/balances'],
-          staleTime: 30000
+          queryKey: ["/api/balances"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/favorites'],
-          staleTime: 5 * 60 * 1000
+          queryKey: ["/api/favorites"],
+          staleTime: 5 * 60 * 1000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['exchange-rates'],
+          queryKey: ["exchange-rates"],
           queryFn: async () => {
             try {
-              const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+              const response = await fetch(
+                "https://api.exchangerate.host/latest?base=USD",
+              );
               return await response.json();
             } catch (error) {
               return null;
             }
           },
-          staleTime: 5 * 60 * 1000
-        })
+          staleTime: 5 * 60 * 1000,
+        }),
       ]);
     },
   });
@@ -142,14 +161,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Set auth user to null
       queryClient.setQueryData(["/api/auth/user"], { user: null });
       // Remove any persisted data
-      localStorage.removeItem('authToken');
+      localStorage.removeItem("authToken");
       sessionStorage.clear();
     },
     onError: () => {
       // Even on error, clear the cache and local data
       queryClient.clear();
       queryClient.setQueryData(["/api/auth/user"], { user: null });
-      localStorage.removeItem('authToken');
+      localStorage.removeItem("authToken");
       sessionStorage.clear();
     },
   });
@@ -159,48 +178,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async (userData: InsertUser) => {
       const res = await apiRequest("POST", "/api/auth/register", userData);
       const data = await res.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || "Registration failed");
       }
-      
+
       return data;
     },
     onSuccess: async (data) => {
-      console.log('Registration successful, updating cache with user:', data.user);
+      console.log(
+        "Registration successful, updating cache with user:",
+        data.user,
+      );
       // Update the auth user data in the cache immediately
       queryClient.setQueryData(["/api/auth/user"], data.user);
-      
+
       // Aggressively preload all critical mobile app data for new users
       await Promise.allSettled([
         queryClient.prefetchQuery({
-          queryKey: ['/api/crypto/realtime-prices'],
-          staleTime: 30000
+          queryKey: ["/api/crypto/realtime-prices"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/wallet/summary'],
-          staleTime: 30000
+          queryKey: ["/api/wallet/summary"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/balances'],
-          staleTime: 30000
+          queryKey: ["/api/balances"],
+          staleTime: 30000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['/api/favorites'],
-          staleTime: 5 * 60 * 1000
+          queryKey: ["/api/favorites"],
+          staleTime: 5 * 60 * 1000,
         }),
         queryClient.prefetchQuery({
-          queryKey: ['exchange-rates'],
+          queryKey: ["exchange-rates"],
           queryFn: async () => {
             try {
-              const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+              const response = await fetch(
+                "https://api.exchangerate.host/latest?base=USD",
+              );
               return await response.json();
             } catch (error) {
               return null;
             }
           },
-          staleTime: 5 * 60 * 1000
-        })
+          staleTime: 5 * 60 * 1000,
+        }),
       ]);
     },
   });
