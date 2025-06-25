@@ -640,8 +640,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify password using bcrypt
-      const bcrypt = require('bcrypt');
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const bcrypt = await import('bcrypt');
+      const isPasswordValid = await bcrypt.default.compare(password, user.password);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
