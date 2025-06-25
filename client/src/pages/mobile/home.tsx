@@ -55,6 +55,8 @@ export default function MobileHome() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -319,6 +321,104 @@ export default function MobileHome() {
     setSelectedCurrency(currency);
     setCurrentView('home');
   };
+
+  // Search functionality
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const query = searchQuery.trim();
+      const results = [];
+
+      // Search for users by username, email, or UID
+      if (query.length >= 2) {
+        try {
+          const userResponse = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            if (userData.success && userData.data) {
+              results.push(...userData.data.map((user: any) => ({
+                type: 'user',
+                username: user.username,
+                email: user.email,
+                uid: user.uid,
+                firstName: user.firstName,
+                lastName: user.lastName
+              })));
+            }
+          }
+        } catch (error) {
+          console.log('User search not available:', error);
+        }
+      }
+
+      // Search for cryptocurrencies by symbol or name
+      if (processedMarkets && processedMarkets.length > 0) {
+        const cryptoMatches = processedMarkets.filter((market: any) => 
+          market.symbol.toLowerCase().includes(query.toLowerCase()) ||
+          market.displayPair.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+
+        results.push(...cryptoMatches.map((market: any) => ({
+          type: 'crypto',
+          symbol: market.displayPair,
+          name: market.symbol,
+          pair: market.pair,
+          price: market.price,
+          change: market.change
+        })));
+      }
+
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    }
+  };
+
+  const handleSearchResultClick = (result: any) => {
+    if (result.type === 'user') {
+      // Navigate to user profile or send message
+      setComingSoonFeature('User Profiles');
+      setComingSoonOpen(true);
+    } else if (result.type === 'crypto') {
+      // Navigate to trading page with selected crypto
+      const tradingSymbol = result.pair;
+      const tradingViewSymbol = `BINANCE:${tradingSymbol}`;
+      
+      const chartState = {
+        currentSymbol: tradingSymbol,
+        tradingViewSymbol: tradingViewSymbol,
+        timeframe: '15m',
+        lastUpdated: Date.now(),
+        isChartMounted: false
+      };
+      localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+      
+      sessionStorage.setItem('selectedSymbol', tradingSymbol);
+      sessionStorage.setItem('selectedTab', 'Charts');
+      sessionStorage.setItem('tradingViewSymbol', tradingViewSymbol);
+      
+      setSearchQuery('');
+      setSearchResults([]);
+      navigate('/mobile/trade');
+    }
+  };
+
+  // Clear search results when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      if (searchResults.length > 0) {
+        setSearchResults([]);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [searchResults.length]);
 
   const quickActions = [
     { name: t('earn'), icon: Gift, color: 'text-orange-500', href: '/mobile/earn' },
@@ -626,7 +726,10 @@ export default function MobileHome() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
-            placeholder="BDXN/USDT"
+            placeholder={t('search_crypto_users')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -635,6 +738,48 @@ export default function MobileHome() {
             </button>
           </div>
         </div>
+        
+        {/* Search Results */}
+        {searchResults.length > 0 && (
+          <div className="mt-2 bg-gray-800 rounded-lg p-3 max-h-60 overflow-y-auto">
+            <h4 className="text-white font-medium mb-2">{t('search_results')}</h4>
+            {searchResults.map((result, index) => (
+              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-700 last:border-b-0">
+                <div className="flex items-center space-x-3">
+                  {result.type === 'user' ? (
+                    <>
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">{result.username}</p>
+                        <p className="text-gray-400 text-sm">UID: {result.uid}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">{result.symbol}</p>
+                        <p className="text-gray-400 text-sm">{result.name}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleSearchResultClick(result)}
+                  className="text-white border-gray-600"
+                >
+                  {result.type === 'user' ? t('view') : t('trade')}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Balance Section */}
