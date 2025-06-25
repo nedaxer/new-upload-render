@@ -1050,15 +1050,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Admin auth check:', { 
       sessionExists: !!req.session, 
       adminAuth: req.session?.adminAuthenticated,
-      sessionId: req.sessionID,
-      cookies: req.headers.cookie 
+      sessionId: req.sessionID
     });
     
     if (!req.session?.adminAuthenticated) {
-      console.log('Admin authentication failed - redirecting to login');
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
-    console.log('Admin authentication successful - proceeding');
     next();
   };
 

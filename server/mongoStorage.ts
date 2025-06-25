@@ -373,7 +373,6 @@ export class MongoStorage implements IMongoStorage {
   async addFundsToUser(userId: string, amount: number): Promise<void> {
     try {
       const { User } = await import('./models/User');
-      const { Balance } = await import('./models/Balance');
       
       console.log(`Adding $${amount} to user ${userId}`);
       
@@ -386,21 +385,12 @@ export class MongoStorage implements IMongoStorage {
       const currentBalance = user.balance || 0;
       const newBalance = currentBalance + amount;
       
-      // Update user's balance in User collection
-      const updatedUser = await User.findByIdAndUpdate(userId, { 
+      // Update user's balance in User collection (primary source)
+      await User.findByIdAndUpdate(userId, { 
         balance: newBalance 
       }, { new: true });
       
       console.log(`User ${userId} balance updated: $${currentBalance} → $${newBalance}`);
-      
-      // Also update the Balance collection for consistency
-      await Balance.findOneAndUpdate(
-        { userId: userId, assetSymbol: 'USD' },
-        { $inc: { amount: amount } },
-        { upsert: true, new: true }
-      );
-      
-      console.log(`Balance collection updated for user ${userId}`);
       
     } catch (error) {
       console.error('Error adding funds to user:', error);
