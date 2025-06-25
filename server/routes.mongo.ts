@@ -482,7 +482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Standard user lookup from MongoDB
-
+      const { mongoStorage } = await import('./mongoStorage');
       const user = await mongoStorage.getUser(req.session.userId);
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
@@ -1058,6 +1058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
 
+      const { mongoStorage } = await import('./mongoStorage');
       const users = await mongoStorage.searchUsers(query);
       res.json(users);
     } catch (error) {
@@ -1075,6 +1076,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "Valid user ID and amount required" });
       }
 
+      const { mongoStorage } = await import('./mongoStorage');
       await mongoStorage.addFundsToUser(userId, parseFloat(amount));
       
       console.log(`✓ Admin added $${amount} to user ${userId}`);
@@ -1100,6 +1102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "User ID required" });
       }
 
+      const { mongoStorage } = await import('./mongoStorage');
       const user = await mongoStorage.getUser(userId);
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
