@@ -18,11 +18,20 @@ export default function AdminLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
-      return await apiRequest('/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(credentials),
-        headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       if (data.success && data.user?.isAdmin) {
