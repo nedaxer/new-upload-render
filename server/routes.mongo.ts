@@ -1021,17 +1021,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/login', async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
+      console.log('Admin login attempt for:', email);
       
       if (email === 'admin@nedaxer.com' && password === 'NedaxerAdmin2025') {
         req.session.adminAuthenticated = true;
+        console.log('Setting admin session, ID:', req.sessionID);
+        
         req.session.save((err) => {
           if (err) {
             console.error('Session save error:', err);
             return res.status(500).json({ success: false, message: "Session save failed" });
           }
+          console.log('Admin session saved successfully');
           res.json({ success: true, message: "Admin authentication successful" });
         });
       } else {
+        console.log('Invalid admin credentials provided');
         res.status(401).json({ success: false, message: "Invalid admin credentials" });
       }
     } catch (error) {
@@ -1045,12 +1050,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Admin auth check:', { 
       sessionExists: !!req.session, 
       adminAuth: req.session?.adminAuthenticated,
-      sessionId: req.sessionID 
+      sessionId: req.sessionID,
+      cookies: req.headers.cookie 
     });
     
     if (!req.session?.adminAuthenticated) {
+      console.log('Admin authentication failed - redirecting to login');
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
+    console.log('Admin authentication successful - proceeding');
     next();
   };
 

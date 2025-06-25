@@ -42,6 +42,24 @@ export default function AdminPortal() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check admin authentication on mount
+  useEffect(() => {
+    sessionStorage.setItem('skipSplashScreen', 'true');
+    
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/users/all', { credentials: 'include' });
+        if (response.ok) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.log('Admin not authenticated');
+      }
+    };
+    
+    checkAuth();
+  }, []);
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const [showUsersList, setShowUsersList] = useState(false);
   const [copiedId, setCopiedId] = useState("");
