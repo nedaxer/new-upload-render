@@ -627,8 +627,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Direct MongoDB lookup instead of using storage layer
-      const { User } = await import('../models/User');
+      // Direct MongoDB lookup using existing connection
+      const mongoose = await import('mongoose');
+      const UserSchema = new mongoose.Schema({
+        uid: String,
+        username: String,
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        isVerified: Boolean,
+        isAdmin: Boolean,
+        balance: Number,
+      });
+      const User = mongoose.models.User || mongoose.model('User', UserSchema);
       
       let user = await User.findOne({ 
         $or: [
