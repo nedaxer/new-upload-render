@@ -87,7 +87,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Connect to MongoDB Atlas
   await connectToDatabase();
 
-  // Crypto prices endpoint
+  // OPTIMIZED: Single endpoint for all mobile app critical data
+  app.get('/api/mobile/app-data', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      console.log('Loading all mobile app data for user:', userId);
+      
+      // Parallel execution of all critical data requests
+      const [prices, walletSummary, balances, favorites, exchangeRates] = await Promise.allSettled([
+        getCoinGeckoPrices(),
+        // Get wallet summary from UserBalance collection
+        (async () => {
+          const { MongoClient } = await import('mongodb');
+          const client = await getMongoClient();
+          const db = client.db('nedaxer');
+          const balanceDoc = await db.collection('UserBalance').findOne({ userId });
+          return {
+            totalUSDValue: balanceDoc?.usdBalance || 0,
+            usdBalance: balanceDoc?.usdBalance || 0
+          };
+        })(),
+        // Get balances
+        (async () => {
+          const { MongoClient } = await import('mongodb');
+          const client = await getMongoClient();
+          const db = client.db('nedaxer');
+          const balanceDoc = await db.collection('UserBalance').findOne({ userId });
+          return [{
+            id: balanceDoc?._id || 'default',
+            userId,
+            asset: 'USD',
+            balance: balanceDoc?.usdBalance || 0,
+            lockedBalance: 0
+          }];
+        })(),
+        // Get favorites from user document
+        storage.getUserFavorites(userId),
+        // Get exchange rates
+        (async () => {
+          try {
+            const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            console.error('Exchange rates fetch failed:', error);
+            return null;
+          }
+        })()
+      ]);
+
+      // Process results with fallbacks
+      const responseData = {
+        prices: prices.status === 'fulfilled' ? prices.value : [],
+        wallet: walletSummary.status === 'fulfilled' ? walletSummary.value : { totalUSDValue: 0, usdBalance: 0 },
+        balances: balances.status === 'fulfilled' ? balances.value : [],
+        favorites: favorites.status === 'fulfilled' ? favorites.value : [],
+        exchangeRates: exchangeRates.status === 'fulfilled' ? exchangeRates.value : null
+      };
+
+      console.log('Mobile app data loaded successfully for user:', userId);
+      res.json({ 
+        success: true, 
+        data: responseData,
+        timestamp: Date.now()
+      });
+
+    } catch (error) {
+      console.error('Error loading mobile app data:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to load app data',
+        error: error.message 
+      });
+    }
+  });
+
+  // Crypto prices endpoint (kept for backwards compatibility)
   app.get('/api/crypto/prices', async (req: Request, res: Response) => {
     try {
       const prices = await getCoinGeckoPrices();

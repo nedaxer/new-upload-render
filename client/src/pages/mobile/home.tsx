@@ -97,43 +97,39 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch wallet data with optimized settings
-  const { data: walletData, isLoading: walletLoading } = useQuery({
+  // Use cached data from MobileAppLoader (data already preloaded)
+  const { data: walletData } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
-    refetchInterval: 30000,
-    staleTime: 25000,
+    refetchInterval: 60000, // Reduced frequency since data is cached
+    staleTime: 60000,
     retry: 1,
   });
 
-  // Fetch real-time prices - prioritize loading this first
-  const { data: priceData, isLoading: priceLoading } = useQuery({
+  const { data: priceData } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
-    refetchInterval: 30000,
-    staleTime: 25000,
+    refetchInterval: 45000, // Reduced frequency since data is cached
+    staleTime: 40000,
     retry: 1,
-    retryDelay: 500
   });
 
-  // Fetch user favorites - lower priority, longer cache
   const { data: userFavorites } = useQuery<string[]>({
     queryKey: ['/api/favorites'],
     enabled: !!user,
     retry: 1,
-    staleTime: 5 * 60 * 1000
+    staleTime: 10 * 60 * 1000 // Longer cache since data is preloaded
   });
 
-  // Fetch user balances - defer loading to reduce initial wait
-  const { data: balanceData, isLoading: balanceLoading } = useQuery({
+  const { data: balanceData } = useQuery({
     queryKey: ['/api/balances'],
     enabled: !!user,
-    refetchInterval: 60000,
-    staleTime: 30000,
+    refetchInterval: 120000, // Much less frequent since cached
+    staleTime: 90000,
     retry: 1
   });
 
-  // Since MobileAppLoader handles initial loading, we can be more relaxed here
-  const isLoadingCriticalData = false; // Handled by MobileAppLoader
+  // No loading states needed - data preloaded by MobileAppLoader
+  const isLoadingCriticalData = false;
 
   // Fetch real-time currency conversion rates from internal API
   const { data: conversionData, isError: conversionError } = useQuery({
