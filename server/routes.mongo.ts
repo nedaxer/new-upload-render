@@ -98,50 +98,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User search endpoint
-  app.get('/api/users/search', async (req: Request, res: Response) => {
-    try {
-      const query = req.query.q as string;
-      
-      if (!query || query.length < 2) {
-        return res.json({
-          success: true,
-          data: []
-        });
-      }
-
-      const { User } = await import('./models/User');
-      
-      // Search users by username, email, or UID
-      const searchRegex = new RegExp(query, 'i');
-      const users = await User.find({
-        $or: [
-          { username: searchRegex },
-          { email: searchRegex },
-          { uid: searchRegex },
-          { firstName: searchRegex },
-          { lastName: searchRegex }
-        ]
-      })
-      .select('username email uid firstName lastName')
-      .limit(10)
-      .lean();
-
-      console.log(`User search for "${query}" found ${users.length} results`);
-
-      res.json({
-        success: true,
-        data: users
-      });
-    } catch (error) {
-      console.error('User search error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Search failed'
-      });
-    }
-  });
-
   // Currency conversion rates endpoint
   app.get('/api/market-data/conversion-rates', async (req: Request, res: Response) => {
     try {
