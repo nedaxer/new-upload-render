@@ -171,9 +171,25 @@ export default function MobileAdmin() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
         <Shield className="h-16 w-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-        <p className="text-gray-600 text-center">
+        <p className="text-gray-600 text-center mb-6">
           You don't have permission to access this admin panel.
         </p>
+        <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full">
+          <h3 className="font-semibold text-gray-900 mb-2">Admin Access Required</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Please log in with admin credentials to access this panel.
+          </p>
+          <div className="space-y-2 text-xs text-gray-500">
+            <p><strong>Admin Email:</strong> robinstephen003@outlook.com</p>
+            <p><strong>Admin Password:</strong> robinstephen003@outlook.com</p>
+          </div>
+          <Button 
+            onClick={() => window.location.href = '/mobile/admin-login'}
+            className="w-full mt-4 bg-orange-500 hover:bg-orange-600"
+          >
+            Go to Admin Login
+          </Button>
+        </div>
       </div>
     );
   }

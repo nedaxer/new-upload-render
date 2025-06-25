@@ -273,6 +273,7 @@ export default function App() {
             <Route path="/mobile/security" component={MobileSecurity} />
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
+            <Route path="/mobile/admin-login" component={lazy(() => import('@/pages/mobile/admin-login'))} />
             <Route path="/mobile/admin" component={lazy(() => import('@/pages/mobile/admin'))} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
