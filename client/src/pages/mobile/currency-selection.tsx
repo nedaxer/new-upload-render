@@ -45,8 +45,14 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     if (onSelectCurrency) {
       onSelectCurrency(currency);
     }
+    
     // Store in localStorage for persistence
     localStorage.setItem('selectedCurrency', currency);
+    
+    // Dispatch custom event for immediate updates across the app
+    window.dispatchEvent(new CustomEvent('currencyChanged', {
+      detail: { currency }
+    }));
     
     // Navigate back to settings if no parent handler
     if (!onSelectCurrency) {

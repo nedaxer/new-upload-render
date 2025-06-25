@@ -56,12 +56,28 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
 
-  // Load currency from localStorage and listen for profile updates
+  // Load currency from localStorage and listen for immediate updates
   useEffect(() => {
     const savedCurrency = localStorage.getItem('selectedCurrency');
     if (savedCurrency) {
       setSelectedCurrency(savedCurrency);
     }
+
+    // Listen for currency changes from localStorage (immediate updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'selectedCurrency' && e.newValue) {
+        setSelectedCurrency(e.newValue);
+      }
+    };
+
+    // Listen for custom currency change events (for same-window updates)
+    const handleCurrencyChange = (e: CustomEvent) => {
+      if (e.detail && e.detail.currency) {
+        setSelectedCurrency(e.detail.currency);
+        // Also update localStorage to ensure consistency
+        localStorage.setItem('selectedCurrency', e.detail.currency);
+      }
+    };
 
     // Listen for profile updates from other components
     const handleProfileUpdate = () => {
@@ -69,8 +85,13 @@ export default function MobileHome() {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     };
 
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
     window.addEventListener('profileUpdated', handleProfileUpdate);
+    
     return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
   }, [queryClient]);
@@ -131,7 +152,7 @@ export default function MobileHome() {
   // No loading states needed - data preloaded by MobileAppLoader
   const isLoadingCriticalData = false;
 
-  // Fetch real-time currency conversion rates from internal API
+  // Fetch real-time currency conversion rates with 10-second auto-refresh
   const { data: conversionData, isError: conversionError } = useQuery({
     queryKey: ['/api/market-data/conversion-rates'],
     queryFn: async () => {
@@ -147,10 +168,10 @@ export default function MobileHome() {
         throw error;
       }
     },
-    refetchInterval: 300000, // Refetch every 5 minutes
-    staleTime: 240000, // Consider data fresh for 4 minutes
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    staleTime: 8000, // Consider data fresh for 8 seconds
     retry: 2,
-    retryDelay: 2000
+    retryDelay: 1000
   });
 
   // Use real exchange rates or fallback to static rates

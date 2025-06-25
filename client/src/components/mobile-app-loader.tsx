@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
 
 interface MobileAppLoaderProps {
   children: React.ReactNode;
@@ -10,15 +9,25 @@ interface MobileAppLoaderProps {
 export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Single optimized query for all critical mobile app data
+  // Single optimized query for all critical mobile app data with 10-second auto-refresh
   const mobileDataQuery = useQuery({
     queryKey: ['/api/mobile/app-data'],
     enabled: !!user,
     retry: 2,
-    staleTime: 45000, // Extended cache time
-    gcTime: 10 * 60 * 1000, // Keep in memory longer
+    staleTime: 8000, // Refresh every 8 seconds to ensure 10-second updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    gcTime: 5 * 60 * 1000, // Keep in memory for 5 minutes
+  });
+
+  // Currency rates query with 10-second auto-refresh
+  const exchangeRatesQuery = useQuery({
+    queryKey: ['/api/market-data/conversion-rates'],
+    enabled: !!user,
+    retry: 2,
+    staleTime: 8000,
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    gcTime: 5 * 60 * 1000,
   });
 
   // Populate individual query caches from the combined response
@@ -48,80 +57,17 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     }
   }, [mobileDataQuery.data, queryClient]);
 
-  // Check if critical data is loaded
+  // Update exchange rates cache when standalone query updates
   useEffect(() => {
-    if (user) {
-      if (mobileDataQuery.isFetched || mobileDataQuery.isError) {
-        // Show app immediately when data is ready or fails
-        setIsLoading(false);
+    if (exchangeRatesQuery.data) {
+      const response = exchangeRatesQuery.data as any;
+      if (response?.success && response?.data) {
+        queryClient.setQueryData(['/api/market-data/conversion-rates'], response);
       }
     }
-  }, [user, mobileDataQuery.isFetched, mobileDataQuery.isError]);
+  }, [exchangeRatesQuery.data, queryClient]);
 
-  // If not authenticated, show children immediately
-  if (!user) {
-    return <>{children}</>;
-  }
-
-  // Show minimal loading screen only for essential data
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center space-y-4">
-          {/* Nedaxer Logo */}
-          <div className="mb-6">
-            <h1 className="text-4xl font-bold text-white mb-2">Nedaxer</h1>
-            <p className="text-orange-400 text-sm">Trading Platform</p>
-          </div>
-
-          {/* Simple Loading Animation */}
-          <div className="relative">
-            <Loader2 className="h-10 w-10 animate-spin text-orange-500 mx-auto" />
-          </div>
-
-          <p className="text-gray-400 text-sm">
-            Loading your account...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Data loaded, show the mobile app
+  // NO LOADING DELAYS - Always show children immediately
+  // Data loads in background with auto-refresh every 10 seconds
   return <>{children}</>;
-};
-
-interface LoadingStepProps {
-  label: string;
-  completed: boolean;
-  active: boolean;
-}
-
-const LoadingStep: React.FC<LoadingStepProps> = ({ label, completed, active }) => {
-  return (
-    <div className="flex items-center space-x-3 text-sm">
-      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-        completed 
-          ? 'bg-green-500 border-green-500' 
-          : active 
-            ? 'border-orange-500 animate-pulse' 
-            : 'border-gray-600'
-      }`}>
-        {completed && (
-          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        )}
-      </div>
-      <span className={`transition-colors duration-300 ${
-        completed 
-          ? 'text-green-400' 
-          : active 
-            ? 'text-orange-400' 
-            : 'text-gray-500'
-      }`}>
-        {label}
-      </span>
-    </div>
-  );
 };
