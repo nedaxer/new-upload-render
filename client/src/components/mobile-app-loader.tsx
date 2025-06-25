@@ -16,6 +16,7 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     wallet: false,
     balances: false,
     favorites: false,
+    rates: false,
     complete: false
   });
 
@@ -48,6 +49,23 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     staleTime: 5 * 60 * 1000,
   });
 
+  // Preload exchange rates for currency conversion
+  const { data: exchangeRates, isSuccess: ratesLoaded } = useQuery({
+    queryKey: ['exchange-rates'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to fetch exchange rates:', error);
+        return null; // Continue without rates if failed
+      }
+    },
+    enabled: isPreloading,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   // Update loading steps as data loads
   useEffect(() => {
     setLoadingSteps(prev => ({
@@ -56,12 +74,13 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
       wallet: walletLoaded,
       balances: balancesLoaded,
       favorites: favoritesLoaded,
+      rates: ratesLoaded || true, // Don't block on rates failure
     }));
-  }, [pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded]);
+  }, [pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, ratesLoaded]);
 
   // Check if all critical data is loaded
   useEffect(() => {
-    if (user && pricesLoaded && walletLoaded && balancesLoaded && favoritesLoaded) {
+    if (user && pricesLoaded && walletLoaded && balancesLoaded && favoritesLoaded && loadingSteps.rates) {
       // Add small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setLoadingSteps(prev => ({ ...prev, complete: true }));
@@ -70,7 +89,7 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
       
       return () => clearTimeout(timer);
     }
-  }, [user, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded]);
+  }, [user, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates]);
 
   // If not authenticated, show children immediately
   if (!user) {
@@ -117,9 +136,14 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
               active={loadingSteps.balances && !loadingSteps.favorites}
             />
             <LoadingStep 
+              label="Updating exchange rates" 
+              completed={loadingSteps.rates}
+              active={loadingSteps.favorites && !loadingSteps.rates}
+            />
+            <LoadingStep 
               label="Finalizing account" 
               completed={loadingSteps.complete}
-              active={loadingSteps.favorites && !loadingSteps.complete}
+              active={loadingSteps.rates && !loadingSteps.complete}
             />
           </div>
 

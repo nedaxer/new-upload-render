@@ -135,17 +135,27 @@ export default function MobileHome() {
   // Since MobileAppLoader handles initial loading, we can be more relaxed here
   const isLoadingCriticalData = false; // Handled by MobileAppLoader
 
-  // Fetch currency conversion rates
+  // Fetch real-time currency conversion rates from exchangerate.host
   const { data: conversionData, isError: conversionError } = useQuery({
-    queryKey: ['conversion-rates'],
-    queryFn: () => apiRequest('/api/market-data/conversion-rates'),
+    queryKey: ['exchange-rates'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch exchange rates:', error);
+        throw error;
+      }
+    },
     refetchInterval: 300000, // Refetch every 5 minutes
     staleTime: 240000, // Consider data fresh for 4 minutes
-    retry: 3,
-    retryDelay: 1000
+    retry: 2,
+    retryDelay: 2000
   });
 
-  const conversionRates = conversionData?.data || {
+  // Use real exchange rates or fallback to static rates
+  const conversionRates = conversionData?.rates || {
     'USD': 1,           // Base currency
     'EUR': 0.92,        // Euro
     'GBP': 0.79,        // British Pound

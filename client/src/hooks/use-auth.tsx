@@ -112,6 +112,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.prefetchQuery({
           queryKey: ['/api/favorites'],
           staleTime: 5 * 60 * 1000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['exchange-rates'],
+          queryFn: async () => {
+            try {
+              const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+              return await response.json();
+            } catch (error) {
+              return null;
+            }
+          },
+          staleTime: 5 * 60 * 1000
         })
       ]);
     },
@@ -175,6 +187,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }),
         queryClient.prefetchQuery({
           queryKey: ['/api/favorites'],
+          staleTime: 5 * 60 * 1000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['exchange-rates'],
+          queryFn: async () => {
+            try {
+              const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+              return await response.json();
+            } catch (error) {
+              return null;
+            }
+          },
           staleTime: 5 * 60 * 1000
         })
       ]);
