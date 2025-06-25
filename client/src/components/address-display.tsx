@@ -155,7 +155,10 @@ export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: Addres
                     className="w-5 h-5"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerHTML = `<span class="text-xs font-bold text-white">${selectedCrypto.charAt(0)}</span>`;
+                      const span = document.createElement('span');
+                      span.className = 'text-xs font-bold text-white';
+                      span.textContent = selectedCrypto.charAt(0);
+                      e.currentTarget.parentElement!.appendChild(span);
                     }}
                   />
                 </div>
