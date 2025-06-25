@@ -107,6 +107,8 @@ import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
+import MobileAdminLogin from '@/pages/mobile/admin-login';
+import MobileAdmin from '@/pages/mobile/admin';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -273,8 +275,8 @@ export default function App() {
             <Route path="/mobile/security" component={MobileSecurity} />
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
-            <Route path="/mobile/admin-login" component={lazy(() => import('@/pages/mobile/admin-login'))} />
-            <Route path="/mobile/admin" component={lazy(() => import('@/pages/mobile/admin'))} />
+            <Route path="/mobile/admin-login" component={MobileAdminLogin} />
+            <Route path="/mobile/admin" component={MobileAdmin} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />
