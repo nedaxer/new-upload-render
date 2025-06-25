@@ -17,7 +17,12 @@ import {
   Plus,
   AlertTriangle,
   Mail,
-  CreditCard
+  CreditCard,
+  Users,
+  Copy,
+  CheckCircle,
+  Clock,
+  UserPlus
 } from "lucide-react";
 
 interface AdminUser {
@@ -38,8 +43,17 @@ export default function AdminPortal() {
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
+  const [showUsersList, setShowUsersList] = useState(false);
+  const [copiedId, setCopiedId] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Disable splash screen for admin portal
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('skipSplashScreen', 'true');
+    }
+  }, []);
 
   // Admin authentication
   const adminLoginMutation = useMutation({
@@ -76,6 +90,24 @@ export default function AdminPortal() {
     queryKey: ["/api/admin/users/search", searchQuery],
     enabled: searchQuery.length > 0 && isAuthenticated,
   });
+
+  // Get all users for admin header
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ["/api/admin/users/all"],
+    enabled: isAuthenticated,
+  });
+
+  // Copy user ID function
+  const copyUserId = (uid: string) => {
+    navigator.clipboard.writeText(uid);
+    setCopiedId(uid);
+    toast({
+      title: "Copied!",
+      description: `User ID ${uid} copied to clipboard`,
+      variant: "default",
+    });
+    setTimeout(() => setCopiedId(""), 2000);
+  };
 
   // Add funds mutation
   const addFundsMutation = useMutation({
@@ -269,16 +301,92 @@ export default function AdminPortal() {
               <p className="text-blue-200">Platform Management Dashboard</p>
             </div>
           </div>
-          <Button 
-            onClick={handleLogout} 
-            variant="outline" 
-            size="sm"
-            className="border-white/30 text-white hover:bg-white/20"
-          >
-            <LogOut className="w-4 h-4 mr-1" />
-            Logout
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button 
+              onClick={() => setShowUsersList(!showUsersList)}
+              variant="outline" 
+              size="sm"
+              className="border-white/30 text-white hover:bg-white/20"
+            >
+              <Users className="w-4 h-4 mr-1" />
+              Users ({allUsers.length})
+            </Button>
+            <Button 
+              onClick={handleLogout} 
+              variant="outline" 
+              size="sm"
+              className="border-white/30 text-white hover:bg-white/20"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              Logout
+            </Button>
+          </div>
         </div>
+
+        {/* Users Overview Panel */}
+        {showUsersList && (
+          <Card className="mb-4 bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader>
+              <CardTitle className="flex items-center text-white">
+                <Users className="w-5 h-5 mr-2 text-blue-400" />
+                Users Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allUsers.slice(0, 9).map((user: AdminUser) => (
+                  <div
+                    key={user._id}
+                    className="p-3 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white truncate max-w-[120px]">
+                            {user.firstName && user.lastName 
+                              ? `${user.firstName} ${user.lastName}` 
+                              : user.username
+                            }
+                          </p>
+                          <p className="text-xs text-blue-200 flex items-center">
+                            <span className="truncate max-w-[100px]">{user.email}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-green-400">${user.balance.toFixed(2)}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-16 text-xs text-blue-300 hover:text-white p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyUserId(user.uid);
+                          }}
+                        >
+                          {copiedId === user.uid ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {allUsers.length > 9 && (
+                <p className="text-center text-blue-200 text-sm mt-4">
+                  Showing first 9 users. Use search below to find specific users.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* User Search */}
@@ -292,7 +400,7 @@ export default function AdminPortal() {
         <CardContent>
           <div className="space-y-4">
             <Input
-              placeholder="Search by email or UID..."
+              placeholder="Search by name, email, username, or UID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
@@ -323,16 +431,39 @@ export default function AdminPortal() {
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                           <User className="w-5 h-5 text-white" />
                         </div>
-                        <div>
-                          <p className="font-medium text-white">{user.username}</p>
+                        <div className="flex-1">
+                          <p className="font-medium text-white">
+                            {user.firstName && user.lastName 
+                              ? `${user.firstName} ${user.lastName}` 
+                              : user.username
+                            }
+                          </p>
                           <p className="text-sm text-blue-200 flex items-center">
                             <Mail className="w-3 h-3 mr-1" />
                             {user.email}
                           </p>
                           <p className="text-sm text-blue-300 flex items-center">
                             <CreditCard className="w-3 h-3 mr-1" />
-                            Balance: ${user.balance.toFixed(2)} • UID: {user.uid}
+                            Balance: ${user.balance.toFixed(2)}
                           </p>
+                          <div className="flex items-center space-x-2">
+                            <p className="text-xs text-blue-400">UID: {user.uid}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 text-blue-300 hover:text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyUserId(user.uid);
+                              }}
+                            >
+                              {copiedId === user.uid ? (
+                                <CheckCircle className="w-3 h-3" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end space-y-1">

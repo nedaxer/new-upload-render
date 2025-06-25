@@ -22,6 +22,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
 
   useEffect(() => {
+    // Check if splash screen should be skipped (for admin portal)
+    const skipSplash = sessionStorage.getItem('skipSplashScreen');
+    if (skipSplash === 'true') {
+      onComplete();
+      return;
+    }
+
     const updateWindowSize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };

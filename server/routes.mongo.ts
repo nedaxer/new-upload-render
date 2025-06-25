@@ -1067,6 +1067,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all users for admin overview
+  app.get('/api/admin/users/all', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { mongoStorage } = await import('./mongoStorage');
+      const { User } = await import('./models/User');
+      
+      // Get all users with balance info
+      const users = await User.find({})
+        .select('uid username email firstName lastName isVerified isAdmin createdAt')
+        .sort({ createdAt: -1 })
+        .limit(50);
+
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const balance = await mongoStorage.getUserBalance(user._id.toString());
+          return {
+            _id: user._id,
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            isVerified: user.isVerified,
+            isAdmin: user.isAdmin,
+            balance: balance || 0,
+            createdAt: user.createdAt
+          };
+        })
+      );
+
+      res.json(usersWithBalance);
+    } catch (error) {
+      console.error('Admin get all users error:', error);
+      res.status(500).json({ success: false, message: "Failed to fetch users" });
+    }
+  });
+
   // Admin add funds
   app.post('/api/admin/users/add-funds', requireAdminAuth, async (req: Request, res: Response) => {
     try {

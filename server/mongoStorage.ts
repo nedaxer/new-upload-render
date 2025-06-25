@@ -326,19 +326,47 @@ export class MongoStorage implements IMongoStorage {
   // Admin functions implementation
   async searchUsers(query: string): Promise<IUser[]> {
     try {
-      // Search by email or UID
+      const { User } = await import('./models/User');
+      
+      // Create a regex for case-insensitive search
+      const searchRegex = new RegExp(query, 'i');
+      
       const users = await User.find({
         $or: [
-          { email: { $regex: query, $options: 'i' } },
-          { uid: { $regex: query, $options: 'i' } },
-          { username: { $regex: query, $options: 'i' } }
+          { username: searchRegex },
+          { email: searchRegex },
+          { uid: searchRegex },
+          { firstName: searchRegex },
+          { lastName: searchRegex }
         ]
-      }).select('-password -verificationCode -resetPasswordCode').limit(10);
-      
-      return users;
+      }).select('-password -verificationCode -verificationExpires -resetPasswordCode -resetPasswordExpires').limit(20);
+
+      // Get balance for each user
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const balance = await this.getUserBalance(user._id.toString());
+          return {
+            _id: user._id.toString(),
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            favorites: user.favorites || [],
+            preferences: user.preferences || {},
+            isVerified: user.isVerified,
+            isAdmin: user.isAdmin,
+            createdAt: user.createdAt,
+            balance: balance || 0
+          };
+        })
+      );
+
+      return usersWithBalance;
     } catch (error) {
-      console.error('Error searching users:', error);
-      return [];
+      console.error('Search users error:', error);
+      throw error;
     }
   }
 
