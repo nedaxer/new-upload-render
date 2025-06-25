@@ -1,89 +1,80 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Search, DollarSign, Trash2, User, Shield, Copy, Plus } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
+import { Search, DollarSign, Trash2, UserCheck, Settings, LogOut } from "lucide-react";
 
-interface UserSearchResult {
+interface AdminUser {
   _id: string;
   uid: string;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  profilePicture?: string;
+  firstName?: string;
+  lastName?: string;
   isVerified: boolean;
   isAdmin: boolean;
-  createdAt: string;
-  balance?: number;
+  balance: number;
 }
 
-export default function MobileAdmin() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const [depositAmount, setDepositAmount] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+export default function AdminDashboard() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [fundAmount, setFundAmount] = useState("");
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
-  // Check if current user is admin
-  const { data: currentUser, isLoading: isLoadingUser } = useQuery({
-    queryKey: ['/api/auth/user'],
+  // Check admin authentication
+  const { data: authUser, isLoading: authLoading } = useQuery({
+    queryKey: ["/api/auth/user"],
     retry: false,
   });
 
-  // Search users mutation
-  const searchUsersMutation = useMutation({
-    mutationFn: async (query: string) => {
-      return await apiRequest(`/api/admin/users/search?q=${encodeURIComponent(query)}`);
-    },
-    onSuccess: (data) => {
-      setSearchResults(data.users || []);
-      setIsSearching(false);
-    },
-    onError: (error) => {
+  // Redirect if not admin
+  useEffect(() => {
+    if (!authLoading && (!authUser || !authUser.isAdmin)) {
       toast({
-        title: "Search Failed",
-        description: "Failed to search users. Please try again.",
+        title: "Access Denied",
+        description: "Admin privileges required",
         variant: "destructive",
       });
-      setIsSearching(false);
-    },
+      setLocation('/mobile/admin-login');
+    }
+  }, [authUser, authLoading, toast, setLocation]);
+
+  // Search users
+  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
+    queryKey: ["/api/admin/users/search", searchQuery],
+    enabled: searchQuery.length > 0,
   });
 
   // Add funds mutation
   const addFundsMutation = useMutation({
     mutationFn: async ({ userId, amount }: { userId: string; amount: number }) => {
-      return await apiRequest('/api/admin/users/add-funds', {
-        method: 'POST',
+      return await apiRequest("/api/admin/users/add-funds", {
+        method: "POST",
         body: JSON.stringify({ userId, amount }),
-        headers: { 'Content-Type': 'application/json' },
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
-        title: "Funds Added Successfully",
-        description: `Added $${depositAmount} to user's account`,
+        title: "Success",
+        description: "Funds added successfully",
         variant: "default",
       });
-      setDepositAmount('');
+      setFundAmount("");
       setSelectedUser(null);
-      // Refresh search results
-      if (searchQuery) {
-        searchUsersMutation.mutate(searchQuery);
-      }
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Failed to Add Funds",
-        description: "Unable to add funds to user account.",
+        title: "Error",
+        description: error.message || "Failed to add funds",
         variant: "destructive",
       });
     },
@@ -93,314 +84,272 @@ export default function MobileAdmin() {
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       return await apiRequest(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
     },
     onSuccess: () => {
       toast({
-        title: "User Deleted",
-        description: "User account has been permanently deleted.",
+        title: "Success",
+        description: "User account deleted successfully",
         variant: "default",
       });
-      // Refresh search results
-      if (searchQuery) {
-        searchUsersMutation.mutate(searchQuery);
-      }
+      setSelectedUser(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Failed to Delete User",
-        description: "Unable to delete user account.",
+        title: "Error",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     },
   });
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await apiRequest("/api/auth/logout", { method: "POST" });
       toast({
-        title: "Search Query Required",
-        description: "Please enter an email or UID to search.",
+        title: "Logged Out",
+        description: "Admin session ended",
+        variant: "default",
+      });
+      setLocation('/mobile/admin-login');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Logout failed",
         variant: "destructive",
       });
-      return;
     }
-    setIsSearching(true);
-    searchUsersMutation.mutate(searchQuery.trim());
   };
 
   const handleAddFunds = () => {
-    if (!selectedUser || !depositAmount || parseFloat(depositAmount) <= 0) {
+    if (!selectedUser || !fundAmount) {
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount greater than 0.",
+        title: "Error",
+        description: "Please select a user and enter amount",
         variant: "destructive",
       });
       return;
     }
-    addFundsMutation.mutate({
-      userId: selectedUser._id,
-      amount: parseFloat(depositAmount),
-    });
+
+    const amount = parseFloat(fundAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addFundsMutation.mutate({ userId: selectedUser._id, amount });
   };
 
-  const handleDeleteUser = (userId: string) => {
-    deleteUserMutation.mutate(userId);
+  const handleDeleteUser = (user: AdminUser) => {
+    if (user.isAdmin) {
+      toast({
+        title: "Error",
+        description: "Cannot delete admin accounts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete user ${user.username}? This action cannot be undone.`)) {
+      deleteUserMutation.mutate(user._id);
+    }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied",
-      description: "Copied to clipboard",
-      variant: "default",
-    });
-  };
-
-  // Check if user is admin
-  if (isLoadingUser) {
+  if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-2 text-slate-600">Loading admin panel...</p>
+        </div>
       </div>
     );
   }
 
-  if (!currentUser?.isAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-        <Shield className="h-16 w-16 text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-        <p className="text-gray-600 text-center mb-6">
-          You don't have permission to access this admin panel.
-        </p>
-        <div className="bg-white p-6 rounded-lg shadow-lg border max-w-md w-full">
-          <h3 className="font-semibold text-gray-900 mb-2">Admin Access Required</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Please log in with admin credentials to access this panel.
-          </p>
-          <Button 
-            onClick={() => window.location.href = '/mobile/admin-login'}
-            className="w-full mt-4 bg-orange-500 hover:bg-orange-600"
-          >
-            Go to Admin Login
-          </Button>
-        </div>
-      </div>
-    );
+  if (!authUser?.isAdmin) {
+    return null; // Redirect handling is in useEffect
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-slate-50 p-4">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Shield className="h-8 w-8 text-orange-500" />
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p className="text-slate-600">Manage users and platform operations</p>
+          </div>
+          <Button onClick={handleLogout} variant="outline" size="sm">
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
         </div>
-        <p className="text-gray-600">Manage users and platform operations</p>
+
+        {/* Admin Info */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                <Settings className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-medium text-slate-900">Logged in as: {authUser.username}</p>
+                <p className="text-sm text-slate-600">Administrator • UID: {authUser.uid}</p>
+              </div>
+              <Badge variant="secondary" className="ml-auto">ADMIN</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Search Section */}
+      {/* User Search */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
+          <CardTitle className="flex items-center">
+            <Search className="w-5 h-5 mr-2" />
             User Search
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-4">
+          <div className="space-y-4">
             <Input
-              placeholder="Enter email or UID to search..."
+              placeholder="Search by email, username, or UID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1"
+              className="w-full"
             />
-            <Button 
-              onClick={handleSearch}
-              disabled={isSearching || searchUsersMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              {isSearching ? 'Searching...' : 'Search'}
-            </Button>
-          </div>
+            
+            {searchLoading && (
+              <p className="text-slate-600 text-center">Searching users...</p>
+            )}
 
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900">Search Results</h3>
-              {searchResults.map((user) => (
-                <Card key={user._id} className="border-l-4 border-l-orange-500">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <User className="h-4 w-4 text-gray-500" />
-                          <span className="font-semibold">{user.username}</span>
-                          {user.isVerified && (
-                            <Badge variant="secondary" className="text-xs">
-                              Verified
-                            </Badge>
-                          )}
-                          {user.isAdmin && (
-                            <Badge variant="destructive" className="text-xs">
-                              Admin
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <span>Email:</span>
-                            <span className="font-mono">{user.email}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(user.email)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span>UID:</span>
-                            <span className="font-mono">{user.uid}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(user.uid)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <div>
-                            <span>Name: {user.firstName} {user.lastName}</span>
-                          </div>
-                          <div>
-                            <span>Balance: ${user.balance?.toFixed(2) || '0.00'}</span>
-                          </div>
-                        </div>
+            {searchResults.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-slate-600">{searchResults.length} user(s) found</p>
+                {searchResults.map((user: AdminUser) => (
+                  <div
+                    key={user._id}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      selectedUser?._id === user._id
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-slate-900">{user.username}</p>
+                        <p className="text-sm text-slate-600">
+                          {user.firstName && user.lastName
+                            ? `${user.firstName} ${user.lastName}`
+                            : "No name set"
+                          } • UID: {user.uid}
+                        </p>
+                        <p className="text-sm text-slate-600">Balance: ${user.balance.toFixed(2)}</p>
                       </div>
-                      
-                      <div className="flex flex-col gap-2 ml-4">
-                        {/* Add Funds Button */}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              onClick={() => setSelectedUser(user)}
-                              className="bg-green-500 hover:bg-green-600 text-white"
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Add Funds
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Add Virtual USD Funds</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label>User: {selectedUser?.username}</Label>
-                                <p className="text-sm text-gray-600">
-                                  Current Balance: ${selectedUser?.balance?.toFixed(2) || '0.00'}
-                                </p>
-                              </div>
-                              <div>
-                                <Label htmlFor="amount">Amount to Add (USD)</Label>
-                                <Input
-                                  id="amount"
-                                  type="number"
-                                  placeholder="0.00"
-                                  value={depositAmount}
-                                  onChange={(e) => setDepositAmount(e.target.value)}
-                                  min="0"
-                                  step="0.01"
-                                />
-                              </div>
-                              <Button
-                                onClick={handleAddFunds}
-                                disabled={addFundsMutation.isPending}
-                                className="w-full bg-green-500 hover:bg-green-600"
-                              >
-                                {addFundsMutation.isPending ? 'Adding...' : 'Add Funds'}
-                              </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-
-                        {/* Delete User Button */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              disabled={user.isAdmin}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete User Account</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to permanently delete {user.username}'s account? 
-                                This action cannot be undone and will remove all user data.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteUser(user._id)}
-                                className="bg-red-500 hover:bg-red-600"
-                              >
-                                Delete Account
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                      <div className="flex items-center space-x-2">
+                        {user.isVerified && (
+                          <Badge variant="secondary">
+                            <UserCheck className="w-3 h-3 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
+                        {user.isAdmin && (
+                          <Badge variant="destructive">ADMIN</Badge>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {searchUsersMutation.isError && (
-            <div className="text-center py-8 text-gray-500">
-              <p>No users found matching your search.</p>
-            </div>
-          )}
+            {searchQuery.length > 0 && searchResults.length === 0 && !searchLoading && (
+              <p className="text-slate-600 text-center">No users found</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <DollarSign className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">$0</div>
-            <p className="text-sm text-gray-600">Total Platform Value</p>
+      {/* Fund Management */}
+      {selectedUser && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <DollarSign className="w-5 h-5 mr-2" />
+              Fund Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 bg-slate-100 rounded-lg">
+                <p className="font-medium text-slate-900">Selected User: {selectedUser.username}</p>
+                <p className="text-sm text-slate-600">Current Balance: ${selectedUser.balance.toFixed(2)}</p>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Input
+                  type="number"
+                  placeholder="Amount to add (USD)"
+                  value={fundAmount}
+                  onChange={(e) => setFundAmount(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleAddFunds}
+                  disabled={addFundsMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {addFundsMutation.isPending ? "Adding..." : "Add Funds"}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <User className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-gray-900">0</div>
-            <p className="text-sm text-gray-600">Active Users</p>
-          </CardContent>
-        </Card>
-      </div>
+      )}
 
-      {/* Footer */}
-      <div className="text-center text-sm text-gray-500 mt-8">
-        <p>Nedaxer Admin Panel - Secure Access Only</p>
-      </div>
+      {/* User Actions */}
+      {selectedUser && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-600">
+              <Trash2 className="w-5 h-5 mr-2" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-800">
+                  Permanently delete user account. This action cannot be undone.
+                </p>
+              </div>
+              
+              <Button
+                onClick={() => handleDeleteUser(selectedUser)}
+                disabled={deleteUserMutation.isPending || selectedUser.isAdmin}
+                variant="destructive"
+                className="w-full"
+              >
+                {deleteUserMutation.isPending ? "Deleting..." : "Delete User Account"}
+              </Button>
+              
+              {selectedUser.isAdmin && (
+                <p className="text-sm text-slate-600 text-center">
+                  Admin accounts cannot be deleted
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
