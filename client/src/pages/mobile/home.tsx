@@ -9,7 +9,6 @@ import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { PullToRefresh } from '@/components/pull-to-refresh';
-import { WelcomePopup } from '@/components/welcome-popup';
 import { 
   Search, 
   Bell, 
@@ -37,7 +36,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
-import { LoadingWithAnimation } from '@/components/loading-with-animation';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -57,7 +55,6 @@ export default function MobileHome() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -81,23 +78,13 @@ export default function MobileHome() {
     };
   }, [queryClient]);
 
-  // Show welcome popup and tooltip on login (when user data becomes available)
+  // Show tooltip on login (when user data becomes available)
   useEffect(() => {
     if (user && user.username) {
       // Check if this is a fresh login session
-      const hasShownWelcome = sessionStorage.getItem('hasShownWelcomePopup');
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
 
-      if (!hasShownWelcome) {
-        // Show welcome popup first
-        const timer = setTimeout(() => {
-          setShowWelcomePopup(true);
-          sessionStorage.setItem('hasShownWelcomePopup', 'true');
-        }, 1500);
-
-        return () => clearTimeout(timer);
-      } else if (!hasShownTooltip) {
-        // Show helper tooltip if welcome already shown
+      if (!hasShownTooltip) {
         const timer = setTimeout(() => {
           setShowHelperTooltip(true);
           sessionStorage.setItem('hasShownWelcomeTooltip', 'true');
@@ -114,11 +101,12 @@ export default function MobileHome() {
   }, [user]);
 
   // Fetch user wallet summary
-  const { data: walletSummary, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
+  const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 15000, // Consider data stale after 15 seconds
+    staleTime: 25000, // Consider data fresh for 25 seconds
+    retry: 2,
   });
 
   // Fetch real-time price data with improved error handling for BTC conversion
@@ -149,20 +137,8 @@ export default function MobileHome() {
     retry: 1
   });
 
-  // Removed duplicate - wallet query moved above
-
   // Show loading state for critical data
   const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
-
-  // Show loading animation for new users or slow loading - but only on first load
-  if (isLoadingCriticalData && !walletSummary && !balanceData) {
-    return (
-      <LoadingWithAnimation 
-        message="Setting up your account..."
-        showNedaxerLogo={true}
-      />
-    );
-  }
 
   // Fetch currency conversion rates
   const { data: conversionData, isError: conversionError } = useQuery({
@@ -849,14 +825,6 @@ export default function MobileHome() {
           isOpen={comingSoonOpen}
           onClose={() => setComingSoonOpen(false)}
           feature={comingSoonFeature}
-        />
-
-        {/* Welcome Popup */}
-        <WelcomePopup
-          isVisible={showWelcomePopup}
-          onClose={() => setShowWelcomePopup(false)}
-          userName={user?.firstName || user?.username || 'there'}
-          userBalance={(balanceData?.data?.totalBalance) || (walletSummary?.totalBalance) || 0}
         />
       </PullToRefresh>
     </MobileLayout>

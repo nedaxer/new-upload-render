@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { WelcomeAnimation } from "@/components/welcome-animation";
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -23,7 +22,6 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showWelcomeAnimation, setShowWelcomeAnimation] = useState(false);
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,14 +135,29 @@ export default function Register() {
         return;
       }
       
-      // Success - show welcome animation instead of immediate redirect
-      console.log("Registration successful, showing welcome animation");
+      // Success - account created and ready to use
+      toast({
+        title: "Welcome to Nedaxer!",
+        description: "Your account has been created successfully.",
+      });
+      
+      // Show toast with login info
+      toast({
+        title: "Your Login Information",
+        description: `Username: ${data.user.email}\nPlease use your email address to log in.`,
+        duration: 7000, // Show for longer
+      });
+      
+      console.log("Registration successful, user is now logged in");
       
       // Store email as username in localStorage for convenience
       localStorage.setItem('lastUsername', data.user.email);
       
-      // Start the welcome animation sequence
-      setShowWelcomeAnimation(true);
+      // Immediate redirect to mobile home page
+      console.log('Taking user to mobile home page');
+      
+      // Use wouter's setLocation for proper routing
+      setLocation('/mobile');
       
     } catch (error) {
       console.error('Registration error:', error);
@@ -164,26 +177,6 @@ export default function Register() {
       setIsLoading(false);
     }
   };
-
-  const handleWelcomeComplete = () => {
-    setShowWelcomeAnimation(false);
-    // Navigate to mobile home page after animation completes
-    setLocation('/mobile');
-  };
-
-  // Show welcome animation if it's active
-  if (showWelcomeAnimation) {
-    return (
-      <div className="min-h-screen">
-        <WelcomeAnimation
-          isVisible={showWelcomeAnimation}
-          onComplete={handleWelcomeComplete}
-          userName={formData.firstName || 'there'}
-          userBalance={0}
-        />
-      </div>
-    );
-  }
 
   return (
     <PageLayout

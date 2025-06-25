@@ -219,23 +219,10 @@ export class MongoStorage implements IMongoStorage {
       if (updates.username) updateData.username = updates.username;
       if (updates.firstName) updateData.firstName = updates.firstName;  
       if (updates.lastName) updateData.lastName = updates.lastName;
-      if (updates.profilePicture !== undefined) {
-        updateData.profilePicture = updates.profilePicture;
-        console.log('Profile picture update - length:', updates.profilePicture?.length || 0);
-      }
+      if (updates.profilePicture !== undefined) updateData.profilePicture = updates.profilePicture;
       
-      // Add timestamp to track when profile was last updated
-      updateData.updatedAt = new Date();
-      
-      const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+      await User.findByIdAndUpdate(userId, updateData, { new: true });
       console.log('Profile updated successfully in MongoDB for user:', userId);
-      
-      // Log successful profile picture update
-      if (updates.profilePicture !== undefined) {
-        console.log('Profile picture synchronized across all devices for user:', userId);
-      }
-      
-      return updatedUser;
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;

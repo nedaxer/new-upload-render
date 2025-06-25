@@ -7,7 +7,6 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
-import { ProfileSyncHandler } from '@/components/profile-sync-handler';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
@@ -156,23 +155,13 @@ export default function App() {
 
   // Show loading indicator while routes are being set up
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-orange-500 to-blue-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <span className="text-white font-bold text-xl">N</span>
-          </div>
-          <p className="text-white">Loading Nedaxer...</p>
-        </div>
-      </div>
-    );
+    return <LoadingIndicator />;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
-          <ProfileSyncHandler>
           <Router hook={useHashLocation}>
             <Switch>
             {/* Home route with auth redirect */}
@@ -298,7 +287,6 @@ export default function App() {
         <Toaster />
         <CookieConsent />
         <PWAInstallPrompt />
-        </ProfileSyncHandler>
       </AuthProvider>
     </LanguageProvider>
   </QueryClientProvider>
