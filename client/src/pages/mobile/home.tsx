@@ -83,7 +83,7 @@ export default function MobileHome() {
 
   // Show welcome popup and tooltip on login (when user data becomes available)
   useEffect(() => {
-    if (user && user.username && balanceData) {
+    if (user && user.username) {
       // Check if this is a fresh login session
       const hasShownWelcome = sessionStorage.getItem('hasShownWelcomePopup');
       const hasShownTooltip = sessionStorage.getItem('hasShownWelcomeTooltip');
@@ -111,15 +111,14 @@ export default function MobileHome() {
         return () => clearTimeout(timer);
       }
     }
-  }, [user, balanceData]);
+  }, [user]);
 
   // Fetch user wallet summary
-  const { data: walletData, isLoading: walletLoading } = useQuery({
+  const { data: walletSummary, isLoading: walletLoading, refetch: refetchWallet } = useQuery({
     queryKey: ['/api/wallet/summary'],
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
-    staleTime: 25000, // Consider data fresh for 25 seconds
-    retry: 2,
+    staleTime: 15000, // Consider data stale after 15 seconds
   });
 
   // Fetch real-time price data with improved error handling for BTC conversion
@@ -149,6 +148,8 @@ export default function MobileHome() {
     staleTime: 30000,
     retry: 1
   });
+
+  // Removed duplicate - wallet query moved above
 
   // Show loading state for critical data
   const isLoadingCriticalData = priceLoading || (user && (walletLoading || balanceLoading));
@@ -855,7 +856,7 @@ export default function MobileHome() {
           isVisible={showWelcomePopup}
           onClose={() => setShowWelcomePopup(false)}
           userName={user?.firstName || user?.username || 'there'}
-          userBalance={balanceData?.data?.totalBalance || 0}
+          userBalance={(balanceData?.data?.totalBalance) || (walletSummary?.totalBalance) || 0}
         />
       </PullToRefresh>
     </MobileLayout>
