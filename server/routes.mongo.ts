@@ -618,6 +618,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
+      console.log('Login attempt:', { username, hasPassword: !!password });
+      
       if (!username || !password) {
         return res.status(400).json({ 
           success: false, 
@@ -625,11 +627,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if user exists by username or email
-      let user = await storage.getUserByUsername(username);
-      if (!user) {
-        user = await storage.getUserByEmail(username);
-      }
+      // Direct MongoDB lookup instead of using storage layer
+      const mongoose = require('mongoose');
+      const UserSchema = new mongoose.Schema({
+        uid: String,
+        username: String,
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        isVerified: Boolean,
+        isAdmin: Boolean,
+        balance: Number,
+      });
+      const User = mongoose.model('User', UserSchema);
+      
+      let user = await User.findOne({ 
+        $or: [
+          { username: username },
+          { email: username }
+        ]
+      });
+      
+      console.log('User found in DB:', user ? {
+        username: user.username,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        isVerified: user.isVerified
+      } : null);
 
       if (!user) {
         return res.status(401).json({ 
@@ -641,6 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify password using bcrypt
       const bcrypt = await import('bcrypt');
       const isPasswordValid = await bcrypt.default.compare(password, user.password);
+      console.log('Password validation result:', isPasswordValid);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
