@@ -49,7 +49,11 @@ export class MongoStorage implements IMongoStorage {
 
   async getUserByUsername(username: string): Promise<IUser | null> {
     try {
-      return await User.findOne({ username });
+      console.log('MongoStorage: getUserByUsername called with:', username);
+      console.log('User model available:', !!User);
+      const result = await User.findOne({ username });
+      console.log('MongoStorage: getUserByUsername result:', result ? 'FOUND' : 'NOT FOUND');
+      return result;
     } catch (error) {
       console.error('Error fetching user by username:', error);
       return null;
@@ -58,7 +62,11 @@ export class MongoStorage implements IMongoStorage {
 
   async getUserByEmail(email: string): Promise<IUser | null> {
     try {
-      return await User.findOne({ email });
+      console.log('MongoStorage: getUserByEmail called with:', email);
+      console.log('User model available:', !!User);
+      const result = await User.findOne({ email });
+      console.log('MongoStorage: getUserByEmail result:', result ? 'FOUND' : 'NOT FOUND');
+      return result;
     } catch (error) {
       console.error('Error fetching user by email:', error);
       return null;
