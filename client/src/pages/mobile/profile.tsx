@@ -170,13 +170,13 @@ export default function MobileProfile() {
   const menuItems = [
     {
       icon: Users,
-      label: t('invite_friends'),
+      label: t('inviteFriends'),
       href: '/mobile/invite-friends',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Shield,
-      label: t('identity_verification'),
+      label: t('identityVerification'),
       href: '/mobile/kyc',
       rightElement: (
         <div className="flex items-center space-x-2">
@@ -206,19 +206,19 @@ export default function MobileProfile() {
     },
     {
       icon: Bell,
-      label: t('notification_center'),
+      label: t('notificationCenter'),
       href: '/mobile/notifications',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Headphones,
-      label: t('help_contact'),
+      label: t('helpContact'),
       href: '/company/contact',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     },
     {
       icon: Info,
-      label: t('about_us'),
+      label: t('aboutUs'),
       href: '/company/about',
       rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
     }

@@ -20,16 +20,16 @@ export default function MobileEarn() {
   const { t } = useLanguage();
   const earnProducts = [
     {
-      title: t('flexible_savings'),
-      subtitle: t('start_earning_anytime'),
+      title: t('flexibleSavings'),
+      subtitle: t('startEarningAnytime'),
       apy: '5.2%',
       icon: Percent,
       color: 'text-green-500',
       bgColor: 'bg-green-500/10'
     },
     {
-      title: t('fixed_savings'),
-      subtitle: t('higher_returns_locked'),
+      title: t('fixedSavings'),
+      subtitle: t('higherReturnsLocked'),
       apy: '8.5%',
       icon: Clock,
       color: 'text-blue-500',
@@ -37,15 +37,15 @@ export default function MobileEarn() {
     },
     {
       title: t('staking'),
-      subtitle: t('stake_earn_rewards'),
+      subtitle: t('stakeEarnRewards'),
       apy: '12.3%',
       icon: Coins,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10'
     },
     {
-      title: t('defi_mining'),
-      subtitle: t('liquidity_mining_rewards'),
+      title: t('defiMining'),
+      subtitle: t('liquidityMiningRewards'),
       apy: '15.7%',
       icon: Target,
       color: 'text-orange-500',

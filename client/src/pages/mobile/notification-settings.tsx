@@ -35,7 +35,7 @@ export default function NotificationSettings() {
         <Link href="/mobile/notifications">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">{t('notification_settings')}</h1>
+        <h1 className="text-lg font-semibold">{t('notificationSettings')}</h1>
         <div className="w-6 h-6" />
       </div>
 
@@ -49,11 +49,11 @@ export default function NotificationSettings() {
 
       {/* In-App Messages Section */}
       <div className="px-4 pb-6">
-        <h2 className="text-white font-medium text-lg mb-4">{t('in_app_messages')}</h2>
+        <h2 className="text-white font-medium text-lg mb-4">{t('inAppMessages')}</h2>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between py-3">
-            <span className="text-white text-base">{t('latest_events')}</span>
+            <span className="text-white text-base">{t('latestEvents')}</span>
             <Switch
               checked={settings.latestEvents}
               onCheckedChange={() => handleToggle('latestEvents')}
@@ -77,7 +77,7 @@ export default function NotificationSettings() {
           </div>
 
           <div className="flex items-center justify-between py-3">
-            <span className="text-white text-base">{t('trading_view_alerts')}</span>
+            <span className="text-white text-base">{t('tradingViewAlerts')}</span>
             <Switch
               checked={settings.tradingViewAlerts}
               onCheckedChange={() => handleToggle('tradingViewAlerts')}
@@ -93,7 +93,7 @@ export default function NotificationSettings() {
           </div>
 
           <div className="flex items-center justify-between py-3">
-            <span className="text-white text-base">{t('strategy_signal')}</span>
+            <span className="text-white text-base">{t('strategySignal')}</span>
             <Switch
               checked={settings.strategySignal}
               onCheckedChange={() => handleToggle('strategySignal')}
@@ -102,7 +102,7 @@ export default function NotificationSettings() {
 
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center space-x-2">
-              <span className="text-white text-base">{t('account_changes')}</span>
+              <span className="text-white text-base">{t('accountChanges')}</span>
               <HelpCircle className="w-4 h-4 text-gray-400" />
             </div>
             <Switch
