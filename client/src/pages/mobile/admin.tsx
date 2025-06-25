@@ -47,6 +47,13 @@ export default function AdminDashboard() {
     }
   }, [authUser, authLoading, toast, setLocation]);
 
+  // Prevent mobile app animation by setting flag
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('skipMobileAnimation', 'true');
+    }
+  }, []);
+
   // Search users
   const { data: searchResults = [], isLoading: searchLoading } = useQuery({
     queryKey: ["/api/admin/users/search", searchQuery],

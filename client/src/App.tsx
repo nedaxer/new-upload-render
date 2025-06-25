@@ -108,7 +108,7 @@ import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
 import MobileAdminLogin from '@/pages/mobile/admin-login';
-import MobileAdmin from '@/pages/mobile/admin';
+import MobileAdminDashboard from '@/pages/mobile/admin-dashboard';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -276,7 +276,7 @@ export default function App() {
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
             <Route path="/mobile/admin-login" component={MobileAdminLogin} />
-            <Route path="/mobile/admin" component={MobileAdmin} />
+            <Route path="/mobile/admin" component={MobileAdminDashboard} />
 
             {/* Secret Admin Routes - Protected with admin flag */}
             <Route path="/secret-admin-nexus-2024" component={AdminLogin} />

@@ -868,6 +868,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       
+      // Handle hardcoded admin user
+      if (userId === 'ADMIN001') {
+        return res.json({
+          success: true,
+          balances: [{
+            id: 'admin-usd-balance',
+            balance: 0,
+            currency: {
+              id: 'usd-currency',
+              symbol: 'USD',
+              name: 'US Dollar',
+              type: 'fiat',
+              isActive: true
+            }
+          }]
+        });
+      }
+      
       // Import models
       const { UserBalance } = await import('./models/UserBalance');
       const { Currency } = await import('./models/Currency');
@@ -954,6 +972,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/wallet/summary', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
+      
+      // Handle hardcoded admin user
+      if (userId === 'ADMIN001') {
+        return res.json({
+          success: true,
+          data: {
+            totalUSDValue: 0,
+            usdBalance: 0
+          }
+        });
+      }
       
       // Import models
       const { UserBalance } = await import('./models/UserBalance');

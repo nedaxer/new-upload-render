@@ -40,7 +40,9 @@ export default function AdminLogin() {
           variant: "default",
         });
         // Direct redirect to admin dashboard
-        window.location.href = '/mobile/admin';
+        setTimeout(() => {
+          window.location.href = '/mobile/admin';
+        }, 100);
       } else if (data.success && !data.user?.isAdmin) {
         toast({
           title: "Access Denied",
