@@ -618,6 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
+      console.log('Login attempt for:', username);
 
       if (!username || !password) {
         return res.status(400).json({ 
@@ -628,20 +629,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if user exists by username or email
       let user = await storage.getUserByUsername(username);
+      console.log('Found user by username:', !!user);
+      
       if (!user) {
         user = await storage.getUserByEmail(username);
+        console.log('Found user by email:', !!user);
       }
 
       if (!user) {
+        console.log('No user found for:', username);
         return res.status(401).json({ 
           success: false, 
           message: "Invalid credentials" 
         });
       }
 
+      console.log('User found:', { username: user.username, email: user.email, isAdmin: user.isAdmin });
+
       // Verify password using bcrypt
       const bcrypt = await import('bcrypt');
       const isPasswordValid = await bcrypt.default.compare(password, user.password);
+      console.log('Password valid:', isPasswordValid);
 
       if (!isPasswordValid) {
         return res.status(401).json({ 
