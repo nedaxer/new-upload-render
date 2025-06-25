@@ -839,6 +839,14 @@ export default function MobileHome() {
           onClose={() => setComingSoonOpen(false)}
           feature={comingSoonFeature}
         />
+
+        {/* Welcome Popup */}
+        <WelcomePopup
+          isVisible={showWelcomePopup}
+          onClose={() => setShowWelcomePopup(false)}
+          userName={user?.firstName || user?.username || 'there'}
+          userBalance={balanceData?.data?.totalBalance || 0}
+        />
       </PullToRefresh>
     </MobileLayout>
   );

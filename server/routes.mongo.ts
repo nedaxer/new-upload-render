@@ -832,6 +832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedUser = await storage.getUser(userId);
 
       console.log('Profile updated successfully for user:', userId);
+      console.log('Profile picture synchronized:', !!updatedUser?.profilePicture);
 
       res.json({ 
         success: true, 
@@ -844,7 +845,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: updatedUser?.firstName,
           lastName: updatedUser?.lastName,
           profilePicture: updatedUser?.profilePicture,
-          isVerified: updatedUser?.isVerified
+          isVerified: updatedUser?.isVerified,
+          isAdmin: updatedUser?.isAdmin
         }
       });
     } catch (error) {

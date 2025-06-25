@@ -162,8 +162,8 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <ProfileSyncHandler>
-          <AuthProvider>
+        <AuthProvider>
+          <ProfileSyncHandler>
           <Router hook={useHashLocation}>
             <Switch>
             {/* Home route with auth redirect */}
@@ -289,8 +289,8 @@ export default function App() {
         <Toaster />
         <CookieConsent />
         <PWAInstallPrompt />
-        </AuthProvider>
-      </ProfileSyncHandler>
+        </ProfileSyncHandler>
+      </AuthProvider>
     </LanguageProvider>
   </QueryClientProvider>
   );
