@@ -90,19 +90,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Login successful, updating cache with user:', data.user);
       // Update the auth user data in the cache immediately
       queryClient.setQueryData(["/api/auth/user"], data.user);
-      // Preload critical mobile app data
-      queryClient.prefetchQuery({
-        queryKey: ['/api/crypto/realtime-prices'],
-        staleTime: 30000
-      });
-      queryClient.prefetchQuery({
-        queryKey: ['/api/wallet/summary'],
-        staleTime: 30000
-      });
+      
+      // Aggressively preload all critical mobile app data
+      await Promise.allSettled([
+        queryClient.prefetchQuery({
+          queryKey: ['/api/crypto/realtime-prices'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/wallet/summary'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/balances'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/favorites'],
+          staleTime: 5 * 60 * 1000
+        })
+      ]);
     },
   });
 
@@ -143,12 +154,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Registration successful, updating cache with user:', data.user);
-      // Update the auth user data in the cache
-      queryClient.setQueryData(["/api/auth/user"], { user: data.user });
-      // Also invalidate to trigger a refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Update the auth user data in the cache immediately
+      queryClient.setQueryData(["/api/auth/user"], data.user);
+      
+      // Aggressively preload all critical mobile app data for new users
+      await Promise.allSettled([
+        queryClient.prefetchQuery({
+          queryKey: ['/api/crypto/realtime-prices'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/wallet/summary'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/balances'],
+          staleTime: 30000
+        }),
+        queryClient.prefetchQuery({
+          queryKey: ['/api/favorites'],
+          staleTime: 5 * 60 * 1000
+        })
+      ]);
     },
   });
 

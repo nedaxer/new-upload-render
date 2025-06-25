@@ -87,6 +87,7 @@ import AdminPortal from '@/pages/admin-portal';
 
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
+import { MobileAppLoader } from '@/components/mobile-app-loader';
 import MobileAssets from '@/pages/mobile/assets';
 import MobileTrade from '@/pages/mobile/trade';
 import MobileMarkets from '@/pages/mobile/markets';
@@ -251,26 +252,140 @@ export default function App() {
             <Route path="/deposit">{() => <Redirect to="/mobile" />}</Route>
             <Route path="/withdraw">{() => <Redirect to="/mobile" />}</Route>
 
-            {/* Mobile App Routes - Open Access for Trading */}
-            <Route path="/mobile" component={MobileHome} />
-            <Route path="/mobile/assets" component={MobileAssets} />
-            <Route path="/mobile/trade" component={MobileTrade} />
-            <Route path="/mobile/markets" component={MobileMarkets} />
-            <Route path="/mobile/earn" component={MobileEarn} />
-            <Route path="/mobile/profile" component={MobileProfile} />
-            <Route path="/mobile/convert" component={MobileConvert} />
-            <Route path="/mobile/futures" component={MobileFutures} />
-            <Route path="/mobile/spot" component={MobileSpot} />
-            <Route path="/mobile/invite-friends" component={MobileInviteFriends} />
-            <Route path="/mobile/notifications" component={MobileNotifications} />
-            <Route path="/mobile/notification-settings" component={NotificationSettings} />
-            <Route path="/mobile/chatbot" component={Chatbot} />
-            <Route path="/mobile/kyc" component={MobileKYC} />
-            <Route path="/mobile/news" component={MobileNews} />
-            <Route path="/mobile/settings" component={MobileSettings} />
-            <Route path="/mobile/security" component={MobileSecurity} />
-            <Route path="/mobile/language-selection" component={LanguageSelection} />
-            <Route path="/mobile/currency-selection" component={() => <div>Currency Selection</div>} />
+            {/* Mobile App Routes - Wrapped with preloader */}
+            <Route path="/mobile">
+              {() => (
+                <MobileAppLoader>
+                  <MobileHome />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/assets">
+              {() => (
+                <MobileAppLoader>
+                  <MobileAssets />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/trade">
+              {() => (
+                <MobileAppLoader>
+                  <MobileTrade />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/markets">
+              {() => (
+                <MobileAppLoader>
+                  <MobileMarkets />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/earn">
+              {() => (
+                <MobileAppLoader>
+                  <MobileEarn />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/profile">
+              {() => (
+                <MobileAppLoader>
+                  <MobileProfile />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/convert">
+              {() => (
+                <MobileAppLoader>
+                  <MobileConvert />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/futures">
+              {() => (
+                <MobileAppLoader>
+                  <MobileFutures />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/spot">
+              {() => (
+                <MobileAppLoader>
+                  <MobileSpot />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/invite-friends">
+              {() => (
+                <MobileAppLoader>
+                  <MobileInviteFriends />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/notifications">
+              {() => (
+                <MobileAppLoader>
+                  <MobileNotifications />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/notification-settings">
+              {() => (
+                <MobileAppLoader>
+                  <NotificationSettings />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/chatbot">
+              {() => (
+                <MobileAppLoader>
+                  <Chatbot />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/kyc">
+              {() => (
+                <MobileAppLoader>
+                  <MobileKYC />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/news">
+              {() => (
+                <MobileAppLoader>
+                  <MobileNews />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/settings">
+              {() => (
+                <MobileAppLoader>
+                  <MobileSettings />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/security">
+              {() => (
+                <MobileAppLoader>
+                  <MobileSecurity />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/language-selection">
+              {() => (
+                <MobileAppLoader>
+                  <LanguageSelection />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/currency-selection">
+              {() => (
+                <MobileAppLoader>
+                  <div>Currency Selection</div>
+                </MobileAppLoader>
+              )}
+            </Route>
 
 
             {/* Admin Portal Route */}

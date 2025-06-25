@@ -132,8 +132,8 @@ export default function MobileHome() {
     retry: 1
   });
 
-  // Optimized loading state - only show loading for essential data
-  const isLoadingCriticalData = priceLoading && (user && walletLoading);
+  // Since MobileAppLoader handles initial loading, we can be more relaxed here
+  const isLoadingCriticalData = false; // Handled by MobileAppLoader
 
   // Fetch currency conversion rates
   const { data: conversionData, isError: conversionError } = useQuery({
