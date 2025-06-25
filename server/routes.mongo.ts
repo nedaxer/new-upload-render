@@ -481,7 +481,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ success: false, message: "Not authenticated" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      // Handle hardcoded admin user
+      if (req.session.userId === 'ADMIN001') {
+        return res.json({
+          _id: 'ADMIN001',
+          uid: 'ADMIN001',
+          username: 'nedaxer.us@gmail.com',
+          email: 'nedaxer.us@gmail.com',
+          firstName: 'System',
+          lastName: 'Administrator',
+          profilePicture: null,
+          favorites: [],
+          preferences: {},
+          isVerified: true,
+          isAdmin: true,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      const user = await mongoStorage.getUser(req.session.userId);
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
