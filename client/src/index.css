@@ -253,6 +253,11 @@
   }
   
   [data-navigation="bottom"] {
-    z-index: 1 !important;
+    z-index: 10 !important;
+    background-color: #0a0a2e !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
 }
