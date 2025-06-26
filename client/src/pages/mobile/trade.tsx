@@ -1030,8 +1030,22 @@ export default function MobileTrade() {
     }
   };
 
+  // Debug logging
+  console.log('MobileTrade render:', {
+    selectedTab,
+    selectedTradingType,
+    selectedPair: selectedPair?.symbol,
+    priceDataExists: !!priceData,
+    transformedDataLength: transformedCryptoData?.length
+  });
+
   return (
     <MobileLayout>
+      {/* Debug info - temporary */}
+      <div className="bg-red-900 text-white p-2 text-xs">
+        Tab: {selectedTab} | Type: {selectedTradingType} | Pair: {selectedPair?.symbol}
+      </div>
+      
       {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-blue-950 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
