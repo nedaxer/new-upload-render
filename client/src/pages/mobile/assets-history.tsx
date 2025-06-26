@@ -12,15 +12,20 @@ export default function AssetsHistory() {
   const queryClient = useQueryClient();
 
   // Fetch deposit transactions for authenticated user only
-  const { data: transactionsResponse, isLoading } = useQuery({
+  const { data: transactionsResponse, isLoading, error } = useQuery({
     queryKey: ['/api/deposits/history'],
     enabled: !!user,
     refetchInterval: 30000, // Refresh every 30 seconds for new deposits
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const transactions = Array.isArray(transactionsResponse?.data) ? transactionsResponse.data : [];
   
   console.log('Assets History - Transactions data:', transactionsResponse);
+  console.log('Assets History - Error:', error);
+  console.log('Assets History - User:', user);
+  console.log('Assets History - Loading:', isLoading);
 
   // WebSocket connection for real-time transaction updates
   useEffect(() => {

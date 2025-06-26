@@ -1487,18 +1487,25 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
   });
 
   // Get user deposit transaction history
-  app.get('/api/deposits/history', requireAuth, async (req: Request, res: Response) => {
+  app.get('/api/deposits/history', async (req: Request, res: Response) => {
     try {
+      // Check authentication first
+      console.log('🔐 Deposits history auth check:', {
+        hasSession: !!req.session,
+        userId: req.session?.userId,
+        sessionId: req.sessionID 
+      });
+      
+      if (!req.session?.userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+      
       const userId = req.session.userId!;
       console.log(`💰 Deposit history API called for user ${userId}`);
       
-      // Import the DepositTransaction model directly for better reliability
-      const { DepositTransaction } = await import('./models/DepositTransaction');
-      
-      // Query deposit transactions directly from MongoDB
-      const transactions = await DepositTransaction.find({ userId })
-        .sort({ createdAt: -1 })
-        .lean(); // Use lean() for better performance
+      // Use mongoStorage to get transactions directly
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserDepositTransactions(userId);
       
       console.log(`📝 Found ${transactions.length} deposit transactions for user ${userId}`);
       
