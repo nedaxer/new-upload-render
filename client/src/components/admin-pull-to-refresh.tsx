@@ -147,10 +147,10 @@ export function AdminPullToRefresh({ children, onRefresh, disabled = false }: Ad
             style={{
               height: `${Math.max(pullDistance, isRefreshing ? 120 : 0)}px`,
               background: `linear-gradient(180deg, 
-                rgba(25, 25, 112, ${bgOpacity}) 0%, 
-                rgba(26, 26, 112, ${bgOpacity * 0.8}) 40%,
-                rgba(27, 27, 112, ${bgOpacity * 0.6}) 70%,
-                rgba(28, 28, 112, ${bgOpacity * 0.4}) 100%)`
+                rgba(10, 10, 46, ${bgOpacity}) 0%, 
+                rgba(11, 11, 48, ${bgOpacity * 0.8}) 40%,
+                rgba(12, 12, 50, ${bgOpacity * 0.6}) 70%,
+                rgba(13, 13, 52, ${bgOpacity * 0.4}) 100%)`
             }}
           >
             {/* Admin Shield Icon */}

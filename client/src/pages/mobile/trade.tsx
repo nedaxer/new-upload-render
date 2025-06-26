@@ -395,8 +395,8 @@ export default function MobileTrade() {
       theme: "dark",
       style: "1",
       locale: "en",
-      backgroundColor: "#191970",
-      toolbar_bg: "#191970",
+      backgroundColor: "#0a0a2e",
+      toolbar_bg: "#0a0a2e",
       hide_top_toolbar: true,
       hide_side_toolbar: true,
       allow_symbol_change: false,
@@ -419,12 +419,12 @@ export default function MobileTrade() {
         mode: 1  // Normal crosshair mode that follows your finger/mouse
       },
       save_image: false,
-      loading_screen: { backgroundColor: "#191970", foregroundColor: "#191970" },
+      loading_screen: { backgroundColor: "#0a0a2e", foregroundColor: "#0a0a2e" },
       overrides: {
-        "paneProperties.background": "#191970",
+        "paneProperties.background": "#0a0a2e",
         "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#191970", 
-        "paneProperties.backgroundGradientEndColor": "#191970",
+        "paneProperties.backgroundGradientStartColor": "#0a0a2e", 
+        "paneProperties.backgroundGradientEndColor": "#0a0a2e",
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
         "paneProperties.crossHairProperties.color": "#FFA500", // orange line

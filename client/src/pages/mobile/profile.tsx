@@ -229,7 +229,7 @@ export default function MobileProfile() {
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-[#191970]">
+      <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>

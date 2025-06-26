@@ -187,7 +187,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
           className="relative overflow-hidden"
           style={{
             height: pullDistance,
-            background: 'linear-gradient(180deg, hsl(39, 90%, 45%) 0%, hsl(39, 85%, 42%) 15%, hsl(39, 75%, 38%) 30%, hsl(39, 65%, 35%) 45%, #191970 60%, #1a1a70 75%, #1b1b70 90%, #191970 100%)',
+            background: 'linear-gradient(180deg, hsl(39, 90%, 45%) 0%, hsl(39, 85%, 42%) 15%, hsl(39, 75%, 38%) 30%, hsl(39, 65%, 35%) 45%, #0a0a2e 60%, #0b0b30 75%, #0c0c32 90%, #0a0a2e 100%)',
             transition: 'none'
           } as React.CSSProperties}
         >
@@ -195,7 +195,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
           <div 
             className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
             style={{
-              background: 'linear-gradient(180deg, rgba(25, 25, 112, 0) 0%, rgba(25, 25, 112, 0.2) 20%, rgba(25, 25, 112, 0.4) 40%, rgba(25, 25, 112, 0.6) 60%, rgba(25, 25, 112, 0.8) 80%, #191970 100%)'
+              background: 'linear-gradient(180deg, rgba(10, 10, 46, 0) 0%, rgba(10, 10, 46, 0.2) 20%, rgba(10, 10, 46, 0.4) 40%, rgba(10, 10, 46, 0.6) 60%, rgba(10, 10, 46, 0.8) 80%, #0a0a2e 100%)'
             }}
           />
           

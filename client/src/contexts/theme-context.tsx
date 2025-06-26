@@ -16,10 +16,10 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const themeConfig = {
   midnight: {
-    background: 'bg-[#191970]',
-    secondaryBackground: 'bg-[#1a1a70]',
-    card: 'bg-[#1a1a70] border-[#2a2a80]',
-    border: 'border-[#2a2a80]',
+    background: 'bg-[#0a0a2e]',
+    secondaryBackground: 'bg-[#0b0b30]',
+    card: 'bg-[#0b0b30] border-[#1a1a40]',
+    border: 'border-[#1a1a40]',
     text: 'text-white'
   }
 };
