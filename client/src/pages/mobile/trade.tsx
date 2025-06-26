@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
@@ -30,7 +29,6 @@ import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
-import { PairSelectionModal } from '@/components/pair-selection-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
@@ -78,24 +76,6 @@ export default function MobileTrade() {
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
-
-  // Query client for data management
-  const queryClient = useQueryClient();
-
-  // Fetch real-time price data for pair selection modal
-  const { data: priceData } = useQuery({
-    queryKey: ['/api/crypto/realtime-prices'],
-    refetchInterval: 30000,
-    staleTime: 25000,
-    retry: 1
-  });
-
-  // Fetch user favorites for pair selection modal
-  const { data: userFavorites = [] } = useQuery<string[]>({
-    queryKey: ['/api/favorites'],
-    retry: 1,
-    staleTime: 5 * 60 * 1000
-  });
 
   // Initialize selected pair from persistent storage
   useEffect(() => {
@@ -226,10 +206,10 @@ export default function MobileTrade() {
       
       if (activeWidget && activeWidget.widget) {
         // Check if symbol is different before updating
-        const widgetCurrentSymbol: string = activeWidget.currentSymbol || selectedPair.symbol;
-        if (widgetCurrentSymbol !== selectedPair.symbol) {
+        const currentSymbol = activeWidget.currentSymbol || currentSymbol;
+        if (currentSymbol !== selectedPair.symbol) {
           try {
-            console.log('Updating chart symbol from', widgetCurrentSymbol, 'to:', selectedPair.tradingViewSymbol);
+            console.log('Updating chart symbol from', currentSymbol, 'to:', selectedPair.tradingViewSymbol);
             
             // Use proper TradingView setSymbol API with interval parameter
             activeWidget.widget.setSymbol(selectedPair.tradingViewSymbol, selectedTimeframe || '15', () => {
@@ -963,88 +943,8 @@ export default function MobileTrade() {
         setShowPairSelector(false);
     };
 
-  // Transform price data to format expected by pair selection modal
-  const cryptoDataArray = Array.isArray(priceData?.data) ? priceData.data : (priceData?.success ? [] : []);
-  const transformedCryptoData = cryptoDataArray.map((crypto: any) => ({
-    symbol: crypto.symbol,
-    name: crypto.name || crypto.symbol,
-    price: parseFloat(crypto.price) || 0,
-    change: parseFloat(crypto.change24h) || 0,
-    volume: parseFloat(crypto.volume24h) || 0,
-    isFavorite: userFavorites.includes(crypto.symbol)
-  })) || [];
-
-  // Handle favorites toggle
-  const handleToggleFavorite = async (symbol: string) => {
-    try {
-      const response = await fetch('/api/favorites/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cryptoPairSymbol: symbol, cryptoId: symbol.toLowerCase() })
-      });
-      
-      if (response.ok) {
-        // Refetch favorites
-        queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
-      }
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-    }
-  };
-
-  // Handle new pair selection from enhanced modal
-  const handleEnhancedPairSelection = (symbol: string) => {
-    // Find the matching crypto pair
-    const selectedCryptoPair = transformedCryptoData.find(crypto => crypto.symbol === symbol);
-    if (selectedCryptoPair) {
-      // Create a CryptoPair object for consistency
-      const cryptoPair: CryptoPair = {
-        symbol: selectedCryptoPair.symbol.replace('USDT', ''),
-        baseAsset: selectedCryptoPair.symbol.replace('USDT', ''),
-        quoteAsset: 'USDT',
-        name: selectedCryptoPair.name,
-        tradingViewSymbol: `BINANCE:${selectedCryptoPair.symbol}`,
-        price: selectedCryptoPair.price,
-        change: selectedCryptoPair.change
-      };
-      
-      // Update all states
-      setSelectedPair(cryptoPair);
-      setCurrentSymbol(selectedCryptoPair.symbol);
-      setTradingViewSymbol(cryptoPair.tradingViewSymbol);
-      
-      // Store in persistent storage
-      const chartState = {
-        currentSymbol: selectedCryptoPair.symbol,
-        tradingViewSymbol: cryptoPair.tradingViewSymbol,
-        timeframe: selectedTimeframe,
-        lastUpdated: Date.now(),
-        isChartMounted: true
-      };
-      localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
-      
-      // Update chart if on Charts tab
-      if (selectedTab === 'Charts' && isTradingViewReady) {
-        loadChart(cryptoPair.tradingViewSymbol, false);
-      }
-    }
-  };
-
-  // Debug logging
-  console.log('MobileTrade render:', {
-    selectedTab,
-    selectedTradingType,
-    selectedPair: selectedPair?.symbol,
-    priceDataExists: !!priceData,
-    transformedDataLength: transformedCryptoData?.length,
-    priceData: priceData?.success ? 'success' : 'failed',
-    cryptoDataType: typeof priceData?.data,
-    isArray: Array.isArray(priceData?.data)
-  });
-
   return (
     <MobileLayout>
-      
       {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-blue-950 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
@@ -1092,9 +992,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a2e]">
+        <div className="flex-1 overflow-y-auto bg-[#0a0a2e]">
           {/* Tappable Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-3 bg-[#0a0a2e] border-b border-[#1a1a40] flex-shrink-0">
+          <div className="flex justify-between items-center p-2 bg-[#0a0a2e] border-b border-[#1a1a40] sticky top-0 z-40">
             <div 
               className="flex flex-col cursor-pointer hover:bg-blue-800 rounded px-2 py-1 transition-colors"
               onClick={() => {
@@ -1120,10 +1020,10 @@ export default function MobileTrade() {
           </div>
 
           {/* Chart Container - Clean without loading skeleton */}
-          <div className="flex-1 relative bg-[#0a0a2e]">
+          <div className={`relative ${getBackgroundClass()}`} style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
-              <div className="absolute inset-0 bg-[#0a0a2e] z-20 flex items-center justify-center">
+              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
@@ -1136,7 +1036,7 @@ export default function MobileTrade() {
 
             {/* Only show error state if chart fails to load */}
             {chartError && (
-              <div className="absolute inset-0 bg-[#0a0a2e] z-20 flex items-center justify-center">
+              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
@@ -1198,18 +1098,17 @@ export default function MobileTrade() {
               }}
             />
           </div>
+
+
         </div>
       )}
 
-      {/* Enhanced Pair Selection Modal */}
-      <PairSelectionModal
+      {/* Crypto Pair Selector Modal */}
+      <CryptoPairSelectorModal
         isOpen={showPairSelectorModal}
         onClose={() => setShowPairSelectorModal(false)}
-        onSelectPair={handleEnhancedPairSelection}
-        currentPair={selectedPair.symbol + 'USDT'}
-        cryptoData={transformedCryptoData}
-        favorites={userFavorites}
-        onToggleFavorite={handleToggleFavorite}
+        onSelectPair={handlePairSelectionModal}
+        currentPair={selectedPair}
       />
 
       {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
@@ -1234,9 +1133,10 @@ export default function MobileTrade() {
 
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
-        <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a2e]">
+        <div className="flex-1 overflow-hidden">
+
           {selectedTradingType === 'Spot' && (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="h-full p-4">
               {/* Trading Pair Info */}
               <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -1393,7 +1293,7 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Futures' && (
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="h-full p-4">
               {/* Trading Pair Info */}
               <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
