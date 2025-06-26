@@ -276,7 +276,7 @@ export default function AdminPortal() {
   // Login screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-2 sm:p-4">
         <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
@@ -338,34 +338,34 @@ export default function AdminPortal() {
   // Admin dashboard
   return (
     <AdminPullToRefresh onRefresh={handleAdminRefresh}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-2 sm:p-4">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
-              <p className="text-blue-200">Platform Management Dashboard</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Admin Portal</h1>
+              <p className="text-blue-200 text-sm sm:text-base">Platform Management Dashboard</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
             <Button 
               onClick={() => setShowUsersList(!showUsersList)}
               variant="outline" 
               size="sm"
-              className="border-white/30 text-white hover:bg-white/20"
+              className="border-white/30 text-white hover:bg-white/20 flex-1 sm:flex-initial"
             >
               <Users className="w-4 h-4 mr-1" />
-              Users ({allUsers.length})
+              Users ({(allUsers as any)?.length || 0})
             </Button>
             <Button 
               onClick={handleLogout} 
               variant="outline" 
               size="sm"
-              className="border-white/30 text-white hover:bg-white/20"
+              className="border-white/30 text-white hover:bg-white/20 flex-1 sm:flex-initial"
             >
               <LogOut className="w-4 h-4 mr-1" />
               Logout
@@ -593,7 +593,7 @@ export default function AdminPortal() {
                 <div className="p-4 bg-gray-500/20 rounded-lg border border-gray-400/30">
                   <h4 className="text-white font-medium mb-2">Silent Fund Transfer</h4>
                   <p className="text-gray-300 text-sm mb-3">Add USD funds directly without creating transaction history</p>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                     <Input
                       type="number"
                       placeholder="Amount (USD)"
@@ -604,7 +604,7 @@ export default function AdminPortal() {
                     <Button
                       onClick={handleAddFunds}
                       disabled={addFundsMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6"
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 w-full sm:w-auto"
                     >
                       {addFundsMutation.isPending ? (
                         <div className="flex items-center">

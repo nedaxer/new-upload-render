@@ -213,7 +213,7 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
           Create Deposit
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl bg-slate-900 border-slate-700 text-white">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -257,8 +257,14 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
                       <span className="font-mono text-orange-400">{crypto.symbol}</span>
                       <span className="text-gray-400">-</span>
                       <span>{crypto.name}</span>
-                      <span className="text-green-400 text-sm">
-                        ${cryptoPrices[crypto.symbol]?.toLocaleString() || 'Loading...'}
+                      <span className="text-green-400 text-sm font-mono">
+                        {cryptoPrices[crypto.symbol] ? 
+                          `$${cryptoPrices[crypto.symbol].toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 6
+                          })}` : 
+                          '⟳'
+                        }
                       </span>
                     </div>
                   </SelectItem>
