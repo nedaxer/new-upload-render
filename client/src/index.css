@@ -246,4 +246,13 @@
   * {
     -webkit-tap-highlight-color: transparent;
   }
+  
+  /* Ensure modals always appear above navigation */
+  [data-modal="deposit"] {
+    z-index: 99999 !important;
+  }
+  
+  [data-navigation="bottom"] {
+    z-index: 1 !important;
+  }
 }
