@@ -10,9 +10,9 @@ export default function PortfolioDemo() {
     return usdAmount.toFixed(2);
   };
 
-  // Get currency symbol
+  // Get currency symbol - returns empty string to show only numbers
   const getCurrencySymbol = (currency: string): string => {
-    return '$';
+    return '';
   };
 
   return (

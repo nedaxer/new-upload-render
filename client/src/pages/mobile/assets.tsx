@@ -157,52 +157,9 @@ export default function MobileAssets() {
     }
   };
 
-  // Get currency symbol
+  // Get currency symbol - returns empty string to show only numbers
   const getCurrencySymbol = (currency: string): string => {
-    const symbols: { [key: string]: string } = {
-      'USD': '$',
-      'EUR': '€',
-      'GBP': '£',
-      'JPY': '¥',
-      'CNY': '¥',
-      'INR': '₹',
-      'KRW': '₩',
-      'RUB': '₽',
-      'BRL': 'R$',
-      'CAD': 'C$',
-      'AUD': 'A$',
-      'CHF': 'CHF',
-      'SEK': 'kr',
-      'NOK': 'kr',
-      'DKK': 'kr',
-      'PLN': 'zł',
-      'CZK': 'Kč',
-      'HUF': 'Ft',
-      'TRY': '₺',
-      'ZAR': 'R',
-      'EGP': 'E£',
-      'NGN': '₦',
-      'KES': 'KSh',
-      'AED': 'د.إ',
-      'SAR': 'ر.س',
-      'QAR': 'ر.ق',
-      'KWD': 'د.ك',
-      'BHD': '.د.ب',
-      'OMR': 'ر.ع.',
-      'ILS': '₪',
-      'PKR': '₨',
-      'BDT': '৳',
-      'VND': '₫',
-      'THB': '฿',
-      'MYR': 'RM',
-      'SGD': 'S$',
-      'IDR': 'Rp',
-      'PHP': '₱',
-      'TWD': 'NT$',
-      'HKD': 'HK$',
-      'NZD': 'NZ$'
-    };
-    return symbols[currency] || currency;
+    return '';
   };
 
   // Get BTC price for USD to BTC conversion
