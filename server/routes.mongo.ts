@@ -1483,30 +1483,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
-  // Get user deposit transactions  
-  app.get('/api/deposits/:userId', requireAuth, async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      
-      // Ensure user can only access their own transactions or admin can access any
-      const sessionUserId = req.session?.userId;
-      const isAdmin = req.session?.adminAuthenticated;
-      
-      if (!isAdmin && sessionUserId !== userId) {
-        return res.status(403).json({ success: false, message: "Access denied" });
-      }
-
-      const { mongoStorage } = await import('./mongoStorage');
-      const transactions = await mongoStorage.getUserDepositTransactions(userId);
-      
-      res.json({ success: true, data: transactions });
-    } catch (error) {
-      console.error('Get deposit transactions error:', error);
-      res.status(500).json({ success: false, message: "Failed to get transactions" });
-    }
-  });
-
-  // Get user deposit transaction history with enhanced authentication
+  // Get user deposit transaction history with direct MongoDB access (MUST be before parameterized route)
   app.get('/api/deposits/history', async (req: Request, res: Response) => {
     try {
       console.log('🔍 Deposit history auth check:', {
@@ -1521,70 +1498,36 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
       }
       
       const userId = req.session.userId;
-      
-      // Skip user verification for admin or verify regular user
-      if (userId !== 'ADMIN001' && !req.session?.adminAuthenticated) {
-        try {
-          const user = await storage.getUser(userId);
-          if (!user) {
-            return res.status(401).json({ success: false, message: "User not found" });
-          }
-        } catch (authError) {
-          console.error('User verification error:', authError);
-          return res.status(500).json({ success: false, message: "Authentication error" });
-        }
-      }
-      
       console.log(`💰 Deposit history API called for user ${userId}`);
       
-      // Use mongoStorage for consistent data access
-      const { mongoStorage } = await import('./mongoStorage');
-      const transactions = await mongoStorage.getUserDepositTransactions(userId);
+      // Direct MongoDB query for deposit transactions
+      const { DepositTransaction } = await import('./models/DepositTransaction');
       
-      console.log(`📝 Found ${transactions.length} deposit transactions for user ${userId}`);
+      console.log('📋 Querying DepositTransaction collection directly...');
       
-      // If no transactions from mongoStorage, try direct MongoDB query as fallback
-      if (transactions.length === 0) {
-        console.log('📋 No transactions from mongoStorage, trying direct MongoDB query...');
-        
-        const { DepositTransaction } = await import('./models/DepositTransaction');
-        const directTransactions = await DepositTransaction.find({ 
-          $or: [
-            { userId: userId },
-            { userId: userId.toString() }
-          ]
-        })
-          .sort({ createdAt: -1 })
-          .lean()
-          .exec();
-        
-        console.log(`📊 Direct MongoDB query found ${directTransactions.length} transactions`);
-        
-        if (directTransactions.length > 0) {
-          // Return direct query results
-          return res.json({ 
-            success: true, 
-            data: directTransactions.map(tx => ({
-              _id: tx._id,
-              userId: tx.userId,
-              adminId: tx.adminId,
-              cryptoSymbol: tx.cryptoSymbol,
-              cryptoName: tx.cryptoName,
-              chainType: tx.chainType,
-              networkName: tx.networkName,
-              senderAddress: tx.senderAddress,
-              usdAmount: tx.usdAmount,
-              cryptoAmount: tx.cryptoAmount,
-              cryptoPrice: tx.cryptoPrice,
-              status: tx.status || 'confirmed',
-              createdAt: tx.createdAt,
-              updatedAt: tx.updatedAt
-            }))
-          });
-        }
+      const transactions = await DepositTransaction.find({ 
+        $or: [
+          { userId: userId },
+          { userId: userId.toString() }
+        ]
+      })
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+      
+      console.log(`📊 Direct MongoDB query found ${transactions.length} transactions for user ${userId}`);
+      
+      if (transactions.length > 0) {
+        console.log('📋 Sample transaction:', {
+          id: transactions[0]._id,
+          userId: transactions[0].userId,
+          cryptoSymbol: transactions[0].cryptoSymbol,
+          usdAmount: transactions[0].usdAmount,
+          createdAt: transactions[0].createdAt
+        });
       }
       
-      // Return mongoStorage results
+      // Return direct query results
       res.json({ 
         success: true, 
         data: transactions.map(tx => ({
@@ -1604,9 +1547,33 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
           updatedAt: tx.updatedAt
         }))
       });
+      
     } catch (error) {
-      console.error('Get deposit history error:', error);
+      console.error('❌ Get deposit history error:', error);
       res.status(500).json({ success: false, message: "Failed to get deposit history" });
+    }
+  });
+
+  // Get user deposit transactions by userId (MUST be after /api/deposits/history route)  
+  app.get('/api/deposits/:userId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // Ensure user can only access their own transactions or admin can access any
+      const sessionUserId = req.session?.userId;
+      const isAdmin = req.session?.adminAuthenticated;
+      
+      if (!isAdmin && sessionUserId !== userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserDepositTransactions(userId);
+      
+      res.json({ success: true, data: transactions });
+    } catch (error) {
+      console.error('Get deposit transactions error:', error);
+      res.status(500).json({ success: false, message: "Failed to get transactions" });
     }
   });
 

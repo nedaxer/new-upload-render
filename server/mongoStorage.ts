@@ -547,11 +547,32 @@ export class MongoStorage implements IMongoStorage {
 
   async getUserDepositTransactions(userId: string): Promise<IDepositTransaction[]> {
     try {
-      const transactions = await DepositTransaction.find({ userId })
-        .sort({ createdAt: -1 });
+      console.log(`📋 mongoStorage: Getting deposit transactions for user ${userId}`);
+      
+      const transactions = await DepositTransaction.find({ 
+        $or: [
+          { userId: userId },
+          { userId: userId.toString() }
+        ]
+      })
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+      
+      console.log(`📋 mongoStorage: Found ${transactions.length} transactions for user ${userId}`);
+      
+      if (transactions.length > 0) {
+        console.log('📋 mongoStorage: First transaction:', {
+          id: transactions[0]._id,
+          userId: transactions[0].userId,
+          cryptoSymbol: transactions[0].cryptoSymbol,
+          usdAmount: transactions[0].usdAmount
+        });
+      }
+      
       return transactions;
     } catch (error) {
-      console.error('Error getting user deposit transactions:', error);
+      console.error('❌ mongoStorage: Error getting user deposit transactions:', error);
       return [];
     }
   }
