@@ -1,22 +1,76 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function AssetsHistory() {
   const [activeTab, setActiveTab] = useState('Deposit');
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch deposit transactions for authenticated user only
   const { data: transactionsResponse, isLoading } = useQuery({
     queryKey: ['/api/deposits/history'],
     enabled: !!user,
+    refetchInterval: 30000, // Refresh every 30 seconds for new deposits
   });
 
   const transactions = Array.isArray(transactionsResponse?.data) ? transactionsResponse.data : [];
+  
+  console.log('Assets History - Transactions data:', transactionsResponse);
+
+  // WebSocket connection for real-time transaction updates
+  useEffect(() => {
+    let socket: WebSocket;
+    
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected for real-time transaction updates');
+        socket.send(JSON.stringify({ type: 'subscribe_notifications' }));
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Real-time transaction update received:', data);
+          
+          if (data.type === 'DEPOSIT_CREATED') {
+            // Refresh transaction history when new deposits are created
+            queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
+            console.log('Transaction history refreshed due to new deposit');
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+        }
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket disconnected, attempting to reconnect...');
+        setTimeout(connectWebSocket, 3000);
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    };
+    
+    if (user) {
+      connectWebSocket();
+    }
+    
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [user, queryClient]);
 
   const historyTabs = ['All Transactions', 'Deposit', 'Withdraw', 'Transfer'];
 
