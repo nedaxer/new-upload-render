@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, loginMutation } = useAuth();
+  const queryClient = useQueryClient();
   
   // If user is already logged in, redirect to dashboard
   useEffect(() => {
@@ -60,15 +62,24 @@ export default function Login() {
         localStorage.setItem('rememberLogin', 'true');
       }
       
+      // Invalidate auth query to refresh user state immediately
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Force refetch auth data to ensure user state is current
+      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Small delay to ensure auth state is synced
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Show success message
       toast({
         title: "Logged in successfully",
         description: "Welcome back to Nedaxer cryptocurrency trading platform.",
       });
       
-      // Force immediate redirect to dashboard
-      console.log('Login successful, redirecting to dashboard');
-      setLocation('/dashboard');
+      // Redirect to mobile app instead of dashboard
+      console.log('Login successful, redirecting to mobile app');
+      setLocation('/mobile');
       
     } catch (error: any) {
       console.error('Login error:', error);

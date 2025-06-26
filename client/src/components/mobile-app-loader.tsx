@@ -8,10 +8,12 @@ interface MobileAppLoaderProps {
 }
 
 export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [isPreloading, setIsPreloading] = useState(true);
+  const [authCheckComplete, setAuthCheckComplete] = useState(false);
   const [loadingSteps, setLoadingSteps] = useState({
+    auth: false,
     prices: false,
     wallet: false,
     balances: false,
@@ -20,31 +22,40 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     complete: false
   });
 
+  // Wait for auth to complete before starting data loading
+  useEffect(() => {
+    if (!authLoading) {
+      setAuthCheckComplete(true);
+      setLoadingSteps(prev => ({ ...prev, auth: true }));
+      console.log('Auth check complete, user:', user ? 'authenticated' : 'not authenticated');
+    }
+  }, [authLoading, user]);
+
   // Critical data queries with immediate execution and fast timeout for new users
   const { data: priceData, isSuccess: pricesLoaded, isError: pricesError } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
-    enabled: !!user && isPreloading,
+    enabled: authCheckComplete && !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
   const { data: walletData, isSuccess: walletLoaded, isError: walletError } = useQuery({
     queryKey: ['/api/wallet/summary'],
-    enabled: !!user && isPreloading,
+    enabled: authCheckComplete && !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
   const { data: balanceData, isSuccess: balancesLoaded, isError: balancesError } = useQuery({
     queryKey: ['/api/balances'],
-    enabled: !!user && isPreloading,
+    enabled: authCheckComplete && !!user && isPreloading,
     retry: 1,
     staleTime: 30000,
   });
 
   const { data: favoritesData, isSuccess: favoritesLoaded, isError: favoritesError } = useQuery({
     queryKey: ['/api/favorites'],
-    enabled: !!user && isPreloading,
+    enabled: authCheckComplete && !!user && isPreloading,
     retry: 1,
     staleTime: 5 * 60 * 1000,
   });
@@ -64,7 +75,7 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
         return null; // Continue without rates if failed
       }
     },
-    enabled: isPreloading,
+    enabled: authCheckComplete && isPreloading,
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -83,7 +94,8 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
 
   // Check if all critical data is loaded or failed (for new users)
   useEffect(() => {
-    const allDataReady = (pricesLoaded || pricesError) && 
+    const allDataReady = authCheckComplete && 
+                        (pricesLoaded || pricesError) && 
                         (walletLoaded || walletError) && 
                         (balancesLoaded || balancesError) && 
                         (favoritesLoaded || favoritesError) && 
@@ -98,20 +110,52 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
       
       return () => clearTimeout(timer);
     }
-  }, [user, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates, pricesError, walletError, balancesError, favoritesError]);
+  }, [user, authCheckComplete, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates, pricesError, walletError, balancesError, favoritesError]);
 
-  // Emergency timeout for new users - don't wait more than 3 seconds
+  // Emergency timeout for new users - don't wait more than 4 seconds after auth completes
   useEffect(() => {
-    if (user && isPreloading) {
+    if (authCheckComplete && user && isPreloading) {
+      console.log('Starting emergency timeout for authenticated user');
       const emergencyTimer = setTimeout(() => {
-        console.log('Emergency timeout - proceeding with available data for new user');
+        console.log('Emergency timeout triggered - proceeding with available data');
         setLoadingSteps(prev => ({ ...prev, complete: true }));
         setIsPreloading(false);
-      }, 3000);
+      }, 4000);
 
       return () => clearTimeout(emergencyTimer);
     }
-  }, [user, isPreloading]);
+  }, [authCheckComplete, user, isPreloading]);
+
+  // Additional safety net - if user exists but loader is stuck, force completion
+  useEffect(() => {
+    if (user && !authLoading && isPreloading) {
+      const safetyTimer = setTimeout(() => {
+        console.log('Safety timeout - forcing loader completion for authenticated user');
+        setLoadingSteps(prev => ({ ...prev, auth: true, complete: true }));
+        setIsPreloading(false);
+      }, 6000);
+
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [user, authLoading, isPreloading]);
+
+  // If auth is still loading, show basic loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">Nedaxer</h1>
+            <p className="text-orange-400 text-sm">Trading Platform</p>
+          </div>
+          <div className="relative">
+            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto" />
+          </div>
+          <p className="text-gray-400 text-sm">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If not authenticated, show children immediately
   if (!user) {
@@ -138,9 +182,14 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
           {/* Loading Steps */}
           <div className="space-y-2 min-w-64">
             <LoadingStep 
+              label="Authenticating user" 
+              completed={loadingSteps.auth}
+              active={!loadingSteps.auth}
+            />
+            <LoadingStep 
               label="Loading market prices" 
               completed={loadingSteps.prices}
-              active={!loadingSteps.prices}
+              active={loadingSteps.auth && !loadingSteps.prices}
             />
             <LoadingStep 
               label="Setting up account" 

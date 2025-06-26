@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 
 export default function Register() {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -152,6 +154,15 @@ export default function Register() {
       
       // Store email as username in localStorage for convenience
       localStorage.setItem('lastUsername', data.user.email);
+      
+      // Invalidate auth query to refresh user state immediately
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Force refetch auth data to ensure user state is current
+      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Small delay to ensure auth state is synced
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Immediate redirect to mobile home page
       console.log('Taking user to mobile home page');
