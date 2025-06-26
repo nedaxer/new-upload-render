@@ -21,7 +21,8 @@ export function PWAInstallPrompt() {
     // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
-    setIsInstalled(isStandalone || isInWebAppiOS);
+    const alreadyInstalled = isStandalone || isInWebAppiOS;
+    setIsInstalled(alreadyInstalled);
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -38,6 +39,13 @@ export function PWAInstallPrompt() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // Fallback: Show install prompt after 3 seconds if not already installed and no browser prompt
+    setTimeout(() => {
+      if (!alreadyInstalled && !deferredPrompt) {
+        setShowPrompt(true);
+      }
+    }, 3000);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
@@ -45,22 +53,29 @@ export function PWAInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        console.log('User accepted the PWA install prompt');
-      } else {
-        console.log('User dismissed the PWA install prompt');
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+          console.log('User accepted the PWA install prompt');
+        } else {
+          console.log('User dismissed the PWA install prompt');
+        }
+        
+        setDeferredPrompt(null);
+        setShowPrompt(false);
+      } catch (error) {
+        console.error('Error showing install prompt:', error);
       }
-      
-      setDeferredPrompt(null);
+    } else {
+      // Fallback: Show manual install instructions
+      alert('To install Nedaxer as an app:\n\n' +
+            'Chrome/Edge: Click the three dots menu → More tools → Create shortcut → Check "Open as window"\n\n' +
+            'Safari: Click Share button → Add to Home Screen\n\n' +
+            'Firefox: Click the three lines menu → Install this site as an app');
       setShowPrompt(false);
-    } catch (error) {
-      console.error('Error showing install prompt:', error);
     }
   };
 
