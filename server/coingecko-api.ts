@@ -216,6 +216,8 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
     CRYPTO_PAIRS.forEach(pair => {
       if (pair.coinGeckoId && response.data[pair.coinGeckoId] && !processedCoinIds.has(pair.coinGeckoId)) {
         const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
+        
+        // Add the trading pair symbol (like BTCUSDT)
         tickers.push({
           symbol: pair.symbol,
           name: pair.name,
@@ -224,6 +226,17 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
           volume: coinData.usd_24h_vol || 0,
           marketCap: coinData.usd_market_cap || 0
         });
+        
+        // Also add the base asset symbol (like BTC) for admin deposit creator
+        tickers.push({
+          symbol: pair.baseAsset,
+          name: pair.name,
+          price: coinData.usd,
+          change: coinData.usd_24h_change || 0,
+          volume: coinData.usd_24h_vol || 0,
+          marketCap: coinData.usd_market_cap || 0
+        });
+        
         processedCoinIds.add(pair.coinGeckoId);
       } else if (pair.coinGeckoId && processedCoinIds.has(pair.coinGeckoId)) {
         // Handle duplicate coinGeckoId by using the same data but different symbol
@@ -236,6 +249,19 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
           volume: coinData.usd_24h_vol || 0,
           marketCap: coinData.usd_market_cap || 0
         });
+        
+        // Also add base asset if it's not already added
+        const baseAssetExists = tickers.some(t => t.symbol === pair.baseAsset);
+        if (!baseAssetExists) {
+          tickers.push({
+            symbol: pair.baseAsset,
+            name: pair.name,
+            price: coinData.usd,
+            change: coinData.usd_24h_change || 0,
+            volume: coinData.usd_24h_vol || 0,
+            marketCap: coinData.usd_market_cap || 0
+          });
+        }
       } else if (pair.coinGeckoId && !response.data[pair.coinGeckoId]) {
         missingCoins.push(pair.coinGeckoId);
       }
@@ -243,6 +269,19 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
 
     if (missingCoins.length > 0) {
       console.log(`Missing coin data for: ${missingCoins.join(', ')}`);
+    }
+
+    // Add USDT as a stablecoin with $1.00 price if not already present
+    const usdtExists = tickers.some(t => t.symbol === 'USDT');
+    if (!usdtExists) {
+      tickers.push({
+        symbol: 'USDT',
+        name: 'Tether',
+        price: 1.00,
+        change: 0,
+        volume: 0,
+        marketCap: 0
+      });
     }
 
     console.log(`Successfully fetched ${tickers.length} crypto prices from CoinGecko`);

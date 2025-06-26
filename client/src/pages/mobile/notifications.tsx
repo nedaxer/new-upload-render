@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
-import PullToRefresh from 'react-pull-to-refresh';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
@@ -20,16 +19,7 @@ export default function MobileNotifications() {
     refetchIntervalInBackground: true,
   });
 
-  const notifications = notificationsResponse?.data || [];
-  const notificationData = Array.isArray(notifications) ? notifications : [];
-
-  // Pull to refresh handler
-  const handleRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-    // Also refresh wallet/balance data
-    await queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
-    await queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
-  };
+  const notificationData = Array.isArray((notificationsResponse as any)?.data) ? (notificationsResponse as any).data : [];
 
   // WebSocket connection for real-time updates
   useEffect(() => {
@@ -57,11 +47,6 @@ export default function MobileNotifications() {
             queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
             queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
-            
-            // Force refetch immediately
-            queryClient.refetchQueries({ queryKey: ['/api/notifications'] });
-            
-            console.log('🔄 Auto-refreshed notifications and balance due to new deposit');
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -70,8 +55,7 @@ export default function MobileNotifications() {
       
       socket.onclose = () => {
         console.log('WebSocket disconnected, attempting to reconnect...');
-        // Reconnect after 3 seconds
-        reconnectTimeout = setTimeout(connectWebSocket, 3000);
+        reconnectTimeout = setTimeout(connectWebSocket, 5000);
       };
       
       socket.onerror = (error) => {
@@ -81,11 +65,12 @@ export default function MobileNotifications() {
     
     connectWebSocket();
     
-    // Cleanup on component unmount
     return () => {
-      clearTimeout(reconnectTimeout);
       if (socket) {
         socket.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
       }
     };
   }, [queryClient]);
@@ -134,14 +119,14 @@ export default function MobileNotifications() {
         </div>
       </div>
 
-      {/* Notification Tabs - Fixed Layout */}
-      <div className="px-4 py-4">
-        <div className="grid grid-cols-3 gap-2">
-          {notificationTabs.slice(0, 6).map((tab) => (
+      {/* Notification Tabs - Single Line with Small Fonts */}
+      <div className="px-4 py-2">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+          {notificationTabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-center pb-2 px-1 text-xs truncate ${
+              className={`whitespace-nowrap pb-1 px-2 text-[10px] font-medium flex-shrink-0 ${
                 activeTab === tab
                   ? 'text-orange-500 border-b-2 border-orange-500'
                   : 'text-gray-400 hover:text-white'
@@ -153,95 +138,90 @@ export default function MobileNotifications() {
         </div>
       </div>
 
-      {/* Notifications Content with Pull-to-Refresh */}
-      <PullToRefresh
-        onRefresh={handleRefresh}
-        style={{ backgroundColor: '#0a0a2e' }}
-      >
-        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
-          {/* Notifications List */}
-          {isLoading ? (
-            <div className="px-4 space-y-2">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-3 animate-pulse">
-                  <div className="h-3 bg-gray-700 rounded mb-1"></div>
-                  <div className="h-2 bg-gray-700 rounded mb-1"></div>
-                  <div className="h-2 bg-gray-700 rounded w-3/4"></div>
+      {/* Notifications Content */}
+      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
+        {/* Notifications List */}
+        {isLoading ? (
+          <div className="px-4 space-y-2">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-3 animate-pulse">
+                <div className="h-3 bg-gray-700 rounded mb-1"></div>
+                <div className="h-2 bg-gray-700 rounded mb-1"></div>
+                <div className="h-2 bg-gray-700 rounded w-3/4"></div>
+              </Card>
+            ))}
+          </div>
+        ) : notificationData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="w-12 h-12 bg-[#1a1a40] rounded-full flex items-center justify-center mb-3">
+              <CheckCheck className="w-6 h-6 text-gray-500" />
+            </div>
+            <p className="text-gray-400 text-center text-sm">No notifications yet</p>
+            <p className="text-gray-500 text-xs text-center mt-1">
+              You'll see important updates here
+            </p>
+          </div>
+        ) : (
+          <div className="px-4 space-y-2 pb-4">
+            {notificationData
+              .filter((notification: any) => 
+                activeTab === 'All' ||
+                notification.type === activeTab.toLowerCase() ||
+                (activeTab === t('system_notification') && notification.type === 'system') ||
+                (activeTab === t('latest_events') && notification.type === 'deposit') ||
+                (activeTab === t('announcement') && notification.type === 'announcement') ||
+                (activeTab === t('rewards') && notification.type === 'rewards')
+              )
+              .map((notification: any) => (
+                <Card 
+                  key={notification._id} 
+                  className={`border-[#2a2a50] p-3 ${notification.isRead ? 'bg-[#1a1a40]' : 'bg-[#1a1a40]'}`}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="text-white font-medium text-xs">{notification.title}</h3>
+                    <div className="flex items-center space-x-1">
+                      {!notification.isRead && (
+                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                      )}
+                      <span className="text-[10px] text-gray-500">
+                        {new Date(notification.createdAt).toLocaleDateString('en-US', {
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-[10px] mb-1 whitespace-pre-line leading-relaxed">
+                    {notification.message}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 text-[9px] capitalize">
+                      {notification.type === 'deposit' ? 'System Notification' : notification.type}
+                    </span>
+                    {notification.type === 'deposit' && notification.data && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            markAsReadMutation.mutate(notification._id);
+                          }
+                          // Navigate to asset history
+                          window.location.hash = '#/mobile/assets-history';
+                        }}
+                      >
+                        View More →
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               ))}
-            </div>
-          ) : notificationData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="w-12 h-12 bg-[#1a1a40] rounded-full flex items-center justify-center mb-3">
-                <CheckCheck className="w-6 h-6 text-gray-500" />
-              </div>
-              <p className="text-gray-400 text-center text-sm">No notifications yet</p>
-              <p className="text-gray-500 text-xs text-center mt-1">
-                You'll see important updates here
-              </p>
-            </div>
-          ) : (
-            <div className="px-4 space-y-2 pb-4">
-              {notificationData
-                .filter((notification: any) => 
-                  activeTab === 'All' || 
-                  notification.type === activeTab.toLowerCase() ||
-                  (activeTab === t('system_notification') && notification.type === 'system') ||
-                  (activeTab === t('latest_events') && notification.type === 'deposit') ||
-                  (activeTab === t('announcement') && notification.type === 'announcement') ||
-                  (activeTab === t('rewards') && notification.type === 'rewards')
-                )
-                .map((notification: any) => (
-                  <Card 
-                    key={notification._id} 
-                    className={`border-[#2a2a50] p-3 ${notification.isRead ? 'bg-[#1a1a40]' : 'bg-[#1a1a40]'}`}
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="text-white font-medium text-xs">{notification.title}</h3>
-                      <div className="flex items-center space-x-1">
-                        {!notification.isRead && (
-                          <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                        )}
-                        <span className="text-[10px] text-gray-500">
-                          {new Date(notification.createdAt).toLocaleDateString('en-US', {
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-gray-400 text-[10px] mb-1 whitespace-pre-line leading-relaxed">
-                      {notification.message}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-[9px] capitalize">
-                        {notification.type === 'deposit' ? 'System Notification' : notification.type}
-                      </span>
-                      {notification.type === 'deposit' && notification.data && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
-                          onClick={() => {
-                            if (!notification.isRead) {
-                              markAsReadMutation.mutate(notification._id);
-                            }
-                            // Navigate to asset history
-                            window.location.hash = '#/mobile/assets-history';
-                          }}
-                        >
-                          View More →
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-            </div>
-          )}
-        </div>
-      </PullToRefresh>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
