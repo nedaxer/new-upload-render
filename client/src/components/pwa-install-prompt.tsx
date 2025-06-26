@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Download, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -16,23 +17,39 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    
     // Check if app is already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
-    setIsInstalled(isStandalone || isInWebAppiOS);
+    const isInstallApp = isStandalone || isInWebAppiOS;
+    setIsInstalled(isInstallApp);
+
+    // Check if user has permanently dismissed the install prompt
+    const hasBeenInstalled = localStorage.getItem('pwa-installed') === 'true';
+    
+    if (!isInstallApp && !hasBeenInstalled) {
+      // Show prompt on every browser refresh until installed
+      setShowPrompt(true);
+    }
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowPrompt(true);
+      if (!hasBeenInstalled && !isInstallApp) {
+        setShowPrompt(true);
+      }
     };
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setShowPrompt(false);
       setDeferredPrompt(null);
+      // Mark as permanently installed
+      localStorage.setItem('pwa-installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -53,6 +70,8 @@ export function PWAInstallPrompt() {
       
       if (outcome === 'accepted') {
         console.log('User accepted the PWA install prompt');
+        localStorage.setItem('pwa-installed', 'true');
+        setIsInstalled(true);
       } else {
         console.log('User dismissed the PWA install prompt');
       }
@@ -66,17 +85,21 @@ export function PWAInstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    // Don't show again for this session
-    sessionStorage.setItem('pwa-install-dismissed', 'true');
+    // Only hide for this session, will show again on refresh
+    sessionStorage.setItem('pwa-install-dismissed-session', 'true');
   };
 
-  // Don't show if already installed or dismissed this session
-  if (isInstalled || !showPrompt || sessionStorage.getItem('pwa-install-dismissed')) {
+  // Don't show if already installed or dismissed this session only
+  if (isInstalled || !showPrompt || !mounted || sessionStorage.getItem('pwa-install-dismissed-session')) {
     return null;
   }
 
-  return (
-    <Card className="fixed bottom-4 left-4 right-4 z-[10003] bg-gray-900 border-gray-700 text-white">
+  return createPortal(
+    <Card 
+      className="fixed bottom-4 left-4 right-4 bg-gray-900 border-gray-700 text-white"
+      style={{ zIndex: 999999999 }}
+      data-component="pwa-install"
+    >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -105,6 +128,7 @@ export function PWAInstallPrompt() {
           </Button>
         </div>
       </div>
-    </Card>
+    </Card>,
+    document.body
   );
 }

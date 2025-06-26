@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { OptimizedImage } from './optimized-image';
 import './pull-to-refresh-styles.css';
 
 // Add haptic feedback utility
@@ -208,9 +209,10 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                   height: '100%'
                 }}
               >
-                <img
+                <OptimizedImage
                   src={refreshLogo}
                   alt="Refresh Logo"
+                  priority={true}
                   className="object-contain drop-shadow-2xl"
                   style={{
                     height: 'calc(100% - 10px)',
@@ -259,10 +261,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               >
                 <div className="flex items-center space-x-1">
                   {letters.map((letter, index) => (
-                    <motion.img
+                    <motion.div
                       key={`header-${index}`}
-                      src={letter}
-                      alt={`Letter ${index + 1}`}
                       className="h-4 w-auto flex-shrink-0 drop-shadow-lg"
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ 
@@ -282,7 +282,14 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                           ease: "easeInOut"
                         }
                       }}
-                    />
+                    >
+                      <OptimizedImage
+                        src={letter}
+                        alt={`Letter ${index + 1}`}
+                        className="h-4 w-auto"
+                        priority={true}
+                      />
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>

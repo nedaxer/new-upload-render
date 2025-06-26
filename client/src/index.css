@@ -314,6 +314,20 @@
     z-index: 999999999 !important;
   }
 
+  /* PWA Install Prompt CSS rules with maximum priority */
+  [data-component="pwa-install"] {
+    z-index: 999999999 !important;
+    position: fixed !important;
+    bottom: 16px !important;
+    left: 16px !important;
+    right: 16px !important;
+  }
+
+  /* Override any other z-index rules for install prompt */
+  .fixed[data-component="pwa-install"] {
+    z-index: 999999999 !important;
+  }
+
   /* Make sure bottom navigation stays below modals */
   [data-navigation="bottom"] {
     z-index: 50 !important;

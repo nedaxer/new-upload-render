@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { BottomNavigation } from './bottom-navigation';
+import { PWAInstallPrompt } from './pwa-install-prompt';
 import { useTheme } from '@/contexts/theme-context';
 
 interface MobileLayoutProps {
@@ -29,6 +30,7 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
         {children}
       </div>
       {!shouldHideBottomNav && <BottomNavigation />}
+      <PWAInstallPrompt />
     </div>
   );
 }
