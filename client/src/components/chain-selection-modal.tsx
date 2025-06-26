@@ -101,7 +101,7 @@ export function ChainSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10013]">
+    <div className="fixed inset-0 z-[2200]">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       

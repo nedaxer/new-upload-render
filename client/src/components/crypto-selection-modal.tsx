@@ -55,7 +55,7 @@ export function CryptoSelectionModal({ isOpen, onClose, onSelectCrypto }: Crypto
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10012]">
+    <div className="fixed inset-0 z-[2100]">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       

@@ -66,17 +66,16 @@ export function PWAInstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    // Don't show again for this session
-    sessionStorage.setItem('pwa-install-dismissed', 'true');
+    // Only hide until next page refresh/reload
   };
 
-  // Don't show if already installed or dismissed this session
-  if (isInstalled || !showPrompt || sessionStorage.getItem('pwa-install-dismissed')) {
+  // Only show if not installed and browser supports PWA installation
+  if (isInstalled || !showPrompt) {
     return null;
   }
 
   return (
-    <Card className="fixed bottom-4 left-4 right-4 z-[10020] bg-gray-900 border-gray-700 text-white">
+    <Card className="fixed bottom-4 left-4 right-4 z-[9999] bg-gray-900 border-gray-700 text-white">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
