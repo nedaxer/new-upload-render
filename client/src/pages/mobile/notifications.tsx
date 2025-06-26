@@ -14,10 +14,10 @@ export default function MobileNotifications() {
 
   // Fetch notifications
   const { data: notificationsResponse, isLoading } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['/api/notifications'],
   });
 
-  const notifications = notificationsResponse || [];
+  const notifications = notificationsResponse?.data || [];
   const notificationData = Array.isArray(notifications) ? notifications : [];
 
   // Mark notification as read mutation
@@ -100,11 +100,11 @@ export default function MobileNotifications() {
             )
             .map((notification: any) => (
               <Card 
-                key={notification.id} 
+                key={notification._id} 
                 className={`border-blue-700 p-4 cursor-pointer hover:bg-blue-900 transition-colors ${
-                  notification.read ? 'bg-blue-950' : 'bg-blue-900'
+                  notification.isRead ? 'bg-blue-950' : 'bg-blue-900'
                 }`}
-                onClick={() => !notification.read && markAsReadMutation.mutate(notification.id.toString())}
+                onClick={() => !notification.isRead && markAsReadMutation.mutate(notification._id.toString())}
               >
                 {notification.type === 'deposit' ? (
                   // Deposit Notification Design
@@ -112,11 +112,11 @@ export default function MobileNotifications() {
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-white font-semibold text-base">Deposit Confirmed</h3>
                       <div className="flex items-center space-x-2">
-                        {!notification.read && (
+                        {!notification.isRead && (
                           <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                         )}
                         <span className="text-xs text-gray-500">
-                          {new Date(notification.timestamp).toLocaleDateString('en-GB', {
+                          {new Date(notification.createdAt).toLocaleDateString('en-GB', {
                             month: '2-digit',
                             day: '2-digit',
                             hour: '2-digit',
@@ -133,14 +133,14 @@ export default function MobileNotifications() {
                         <>
                           <p>Deposit amount: {notification.data.cryptoAmount} {notification.data.cryptoSymbol}</p>
                           <p className="break-all">Deposit address: {notification.data.senderAddress}</p>
-                          <p>Timestamp: {new Date(notification.timestamp).toISOString().replace('T', ' ').substring(0, 19)}(UTC)</p>
+                          <p>Timestamp: {new Date(notification.createdAt).toISOString().replace('T', ' ').substring(0, 19)}(UTC)</p>
                         </>
                       )}
                     </div>
                     
                     <div className="flex justify-between items-center">
                       <span className="text-xs text-gray-500">
-                        {new Date(notification.timestamp).toLocaleDateString('en-GB', {
+                        {new Date(notification.createdAt).toLocaleDateString('en-GB', {
                           month: '2-digit',
                           day: '2-digit',
                           hour: '2-digit',
@@ -159,15 +159,15 @@ export default function MobileNotifications() {
                   // Regular Notification Design
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-300' : 'text-white'}`}>
+                      <h3 className={`font-medium text-sm ${notification.isRead ? 'text-gray-300' : 'text-white'}`}>
                         {notification.title}
                       </h3>
                       <div className="flex items-center space-x-2">
-                        {!notification.read && (
+                        {!notification.isRead && (
                           <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                         )}
                         <span className="text-xs text-gray-500">
-                          {new Date(notification.timestamp).toLocaleDateString()}
+                          {new Date(notification.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

@@ -108,7 +108,13 @@ export class MongoStorage implements IMongoStorage {
     try {
       console.log('MongoStorage: getUserByUsername called with:', username);
       console.log('User model available:', !!User);
-      const result = await User.findOne({ username });
+      
+      // Try to find by username first, then by email
+      let result = await User.findOne({ username });
+      if (!result) {
+        result = await User.findOne({ email: username });
+      }
+      
       console.log('MongoStorage: getUserByUsername result:', result ? 'FOUND' : 'NOT FOUND');
       return result;
     } catch (error) {
