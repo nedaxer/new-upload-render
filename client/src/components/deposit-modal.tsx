@@ -1,4 +1,6 @@
 import { X, CreditCard, ArrowDownUp, Wallet } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -7,9 +9,15 @@ interface DepositModalProps {
 }
 
 export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
   
-  return (
+  return createPortal(
     <div 
       className="deposit-modal-overlay fixed inset-0" 
       style={{ 
@@ -106,6 +114,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
