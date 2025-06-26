@@ -245,9 +245,52 @@ export default function MobileHome() {
     }
   };
 
-  // Get currency symbol - now returns only currency code
+  // Get currency symbol
   const getCurrencySymbol = (currency: string): string => {
-    return currency;
+    const symbols: { [key: string]: string } = {
+      'USD': '$',
+      'EUR': '€',
+      'GBP': '£',
+      'JPY': '¥',
+      'CNY': '¥',
+      'INR': '₹',
+      'KRW': '₩',
+      'RUB': '₽',
+      'BRL': 'R$',
+      'CAD': 'C$',
+      'AUD': 'A$',
+      'CHF': 'CHF',
+      'SEK': 'kr',
+      'NOK': 'kr',
+      'DKK': 'kr',
+      'PLN': 'zł',
+      'CZK': 'Kč',
+      'HUF': 'Ft',
+      'TRY': '₺',
+      'ZAR': 'R',
+      'EGP': 'E£',
+      'NGN': '₦',
+      'KES': 'KSh',
+      'AED': 'د.إ',
+      'SAR': 'ر.س',
+      'QAR': 'ر.ق',
+      'KWD': 'د.ك',
+      'BHD': '.د.ب',
+      'OMR': 'ر.ع.',
+      'ILS': '₪',
+      'PKR': '₨',
+      'BDT': '৳',
+      'VND': '₫',
+      'THB': '฿',
+      'MYR': 'RM',
+      'SGD': 'S$',
+      'IDR': 'Rp',
+      'PHP': '₱',
+      'TWD': 'NT$',
+      'HKD': 'HK$',
+      'NZD': 'NZ$'
+    };
+    return symbols[currency] || currency;
   };
 
   // Fetch notification count
