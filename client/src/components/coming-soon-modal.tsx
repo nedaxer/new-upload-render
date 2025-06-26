@@ -12,8 +12,8 @@ export function ComingSoonModal({ isOpen, onClose, feature }: ComingSoonModalPro
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-      <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#0a0a2e] border border-[#1a1a40] text-white rounded-2xl z-50 max-w-sm mx-auto p-6">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10015]" />
+      <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#0a0a2e] border border-[#1a1a40] text-white rounded-2xl z-[10015] max-w-sm mx-auto p-6">
         <div className="flex items-center justify-center mb-4">
           <h2 className="text-lg font-semibold text-white">Coming Soon</h2>
         </div>

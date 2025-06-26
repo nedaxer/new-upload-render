@@ -101,12 +101,12 @@ export function ChainSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-[10013]">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       
       {/* Modal Content */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl z-50 max-h-[80vh] overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl z-[10013] max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <button onClick={onBack} className="text-gray-400 hover:text-white">
