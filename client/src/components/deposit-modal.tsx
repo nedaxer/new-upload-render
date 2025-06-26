@@ -13,7 +13,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
     <div 
       className="fixed inset-0" 
       style={{ 
-        zIndex: 999999,
+        zIndex: 9999999,
         position: 'fixed',
         top: 0,
         left: 0,
@@ -26,7 +26,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
       <div 
         className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
         style={{
-          zIndex: 999999,
+          zIndex: 9999999,
           position: 'fixed',
           bottom: 0,
           left: 0,

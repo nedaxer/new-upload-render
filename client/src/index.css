@@ -249,12 +249,12 @@
   
   /* Ensure modals always appear above navigation with maximum priority */
   [data-modal="deposit"] {
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     position: fixed !important;
   }
   
   [data-modal="deposit"] > div:last-child {
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
     position: fixed !important;
   }
   
@@ -269,6 +269,12 @@
   
   /* Override any other z-index rules that might interfere */
   .fixed[data-modal="deposit"] {
-    z-index: 999999 !important;
+    z-index: 9999999 !important;
+  }
+  
+  /* Ensure all deposit modal elements have maximum z-index */
+  [data-modal="deposit"] * {
+    position: relative !important;
+    z-index: inherit !important;
   }
 }
