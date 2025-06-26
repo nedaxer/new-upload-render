@@ -225,7 +225,8 @@ export default function MobileAssets() {
   };
 
   const handleDepositClick = () => {
-    setDepositModalOpen(true);
+    // Navigate to new deposit page instead of opening modal
+    window.location.href = '/mobile/deposit';
   };
 
   const handlePaymentMethodSelect = (method: string) => {

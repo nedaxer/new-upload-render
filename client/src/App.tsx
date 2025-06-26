@@ -108,6 +108,10 @@ import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
 import AssetsHistory from '@/pages/mobile/assets-history';
 import DepositDetails from '@/pages/mobile/deposit-details';
+import MobileDeposit from '@/pages/mobile/deposit';
+import MobileDepositCrypto from '@/pages/mobile/deposit-crypto';
+import MobileDepositNetwork from '@/pages/mobile/deposit-network';
+import MobileDepositAddress from '@/pages/mobile/deposit-address';
 
 
 // Other Pages
@@ -404,6 +408,12 @@ export default function App() {
                 </MobileAppLoader>
               )}
             </Route>
+
+            {/* Deposit Flow Routes - No bottom navigation needed */}
+            <Route path="/mobile/deposit" component={MobileDeposit} />
+            <Route path="/mobile/deposit/crypto" component={MobileDepositCrypto} />
+            <Route path="/mobile/deposit/network" component={MobileDepositNetwork} />
+            <Route path="/mobile/deposit/address" component={MobileDepositAddress} />
 
 
             {/* Admin Portal Route */}
