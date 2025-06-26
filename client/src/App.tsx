@@ -252,8 +252,14 @@ export default function App() {
             <Route path="/deposit">{() => <Redirect to="/mobile" />}</Route>
             <Route path="/withdraw">{() => <Redirect to="/mobile" />}</Route>
 
-            {/* Mobile App Routes */}
-            <Route path="/mobile" component={MobileHome} />
+            {/* Mobile App Routes - Wrapped with preloader */}
+            <Route path="/mobile">
+              {() => (
+                <MobileAppLoader>
+                  <MobileHome />
+                </MobileAppLoader>
+              )}
+            </Route>
             <Route path="/mobile/assets">
               {() => (
                 <MobileAppLoader>
