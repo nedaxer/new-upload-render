@@ -99,8 +99,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       setIsRefreshing(true);
       setIsReturning(true);
       
-      // Show Nedaxer header immediately
-      setShowNedaxerHeader(true);
+      // Skip Nedaxer header - setShowNedaxerHeader(true);
       
       try {
         await onRefresh();
@@ -110,9 +109,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         console.error('Refresh failed:', error);
       } finally {
         setIsRefreshing(false);
-        // Hide Nedaxer header after refresh completes
+        // Skip header hiding since we don't show it anymore
         setTimeout(() => {
-          setShowNedaxerHeader(false);
           setIsReturning(false);
         }, 500);
       }
@@ -199,27 +197,10 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             }}
           />
           
-          {/* Logo mounted on background without animations */}
+          {/* Simple loading indicator instead of logo */}
           {pullDistance > LOGO_START_THRESHOLD && (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div 
-                className="flex items-center justify-center w-full relative"
-                style={{
-                  height: '100%'
-                }}
-              >
-                <img
-                  src={refreshLogo}
-                  alt="Refresh Logo"
-                  className="object-contain drop-shadow-2xl"
-                  style={{
-                    height: 'calc(100% - 10px)',
-                    width: 'auto',
-                    maxWidth: 'calc(100% - 10px)',
-                    filter: 'brightness(1.2) contrast(1.15) drop-shadow(0 12px 36px rgba(0,0,0,0.4))'
-                  }}
-                />
-              </div>
+              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
         </div>
