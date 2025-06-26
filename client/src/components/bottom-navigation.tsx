@@ -58,7 +58,7 @@ export function BottomNavigation() {
   return (
     <div 
       className={`fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t ${getBorderClass()} px-1 py-1`} 
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 50 }}
       data-navigation="bottom"
     >
       <div className="flex justify-around items-center">
