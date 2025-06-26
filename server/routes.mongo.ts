@@ -34,6 +34,12 @@ function generateVerificationCode(): string {
 }
 
 const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+  console.log('🔐 Auth check:', { 
+    hasSession: !!req.session, 
+    userId: req.session?.userId,
+    sessionId: req.sessionID 
+  });
+  
   if (!req.session?.userId) {
     return res.status(401).json({ success: false, message: "Not authenticated" });
   }
@@ -1568,22 +1574,27 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
-  // Get user notifications (filtered by authenticated user)
-  app.get('/api/notifications', requireAuth, async (req: Request, res: Response) => {
+  // Get user notifications (with flexible authentication)
+  app.get('/api/notifications', async (req: Request, res: Response) => {
     try {
-      const userId = req.session.userId!;
-      const { getMongoClient } = await import('./mongodb');
-      const client = await getMongoClient();
-      const db = client.db('nedaxer');
+      console.log('🔐 Notification auth check:', { 
+        hasSession: !!req.session, 
+        userId: req.session?.userId,
+        sessionId: req.sessionID 
+      });
       
-      // Get notifications only for the authenticated user
-      const notifications = await db.collection('notifications')
-        .find({ userId: userId })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray();
+      // Check for user session
+      if (!req.session?.userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
       
-      console.log(`Notifications API called for user ${userId}, found:`, notifications.length);
+      const userId = req.session.userId;
+      console.log(`🔔 Notifications API called for user ${userId}`);
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      const notifications = await mongoStorage.getUserNotifications(userId);
+      
+      console.log(`📝 Found ${notifications.length} notifications for user ${userId}`);
       
       res.json({ success: true, data: notifications });
     } catch (error) {
