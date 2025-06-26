@@ -1393,7 +1393,7 @@ Deposit amount: ${cryptoAmount.toFixed(8)} ${cryptoSymbol}
 Deposit address: ${senderAddress}
 Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
 
-      await mongoStorage.createNotification({
+      const notification = await mongoStorage.createNotification({
         userId,
         type: 'deposit',
         title: 'Deposit Confirmed',
@@ -1408,6 +1408,31 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
           networkName
         }
       });
+
+      // Broadcast real-time update via WebSocket
+      const wss = (req.app as any).get('wss');
+      if (wss) {
+        const updateData = {
+          type: 'DEPOSIT_CREATED',
+          userId,
+          notification,
+          transaction,
+          balanceUpdate: {
+            userId,
+            newUSDBalance: usdAmount,
+            addedAmount: usdAmount
+          }
+        };
+        
+        // Broadcast to all connected WebSocket clients
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify(updateData));
+          }
+        });
+        
+        console.log(`📡 Real-time update broadcasted for user ${userId}: +$${usdAmount}`);
+      }
 
       res.json({ 
         success: true, 
@@ -1512,5 +1537,30 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
   app.use('/api/chatbot', chatbotRoutes);
 
   const httpServer = createServer(app);
+  
+  // WebSocket server for real-time updates
+  const { WebSocketServer, WebSocket } = await import('ws');
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('WebSocket message received:', data);
+      } catch (error) {
+        console.error('Invalid WebSocket message:', error);
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+  });
+  
+  // Store WebSocket server for broadcasting updates
+  app.set('wss', wss);
+  
   return httpServer;
 }
