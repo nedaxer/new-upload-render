@@ -410,7 +410,7 @@ export default function MobileAssets() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                user ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(getUserUSDBalance())}` : `${getCurrencySymbol(selectedCurrency)}0.00`
+                user ? `${getCurrencySymbol(selectedCurrency)}${parseFloat(convertToSelectedCurrency(getUserUSDBalance())).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
               ) : '****'}
             </span>
             <button 
@@ -624,7 +624,7 @@ export default function MobileAssets() {
               {/* Center content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 animate-[fadeIn_1s_ease-out_4s_forwards]">
                 <div className="text-xl font-bold text-white">
-                  {showBalance ? getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.51) : '****'}
+                  {showBalance ? getCurrencySymbol(selectedCurrency) + parseFloat(convertToSelectedCurrency(0.51)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '****'}
                 </div>
                 <div className="text-xs text-gray-400">Total Value</div>
               </div>
@@ -735,7 +735,7 @@ export default function MobileAssets() {
           <div className="bg-blue-900 rounded-lg p-4">
             <div className="text-gray-400 text-xs mb-1">Total Profit</div>
             <div className="text-orange-500 text-lg font-bold">
-              {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.12) : '+***'}
+              {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + parseFloat(convertToSelectedCurrency(0.12)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '+***'}
             </div>
           </div>
         </div>
