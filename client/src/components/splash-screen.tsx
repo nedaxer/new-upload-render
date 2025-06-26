@@ -169,7 +169,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <motion.img
                   src={letter.src}
                   alt={letter.alt}
-                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain letter-shine"
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain letter-shine"
                 />
                 
                 {/* Clone letter positioned exactly over original */}
@@ -195,7 +195,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                       <motion.img
                         src={letter.src}
                         alt={`${letter.alt}-clone`}
-                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain"
+                        className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain"
                         animate={{
                           filter: [
                             'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
@@ -231,7 +231,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <motion.img
                   src={nedaxerLogo}
                   alt="NEDAXER"
-                  className="w-80 h-32 object-contain"
+                  className="w-40 h-16 object-contain"
                 />
               </motion.div>
             )}
@@ -252,94 +252,6 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             />
           </motion.div>
 
-          {/* Enhanced title card for 4-second animation */}
-          <motion.div
-            className="absolute bottom-16 sm:bottom-20 text-center z-20 px-4 max-w-full"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2, duration: 0.6, ease: "easeOut" }}
-          >
-            <motion.h1 
-              className="text-white text-lg sm:text-xl md:text-2xl font-bold tracking-wider mb-3"
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(255,165,0,0.5)',
-                  '0 0 20px rgba(255,165,0,0.8)',
-                  '0 0 10px rgba(255,165,0,0.5)',
-                ],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              NEDAXER
-            </motion.h1>
-            
-            <motion.div
-              className="w-32 h-px bg-gradient-to-r from-transparent via-orange-400 to-transparent mx-auto"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 2.5, duration: 0.8 }}
-            />
-            
-            <motion.p
-              className="text-orange-300 text-sm font-light tracking-wide mt-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 3, duration: 0.5 }}
-            >
-              Cryptocurrency Trading Platform
-            </motion.p>
-            
-            {/* Simplified loading indicator */}
-            <motion.div
-              className="flex justify-center space-x-1 mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 3.2, duration: 0.4 }}
-            >
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-1 bg-orange-400 rounded-full"
-                  initial={{ height: 4 }}
-                  animate={{
-                    height: [4, 20, 4],
-                    opacity: [0.3, 1, 0.3],
-                  }}
-                  transition={{
-                    delay: i * 0.15,
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Progress bar for 4-second animation */}
-          <motion.div
-            className="absolute bottom-8 left-8 right-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.3 }}
-          >
-            <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-orange-400 to-orange-200 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{
-                  delay: 1.5,
-                  duration: 2.5,
-                  ease: "easeOut",
-                }}
-              />
-            </div>
-          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
