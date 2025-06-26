@@ -13,6 +13,14 @@ import { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEm
 import { imageOptimizer } from "./image-optimizer";
 import { exchangeRateService } from "./exchange-rate-service";
 import { getNewsSourceLogo } from "./logo-service";
+
+// Extend Express Session interface
+declare module 'express-session' {
+  interface SessionData {
+    adminAuthenticated?: boolean;
+    adminId?: string;
+  }
+}
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
 import compression from "compression";
@@ -784,6 +792,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Set admin session
         req.session.userId = 'ADMIN001';
+        req.session.adminAuthenticated = true;
+        
+        // Force session save
+        req.session.save((err) => {
+          if (err) console.error('Session save error:', err);
+        });
         
         const adminUser = {
           _id: 'ADMIN001',

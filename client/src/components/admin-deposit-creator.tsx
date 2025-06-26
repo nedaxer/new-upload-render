@@ -57,13 +57,7 @@ const cryptocurrencies: Crypto[] = [
   },
 ];
 
-// Sample crypto prices (in production, these would come from an API)
-const cryptoPrices: Record<string, number> = {
-  'USDT': 1.00,
-  'BTC': 43500.00,
-  'ETH': 2650.00,
-  'BNB': 315.00,
-};
+
 
 interface AdminDepositCreatorProps {
   userId: string;

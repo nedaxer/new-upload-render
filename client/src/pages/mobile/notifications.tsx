@@ -15,17 +15,15 @@ export default function MobileNotifications() {
   // Fetch notifications
   const { data: notificationsResponse, isLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => apiRequest('/api/notifications'),
   });
 
-  const notifications = notificationsResponse?.data || [];
+  const notifications = notificationsResponse || [];
+  const notificationData = Array.isArray(notifications) ? notifications : [];
 
   // Mark notification as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: (notificationId: string) => 
-      apiRequest(`/api/notifications/${notificationId}/read`, {
-        method: 'PUT'
-      }),
+      apiRequest('PUT', `/api/notifications/${notificationId}/read`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
@@ -40,8 +38,8 @@ export default function MobileNotifications() {
   ];
 
   const handleReadAll = async () => {
-    if (notifications?.data) {
-      const unreadNotifications = notifications.data.filter((n: any) => !n.read);
+    if (notificationData && Array.isArray(notificationData)) {
+      const unreadNotifications = notificationData.filter((n: any) => !n.read);
       for (const notification of unreadNotifications) {
         markAsReadMutation.mutate(notification.id.toString());
       }
@@ -93,9 +91,9 @@ export default function MobileNotifications() {
             <p className="text-gray-400">Loading notifications...</p>
           </div>
         </div>
-      ) : notifications?.data && notifications.data.length > 0 ? (
+      ) : notificationData && notificationData.length > 0 ? (
         <div className="px-4 space-y-3">
-          {notifications.data
+          {notificationData
             .filter((notification: any) => 
               activeTab === 'All' || 
               notification.type === activeTab.toLowerCase().replace(' notification', '').replace(' events', '').replace('latest ', '')
@@ -108,30 +106,84 @@ export default function MobileNotifications() {
                 }`}
                 onClick={() => !notification.read && markAsReadMutation.mutate(notification.id.toString())}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-300' : 'text-white'}`}>
-                    {notification.title}
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    {!notification.read && (
-                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    )}
-                    <span className="text-xs text-gray-500">
-                      {new Date(notification.timestamp).toLocaleDateString()}
-                    </span>
+                {notification.type === 'deposit' ? (
+                  // Deposit Notification Design
+                  <div>
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-white font-semibold text-base">Deposit Confirmed</h3>
+                      <div className="flex items-center space-x-2">
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        )}
+                        <span className="text-xs text-gray-500">
+                          {new Date(notification.timestamp).toLocaleDateString('en-GB', {
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1 text-sm text-gray-300 mb-3">
+                      <p>Dear valued Nedaxer trader,</p>
+                      <p>Your deposit has been confirmed.</p>
+                      {notification.data && (
+                        <>
+                          <p>Deposit amount: {notification.data.cryptoAmount} {notification.data.cryptoSymbol}</p>
+                          <p className="break-all">Deposit address: {notification.data.senderAddress}</p>
+                          <p>Timestamp: {new Date(notification.timestamp).toISOString().replace('T', ' ').substring(0, 19)}(UTC)</p>
+                        </>
+                      )}
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">
+                        {new Date(notification.timestamp).toLocaleDateString('en-GB', {
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                      <Link 
+                        href={notification.data?.transactionId ? `/mobile/deposit-details/${notification.data.transactionId}` : '#'}
+                        className="text-orange-500 text-xs flex items-center"
+                      >
+                        View More →
+                      </Link>
+                    </div>
                   </div>
-                </div>
-                <p className="text-gray-400 text-xs mb-2">
-                  {notification.message}
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-xs capitalize">
-                    {notification.type} Notification
-                  </span>
-                  <Button variant="ghost" size="sm" className="text-orange-500 text-xs p-0 h-auto">
-                    View More →
-                  </Button>
-                </div>
+                ) : (
+                  // Regular Notification Design
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className={`font-medium text-sm ${notification.read ? 'text-gray-300' : 'text-white'}`}>
+                        {notification.title}
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        )}
+                        <span className="text-xs text-gray-500">
+                          {new Date(notification.timestamp).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-xs mb-2">
+                      {notification.message}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-xs capitalize">
+                        {notification.type} Notification
+                      </span>
+                      <Button variant="ghost" size="sm" className="text-orange-500 text-xs p-0 h-auto">
+                        View More →
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Card>
             ))}
         </div>
@@ -162,7 +214,7 @@ export default function MobileNotifications() {
             </Card>
           ))}
         </div>
-      ) : notifications.length === 0 ? (
+      ) : notificationData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 px-4">
           <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
             <CheckCheck className="w-8 h-8 text-gray-500" />
@@ -174,7 +226,7 @@ export default function MobileNotifications() {
         </div>
       ) : (
         <div className="px-4 space-y-3">
-          {notifications
+          {notificationData
             .filter((notification: any) => 
               activeTab === 'All' || 
               notification.type === activeTab.toLowerCase() ||
