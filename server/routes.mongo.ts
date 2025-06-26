@@ -14,23 +14,18 @@ import { imageOptimizer } from "./image-optimizer";
 import { exchangeRateService } from "./exchange-rate-service";
 import { getNewsSourceLogo } from "./logo-service";
 
-// Extend Express Session interface
-declare module 'express-session' {
-  interface SessionData {
-    adminAuthenticated?: boolean;
-    adminId?: string;
-  }
-}
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
 import compression from "compression";
 import serveStatic from "serve-static";
 import Parser from 'rss-parser';
 
-// Extend express-session types to include userId
+// Extend express-session types
 declare module "express-session" {
   interface SessionData {
     userId: string;
+    adminAuthenticated?: boolean;
+    adminId?: string;
   }
 }
 
