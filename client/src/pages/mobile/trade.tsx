@@ -1471,7 +1471,7 @@ export default function MobileTrade() {
 
       {/* Cryptocurrency Pair Selector Modal */}
       {showPairSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[80000] p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-semibold">Select Trading Pair</h3>
@@ -1517,7 +1517,7 @@ export default function MobileTrade() {
 
       {/* Buy Modal */}
       {showBuyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70000] p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-semibold text-green-600">Buy {selectedPair.symbol}/USDT</h3>
@@ -1559,7 +1559,7 @@ export default function MobileTrade() {
 
       {/* Sell Modal */}
       {showSellModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[75000] p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-semibold text-red-600">Sell {selectedPair.symbol}/USDT</h3>

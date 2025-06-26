@@ -9,7 +9,6 @@ import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { PullToRefresh } from '@/components/pull-to-refresh';
-import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { 
   Search, 
   Bell, 
@@ -302,8 +301,7 @@ export default function MobileHome() {
   });
 
   const handleDepositClick = () => {
-    // Navigate to new deposit page instead of opening modal
-    window.location.href = '/mobile/deposit';
+    setDepositModalOpen(true);
   };
 
   const handlePaymentMethodSelect = (method: string) => {
@@ -900,9 +898,6 @@ export default function MobileHome() {
           onClose={() => setComingSoonOpen(false)}
           feature={comingSoonFeature}
         />
-
-      {/* PWA Install Prompt */}
-      <PWAInstallPrompt />
       </PullToRefresh>
     </MobileLayout>
   );

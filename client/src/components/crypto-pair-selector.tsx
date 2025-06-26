@@ -148,7 +148,7 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[85000] flex items-end">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
       <div className="bg-gray-900 w-full h-[80vh] rounded-t-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
