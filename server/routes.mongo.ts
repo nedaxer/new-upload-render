@@ -1574,21 +1574,10 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
-  // Get user notifications (with flexible authentication)
-  app.get('/api/notifications', async (req: Request, res: Response) => {
+  // Get user notifications (requires authentication)
+  app.get('/api/notifications', requireAuth, async (req: Request, res: Response) => {
     try {
-      console.log('🔐 Notification auth check:', { 
-        hasSession: !!req.session, 
-        userId: req.session?.userId,
-        sessionId: req.sessionID 
-      });
-      
-      // Check for user session
-      if (!req.session?.userId) {
-        return res.status(401).json({ success: false, message: "Not authenticated" });
-      }
-      
-      const userId = req.session.userId;
+      const userId = req.session.userId!;
       console.log(`🔔 Notifications API called for user ${userId}`);
       
       const { mongoStorage } = await import('./mongoStorage');
@@ -1596,10 +1585,39 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       
       console.log(`📝 Found ${notifications.length} notifications for user ${userId}`);
       
-      res.json({ success: true, data: notifications });
+      // Count unread notifications
+      const unreadCount = notifications.filter(n => !n.isRead).length;
+      console.log(`📊 Unread notifications: ${unreadCount}`);
+      
+      res.json({ 
+        success: true, 
+        data: notifications,
+        unreadCount: unreadCount
+      });
     } catch (error) {
       console.error('Get notifications error:', error);
       res.status(500).json({ success: false, message: "Failed to get notifications" });
+    }
+  });
+
+  // Get unread notification count for home page badge
+  app.get('/api/notifications/unread-count', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      const notifications = await mongoStorage.getUserNotifications(userId);
+      const unreadCount = notifications.filter(n => !n.isRead).length;
+      
+      console.log(`📊 Unread count for user ${userId}: ${unreadCount}`);
+      
+      res.json({ 
+        success: true, 
+        unreadCount: unreadCount
+      });
+    } catch (error) {
+      console.error('Get unread count error:', error);
+      res.status(500).json({ success: false, message: "Failed to get unread count" });
     }
   });
 

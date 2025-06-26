@@ -40,13 +40,16 @@ export default function MobileNotifications() {
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('Real-time update received:', data);
+          console.log('Real-time notification update received:', data);
           
           if (data.type === 'DEPOSIT_CREATED') {
-            // Force immediate refresh of notifications and balance data
+            // Force immediate refresh of all notification-related data
             queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
             queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+            
+            console.log('Notification data refreshed due to deposit creation');
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);

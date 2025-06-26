@@ -134,6 +134,15 @@ export default function MobileHome() {
     retry: 1
   });
 
+  // Fetch unread notification count for badge
+  const { data: notificationCount } = useQuery({
+    queryKey: ['/api/notifications/unread-count'],
+    enabled: !!user,
+    refetchInterval: 10000, // Check every 10 seconds for real-time updates
+    staleTime: 5000,
+    retry: 1
+  });
+
   // Since MobileAppLoader handles initial loading, we can be more relaxed here
   const isLoadingCriticalData = false; // Handled by MobileAppLoader
 
@@ -456,6 +465,59 @@ export default function MobileHome() {
     }
   };
 
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    let socket: WebSocket;
+    
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected for real-time home page updates');
+        socket.send(JSON.stringify({ type: 'subscribe_notifications' }));
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Real-time home update received:', data);
+          
+          if (data.type === 'DEPOSIT_CREATED') {
+            // Update notification badge and balance data instantly
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+            
+            console.log('Home page data refreshed due to deposit creation');
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+        }
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket disconnected, attempting to reconnect...');
+        setTimeout(connectWebSocket, 3000);
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    };
+    
+    if (user) {
+      connectWebSocket();
+    }
+    
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [user, queryClient]);
+
   // Handle pull-to-refresh
   const handleRefresh = async () => {
     try {
@@ -464,7 +526,7 @@ export default function MobileHome() {
         queryClient.invalidateQueries({ queryKey: ['/api/crypto/realtime-prices'] }),
         queryClient.invalidateQueries({ queryKey: ['/api/balances'] }),
         queryClient.invalidateQueries({ queryKey: ['/api/favorites'] }),
-        queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] })
+        queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] })
       ]);
     } catch (error) {
       console.error('Refresh failed:', error);
@@ -619,10 +681,10 @@ export default function MobileHome() {
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
-              {notificationData?.data?.unreadCount > 0 && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">
-                    {notificationData.data.unreadCount > 9 ? '9+' : notificationData.data.unreadCount}
+              {notificationCount?.unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-bold">
+                    {notificationCount.unreadCount > 9 ? '9+' : notificationCount.unreadCount}
                   </span>
                 </div>
               )}
