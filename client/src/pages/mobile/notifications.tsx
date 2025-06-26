@@ -33,43 +33,60 @@ export default function MobileNotifications() {
 
   // WebSocket connection for real-time updates
   useEffect(() => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    const socket = new WebSocket(wsUrl);
+    let socket: WebSocket;
+    let reconnectTimeout: NodeJS.Timeout;
     
-    socket.onopen = () => {
-      console.log('WebSocket connected for real-time notifications');
-    };
-    
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('Real-time update received:', data);
-        
-        if (data.type === 'DEPOSIT_CREATED') {
-          // Automatically refresh notifications and balance data
-          queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected for real-time notifications');
+        // Send subscription message
+        socket.send(JSON.stringify({ type: 'subscribe_notifications' }));
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Real-time update received:', data);
           
-          console.log('Auto-refreshed notifications and balance due to new deposit');
+          if (data.type === 'DEPOSIT_CREATED') {
+            // Force immediate refresh of notifications and balance data
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+            
+            // Force refetch immediately
+            queryClient.refetchQueries({ queryKey: ['/api/notifications'] });
+            
+            console.log('🔄 Auto-refreshed notifications and balance due to new deposit');
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
         }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket disconnected, attempting to reconnect...');
+        // Reconnect after 3 seconds
+        reconnectTimeout = setTimeout(connectWebSocket, 3000);
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
     };
     
-    socket.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
-    
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    connectWebSocket();
     
     // Cleanup on component unmount
     return () => {
-      socket.close();
+      clearTimeout(reconnectTimeout);
+      if (socket) {
+        socket.close();
+      }
     };
   }, [queryClient]);
 
@@ -117,14 +134,14 @@ export default function MobileNotifications() {
         </div>
       </div>
 
-      {/* Notification Tabs */}
+      {/* Notification Tabs - Fixed Layout */}
       <div className="px-4 py-4">
-        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
-          {notificationTabs.map((tab) => (
+        <div className="grid grid-cols-3 gap-2">
+          {notificationTabs.slice(0, 6).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap pb-2 px-2 text-sm ${
+              className={`text-center pb-2 px-1 text-xs truncate ${
                 activeTab === tab
                   ? 'text-orange-500 border-b-2 border-orange-500'
                   : 'text-gray-400 hover:text-white'
@@ -141,30 +158,30 @@ export default function MobileNotifications() {
         onRefresh={handleRefresh}
         style={{ backgroundColor: '#0a0a2e' }}
       >
-        <div className="min-h-screen">
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
           {/* Notifications List */}
           {isLoading ? (
-            <div className="px-4 space-y-3">
+            <div className="px-4 space-y-2">
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-4 animate-pulse">
-                  <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-3 animate-pulse">
                   <div className="h-3 bg-gray-700 rounded mb-1"></div>
-                  <div className="h-3 bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-2 bg-gray-700 rounded mb-1"></div>
+                  <div className="h-2 bg-gray-700 rounded w-3/4"></div>
                 </Card>
               ))}
             </div>
           ) : notificationData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="w-16 h-16 bg-[#1a1a40] rounded-full flex items-center justify-center mb-4">
-                <CheckCheck className="w-8 h-8 text-gray-500" />
+              <div className="w-12 h-12 bg-[#1a1a40] rounded-full flex items-center justify-center mb-3">
+                <CheckCheck className="w-6 h-6 text-gray-500" />
               </div>
-              <p className="text-gray-400 text-center">No notifications yet</p>
-              <p className="text-gray-500 text-sm text-center mt-1">
+              <p className="text-gray-400 text-center text-sm">No notifications yet</p>
+              <p className="text-gray-500 text-xs text-center mt-1">
                 You'll see important updates here
               </p>
             </div>
           ) : (
-            <div className="px-4 space-y-3">
+            <div className="px-4 space-y-2 pb-4">
               {notificationData
                 .filter((notification: any) => 
                   activeTab === 'All' || 
@@ -177,15 +194,15 @@ export default function MobileNotifications() {
                 .map((notification: any) => (
                   <Card 
                     key={notification._id} 
-                    className={`border-[#2a2a50] p-4 ${notification.isRead ? 'bg-[#1a1a40]' : 'bg-[#1a1a40]'}`}
+                    className={`border-[#2a2a50] p-3 ${notification.isRead ? 'bg-[#1a1a40]' : 'bg-[#1a1a40]'}`}
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-white font-medium text-sm">{notification.title}</h3>
-                      <div className="flex items-center space-x-2">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="text-white font-medium text-xs">{notification.title}</h3>
+                      <div className="flex items-center space-x-1">
                         {!notification.isRead && (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                         )}
-                        <span className="text-xs text-gray-500">
+                        <span className="text-[10px] text-gray-500">
                           {new Date(notification.createdAt).toLocaleDateString('en-US', {
                             month: '2-digit',
                             day: '2-digit',
@@ -195,18 +212,18 @@ export default function MobileNotifications() {
                         </span>
                       </div>
                     </div>
-                    <p className="text-gray-400 text-xs mb-2 whitespace-pre-line">
+                    <p className="text-gray-400 text-[10px] mb-1 whitespace-pre-line leading-relaxed">
                       {notification.message}
                     </p>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-xs capitalize">
+                      <span className="text-gray-500 text-[9px] capitalize">
                         {notification.type === 'deposit' ? 'System Notification' : notification.type}
                       </span>
                       {notification.type === 'deposit' && notification.data && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="text-orange-500 text-xs p-0 h-auto hover:text-orange-400"
+                          className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
                           onClick={() => {
                             if (!notification.isRead) {
                               markAsReadMutation.mutate(notification._id);
