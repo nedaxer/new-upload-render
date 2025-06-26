@@ -1486,17 +1486,42 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
-  // Get user deposit transaction history (filtered by authenticated user)
+  // Get user deposit transaction history
   app.get('/api/deposits/history', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
+      console.log(`💰 Deposit history API called for user ${userId}`);
       
-      const { mongoStorage } = await import('./mongoStorage');
-      const transactions = await mongoStorage.getUserDepositTransactions(userId);
+      // Import the DepositTransaction model directly for better reliability
+      const { DepositTransaction } = await import('./models/DepositTransaction');
       
-      console.log(`Deposit history API called for user ${userId}, found:`, transactions.length, 'transactions');
+      // Query deposit transactions directly from MongoDB
+      const transactions = await DepositTransaction.find({ userId })
+        .sort({ createdAt: -1 })
+        .lean(); // Use lean() for better performance
       
-      res.json({ success: true, data: transactions });
+      console.log(`📝 Found ${transactions.length} deposit transactions for user ${userId}`);
+      
+      // Return the transactions with proper formatting
+      res.json({ 
+        success: true, 
+        data: transactions.map(tx => ({
+          _id: tx._id,
+          userId: tx.userId,
+          adminId: tx.adminId,
+          cryptoSymbol: tx.cryptoSymbol,
+          cryptoName: tx.cryptoName,
+          chainType: tx.chainType,
+          networkName: tx.networkName,
+          senderAddress: tx.senderAddress,
+          usdAmount: tx.usdAmount,
+          cryptoAmount: tx.cryptoAmount,
+          cryptoPrice: tx.cryptoPrice,
+          status: tx.status || 'confirmed',
+          createdAt: tx.createdAt,
+          updatedAt: tx.updatedAt
+        }))
+      });
     } catch (error) {
       console.error('Get deposit history error:', error);
       res.status(500).json({ success: false, message: "Failed to get deposit history" });
