@@ -586,7 +586,7 @@ export default function MobileHome() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-blue-950">
+        <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">

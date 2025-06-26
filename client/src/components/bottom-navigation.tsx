@@ -67,8 +67,8 @@ export function BottomNavigation() {
               <div 
                 className={`flex flex-col items-center py-1 px-2 rounded-lg transition-colors ${
                   isActive 
-                    ? 'text-[#0a0a2e]' 
-                    : `text-gray-400 hover:${getTextClass()}`
+                    ? 'text-orange-500' 
+                    : `text-gray-400 hover:text-gray-200`
                 }`}
                 onClick={() => handleNavClick(item.nameKey)}
                 onTouchStart={() => handleNavClick(item.nameKey)}

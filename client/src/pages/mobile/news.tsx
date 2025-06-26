@@ -152,7 +152,7 @@ export default function MobileNews() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-      <div className="bg-blue-950 px-4 py-4 border-b border-blue-700">
+      <div className="bg-[#0a0a2e] px-4 py-4 border-b border-[#1a1a40]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <h1 className="text-white text-2xl font-bold">{t('news')}</h1>
@@ -171,7 +171,7 @@ export default function MobileNews() {
       </div>
 
       {isLoading && !newsData && (
-        <div className="px-4 py-4 space-y-4 bg-blue-950 min-h-screen">
+        <div className="px-4 py-4 space-y-4 bg-[#0a0a2e] min-h-screen">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="bg-blue-900 rounded-lg p-4 animate-pulse border border-blue-700">
               <div className="flex items-start space-x-4">
@@ -188,7 +188,7 @@ export default function MobileNews() {
       )}
 
       {error && (
-        <div className="px-4 py-8 bg-blue-950 min-h-screen">
+        <div className="px-4 py-8 bg-[#0a0a2e] min-h-screen">
           <div className="bg-red-900 border border-red-700 rounded-lg p-4 text-center">
             <div className="text-red-300 text-sm mb-2">
               Unable to fetch crypto news
