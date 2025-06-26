@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ChevronRight, Camera, Copy, Check, Shield, AlertTriangle } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function MobileSettings() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentLanguage, t } = useLanguage();
-  const { theme, setTheme, getBackgroundClass, getTextClass, getBorderClass, getCardClass } = useTheme();
+  const { getBackgroundClass, getTextClass, getBorderClass, getCardClass } = useTheme();
 
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
@@ -453,26 +453,7 @@ export default function MobileSettings() {
             </div>
           </Button>
 
-          {/* Color Theme */}
-          <div className="flex items-center justify-between py-3 border-b border-blue-800">
-            <span className="text-gray-300">Background Theme</span>
-            <div className="flex items-center gap-2">
-              <Select
-                value={theme}
-                onValueChange={(value: 'blue' | 'white' | 'black') => setTheme(value)}
-              >
-                <SelectTrigger className="w-32 h-8 bg-transparent border-none text-gray-400 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="blue">Deep Blue</SelectItem>
-                  <SelectItem value="white">White</SelectItem>
-                  <SelectItem value="black">Black</SelectItem>
-                </SelectContent>
-              </Select>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-            </div>
-          </div>
+
 
           {/* Always on (no screen lock) */}
           <div className="flex items-center justify-between py-3">

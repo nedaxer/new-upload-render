@@ -395,8 +395,8 @@ export default function MobileTrade() {
       theme: "dark",
       style: "1",
       locale: "en",
-      backgroundColor: "#111827",
-      toolbar_bg: "#111827",
+      backgroundColor: "#1e40af",
+      toolbar_bg: "#1e40af",
       hide_top_toolbar: true,
       hide_side_toolbar: true,
       allow_symbol_change: false,
@@ -419,12 +419,12 @@ export default function MobileTrade() {
         mode: 1  // Normal crosshair mode that follows your finger/mouse
       },
       save_image: false,
-      loading_screen: { backgroundColor: "#111827", foregroundColor: "#111827" },
+      loading_screen: { backgroundColor: "#1e40af", foregroundColor: "#1e40af" },
       overrides: {
-        "paneProperties.background": "#111827",
+        "paneProperties.background": "#1e40af",
         "paneProperties.backgroundType": "solid",
-        "paneProperties.backgroundGradientStartColor": "#111827", 
-        "paneProperties.backgroundGradientEndColor": "#111827",
+        "paneProperties.backgroundGradientStartColor": "#1e40af", 
+        "paneProperties.backgroundGradientEndColor": "#1e40af",
         "paneProperties.vertGridProperties.color": "#374151",
         "paneProperties.horzGridProperties.color": "#374151",
         "paneProperties.crossHairProperties.color": "#FFA500", // orange line
@@ -965,12 +965,12 @@ export default function MobileTrade() {
       </div>
 
       {/* Chart/Trade Toggle - Smaller */}
-      <div className="bg-blue-900 mx-3 rounded-lg overflow-hidden">
+      <div className="bg-blue-700 mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Charts' 
-                ? 'bg-blue-800 text-white' 
+                ? 'bg-blue-600 text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Charts')}
@@ -980,7 +980,7 @@ export default function MobileTrade() {
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Trade' 
-                ? 'bg-blue-800 text-white' 
+                ? 'bg-blue-600 text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Trade')}

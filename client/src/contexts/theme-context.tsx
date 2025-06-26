@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type Theme = 'blue' | 'white' | 'black';
+type Theme = 'ultramarine';
 
 interface ThemeContextType {
   theme: Theme;
@@ -15,35 +15,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const themeConfig = {
-  blue: {
-    background: 'bg-blue-950',
-    secondaryBackground: 'bg-blue-900',
-    card: 'bg-blue-900 border-blue-800',
-    border: 'border-blue-800',
-    text: 'text-white'
-  },
-  white: {
-    background: 'bg-white',
-    secondaryBackground: 'bg-gray-50',
-    card: 'bg-white border-gray-200',
-    border: 'border-gray-200',
-    text: 'text-gray-900'
-  },
-  black: {
-    background: 'bg-black',
-    secondaryBackground: 'bg-gray-900',
-    card: 'bg-gray-900 border-gray-700',
-    border: 'border-gray-700',
+  ultramarine: {
+    background: 'bg-blue-800',
+    secondaryBackground: 'bg-blue-700',
+    card: 'bg-blue-700 border-blue-600',
+    border: 'border-blue-600',
     text: 'text-white'
   }
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('blue');
+  const [theme, setThemeState] = useState<Theme>('ultramarine');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('app-theme') as Theme;
-    if (savedTheme && ['blue', 'white', 'black'].includes(savedTheme)) {
+    if (savedTheme && savedTheme === 'ultramarine') {
       setThemeState(savedTheme);
     }
   }, []);
@@ -54,8 +40,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     
     // Update chart theme if chart exists
     if ((window as any).tvWidget) {
-      const chartTheme = newTheme === 'white' ? 'Light' : 'Dark';
-      (window as any).tvWidget.changeTheme(chartTheme);
+      (window as any).tvWidget.changeTheme('Dark');
     }
   };
 
