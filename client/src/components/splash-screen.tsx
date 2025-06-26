@@ -94,19 +94,19 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const clonesTimer = setTimeout(() => {
       setHideOriginals(true);
       setShowClones(true);
-    }, 1500); // 1.5 seconds for letters to arrange
+    }, 800); // 0.8 seconds for letters to arrange
 
     // Show NEDAXER logo after clones disappear
     const nedaxerLogoTimer = setTimeout(() => {
       setShowClones(false);
       setShowNedaxerLogo(true);
-    }, 2500); // 2.5 seconds total
+    }, 1300); // 1.3 seconds total
 
-    // Complete animation after exactly 4 seconds
+    // Complete animation after exactly 2 seconds
     const timer = setTimeout(() => {
       setShowLogo(false);
       setTimeout(onComplete, 300); // Quick fade out
-    }, 4000); // Exactly 4 seconds
+    }, 2000); // Exactly 2 seconds
 
     return () => {
       clearTimeout(clonesTimer);
@@ -216,10 +216,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             className="absolute bottom-8 left-0 right-0 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.5, duration: 0.8 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
           >
-            <p className="text-white text-sm font-light tracking-wide">
-              Thanks for choosing Nedaxer
+            <p className="text-white text-sm font-medium tracking-wide">
+              Welcome to the future of trading
+            </p>
+            <p className="text-white/80 text-xs font-light tracking-wide mt-1">
+              Thank you for choosing Nedaxer
             </p>
           </motion.div>
 
