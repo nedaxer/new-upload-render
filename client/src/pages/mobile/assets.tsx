@@ -26,12 +26,14 @@ import { Link } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/hooks/use-auth';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);

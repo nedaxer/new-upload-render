@@ -21,11 +21,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 
 export default function MobileProfile() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

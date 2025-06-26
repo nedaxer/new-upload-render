@@ -18,6 +18,7 @@ import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { hapticLight } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 import { CRYPTO_PAIRS, CryptoPair, getPairDisplayName } from '@/lib/crypto-pairs';
 
 interface CryptoTicker {
@@ -82,6 +83,7 @@ const getSentimentIcon = (sentiment: string) => {
 export default function MobileMarkets() {
   const [, navigate] = useLocation();
   const { t } = useLanguage();
+  const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [favoriteCoins, setFavoriteCoins] = useState<string[]>([]);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());

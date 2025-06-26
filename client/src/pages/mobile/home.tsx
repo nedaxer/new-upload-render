@@ -520,7 +520,7 @@ export default function MobileHome() {
   if (!user) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-center min-h-screen bg-blue-950">
+        <div className={`flex items-center justify-center min-h-screen ${getBackgroundClass()}`}>
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-400">Loading your account...</p>

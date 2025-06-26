@@ -9,7 +9,7 @@ export function BottomNavigation() {
   const [location] = useLocation();
   const { t } = useLanguage();
   const { showChart, hideChart } = usePersistentChart();
-  const { getSecondaryBackgroundClass, getBorderClass } = useTheme();
+  const { getSecondaryBackgroundClass, getBorderClass, getTextClass } = useTheme();
 
   const navItems = [
     { 
@@ -68,7 +68,7 @@ export function BottomNavigation() {
                 className={`flex flex-col items-center py-1 px-2 rounded-lg transition-colors ${
                   isActive 
                     ? 'text-orange-500' 
-                    : 'text-gray-400 hover:text-white'
+                    : `text-gray-400 hover:${getTextClass()}`
                 }`}
                 onClick={() => handleNavClick(item.nameKey)}
                 onTouchStart={() => handleNavClick(item.nameKey)}

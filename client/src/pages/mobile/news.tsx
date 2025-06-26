@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 import { PullToRefresh } from '@/components/pull-to-refresh';
 
 interface NewsArticle {
@@ -21,6 +22,7 @@ interface NewsArticle {
 
 export default function MobileNews() {
   const { t } = useLanguage();
+  const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
   const [refreshKey, setRefreshKey] = useState(0);
   const [liveNewsData, setLiveNewsData] = useState<NewsArticle[]>([]);

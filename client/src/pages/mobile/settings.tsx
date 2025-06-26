@@ -29,7 +29,7 @@ export default function MobileSettings() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentLanguage, t } = useLanguage();
-  const { theme, setTheme, getBackgroundClass, getTextClass } = useTheme();
+  const { theme, setTheme, getBackgroundClass, getTextClass, getBorderClass, getCardClass } = useTheme();
 
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
@@ -304,7 +304,7 @@ export default function MobileSettings() {
           />
 
           {/* Email (Read-only) */}
-          <div className="flex items-center justify-between py-3 border-b border-blue-800">
+          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
             <span className="text-gray-300">Email</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">
@@ -314,7 +314,7 @@ export default function MobileSettings() {
           </div>
 
           {/* Username/Nickname */}
-          <div className="flex items-center justify-between py-3 border-b border-blue-800">
+          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
             <span className="text-gray-300">Name</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
@@ -322,7 +322,7 @@ export default function MobileSettings() {
                   <Input
                     value={tempNickname}
                     onChange={(e) => setTempNickname(e.target.value)}
-                    className="w-32 h-8 bg-blue-900 border-blue-700 text-white text-sm"
+                    className={`w-32 h-8 ${getCardClass()} ${getBorderClass()} ${getTextClass()} text-sm`}
                     maxLength={20}
                     placeholder="Enter username"
                   />
@@ -356,7 +356,7 @@ export default function MobileSettings() {
           </div>
 
           {/* UID */}
-          <div className="flex items-center justify-between py-3 border-b border-blue-800">
+          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
             <span className="text-gray-300">UID</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">{userUID}</span>
@@ -376,7 +376,7 @@ export default function MobileSettings() {
             <Button
               variant="ghost"
               onClick={() => setLocation('/mobile/kyc')}
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
+              className={`w-full justify-between py-3 h-auto ${getTextClass()} hover:bg-gray-100 hover:bg-opacity-10`}
             >
               <span>Identity Verification</span>
               <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export default function MobileSettings() {
             <Button
               variant="ghost"
               onClick={() => setLocation('/mobile/security')}
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
+              className={`w-full justify-between py-3 h-auto ${getTextClass()} hover:bg-gray-100 hover:bg-opacity-10`}
             >
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-orange-500" />
@@ -426,7 +426,7 @@ export default function MobileSettings() {
           <Button
             variant="ghost"
             onClick={() => setLocation('/mobile/language-selection')}
-            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
+            className={`w-full justify-between py-3 h-auto ${getTextClass()} hover:bg-gray-100 hover:bg-opacity-10`}
           >
             <span>{t('language')}</span>
             <div className="flex items-center gap-2">
