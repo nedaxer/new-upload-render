@@ -59,7 +59,7 @@ export function AppInstallPrompt() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
+    <div className="fixed bottom-20 right-4 z-[10010] bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
       <button 
         onClick={dismissPrompt} 
         className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"

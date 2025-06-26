@@ -56,7 +56,7 @@ export function BottomNavigation() {
   };
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 ${getSecondaryBackgroundClass()} border-t ${getBorderClass()} px-1 py-1`} style={{ zIndex: 10001 }}>
+    <div className={`fixed bottom-0 left-0 right-0 ${getSecondaryBackgroundClass()} border-t ${getBorderClass()} px-1 py-1`} style={{ zIndex: 1000 }}>
       <div className="flex justify-around items-center">
         {navItems.map((item) => {
           const Icon = item.icon;

@@ -10,7 +10,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 z-[10010]">
+    <div className="fixed inset-0 z-[10020]">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
            style={{
