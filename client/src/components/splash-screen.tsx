@@ -219,7 +219,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             transition={{ delay: 1.2, duration: 0.8 }}
           >
             <p className="text-white text-sm font-medium tracking-wide">
-              Welcome to the future of trading
+              Welcome to the future of trading & investing
             </p>
             <p className="text-white/80 text-xs font-light tracking-wide mt-1">
               Thank you for choosing Nedaxer
