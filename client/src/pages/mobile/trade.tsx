@@ -1041,10 +1041,6 @@ export default function MobileTrade() {
 
   return (
     <MobileLayout>
-      {/* Debug info - temporary */}
-      <div className="bg-red-900 text-white p-2 text-xs">
-        Tab: {selectedTab} | Type: {selectedTradingType} | Pair: {selectedPair?.symbol}
-      </div>
       
       {/* Trading Tabs - Smaller font and padding */}
       <div className="bg-blue-950 px-3 py-1">
@@ -1093,9 +1089,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 overflow-y-auto bg-[#0a0a2e]">
+        <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a2e]">
           {/* Tappable Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-[#0a0a2e] border-b border-[#1a1a40] sticky top-0 z-40">
+          <div className="flex justify-between items-center p-3 bg-[#0a0a2e] border-b border-[#1a1a40] flex-shrink-0">
             <div 
               className="flex flex-col cursor-pointer hover:bg-blue-800 rounded px-2 py-1 transition-colors"
               onClick={() => {
@@ -1121,10 +1117,10 @@ export default function MobileTrade() {
           </div>
 
           {/* Chart Container - Clean without loading skeleton */}
-          <div className={`relative ${getBackgroundClass()}`} style={{ height: '70vh' }}>
+          <div className="flex-1 relative bg-[#0a0a2e]">
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
-              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
+              <div className="absolute inset-0 bg-[#0a0a2e] z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
@@ -1137,7 +1133,7 @@ export default function MobileTrade() {
 
             {/* Only show error state if chart fails to load */}
             {chartError && (
-              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
+              <div className="absolute inset-0 bg-[#0a0a2e] z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
@@ -1199,8 +1195,6 @@ export default function MobileTrade() {
               }}
             />
           </div>
-
-
         </div>
       )}
 
@@ -1237,10 +1231,9 @@ export default function MobileTrade() {
 
       {/* Trade Tab Content */}
       {selectedTab === 'Trade' && (
-        <div className="flex-1 overflow-hidden">
-
+        <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a2e]">
           {selectedTradingType === 'Spot' && (
-            <div className="h-full p-4">
+            <div className="flex-1 overflow-y-auto p-4">
               {/* Trading Pair Info */}
               <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -1397,7 +1390,7 @@ export default function MobileTrade() {
             </div>
           )}
           {selectedTradingType === 'Futures' && (
-            <div className="h-full p-4">
+            <div className="flex-1 overflow-y-auto p-4">
               {/* Trading Pair Info */}
               <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
