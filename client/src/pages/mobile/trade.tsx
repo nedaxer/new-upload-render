@@ -30,11 +30,13 @@ import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
 import { chartCache } from '@/utils/chart-cache';
 
 export default function MobileTrade() {
   const { t } = useLanguage();
+  const { theme, getBackgroundClass } = useTheme();
   const [selectedTimeframe, setSelectedTimeframe] = useState('15m');
   const [selectedTab, setSelectedTab] = useState('Charts');
   const [selectedTradingType, setSelectedTradingType] = useState('Spot');
@@ -1018,10 +1020,10 @@ export default function MobileTrade() {
           </div>
 
           {/* Chart Container - Clean without loading skeleton */}
-          <div className="relative bg-blue-950" style={{ height: '70vh' }}>
+          <div className={`relative ${getBackgroundClass()}`} style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
-              <div className="absolute inset-0 bg-blue-950 z-20 flex items-center justify-center">
+              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
@@ -1034,7 +1036,7 @@ export default function MobileTrade() {
 
             {/* Only show error state if chart fails to load */}
             {chartError && (
-              <div className="absolute inset-0 bg-blue-950 z-20 flex items-center justify-center">
+              <div className={`absolute inset-0 ${getBackgroundClass()} z-20 flex items-center justify-center`}>
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50" />

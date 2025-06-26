@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { BottomNavigation } from './bottom-navigation';
+import { useTheme } from '@/contexts/theme-context';
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -10,6 +11,7 @@ interface MobileLayoutProps {
 
 export function MobileLayout({ children, className = '', hideBottomNav = false }: MobileLayoutProps) {
   const [location] = useLocation();
+  const { getBackgroundClass, getTextClass } = useTheme();
   
   // Hide bottom navigation for profile and settings pages
   const shouldHideBottomNav = hideBottomNav || 
@@ -22,7 +24,7 @@ export function MobileLayout({ children, className = '', hideBottomNav = false }
     location.includes('/invite-friends');
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className={`min-h-screen ${getBackgroundClass()} ${getTextClass()}`}>
       <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
         {children}
       </div>

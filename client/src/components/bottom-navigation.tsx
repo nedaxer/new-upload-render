@@ -3,11 +3,13 @@ import { Home, BarChart3, TrendingUp, Newspaper, Wallet } from 'lucide-react';
 import { hapticNavigation } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/language-context';
 import { usePersistentChart } from '@/hooks/use-persistent-chart';
+import { useTheme } from '@/contexts/theme-context';
 
 export function BottomNavigation() {
   const [location] = useLocation();
   const { t } = useLanguage();
   const { showChart, hideChart } = usePersistentChart();
+  const { getSecondaryBackgroundClass, getBorderClass } = useTheme();
 
   const navItems = [
     { 
@@ -54,7 +56,7 @@ export function BottomNavigation() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-blue-900 border-t border-blue-800 px-1 py-1" style={{ zIndex: 10001 }}>
+    <div className={`fixed bottom-0 left-0 right-0 ${getSecondaryBackgroundClass()} border-t ${getBorderClass()} px-1 py-1`} style={{ zIndex: 10001 }}>
       <div className="flex justify-around items-center">
         {navItems.map((item) => {
           const Icon = item.icon;

@@ -12,6 +12,7 @@ import { useLocation } from 'wouter';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 
 interface UserSettings {
   nickname?: string;
@@ -28,6 +29,7 @@ export default function MobileSettings() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentLanguage, t } = useLanguage();
+  const { theme, setTheme, getBackgroundClass, getTextClass } = useTheme();
 
   const [settings, setSettings] = useState<UserSettings>({
     nickname: user?.username || '',
@@ -245,7 +247,7 @@ export default function MobileSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white">
+    <div className={`min-h-screen ${getBackgroundClass()} ${getTextClass()}`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Button
@@ -453,19 +455,19 @@ export default function MobileSettings() {
 
           {/* Color Theme */}
           <div className="flex items-center justify-between py-3 border-b border-blue-800">
-            <span className="text-gray-300">{t('color_theme')}</span>
+            <span className="text-gray-300">Background Theme</span>
             <div className="flex items-center gap-2">
               <Select
-                value={settings.theme}
-                onValueChange={handleThemeChange}
+                value={theme}
+                onValueChange={(value: 'blue' | 'white' | 'black') => setTheme(value)}
               >
-                <SelectTrigger className="w-24 h-8 bg-transparent border-none text-gray-400 text-sm">
+                <SelectTrigger className="w-32 h-8 bg-transparent border-none text-gray-400 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Light Mode">{t('light_mode')}</SelectItem>
-                  <SelectItem value="Dark Mode">{t('dark_mode')}</SelectItem>
-                  <SelectItem value="Auto">{t('auto')}</SelectItem>
+                  <SelectItem value="blue">Deep Blue</SelectItem>
+                  <SelectItem value="white">White</SelectItem>
+                  <SelectItem value="black">Black</SelectItem>
                 </SelectContent>
               </Select>
               <ChevronRight className="h-4 w-4 text-gray-400" />

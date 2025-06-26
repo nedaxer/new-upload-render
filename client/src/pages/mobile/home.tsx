@@ -36,12 +36,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
+import { useTheme } from '@/contexts/theme-context';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
 export default function MobileHome() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   // const { state, updateState } = useAppState();
