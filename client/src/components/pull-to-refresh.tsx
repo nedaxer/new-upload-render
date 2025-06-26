@@ -241,7 +241,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               }}
               className="relative overflow-hidden"
               style={{
-                background: 'linear-gradient(180deg, hsl(220, 13%, 15%) 0%, hsl(220, 13%, 18%) 50%, hsl(220, 13%, 15%) 100%)'
+                background: 'linear-gradient(180deg, #0a0a2e 0%, #0b0b30 50%, #0a0a2e 100%)'
               }}
             >
               <motion.div

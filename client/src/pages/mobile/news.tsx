@@ -173,7 +173,7 @@ export default function MobileNews() {
       {isLoading && !newsData && (
         <div className="px-4 py-4 space-y-4 bg-[#0a0a2e] min-h-screen">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-blue-900 rounded-lg p-4 animate-pulse border border-blue-700">
+            <div key={i} className="bg-[#0b0b30] rounded-lg p-4 animate-pulse border border-[#1a1a40]">
               <div className="flex items-start space-x-4">
                 <div className="flex-1">
                   <div className="h-4 bg-gray-600 rounded mb-2"></div>
@@ -201,7 +201,7 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length > 0 && (
-        <div className="px-4 py-4 space-y-3 bg-blue-950 min-h-screen">
+        <div className="px-4 py-4 space-y-3 bg-[#0a0a2e] min-h-screen">
 
           {displayNewsData.map((article, index) => (
             <a
@@ -209,7 +209,7 @@ export default function MobileNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-blue-900 rounded-lg p-4 hover:bg-blue-800 transition-colors border border-blue-700"
+              className="block bg-[#0b0b30] rounded-lg p-4 hover:bg-[#0c0c35] transition-colors border border-[#1a1a40]"
             >
               <div className="flex items-start space-x-4">
                 {/* Content Section */}

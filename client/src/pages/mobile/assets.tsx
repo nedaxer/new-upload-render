@@ -384,9 +384,9 @@ export default function MobileAssets() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-blue-950">
+        <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <h1 className="text-xl font-bold text-white">My Assets</h1>
-        <button onClick={handleQRScan} className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
+        <button onClick={handleQRScan} className="w-8 h-8 bg-[#0b0b30] rounded-lg flex items-center justify-center">
           <QrCode className="w-4 h-4 text-gray-400" />
         </button>
       </div>

@@ -953,7 +953,7 @@ export default function MobileTrade() {
               key={tab}
               className={`whitespace-nowrap px-2 py-1 rounded text-xs ${
                 selectedTradingType === tab 
-                  ? 'bg-blue-800 text-white' 
+                  ? 'bg-[#0b0b30] text-white' 
                   : 'text-gray-400'
               }`}
               onClick={() => handleTradingTypeChange(tab)}
@@ -965,12 +965,12 @@ export default function MobileTrade() {
       </div>
 
       {/* Chart/Trade Toggle - Smaller */}
-      <div className="bg-blue-700 mx-3 rounded-lg overflow-hidden">
+      <div className="bg-[#0b0b30] mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Charts' 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-[#0a0a2e] text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Charts')}
@@ -980,7 +980,7 @@ export default function MobileTrade() {
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Trade' 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-[#0a0a2e] text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Trade')}
@@ -992,9 +992,9 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 overflow-y-auto bg-blue-950">
+        <div className="flex-1 overflow-y-auto bg-[#0a0a2e]">
           {/* Tappable Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-blue-900 border-b border-blue-700 sticky top-0 z-40">
+          <div className="flex justify-between items-center p-2 bg-[#0a0a2e] border-b border-[#1a1a40] sticky top-0 z-40">
             <div 
               className="flex flex-col cursor-pointer hover:bg-blue-800 rounded px-2 py-1 transition-colors"
               onClick={() => {

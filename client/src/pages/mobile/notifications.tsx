@@ -48,9 +48,9 @@ export default function MobileNotifications() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-[#0a0a2e] text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-blue-800">
+      <div className="flex items-center justify-between p-4 border-b border-[#1a1a40]">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
