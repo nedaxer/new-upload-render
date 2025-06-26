@@ -149,7 +149,7 @@ export default function MobileConvert() {
   if (isLoading || !Array.isArray(cryptoData)) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
+        <div className="flex items-center justify-between p-4 bg-[#191970] border-b border-[#2a2a80]">
           <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -158,9 +158,9 @@ export default function MobileConvert() {
         </div>
         <div className="p-4 animate-pulse">
           <div className="space-y-4">
-            <div className="h-20 bg-blue-800 rounded"></div>
-            <div className="h-12 bg-blue-800 rounded"></div>
-            <div className="h-20 bg-blue-800 rounded"></div>
+            <div className="h-20 bg-[#1a1a70] rounded"></div>
+            <div className="h-12 bg-[#1a1a70] rounded"></div>
+            <div className="h-20 bg-[#1a1a70] rounded"></div>
           </div>
         </div>
       </MobileLayout>
@@ -170,7 +170,7 @@ export default function MobileConvert() {
   if (error || !cryptoData || cryptoData.length === 0) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
+        <div className="flex items-center justify-between p-4 bg-[#191970] border-b border-[#2a2a80]">
           <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>

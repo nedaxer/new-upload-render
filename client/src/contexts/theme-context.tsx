@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type Theme = 'ultramarine';
+type Theme = 'midnight';
 
 interface ThemeContextType {
   theme: Theme;
@@ -15,21 +15,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const themeConfig = {
-  ultramarine: {
-    background: 'bg-blue-800',
-    secondaryBackground: 'bg-blue-700',
-    card: 'bg-blue-700 border-blue-600',
-    border: 'border-blue-600',
+  midnight: {
+    background: 'bg-[#191970]',
+    secondaryBackground: 'bg-[#1a1a70]',
+    card: 'bg-[#1a1a70] border-[#2a2a80]',
+    border: 'border-[#2a2a80]',
     text: 'text-white'
   }
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('ultramarine');
+  const [theme, setThemeState] = useState<Theme>('midnight');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('app-theme') as Theme;
-    if (savedTheme && savedTheme === 'ultramarine') {
+    if (savedTheme && savedTheme === 'midnight') {
       setThemeState(savedTheme);
     }
   }, []);

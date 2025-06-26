@@ -181,13 +181,13 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Pull indicator with orange gradient blending seamlessly with mobile page */}
+      {/* Pull indicator with orange gradient blending to Midnight Blue */}
       {pullDistance > 0 && (
         <div 
           className="relative overflow-hidden"
           style={{
             height: pullDistance,
-            background: 'linear-gradient(180deg, hsl(39, 90%, 45%) 0%, hsl(39, 85%, 42%) 15%, hsl(39, 75%, 38%) 30%, hsl(39, 65%, 35%) 45%, hsl(220, 13%, 35%) 60%, hsl(220, 13%, 25%) 75%, hsl(220, 13%, 18%) 90%, hsl(220, 13%, 15%) 100%)',
+            background: 'linear-gradient(180deg, hsl(39, 90%, 45%) 0%, hsl(39, 85%, 42%) 15%, hsl(39, 75%, 38%) 30%, hsl(39, 65%, 35%) 45%, #191970 60%, #1a1a70 75%, #1b1b70 90%, #191970 100%)',
             transition: 'none'
           } as React.CSSProperties}
         >
@@ -195,7 +195,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
           <div 
             className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
             style={{
-              background: 'linear-gradient(180deg, rgba(75, 85, 99, 0) 0%, rgba(71, 85, 105, 0.2) 20%, rgba(55, 65, 81, 0.4) 40%, rgba(51, 65, 85, 0.6) 60%, rgba(47, 59, 77, 0.8) 80%, hsl(220, 13%, 15%) 100%)'
+              background: 'linear-gradient(180deg, rgba(25, 25, 112, 0) 0%, rgba(25, 25, 112, 0.2) 20%, rgba(25, 25, 112, 0.4) 40%, rgba(25, 25, 112, 0.6) 60%, rgba(25, 25, 112, 0.8) 80%, #191970 100%)'
             }}
           />
           

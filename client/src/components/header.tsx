@@ -25,7 +25,7 @@ export const Header = () => {
             {navItems.map((item) => (
               <div key={item.title} className="relative group">
                 <button
-                  className="flex items-center space-x-1 text-gray-700 hover:text-[#0033a0] font-medium"
+                  className="flex items-center space-x-1 text-gray-700 hover:text-[#191970] font-medium"
                   onClick={() => toggleDropdown(item.title)}
                 >
                   <span>{item.title}</span>
@@ -55,7 +55,7 @@ export const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             <div className="flex items-center mr-2">
-              <a href="/#/account/login" className="text-[#0033a0] hover:text-[#ff5900] mr-4 font-medium">
+              <a href="/#/account/login" className="text-[#191970] hover:text-[#ff5900] mr-4 font-medium">
                 Login
               </a>
             </div>
