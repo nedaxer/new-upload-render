@@ -169,7 +169,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <motion.img
                   src={letter.src}
                   alt={letter.alt}
-                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain letter-shine"
+                  className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain"
                 />
                 
                 {/* Clone letter positioned exactly over original */}
@@ -196,18 +196,6 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                         src={letter.src}
                         alt={`${letter.alt}-clone`}
                         className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 object-contain"
-                        animate={{
-                          filter: [
-                            'drop-shadow(0 0 8px rgba(255,165,0,0.7))',
-                            'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
-                            'drop-shadow(0 0 12px rgba(255,165,0,0.5))',
-                          ],
-                        }}
-                        transition={{
-                          duration: 2.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
                       />
                     </motion.div>
                   )}
@@ -237,19 +225,16 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             )}
           </AnimatePresence>
 
-          {/* Subtle glowing effect behind letters */}
+          {/* Thanks message at bottom */}
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            transition={{ delay: 1, duration: 0.8 }}
+            className="absolute bottom-8 left-0 right-0 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.5, duration: 0.8 }}
           >
-            <div
-              className="w-80 h-32 rounded-full blur-3xl opacity-30"
-              style={{
-                background: 'radial-gradient(ellipse, rgba(255,165,0,0.4) 0%, transparent 70%)',
-              }}
-            />
+            <p className="text-white text-sm font-light tracking-wide">
+              Thanks for choosing Nedaxer
+            </p>
           </motion.div>
 
         </motion.div>

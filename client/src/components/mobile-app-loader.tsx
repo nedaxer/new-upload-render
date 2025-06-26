@@ -155,18 +155,10 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     return <>{children}</>;
   }
 
-  // Show loading screen while preloading data
+  // Show minimal loading or skip completely to avoid second Nedaxer screen
   if (isPreloading || !loadingSteps.complete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center">
-          {/* Smaller Nedaxer Logo */}
-          <div>
-            <h1 className="text-2xl font-bold text-white">Nedaxer</h1>
-          </div>
-        </div>
-      </div>
-    );
+    // Return empty div with transparent background to avoid flash
+    return <div className="min-h-screen bg-transparent"></div>;
   }
 
   // All data loaded, show the mobile app
