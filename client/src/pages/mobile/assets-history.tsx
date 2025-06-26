@@ -18,6 +18,8 @@ export default function AssetsHistory() {
     refetchInterval: 30000, // Refresh every 30 seconds for new deposits
     retry: 3,
     retryDelay: 1000,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache to avoid stale data (replaces cacheTime in newer versions)
   });
 
   const transactions = Array.isArray(transactionsResponse?.data) ? transactionsResponse.data : [];
@@ -26,6 +28,24 @@ export default function AssetsHistory() {
   console.log('Assets History - Error:', error);
   console.log('Assets History - User:', user);
   console.log('Assets History - Loading:', isLoading);
+  
+  // Force refresh when user changes
+  useEffect(() => {
+    if (user) {
+      console.log('User authenticated, refreshing deposit history...');
+      queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
+    }
+  }, [user, queryClient]);
+
+  // Show debug information for troubleshooting
+  const showDebugInfo = transactions.length === 0 && !isLoading && user;
+  
+  if (showDebugInfo) {
+    console.log('DEBUG: No transactions found despite user being authenticated');
+    console.log('User ID:', user._id);
+    console.log('API Response:', transactionsResponse);
+    console.log('Error Object:', error);
+  }
 
   // WebSocket connection for real-time transaction updates
   useEffect(() => {

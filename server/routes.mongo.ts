@@ -33,7 +33,7 @@ function generateVerificationCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   console.log('🔐 Auth check:', { 
     hasSession: !!req.session, 
     userId: req.session?.userId,
@@ -43,6 +43,23 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!req.session?.userId) {
     return res.status(401).json({ success: false, message: "Not authenticated" });
   }
+  
+  // Skip user verification for admin users or proceed with normal verification
+  if (req.session.userId === 'ADMIN001' || req.session.adminAuthenticated) {
+    return next();
+  }
+  
+  // Verify regular user exists
+  try {
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error('Auth verification error:', error);
+    return res.status(500).json({ success: false, message: "Authentication error" });
+  }
+  
   next();
 };
 
@@ -88,15 +105,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.use(session({
     secret: process.env.SESSION_SECRET || 'nedaxer-trading-platform-secret-2025',
-    resave: false,
-    saveUninitialized: false,
+    resave: false, // Don't save session if not modified
+    saveUninitialized: false, // Don't create sessions until something stored
     store: store,
     cookie: {
       secure: false, // Set to true if using HTTPS
-      httpOnly: true, // Keep secure but allow browser access
+      httpOnly: false, // Allow browser access for debugging
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      sameSite: 'lax' // Allow cross-site requests
-    }
+      sameSite: 'lax', // Allow cross-site requests
+      path: '/' // Ensure cookie is available for all paths
+    },
+    name: 'connect.sid', // Explicit session name
+    rolling: false // Don't reset expiration on every request
   }));
 
   // Enable compression middleware for better performance
@@ -1486,30 +1506,85 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
-  // Get user deposit transaction history
+  // Get user deposit transaction history with enhanced authentication
   app.get('/api/deposits/history', async (req: Request, res: Response) => {
     try {
-      // Check authentication first
-      console.log('🔐 Deposits history auth check:', {
+      console.log('🔍 Deposit history auth check:', {
         hasSession: !!req.session,
         userId: req.session?.userId,
-        sessionId: req.sessionID 
+        sessionId: req.sessionID
       });
       
+      // Check authentication
       if (!req.session?.userId) {
         return res.status(401).json({ success: false, message: "Not authenticated" });
       }
       
-      const userId = req.session.userId!;
+      const userId = req.session.userId;
+      
+      // Skip user verification for admin or verify regular user
+      if (userId !== 'ADMIN001' && !req.session?.adminAuthenticated) {
+        try {
+          const user = await storage.getUser(userId);
+          if (!user) {
+            return res.status(401).json({ success: false, message: "User not found" });
+          }
+        } catch (authError) {
+          console.error('User verification error:', authError);
+          return res.status(500).json({ success: false, message: "Authentication error" });
+        }
+      }
+      
       console.log(`💰 Deposit history API called for user ${userId}`);
       
-      // Use mongoStorage to get transactions directly
+      // Use mongoStorage for consistent data access
       const { mongoStorage } = await import('./mongoStorage');
       const transactions = await mongoStorage.getUserDepositTransactions(userId);
       
       console.log(`📝 Found ${transactions.length} deposit transactions for user ${userId}`);
       
-      // Return the transactions with proper formatting
+      // If no transactions from mongoStorage, try direct MongoDB query as fallback
+      if (transactions.length === 0) {
+        console.log('📋 No transactions from mongoStorage, trying direct MongoDB query...');
+        
+        const { DepositTransaction } = await import('./models/DepositTransaction');
+        const directTransactions = await DepositTransaction.find({ 
+          $or: [
+            { userId: userId },
+            { userId: userId.toString() }
+          ]
+        })
+          .sort({ createdAt: -1 })
+          .lean()
+          .exec();
+        
+        console.log(`📊 Direct MongoDB query found ${directTransactions.length} transactions`);
+        
+        if (directTransactions.length > 0) {
+          // Return direct query results
+          return res.json({ 
+            success: true, 
+            data: directTransactions.map(tx => ({
+              _id: tx._id,
+              userId: tx.userId,
+              adminId: tx.adminId,
+              cryptoSymbol: tx.cryptoSymbol,
+              cryptoName: tx.cryptoName,
+              chainType: tx.chainType,
+              networkName: tx.networkName,
+              senderAddress: tx.senderAddress,
+              usdAmount: tx.usdAmount,
+              cryptoAmount: tx.cryptoAmount,
+              cryptoPrice: tx.cryptoPrice,
+              status: tx.status || 'confirmed',
+              createdAt: tx.createdAt,
+              updatedAt: tx.updatedAt
+            }))
+          });
+        }
+      }
+      
+      // Return mongoStorage results
       res.json({ 
         success: true, 
         data: transactions.map(tx => ({
