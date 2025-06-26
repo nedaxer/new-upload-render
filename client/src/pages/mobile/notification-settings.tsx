@@ -31,7 +31,7 @@ export default function NotificationSettings() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Link href="/mobile/notifications">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -134,7 +134,7 @@ export default function NotificationSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between py-3 border-b border-gray-800 pb-4">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800 pb-4">
             <div className="flex items-center space-x-2">
               <div className="w-5 h-5 bg-orange-500 rounded flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>

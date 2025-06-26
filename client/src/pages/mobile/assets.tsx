@@ -382,9 +382,9 @@ export default function MobileAssets() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-gray-900">
+        <div className="flex items-center justify-between p-4 bg-blue-950">
         <h1 className="text-xl font-bold text-white">My Assets</h1>
-        <button onClick={handleQRScan} className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+        <button onClick={handleQRScan} className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
           <QrCode className="w-4 h-4 text-gray-400" />
         </button>
       </div>
@@ -428,7 +428,7 @@ export default function MobileAssets() {
         </div>
 
         {/* Advanced Charts Video Background */}
-        <div className="relative h-32 bg-gray-900 rounded-lg mb-4 overflow-hidden">
+        <div className="relative h-32 bg-blue-950 rounded-lg mb-4 overflow-hidden">
           <video
             autoPlay
             loop
@@ -460,7 +460,7 @@ export default function MobileAssets() {
         <div className="grid grid-cols-4 gap-4">
           <button onClick={handleDepositClick}>
             <div className="flex flex-col items-center space-y-2">
-              <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <Wallet className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Deposit</span>
@@ -469,7 +469,7 @@ export default function MobileAssets() {
           
           <Link href="/mobile/withdraw">
             <div className="flex flex-col items-center space-y-2">
-              <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Withdraw</span>
@@ -478,7 +478,7 @@ export default function MobileAssets() {
           
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
-              <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Transfer</span>
@@ -487,7 +487,7 @@ export default function MobileAssets() {
           
           <Link href="/mobile/convert">
             <div className="flex flex-col items-center space-y-2">
-              <div className="w-14 h-14 bg-gray-800 rounded-lg flex items-center justify-center">
+              <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="w-7 h-7 text-orange-500 transform rotate-45" />
               </div>
               <span className="text-xs text-gray-300 text-center">Convert</span>
@@ -726,11 +726,11 @@ export default function MobileAssets() {
         
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="bg-blue-900 rounded-lg p-4">
             <div className="text-gray-400 text-xs mb-1">24h Change</div>
             <div className="text-green-500 text-lg font-bold">+2.4%</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="bg-blue-900 rounded-lg p-4">
             <div className="text-gray-400 text-xs mb-1">Total Profit</div>
             <div className="text-orange-500 text-lg font-bold">
               {showBalance ? '+' + getCurrencySymbol(selectedCurrency) + convertToSelectedCurrency(0.12) : '+***'}

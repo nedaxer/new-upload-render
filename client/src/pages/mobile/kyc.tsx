@@ -347,7 +347,7 @@ export default function MobileKYC() {
             <Button
               onClick={stopCamera}
               variant="ghost"
-              className="w-12 h-12 rounded-full bg-gray-700 hover:bg-gray-600 text-white"
+              className="w-12 h-12 rounded-full bg-blue-800 hover:bg-gray-600 text-white"
             >
               <X className="w-6 h-6" />
             </Button>
@@ -369,7 +369,7 @@ export default function MobileKYC() {
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <div className="flex items-center justify-between p-4 bg-blue-950">
         <Link href="/mobile/profile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -387,14 +387,14 @@ export default function MobileKYC() {
         </div>
         <Progress 
           value={kycData.verification.confidence} 
-          className="w-full h-2 bg-gray-700"
+          className="w-full h-2 bg-blue-800"
         />
       </div>
 
       <div className="px-4 space-y-6">
         {/* Status Card */}
         {kycData.verification.status !== 'pending' && (
-          <Card className="bg-gray-800 border-gray-700 p-4">
+          <Card className="bg-blue-900 border-blue-700 p-4">
             <div className="flex items-center space-x-3">
               {kycData.verification.status === 'verified' ? (
                 <CheckCircle className="w-6 h-6 text-green-500" />
@@ -420,7 +420,7 @@ export default function MobileKYC() {
         )}
 
         {/* Document Verification */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
+        <Card className="bg-blue-900 border-blue-700 p-4">
           <div className="flex items-center space-x-3 mb-6">
             <Shield className="w-6 h-6 text-orange-500" />
             <h2 className="text-white text-lg font-semibold">Document Verification</h2>
@@ -428,7 +428,7 @@ export default function MobileKYC() {
 
           <div className="space-y-4">
             {/* ID Front */}
-            <div className="bg-gray-700 rounded-lg p-4">
+            <div className="bg-blue-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="text-white font-medium">ID Front Side</h3>
@@ -472,7 +472,7 @@ export default function MobileKYC() {
             </div>
 
             {/* ID Back */}
-            <div className="bg-gray-700 rounded-lg p-4">
+            <div className="bg-blue-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="text-white font-medium">ID Back Side</h3>
@@ -516,7 +516,7 @@ export default function MobileKYC() {
             </div>
 
             {/* Selfie */}
-            <div className="bg-gray-700 rounded-lg p-4">
+            <div className="bg-blue-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <h3 className="text-white font-medium">Selfie Verification</h3>
@@ -604,7 +604,7 @@ export default function MobileKYC() {
         )}
 
         {/* Tips */}
-        <Card className="bg-gray-800 border-gray-700 p-4">
+        <Card className="bg-blue-900 border-blue-700 p-4">
           <h3 className="text-white font-semibold mb-3">Verification Tips</h3>
           <ul className="space-y-2 text-gray-300 text-sm">
             <li>• Ensure good lighting when taking photos</li>

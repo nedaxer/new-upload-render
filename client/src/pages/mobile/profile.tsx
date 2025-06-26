@@ -227,7 +227,7 @@ export default function MobileProfile() {
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <div className="flex items-center justify-between p-4 bg-blue-950">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -306,7 +306,7 @@ export default function MobileProfile() {
       <div className="px-4 space-y-1">
         {menuItems.map((item, index) => (
           <Link key={index} href={item.href}>
-            <Card className="bg-gray-800 border-gray-700 p-4 hover:bg-gray-700 transition-colors">
+            <Card className="bg-blue-900 border-blue-700 p-4 hover:bg-blue-800 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <item.icon className="w-6 h-6 text-orange-500" />
@@ -323,7 +323,7 @@ export default function MobileProfile() {
       <div className="px-4 py-6 space-y-3">
         <Button 
           variant="outline" 
-          className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+          className="w-full bg-blue-900 border-gray-600 text-white hover:bg-blue-800"
         >
           Switch/Create Account
         </Button>

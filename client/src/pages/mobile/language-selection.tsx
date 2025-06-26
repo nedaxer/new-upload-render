@@ -34,14 +34,14 @@ export default function LanguageSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-blue-950 text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800 sticky top-0 bg-gray-900 z-10">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800 sticky top-0 bg-blue-950 z-10">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setLocation('/mobile/settings')}
-          className="text-white hover:bg-gray-800"
+          className="text-white hover:bg-blue-900"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -58,7 +58,7 @@ export default function LanguageSelection() {
             placeholder={t('search_languages')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-orange-500"
+            className="pl-10 bg-blue-900 border-blue-700 text-white placeholder-gray-400 focus:border-orange-500"
           />
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function LanguageSelection() {
               key={language.code}
               variant="ghost"
               onClick={() => handleLanguageSelect(language)}
-              className="w-full justify-between p-4 h-auto text-left hover:bg-gray-800 border border-gray-800 rounded-lg"
+              className="w-full justify-between p-4 h-auto text-left hover:bg-blue-900 border border-blue-800 rounded-lg"
             >
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">{language.flag}</span>
@@ -98,7 +98,7 @@ export default function LanguageSelection() {
       </div>
 
       {/* Info */}
-      <div className="px-4 py-6 border-t border-gray-800 mt-8">
+      <div className="px-4 py-6 border-t border-blue-800 mt-8">
         <div className="text-gray-400 text-sm text-center">
           Language changes will apply to all pages and interface elements
         </div>

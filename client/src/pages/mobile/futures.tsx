@@ -44,15 +44,15 @@ export default function MobileFutures() {
   ];
 
   return (
-    <div className="h-full bg-gray-900">
+    <div className="h-full bg-blue-950">
       {/* Header */}
-      <div className="p-4 bg-gray-900">
+      <div className="p-4 bg-blue-950">
         <h1 className="text-xl font-bold text-white text-center">{t('futures_trading')}</h1>
       </div>
 
       <div className="flex h-[calc(100vh-180px)]">
         {/* Left Panel - Trading Form */}
-        <div className="w-1/2 bg-gray-900 p-4 overflow-y-auto">
+        <div className="w-1/2 bg-blue-950 p-4 overflow-y-auto">
           {/* Trading Pair */}
           <div className="mb-4">
             <div className="flex items-center space-x-2 mb-2">
@@ -92,7 +92,7 @@ export default function MobileFutures() {
 
           {/* Order Type */}
           <div className="mb-4">
-            <div className="flex items-center justify-between bg-gray-800 rounded p-2">
+            <div className="flex items-center justify-between bg-blue-900 rounded p-2">
               <span className="text-white">{orderType}</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </div>
@@ -105,7 +105,7 @@ export default function MobileFutures() {
               <Input
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white flex-1"
+                className="bg-blue-900 border-blue-700 text-white flex-1"
               />
               <span className="text-gray-400 text-sm">USDT</span>
             </div>
@@ -118,7 +118,7 @@ export default function MobileFutures() {
               <Input
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white flex-1"
+                className="bg-blue-900 border-blue-700 text-white flex-1"
               />
               <span className="text-gray-400 text-sm">BTC</span>
               <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -130,7 +130,7 @@ export default function MobileFutures() {
             <div className="flex items-center space-x-2">
               <div className="flex-1 flex items-center space-x-2">
                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <div className="flex-1 bg-gray-700 h-1 rounded">
+                <div className="flex-1 bg-blue-800 h-1 rounded">
                   <div className="w-0 h-1 bg-orange-500 rounded"></div>
                 </div>
                 <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
@@ -210,7 +210,7 @@ export default function MobileFutures() {
         </div>
 
         {/* Right Panel - Order Book */}
-        <div className="w-1/2 bg-gray-900 p-4">
+        <div className="w-1/2 bg-blue-950 p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <span className="text-gray-400 text-sm">{t('price')}</span>
@@ -230,7 +230,7 @@ export default function MobileFutures() {
           </div>
 
           {/* Current Price */}
-          <div className="text-center mb-4 py-2 bg-gray-800 rounded">
+          <div className="text-center mb-4 py-2 bg-blue-900 rounded">
             <div className="text-red-400 text-lg font-bold">105,816.50</div>
             <div className="text-white text-sm">105,816.60</div>
             <Button size="sm" className="mt-1 text-xs">More</Button>
@@ -255,7 +255,7 @@ export default function MobileFutures() {
       </div>
 
       {/* Bottom Tabs */}
-      <div className="bg-gray-800 border-t border-gray-700">
+      <div className="bg-blue-900 border-t border-blue-700">
         <div className="flex">
           <button className="flex-1 py-3 text-orange-500 border-b-2 border-orange-500 text-sm font-medium">
             {t('orders')}(0)

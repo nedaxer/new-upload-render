@@ -97,7 +97,7 @@ export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: Netw
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
         <button onClick={onBack} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -106,7 +106,7 @@ export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: Netw
       </div>
 
       {/* Selected Crypto Info */}
-      <div className="p-4 border-b border-gray-700 bg-gray-900">
+      <div className="p-4 border-b border-blue-700 bg-blue-950">
         <div className="flex items-center space-x-3">
           <img
             src={cryptoInfo.logo}
@@ -121,12 +121,12 @@ export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: Netw
       </div>
 
       {/* Chain List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-blue-950">
         {cryptoInfo.chains.map((chain) => (
           <button
             key={chain.name}
             onClick={() => onSelectChain(chain.name)}
-            className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-3 transition-colors"
+            className="w-full bg-blue-900 hover:bg-blue-800 rounded-lg p-3 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div className="text-left">
@@ -154,7 +154,7 @@ export function NetworkSelection({ onBack, selectedCrypto, onSelectChain }: Netw
       </div>
 
       {/* Warning */}
-      <div className="p-4 bg-yellow-900/20 border-t border-gray-700">
+      <div className="p-4 bg-yellow-900/20 border-t border-blue-700">
         <div className="flex items-start space-x-2">
           <div className="w-4 h-4 text-yellow-500 mt-0.5">
             <svg fill="currentColor" viewBox="0 0 20 20">

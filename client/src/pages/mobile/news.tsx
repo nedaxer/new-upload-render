@@ -150,7 +150,7 @@ export default function MobileNews() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-      <div className="bg-gray-900 px-4 py-4 border-b border-gray-700">
+      <div className="bg-blue-950 px-4 py-4 border-b border-blue-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <h1 className="text-white text-2xl font-bold">{t('news')}</h1>
@@ -169,9 +169,9 @@ export default function MobileNews() {
       </div>
 
       {isLoading && !newsData && (
-        <div className="px-4 py-4 space-y-4 bg-gray-900 min-h-screen">
+        <div className="px-4 py-4 space-y-4 bg-blue-950 min-h-screen">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded-lg p-4 animate-pulse border border-gray-700">
+            <div key={i} className="bg-blue-900 rounded-lg p-4 animate-pulse border border-blue-700">
               <div className="flex items-start space-x-4">
                 <div className="flex-1">
                   <div className="h-4 bg-gray-600 rounded mb-2"></div>
@@ -186,7 +186,7 @@ export default function MobileNews() {
       )}
 
       {error && (
-        <div className="px-4 py-8 bg-gray-900 min-h-screen">
+        <div className="px-4 py-8 bg-blue-950 min-h-screen">
           <div className="bg-red-900 border border-red-700 rounded-lg p-4 text-center">
             <div className="text-red-300 text-sm mb-2">
               Unable to fetch crypto news
@@ -199,7 +199,7 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length > 0 && (
-        <div className="px-4 py-4 space-y-3 bg-gray-900 min-h-screen">
+        <div className="px-4 py-4 space-y-3 bg-blue-950 min-h-screen">
 
           {displayNewsData.map((article, index) => (
             <a
@@ -207,7 +207,7 @@ export default function MobileNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors border border-gray-700"
+              className="block bg-blue-900 rounded-lg p-4 hover:bg-blue-800 transition-colors border border-blue-700"
             >
               <div className="flex items-start space-x-4">
                 {/* Content Section */}
@@ -258,14 +258,14 @@ export default function MobileNews() {
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = getSourceLogo(article.source?.name || 'Crypto News');
-                          target.className = "w-full h-full object-contain p-2 bg-gray-800 rounded-lg";
+                          target.className = "w-full h-full object-contain p-2 bg-blue-900 rounded-lg";
                         }}
                       />
                     ) : (
                       <img 
                         src={getSourceLogo(article.source?.name || 'Crypto News')}
                         alt={article.source?.name || 'News'}
-                        className="w-full h-full object-contain p-2 bg-gray-800 rounded-lg"
+                        className="w-full h-full object-contain p-2 bg-blue-900 rounded-lg"
                       />
                     )}
                   </div>
@@ -279,7 +279,7 @@ export default function MobileNews() {
       )}
 
       {displayNewsData && displayNewsData.length === 0 && (
-        <div className="px-4 py-12 text-center bg-gray-900 min-h-screen">
+        <div className="px-4 py-12 text-center bg-blue-950 min-h-screen">
           <div className="text-gray-500 mb-4">
             No articles available
           </div>

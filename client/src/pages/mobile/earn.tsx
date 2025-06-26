@@ -104,7 +104,7 @@ export default function MobileEarn() {
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <div className="flex items-center justify-between p-4 bg-blue-950">
         <h1 className="text-xl font-bold text-white">{t('earn_title')}</h1>
         <div className="flex items-center space-x-3">
           <Users className="w-6 h-6 text-gray-400" />
@@ -135,7 +135,7 @@ export default function MobileEarn() {
       <div className="px-4 pb-6">
         <div className="grid grid-cols-2 gap-4">
           {earnProducts.map((product, index) => (
-            <Card key={index} className="bg-gray-800 border-gray-700 p-4">
+            <Card key={index} className="bg-blue-900 border-blue-700 p-4">
               <div className={`w-12 h-12 ${product.bgColor} rounded-lg flex items-center justify-center mb-3`}>
                 <product.icon className={`w-6 h-6 ${product.color}`} />
               </div>
@@ -160,7 +160,7 @@ export default function MobileEarn() {
         
         <div className="space-y-3">
           {popularCoins.map((coin, index) => (
-            <Card key={index} className="bg-gray-800 border-gray-700 p-4">
+            <Card key={index} className="bg-blue-900 border-blue-700 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
@@ -203,7 +203,7 @@ export default function MobileEarn() {
           </Link>
         </div>
         
-        <Card className="bg-gray-800 border-gray-700 p-4 text-center">
+        <Card className="bg-blue-900 border-blue-700 p-4 text-center">
           <div className="text-gray-400 mb-2">{t('no_active_products')}</div>
           <div className="text-gray-500 text-sm mb-4">{t('start_earning_flexible')}</div>
           <Button className="bg-orange-500 hover:bg-orange-600 text-white">

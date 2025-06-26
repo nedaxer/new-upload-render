@@ -518,7 +518,7 @@ export default function MobileHome() {
   if (!user) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="flex items-center justify-center min-h-screen bg-blue-950">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-400">Loading your account...</p>
@@ -584,7 +584,7 @@ export default function MobileHome() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-gray-900">
+        <div className="flex items-center justify-between p-4 bg-blue-950">
         <div className="flex items-center space-x-3">
           <Link href="/mobile/profile">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
@@ -635,10 +635,10 @@ export default function MobileHome() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
             placeholder="BDXN/USDT"
-            className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+            className="pl-10 bg-blue-900 border-blue-700 text-white placeholder-gray-400"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <button onClick={handleQRScan} className="w-6 h-6 bg-gray-700 rounded flex items-center justify-center">
+            <button onClick={handleQRScan} className="w-6 h-6 bg-blue-800 rounded flex items-center justify-center">
               <QrCode className="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -711,7 +711,7 @@ export default function MobileHome() {
           {quickActions.map((action, index) => (
             <Link key={index} href={action.href}>
               <div className="flex flex-col items-center space-y-2 cursor-pointer hover:opacity-80 transition-opacity">
-                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-blue-900 rounded-lg flex items-center justify-center">
                   <action.icon className={`w-6 h-6 ${action.color}`} />
                 </div>
                 <span className="text-xs text-gray-300 text-center">{action.name}</span>
@@ -787,7 +787,7 @@ export default function MobileHome() {
                   // Navigate to trade page
                   navigate('/mobile/trade');
                 }}
-                className="flex items-center justify-between py-3 px-2 hover:bg-gray-800/30 rounded transition-colors cursor-pointer"
+                className="flex items-center justify-between py-3 px-2 hover:bg-blue-900/30 rounded transition-colors cursor-pointer"
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">

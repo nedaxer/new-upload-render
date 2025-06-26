@@ -50,7 +50,7 @@ export default function MobileNotifications() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -102,8 +102,8 @@ export default function MobileNotifications() {
             .map((notification: any) => (
               <Card 
                 key={notification.id} 
-                className={`border-gray-700 p-4 cursor-pointer hover:bg-gray-800 transition-colors ${
-                  notification.read ? 'bg-gray-900' : 'bg-gray-800'
+                className={`border-blue-700 p-4 cursor-pointer hover:bg-blue-900 transition-colors ${
+                  notification.read ? 'bg-blue-950' : 'bg-blue-900'
                 }`}
                 onClick={() => !notification.read && markAsReadMutation.mutate(notification.id.toString())}
               >
@@ -137,8 +137,8 @@ export default function MobileNotifications() {
       ) : (
         <div className="flex-1 flex items-center justify-center px-4 py-20">
           <div className="text-center">
-            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center">
                 <span className="text-gray-500 text-2xl">🔔</span>
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function MobileNotifications() {
       {/* Sample notification structure (commented out since you want it empty) */}
       {/*
       <div className="px-4 space-y-3">
-        <Card className="bg-gray-900 border-gray-700 p-4">
+        <Card className="bg-blue-950 border-blue-700 p-4">
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-white font-medium text-sm">Deposit Confirmed</h3>
             <span className="text-xs text-gray-500">Yesterday 21:43</span>

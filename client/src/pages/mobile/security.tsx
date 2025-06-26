@@ -439,7 +439,7 @@ export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <div className="flex items-center space-x-3">
           <Button
             variant="ghost"
@@ -456,7 +456,7 @@ export default function SecurityPage() {
 
       <div className="p-4 space-y-6">
         {/* Password Section */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-blue-950 border-blue-800">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -467,7 +467,7 @@ export default function SecurityPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsChangingPassword(!isChangingPassword)}
-                className="border-gray-700 text-gray-300 hover:text-white"
+                className="border-blue-700 text-gray-300 hover:text-white"
               >
                 {isChangingPassword ? 'Cancel' : 'Change'}
               </Button>
@@ -483,7 +483,7 @@ export default function SecurityPage() {
                       type={showCurrentPassword ? 'text' : 'password'}
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      className="bg-blue-900 border-blue-700 text-white pr-10"
                       placeholder="Enter current password"
                     />
                     <Button
@@ -506,7 +506,7 @@ export default function SecurityPage() {
                       type={showNewPassword ? 'text' : 'password'}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      className="bg-blue-900 border-blue-700 text-white pr-10"
                       placeholder="Enter new password"
                     />
                     <Button
@@ -529,7 +529,7 @@ export default function SecurityPage() {
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white pr-10"
+                      className="bg-blue-900 border-blue-700 text-white pr-10"
                       placeholder="Confirm new password"
                     />
                     <Button
@@ -557,13 +557,13 @@ export default function SecurityPage() {
         </Card>
 
         {/* Security Settings */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-blue-950 border-blue-800">
           <div className="p-4">
             <h2 className="text-lg font-semibold mb-4">Security Settings</h2>
             
             <div className="space-y-4">
               {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+              <div className="flex items-center justify-between py-3 border-b border-blue-800">
                 <div className="flex items-center space-x-3">
                   <Key className="w-5 h-5 text-orange-500" />
                   <div>
@@ -578,7 +578,7 @@ export default function SecurityPage() {
               </div>
 
               {/* Biometric Authentication */}
-              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+              <div className="flex items-center justify-between py-3 border-b border-blue-800">
                 <div className="flex items-center space-x-3">
                   <Fingerprint className="w-5 h-5 text-orange-500" />
                   <div>
@@ -599,7 +599,7 @@ export default function SecurityPage() {
               </div>
 
               {/* Login Notifications */}
-              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+              <div className="flex items-center justify-between py-3 border-b border-blue-800">
                 <div className="flex items-center space-x-3">
                   <AlertTriangle className="w-5 h-5 text-orange-500" />
                   <div>
@@ -614,7 +614,7 @@ export default function SecurityPage() {
               </div>
 
               {/* Screen Lock */}
-              <div className="flex items-center justify-between py-3 border-b border-gray-800">
+              <div className="flex items-center justify-between py-3 border-b border-blue-800">
                 <div className="flex items-center space-x-3">
                   <Lock className="w-5 h-5 text-orange-500" />
                   <div>
@@ -640,7 +640,7 @@ export default function SecurityPage() {
                 <select
                   value={securitySettings.autoLogout}
                   onChange={(e) => handleSecurityToggle('autoLogout', parseInt(e.target.value))}
-                  className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white text-sm"
+                  className="bg-blue-900 border border-blue-700 rounded px-3 py-1 text-white text-sm"
                 >
                   <option value={15}>15 min</option>
                   <option value={30}>30 min</option>
@@ -654,7 +654,7 @@ export default function SecurityPage() {
         </Card>
 
         {/* Login History */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-blue-950 border-blue-800">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Recent Login Activity</h2>
@@ -663,7 +663,7 @@ export default function SecurityPage() {
             
             <div className="space-y-3">
               {loginHistory?.data?.slice(0, 5).map((login: LoginAttempt) => (
-                <div key={login.id} className="flex items-center justify-between py-2 border-b border-gray-800 last:border-b-0">
+                <div key={login.id} className="flex items-center justify-between py-2 border-b border-blue-800 last:border-b-0">
                   <div className="flex items-center space-x-3">
                     <div className={`w-2 h-2 rounded-full ${login.successful ? 'bg-green-500' : 'bg-red-500'}`} />
                     <div>
@@ -690,7 +690,7 @@ export default function SecurityPage() {
         </Card>
 
         {/* Security Status */}
-        <Card className="bg-gray-900 border-gray-800">
+        <Card className="bg-blue-950 border-blue-800">
           <div className="p-4">
             <h2 className="text-lg font-semibold mb-4">Security Status</h2>
             
@@ -724,7 +724,7 @@ export default function SecurityPage() {
 
         {/* 2FA Setup Modal */}
         <Dialog open={show2FAModal} onOpenChange={setShow2FAModal}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogContent className="bg-blue-950 border-blue-800 text-white">
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <Key className="w-5 h-5 text-orange-500" />
@@ -745,7 +745,7 @@ export default function SecurityPage() {
               
               <div className="text-center">
                 <p className="text-sm text-gray-400 mb-2">Manual Entry Key:</p>
-                <div className="bg-gray-800 p-2 rounded font-mono text-sm flex items-center justify-between">
+                <div className="bg-blue-900 p-2 rounded font-mono text-sm flex items-center justify-between">
                   <span>JBSWY3DPEHPK3PXP</span>
                   <Button
                     variant="ghost"
@@ -768,7 +768,7 @@ export default function SecurityPage() {
                   value={twoFactorCode}
                   onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="Enter 6-digit code"
-                  className="bg-gray-800 border-gray-700 text-white text-center text-lg tracking-widest"
+                  className="bg-blue-900 border-blue-700 text-white text-center text-lg tracking-widest"
                   maxLength={6}
                 />
               </div>
@@ -777,7 +777,7 @@ export default function SecurityPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShow2FAModal(false)}
-                  className="flex-1 border-gray-700 text-gray-300 hover:text-white"
+                  className="flex-1 border-blue-700 text-gray-300 hover:text-white"
                 >
                   Cancel
                 </Button>
@@ -795,7 +795,7 @@ export default function SecurityPage() {
 
         {/* 2FA Disable Modal */}
         <Dialog open={show2FADisableModal} onOpenChange={setShow2FADisableModal}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogContent className="bg-blue-950 border-blue-800 text-white">
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -815,7 +815,7 @@ export default function SecurityPage() {
                   value={disablePassword}
                   onChange={(e) => setDisablePassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="bg-gray-800 border-gray-700 text-white"
+                  className="bg-blue-900 border-blue-700 text-white"
                 />
               </div>
               
@@ -823,7 +823,7 @@ export default function SecurityPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShow2FADisableModal(false)}
-                  className="flex-1 border-gray-700 text-gray-300 hover:text-white"
+                  className="flex-1 border-blue-700 text-gray-300 hover:text-white"
                 >
                   Cancel
                 </Button>

@@ -101,7 +101,7 @@ export default function MobileConvert() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center justify-between w-full bg-gray-800 px-4 py-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors"
+          className="flex items-center justify-between w-full bg-blue-900 px-4 py-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors"
         >
           <div className="flex items-center space-x-3">
             {selected?.image && (
@@ -120,7 +120,7 @@ export default function MobileConvert() {
         </button>
         
         {showDropdown && Array.isArray(cryptoData) && cryptoData.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-600 rounded-lg max-h-60 overflow-y-auto z-50">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-blue-900 border border-gray-600 rounded-lg max-h-60 overflow-y-auto z-50">
             {cryptoData.slice(0, 20).map((crypto) => (
               <button
                 key={crypto.id}
@@ -128,7 +128,7 @@ export default function MobileConvert() {
                   onSelect(crypto.id);
                   setShowDropdown(false);
                 }}
-                className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-gray-700 transition-colors"
+                className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-blue-800 transition-colors"
               >
                 <img src={crypto.image} alt={crypto.name} className="w-6 h-6 rounded-full" />
                 <div className="flex-1 text-left">
@@ -149,7 +149,7 @@ export default function MobileConvert() {
   if (isLoading || !Array.isArray(cryptoData)) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+        <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
           <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -158,9 +158,9 @@ export default function MobileConvert() {
         </div>
         <div className="p-4 animate-pulse">
           <div className="space-y-4">
-            <div className="h-20 bg-gray-700 rounded"></div>
-            <div className="h-12 bg-gray-700 rounded"></div>
-            <div className="h-20 bg-gray-700 rounded"></div>
+            <div className="h-20 bg-blue-800 rounded"></div>
+            <div className="h-12 bg-blue-800 rounded"></div>
+            <div className="h-20 bg-blue-800 rounded"></div>
           </div>
         </div>
       </MobileLayout>
@@ -170,7 +170,7 @@ export default function MobileConvert() {
   if (error || !cryptoData || cryptoData.length === 0) {
     return (
       <MobileLayout>
-        <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+        <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
           <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -190,7 +190,7 @@ export default function MobileConvert() {
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
         <button onClick={() => navigate('/mobile')} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -214,7 +214,7 @@ export default function MobileConvert() {
               value={fromAmount}
               onChange={(e) => handleFromAmountChange(e.target.value)}
               placeholder="0.00"
-              className="bg-gray-800 border-gray-600 text-white text-lg h-14 text-center"
+              className="bg-blue-900 border-gray-600 text-white text-lg h-14 text-center"
             />
             <CurrencySelector
               selectedCurrency={fromCurrency}
@@ -248,7 +248,7 @@ export default function MobileConvert() {
               value={toAmount}
               readOnly
               placeholder="0.00"
-              className="bg-gray-800 border-gray-600 text-white text-lg h-14 text-center"
+              className="bg-blue-900 border-gray-600 text-white text-lg h-14 text-center"
             />
             <CurrencySelector
               selectedCurrency={toCurrency}
@@ -262,7 +262,7 @@ export default function MobileConvert() {
 
         {/* Exchange Rate */}
         {fromCrypto && toCrypto && (
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="bg-blue-900 rounded-lg p-4">
             <div className="text-center">
               <div className="text-white text-lg font-semibold">
                 1 {fromCrypto.symbol?.toUpperCase()} = {(fromCrypto.current_price / toCrypto.current_price).toFixed(8)} {toCrypto.symbol?.toUpperCase()}

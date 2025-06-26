@@ -60,7 +60,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
   return (
     <MobileLayout hideBottomNav={true}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
         <button onClick={() => window.history.back()}>
           <ArrowLeft className="w-6 h-6 text-white" />
         </button>
@@ -68,7 +68,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
         <div className="w-6 h-6" /> {/* Spacer */}
       </div>
 
-      <div className="px-4 py-6 bg-gray-900 min-h-screen">
+      <div className="px-4 py-6 bg-blue-950 min-h-screen">
         {/* Most Used Section */}
         <div className="mb-6">
           <h2 className="text-gray-400 text-sm mb-3">Most Used</h2>
@@ -79,7 +79,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
               className={`w-full p-4 rounded-lg border-2 transition-colors ${
                 selectedCurrency === currency.code
                   ? 'border-orange-500 bg-orange-500/10'
-                  : 'border-gray-600 bg-gray-800'
+                  : 'border-gray-600 bg-blue-900'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -103,7 +103,7 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
                 className={`p-4 rounded-lg font-medium transition-colors ${
                   selectedCurrency === currency
                     ? 'bg-orange-500 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-blue-800 text-gray-300 hover:bg-gray-600'
                 }`}
               >
                 {currency}

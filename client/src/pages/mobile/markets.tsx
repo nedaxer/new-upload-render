@@ -234,12 +234,12 @@ export default function MobileMarkets() {
   return (
     <MobileLayout>
       {/* Search Bar */}
-      <div className="p-4 bg-gray-900">
+      <div className="p-4 bg-blue-950">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
             placeholder="BDXN/USDT"
-            className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-full"
+            className="pl-10 bg-blue-900 border-blue-700 text-white placeholder-gray-400 rounded-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -286,7 +286,7 @@ export default function MobileMarkets() {
           sortedMarkets.map((market, index) => (
             <div 
               key={`${market.pair}-${index}`} 
-              className="flex items-center justify-between py-4 border-b border-gray-800 hover:bg-gray-800/30 cursor-pointer transition-colors"
+              className="flex items-center justify-between py-4 border-b border-blue-800 hover:bg-blue-900/30 cursor-pointer transition-colors"
               onClick={() => handleCoinClick(market)}
               onTouchStart={() => hapticLight()}
             >

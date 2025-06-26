@@ -245,14 +245,14 @@ export default function MobileSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-blue-950 text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setLocation('/mobile')}
-          className="text-white hover:bg-gray-800"
+          className="text-white hover:bg-blue-900"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -266,7 +266,7 @@ export default function MobileSettings() {
           <h2 className="text-lg font-semibold mb-4">{t('account_info')}</h2>
 
           {/* Profile Picture */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800">
             <span className="text-gray-300">{t('profile_picture')}</span>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
@@ -302,7 +302,7 @@ export default function MobileSettings() {
           />
 
           {/* Email (Read-only) */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800">
             <span className="text-gray-300">Email</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">
@@ -312,7 +312,7 @@ export default function MobileSettings() {
           </div>
 
           {/* Username/Nickname */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800">
             <span className="text-gray-300">Name</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
@@ -320,7 +320,7 @@ export default function MobileSettings() {
                   <Input
                     value={tempNickname}
                     onChange={(e) => setTempNickname(e.target.value)}
-                    className="w-32 h-8 bg-gray-800 border-gray-700 text-white text-sm"
+                    className="w-32 h-8 bg-blue-900 border-blue-700 text-white text-sm"
                     maxLength={20}
                     placeholder="Enter username"
                   />
@@ -354,7 +354,7 @@ export default function MobileSettings() {
           </div>
 
           {/* UID */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800">
             <span className="text-gray-300">UID</span>
             <div className="flex items-center gap-2">
               <span className="text-gray-400 text-sm">{userUID}</span>
@@ -374,7 +374,7 @@ export default function MobileSettings() {
             <Button
               variant="ghost"
               onClick={() => setLocation('/mobile/kyc')}
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
             >
               <span>Identity Verification</span>
               <div className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export default function MobileSettings() {
             <Button
               variant="ghost"
               onClick={() => setLocation('/mobile/security')}
-              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+              className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
             >
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-orange-500" />
@@ -424,7 +424,7 @@ export default function MobileSettings() {
           <Button
             variant="ghost"
             onClick={() => setLocation('/mobile/language-selection')}
-            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
           >
             <span>{t('language')}</span>
             <div className="flex items-center gap-2">
@@ -440,7 +440,7 @@ export default function MobileSettings() {
           <Button
             variant="ghost"
             onClick={() => setLocation('/mobile/currency-selection')}
-            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-gray-800"
+            className="w-full justify-between py-3 h-auto text-gray-300 hover:bg-blue-900"
           >
             <span>{t('currency_display')}</span>
             <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function MobileSettings() {
           </Button>
 
           {/* Color Theme */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-blue-800">
             <span className="text-gray-300">{t('color_theme')}</span>
             <div className="flex items-center gap-2">
               <Select

@@ -80,7 +80,7 @@ export default function InviteFriends() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -101,7 +101,7 @@ export default function InviteFriends() {
 
       {/* Stats Cards */}
       <div className="px-4 grid grid-cols-2 gap-3 mb-6">
-        <Card className="bg-gray-900 border-gray-700 p-4">
+        <Card className="bg-blue-950 border-blue-700 p-4">
           <div className="flex items-center space-x-2 mb-2">
             <TrendingUp className="w-4 h-4 text-green-500" />
             <span className="text-gray-400 text-xs">Total Earnings</span>
@@ -111,7 +111,7 @@ export default function InviteFriends() {
           </div>
         </Card>
 
-        <Card className="bg-gray-900 border-gray-700 p-4">
+        <Card className="bg-blue-950 border-blue-700 p-4">
           <div className="flex items-center space-x-2 mb-2">
             <Users className="w-4 h-4 text-blue-500" />
             <span className="text-gray-400 text-xs">Total Referrals</span>
@@ -124,7 +124,7 @@ export default function InviteFriends() {
 
       {/* Monthly Earnings */}
       <div className="px-4 mb-6">
-        <Card className="bg-gray-900 border-gray-700 p-4">
+        <Card className="bg-blue-950 border-blue-700 p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <Clock className="w-4 h-4 text-orange-500" />
@@ -143,7 +143,7 @@ export default function InviteFriends() {
       {/* Referral Link */}
       <div className="px-4 mb-6">
         <h3 className="text-white font-medium mb-3 text-sm">Your Referral Link</h3>
-        <Card className="bg-gray-900 border-gray-700 p-4">
+        <Card className="bg-blue-950 border-blue-700 p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex-1 mr-3">
               <div className="text-gray-400 text-xs mb-1">Referral Code</div>
@@ -153,7 +153,7 @@ export default function InviteFriends() {
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-lg p-3 mb-3">
+          <div className="bg-blue-900 rounded-lg p-3 mb-3">
             <div className="text-gray-300 text-xs break-all">
               {referralLink}
             </div>
@@ -170,7 +170,7 @@ export default function InviteFriends() {
             
             <button
               onClick={shareReferralLink}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center space-x-2"
+              className="flex-1 bg-blue-800 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium flex items-center justify-center space-x-2"
             >
               <Share className="w-4 h-4" />
               <span>Share</span>
@@ -183,19 +183,19 @@ export default function InviteFriends() {
       <div className="px-4 mb-6">
         <h3 className="text-white font-medium mb-3 text-sm">Commission Rates</h3>
         <div className="space-y-2">
-          <Card className="bg-gray-900 border-gray-700 p-3">
+          <Card className="bg-blue-950 border-blue-700 p-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-300 text-sm">Spot Trading</span>
               <span className="text-orange-500 font-medium">20%</span>
             </div>
           </Card>
-          <Card className="bg-gray-900 border-gray-700 p-3">
+          <Card className="bg-blue-950 border-blue-700 p-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-300 text-sm">Futures Trading</span>
               <span className="text-orange-500 font-medium">25%</span>
             </div>
           </Card>
-          <Card className="bg-gray-900 border-gray-700 p-3">
+          <Card className="bg-blue-950 border-blue-700 p-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-300 text-sm">Staking Rewards</span>
               <span className="text-orange-500 font-medium">15%</span>
@@ -209,7 +209,7 @@ export default function InviteFriends() {
         <h3 className="text-white font-medium mb-3 text-sm">Recent Earnings</h3>
         <div className="space-y-3">
           {referralStats?.recentEarnings?.map((earning) => (
-            <Card key={earning.id} className="bg-gray-900 border-gray-700 p-3">
+            <Card key={earning.id} className="bg-blue-950 border-blue-700 p-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">

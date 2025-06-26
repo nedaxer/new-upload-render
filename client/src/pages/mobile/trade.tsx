@@ -944,14 +944,14 @@ export default function MobileTrade() {
   return (
     <MobileLayout>
       {/* Trading Tabs - Smaller font and padding */}
-      <div className="bg-gray-900 px-3 py-1">
+      <div className="bg-blue-950 px-3 py-1">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {tradingTabs.map((tab) => (
             <button 
               key={tab}
               className={`whitespace-nowrap px-2 py-1 rounded text-xs ${
                 selectedTradingType === tab 
-                  ? 'bg-gray-700 text-white' 
+                  ? 'bg-blue-800 text-white' 
                   : 'text-gray-400'
               }`}
               onClick={() => handleTradingTypeChange(tab)}
@@ -963,12 +963,12 @@ export default function MobileTrade() {
       </div>
 
       {/* Chart/Trade Toggle - Smaller */}
-      <div className="bg-gray-800 mx-3 rounded-lg overflow-hidden">
+      <div className="bg-blue-900 mx-3 rounded-lg overflow-hidden">
         <div className="flex">
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Charts' 
-                ? 'bg-gray-700 text-white' 
+                ? 'bg-blue-800 text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Charts')}
@@ -978,7 +978,7 @@ export default function MobileTrade() {
           <button 
             className={`flex-1 py-1 text-xs font-medium ${
               selectedTab === 'Trade' 
-                ? 'bg-gray-700 text-white' 
+                ? 'bg-blue-800 text-white' 
                 : 'text-gray-400'
             }`}
             onClick={() => handleTabChange('Trade')}
@@ -990,11 +990,11 @@ export default function MobileTrade() {
 
       {/* Charts Tab Content - Shared for both Spot and Futures */}
       {selectedTab === 'Charts' && (
-        <div className="flex-1 overflow-y-auto bg-gray-900">
+        <div className="flex-1 overflow-y-auto bg-blue-950">
           {/* Tappable Coin Header - Smaller and compact */}
-          <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
+          <div className="flex justify-between items-center p-2 bg-blue-900 border-b border-blue-700 sticky top-0 z-40">
             <div 
-              className="flex flex-col cursor-pointer hover:bg-gray-700 rounded px-2 py-1 transition-colors"
+              className="flex flex-col cursor-pointer hover:bg-blue-800 rounded px-2 py-1 transition-colors"
               onClick={() => {
                 hapticLight();
                 setShowPairSelectorModal(true);
@@ -1018,10 +1018,10 @@ export default function MobileTrade() {
           </div>
 
           {/* Chart Container - Clean without loading skeleton */}
-          <div className="relative bg-gray-900" style={{ height: '70vh' }}>
+          <div className="relative bg-blue-950" style={{ height: '70vh' }}>
             {/* Show loading state when chart is initializing */}
             {!isTradingViewReady && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
+              <div className="absolute inset-0 bg-blue-950 z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50 animate-pulse" />
@@ -1034,7 +1034,7 @@ export default function MobileTrade() {
 
             {/* Only show error state if chart fails to load */}
             {chartError && (
-              <div className="absolute inset-0 bg-gray-900 z-20 flex items-center justify-center">
+              <div className="absolute inset-0 bg-blue-950 z-20 flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <div className="mb-4">
                     <BarChart3 className="w-12 h-12 mx-auto opacity-50" />
@@ -1111,7 +1111,7 @@ export default function MobileTrade() {
 
       {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
       {selectedTab === 'Charts' && (
-        <div className="fixed left-0 right-0 bg-gray-800 border-t border-gray-700 p-2" style={{ bottom: '56px', zIndex: 10000 }}>
+        <div className="fixed left-0 right-0 bg-blue-900 border-t border-blue-700 p-2" style={{ bottom: '56px', zIndex: 10000 }}>
           <div className="flex gap-2">
             <button 
               onClick={handleBuyClick}
@@ -1136,7 +1136,7 @@ export default function MobileTrade() {
           {selectedTradingType === 'Spot' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
-              <div className="bg-gray-900 rounded-lg p-4 mb-4">
+              <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
                   <div className="flex items-center space-x-2">
@@ -1151,7 +1151,7 @@ export default function MobileTrade() {
               </div>
 
               {/* Buy/Sell Toggle */}
-              <div className="bg-gray-900 rounded-lg overflow-hidden mb-4">
+              <div className="bg-blue-950 rounded-lg overflow-hidden mb-4">
                 <div className="flex">
                   <button 
                     className={`flex-1 py-3 font-medium transition-colors ${
@@ -1179,9 +1179,9 @@ export default function MobileTrade() {
               {/* Trading Form */}
               <div className="space-y-4">
                 {/* Order Type */}
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-blue-950 rounded-lg p-4">
                   <div className="flex space-x-2 mb-4">
-                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
+                    <button className="bg-blue-800 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
                     <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
                     <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
                   </div>
@@ -1194,7 +1194,7 @@ export default function MobileTrade() {
                     <div className="flex items-center space-x-2">
                       <button 
                         onClick={() => handleQuantityChange(Math.max(0, quantity - (tradeMode === 'Buy' ? 10 : 0.001)))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                        className="bg-blue-800 hover:bg-gray-600 text-white p-2 rounded"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -1209,12 +1209,12 @@ export default function MobileTrade() {
                             handleQuantityChange(value);
                           }
                         }}
-                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="flex-1 bg-blue-900 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                         placeholder="0.00"
                       />
                       <button 
                         onClick={() => handleQuantityChange(quantity + (tradeMode === 'Buy' ? 10 : 0.001))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                        className="bg-blue-800 hover:bg-gray-600 text-white p-2 rounded"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -1234,7 +1234,7 @@ export default function MobileTrade() {
                             handleQuantityChange(1 * multiplier); // Assuming 1 unit available
                           }
                         }}
-                        className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
+                        className="bg-blue-800 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
                       >
                         {percent}
                       </button>
@@ -1242,7 +1242,7 @@ export default function MobileTrade() {
                   </div>
 
                   {/* Order Summary */}
-                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
+                  <div className="bg-blue-900 rounded p-3 mb-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Price:</span>
                       <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
@@ -1274,7 +1274,7 @@ export default function MobileTrade() {
                 </div>
 
                 {/* Available Balance */}
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-blue-950 rounded-lg p-4">
                   <h3 className="text-white font-medium mb-3">Available Balance</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">
@@ -1293,7 +1293,7 @@ export default function MobileTrade() {
           {selectedTradingType === 'Futures' && (
             <div className="h-full p-4">
               {/* Trading Pair Info */}
-              <div className="bg-gray-900 rounded-lg p-4 mb-4">
+              <div className="bg-blue-950 rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white text-lg font-bold">{selectedPair.symbol}/USDT</span>
                   <div className="flex items-center space-x-2">
@@ -1312,7 +1312,7 @@ export default function MobileTrade() {
               </div>
 
               {/* Long/Short Toggle */}
-              <div className="bg-gray-900 rounded-lg overflow-hidden mb-4">
+              <div className="bg-blue-950 rounded-lg overflow-hidden mb-4">
                 <div className="flex">
                   <button 
                     className={`flex-1 py-3 font-medium transition-colors ${
@@ -1340,13 +1340,13 @@ export default function MobileTrade() {
               {/* Futures Trading Form */}
               <div className="space-y-4">
                 {/* Leverage Selector */}
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-blue-950 rounded-lg p-4">
                   <label className="block text-gray-400 text-sm mb-2">Leverage</label>
                   <div className="flex space-x-2 mb-4">
                     {['5x', '10x', '25x', '50x', '100x'].map((leverage) => (
                       <button
                         key={leverage}
-                        className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors"
+                        className="bg-blue-800 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm transition-colors"
                       >
                         {leverage}
                       </button>
@@ -1355,9 +1355,9 @@ export default function MobileTrade() {
                 </div>
 
                 {/* Order Type and Size */}
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-blue-950 rounded-lg p-4">
                   <div className="flex space-x-2 mb-4">
-                    <button className="bg-gray-700 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
+                    <button className="bg-blue-800 text-white px-4 py-2 rounded text-sm">{t('market')}</button>
                     <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('limit')}</button>
                     <button className="text-gray-400 px-4 py-2 rounded text-sm hover:text-white">{t('stop')}</button>
                   </div>
@@ -1370,7 +1370,7 @@ export default function MobileTrade() {
                     <div className="flex items-center space-x-2">
                       <button 
                         onClick={() => handleAmountChange(Math.max(0, amount - 10))}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                        className="bg-blue-800 hover:bg-gray-600 text-white p-2 rounded"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -1378,12 +1378,12 @@ export default function MobileTrade() {
                         type="number"
                         value={amount.toFixed(2)}
                         onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
-                        className="flex-1 bg-gray-800 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="flex-1 bg-blue-900 text-white px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                         placeholder="0.00"
                       />
                       <button 
                         onClick={() => handleAmountChange(amount + 10)}
-                        className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded"
+                        className="bg-blue-800 hover:bg-gray-600 text-white p-2 rounded"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -1399,7 +1399,7 @@ export default function MobileTrade() {
                           const multiplier = parseInt(percent) / 100;
                           handleAmountChange(1000 * multiplier); // Assuming $1000 available balance
                         }}
-                        className="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
+                        className="bg-blue-800 hover:bg-gray-600 text-white py-2 rounded text-sm transition-colors"
                       >
                         {percent}
                       </button>
@@ -1407,7 +1407,7 @@ export default function MobileTrade() {
                   </div>
 
                   {/* Order Summary */}
-                  <div className="bg-gray-800 rounded p-3 mb-4 space-y-2">
+                  <div className="bg-blue-900 rounded p-3 mb-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Entry Price:</span>
                       <span className="text-white">${selectedPair.price?.toFixed(2) || '0.00'}</span>
@@ -1443,7 +1443,7 @@ export default function MobileTrade() {
                 </div>
 
                 {/* Margin and Positions Info */}
-                <div className="bg-gray-900 rounded-lg p-4">
+                <div className="bg-blue-950 rounded-lg p-4">
                   <h3 className="text-white font-medium mb-3">Account Balance</h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">

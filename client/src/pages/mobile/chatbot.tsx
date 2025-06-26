@@ -269,7 +269,7 @@ export default function Chatbot() {
     return (
       <div className="min-h-screen bg-black text-white">
         {/* Chat History Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-blue-800">
           <button onClick={() => setShowChatHistory(false)}>
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
@@ -280,7 +280,7 @@ export default function Chatbot() {
         {/* Chat History List */}
         <div className="p-4 space-y-3">
           {JSON.parse(localStorage.getItem('nedaxer_chat_history') || '[]').map((session: any) => (
-            <Card key={session.id} className="bg-gray-900 border-gray-700 p-4">
+            <Card key={session.id} className="bg-blue-950 border-blue-700 p-4">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-white font-medium text-sm">
                   Chat Session - {languages.find(l => l.code === session.language)?.name || 'English'}
@@ -305,7 +305,7 @@ export default function Chatbot() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+      <div className="flex items-center justify-between p-4 border-b border-blue-800">
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
@@ -321,7 +321,7 @@ export default function Chatbot() {
       </div>
 
       {/* Chat History Button */}
-      <div className="px-4 py-2 border-b border-gray-800">
+      <div className="px-4 py-2 border-b border-blue-800">
         <button 
           onClick={() => setShowChatHistory(true)}
           className="flex items-center space-x-2 text-gray-400 text-sm"
@@ -342,7 +342,7 @@ export default function Chatbot() {
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.isUser
                   ? 'bg-orange-500 text-white'
-                  : 'bg-gray-800 text-gray-200'
+                  : 'bg-blue-900 text-gray-200'
               }`}
             >
               <p className="text-sm">{message.text}</p>
@@ -355,7 +355,7 @@ export default function Chatbot() {
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-800 rounded-lg p-3">
+            <div className="bg-blue-900 rounded-lg p-3">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
@@ -369,14 +369,14 @@ export default function Chatbot() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-blue-800">
         <div className="flex space-x-2">
           <Input
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Drop your question(s) here"
-            className="flex-1 bg-gray-900 border-gray-700 text-white placeholder-gray-400"
+            className="flex-1 bg-blue-950 border-blue-700 text-white placeholder-gray-400"
             disabled={isLoading}
           />
           <Button
@@ -392,7 +392,7 @@ export default function Chatbot() {
       {/* Language Selector Modal */}
       {showLanguageSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-          <div className="w-full bg-gray-900 rounded-t-lg p-4 max-h-[70vh] overflow-y-auto">
+          <div className="w-full bg-blue-950 rounded-t-lg p-4 max-h-[70vh] overflow-y-auto">
             <h2 className="text-white text-lg font-semibold mb-4">Select Language</h2>
             <div className="space-y-2">
               {languages.map((language) => (
@@ -402,7 +402,7 @@ export default function Chatbot() {
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     selectedLanguage.code === language.code
                       ? 'bg-orange-500 text-white'
-                      : 'text-gray-300 hover:bg-gray-800'
+                      : 'text-gray-300 hover:bg-blue-900'
                   }`}
                 >
                   <div className="flex justify-between items-center">
@@ -428,7 +428,7 @@ export default function Chatbot() {
       {/* End Chat Dialog */}
       {showEndChatDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg p-6 w-full max-w-sm">
+          <div className="bg-blue-950 rounded-lg p-6 w-full max-w-sm">
             <h3 className="text-white text-lg font-semibold mb-2">
               Would you like to end this chat?
             </h3>

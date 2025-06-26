@@ -57,7 +57,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
   return (
     <MobileLayout>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-blue-950 border-b border-blue-700">
         <button onClick={onBack} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -66,7 +66,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-700 bg-gray-900">
+      <div className="flex border-b border-blue-700 bg-blue-950">
         <button
           onClick={() => setActiveTab('crypto')}
           className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
@@ -89,7 +89,7 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
       </div>
 
       {/* Search */}
-      <div className="p-4 border-b border-gray-700 bg-gray-900">
+      <div className="p-4 border-b border-blue-700 bg-blue-950">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -97,18 +97,18 @@ export function CryptoSelection({ onBack, onSelectCrypto, onComingSoon }: Crypto
             placeholder={t('search') + ' cryptocurrency'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-600 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500"
+            className="w-full bg-blue-900 border border-gray-600 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-400 focus:outline-none focus:border-orange-500"
           />
         </div>
       </div>
 
       {/* Crypto List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-blue-950">
         {filteredCryptos.map((crypto) => (
           <button
             key={crypto.symbol}
             onClick={() => onSelectCrypto(crypto.symbol)}
-            className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-3 transition-colors"
+            className="w-full bg-blue-900 hover:bg-blue-800 rounded-lg p-3 transition-colors"
           >
             <div className="flex items-center space-x-3">
               <img
