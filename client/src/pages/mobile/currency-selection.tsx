@@ -1,7 +1,8 @@
 
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Check } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Check, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { useLanguage } from '@/contexts/language-context';
@@ -13,6 +14,7 @@ interface CurrencySelectionProps {
 
 export default function CurrencySelection({ onSelectCurrency, currentCurrency = 'USD' }: CurrencySelectionProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(currentCurrency);
+  const [searchQuery, setSearchQuery] = useState('');
   const { t } = useLanguage();
 
   // Most used currencies
@@ -24,19 +26,79 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     { code: 'AUD', name: 'Australian Dollar' }
   ];
 
-  // Additional currencies (without flags as requested)
-  const additionalCurrencies = [
-    'CHF', 'CNY', 'INR', 'KRW', 'SGD', 'HKD', 'THB', 'MYR', 'IDR', 'PHP', 
-    'VND', 'TWD', 'PKR', 'BDT', 'LKR', 'NPR', 'NOK', 'SEK', 'DKK', 'PLN', 
-    'CZK', 'HUF', 'RON', 'BGN', 'TRY', 'RUB', 'UAH', 'ISK', 'AED', 'SAR', 
-    'QAR', 'KWD', 'BHD', 'OMR', 'ILS', 'JOD', 'LBP', 'EGP', 'MAD', 'ZAR', 
-    'NGN', 'KES', 'UGX', 'TZS', 'ETB', 'GHS', 'BRL', 'MXN', 'ARS', 'CLP', 
-    'COP', 'PEN', 'UYU', 'BOB', 'PYG', 'NZD', 'FJD'
-  ].sort();
+  // Additional currencies with names
+  const additionalCurrenciesData = [
+    { code: 'CHF', name: 'Swiss Franc' },
+    { code: 'CNY', name: 'Chinese Yuan' },
+    { code: 'INR', name: 'Indian Rupee' },
+    { code: 'KRW', name: 'South Korean Won' },
+    { code: 'SGD', name: 'Singapore Dollar' },
+    { code: 'HKD', name: 'Hong Kong Dollar' },
+    { code: 'THB', name: 'Thai Baht' },
+    { code: 'MYR', name: 'Malaysian Ringgit' },
+    { code: 'IDR', name: 'Indonesian Rupiah' },
+    { code: 'PHP', name: 'Philippine Peso' },
+    { code: 'VND', name: 'Vietnamese Dong' },
+    { code: 'TWD', name: 'Taiwan Dollar' },
+    { code: 'PKR', name: 'Pakistani Rupee' },
+    { code: 'BDT', name: 'Bangladeshi Taka' },
+    { code: 'LKR', name: 'Sri Lankan Rupee' },
+    { code: 'NPR', name: 'Nepalese Rupee' },
+    { code: 'NOK', name: 'Norwegian Krone' },
+    { code: 'SEK', name: 'Swedish Krona' },
+    { code: 'DKK', name: 'Danish Krone' },
+    { code: 'PLN', name: 'Polish Zloty' },
+    { code: 'CZK', name: 'Czech Koruna' },
+    { code: 'HUF', name: 'Hungarian Forint' },
+    { code: 'RON', name: 'Romanian Leu' },
+    { code: 'BGN', name: 'Bulgarian Lev' },
+    { code: 'TRY', name: 'Turkish Lira' },
+    { code: 'RUB', name: 'Russian Ruble' },
+    { code: 'UAH', name: 'Ukrainian Hryvnia' },
+    { code: 'ISK', name: 'Icelandic Krona' },
+    { code: 'AED', name: 'UAE Dirham' },
+    { code: 'SAR', name: 'Saudi Riyal' },
+    { code: 'QAR', name: 'Qatari Riyal' },
+    { code: 'KWD', name: 'Kuwaiti Dinar' },
+    { code: 'BHD', name: 'Bahraini Dinar' },
+    { code: 'OMR', name: 'Omani Rial' },
+    { code: 'ILS', name: 'Israeli Shekel' },
+    { code: 'JOD', name: 'Jordanian Dinar' },
+    { code: 'LBP', name: 'Lebanese Pound' },
+    { code: 'EGP', name: 'Egyptian Pound' },
+    { code: 'MAD', name: 'Moroccan Dirham' },
+    { code: 'ZAR', name: 'South African Rand' },
+    { code: 'NGN', name: 'Nigerian Naira' },
+    { code: 'KES', name: 'Kenyan Shilling' },
+    { code: 'UGX', name: 'Ugandan Shilling' },
+    { code: 'TZS', name: 'Tanzanian Shilling' },
+    { code: 'ETB', name: 'Ethiopian Birr' },
+    { code: 'GHS', name: 'Ghanaian Cedi' },
+    { code: 'BRL', name: 'Brazilian Real' },
+    { code: 'MXN', name: 'Mexican Peso' },
+    { code: 'ARS', name: 'Argentine Peso' },
+    { code: 'CLP', name: 'Chilean Peso' },
+    { code: 'COP', name: 'Colombian Peso' },
+    { code: 'PEN', name: 'Peruvian Sol' },
+    { code: 'UYU', name: 'Uruguayan Peso' },
+    { code: 'BOB', name: 'Bolivian Boliviano' },
+    { code: 'PYG', name: 'Paraguayan Guarani' },
+    { code: 'NZD', name: 'New Zealand Dollar' },
+    { code: 'FJD', name: 'Fijian Dollar' }
+  ].sort((a, b) => a.code.localeCompare(b.code));
 
-  // Filter out most used currencies from additional list
-  const otherCurrencies = additionalCurrencies.filter(currency => 
-    !mostUsedCurrencies.some(used => used.code === currency)
+  // All currencies combined
+  const allCurrencies = [...mostUsedCurrencies, ...additionalCurrenciesData];
+
+  // Filter currencies based on search
+  const filteredMostUsed = mostUsedCurrencies.filter(currency =>
+    currency.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    currency.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredOther = additionalCurrenciesData.filter(currency =>
+    currency.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    currency.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleCurrencySelect = (currency: string) => {
@@ -67,49 +129,89 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
         <div className="w-6 h-6" /> {/* Spacer */}
       </div>
 
-      <div className="px-4 py-6 bg-blue-950 min-h-screen">
-        {/* Most Used Section */}
-        <div className="mb-6">
-          <h2 className="text-gray-400 text-sm mb-3">Most Used</h2>
-          {mostUsedCurrencies.map((currency) => (
-            <button
-              key={currency.code}
-              onClick={() => handleCurrencySelect(currency.code)}
-              className={`w-full p-4 rounded-lg border-2 transition-colors ${
-                selectedCurrency === currency.code
-                  ? 'border-orange-500 bg-orange-500/10'
-                  : 'border-gray-600 bg-blue-900'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-white font-medium">{currency.code}</span>
-                {selectedCurrency === currency.code && (
-                  <Check className="w-5 h-5 text-orange-500" />
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* More Section */}
-        <div>
-          <h2 className="text-gray-400 text-sm mb-3">More</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {otherCurrencies.map((currency) => (
-              <button
-                key={currency}
-                onClick={() => handleCurrencySelect(currency)}
-                className={`p-4 rounded-lg font-medium transition-colors ${
-                  selectedCurrency === currency
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-blue-800 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                {currency}
-              </button>
-            ))}
+      <div className="px-4 py-4 bg-blue-950 min-h-screen">
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Search currencies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-blue-900 border-gray-600 text-white placeholder-gray-400 text-sm"
+            />
           </div>
         </div>
+
+        {/* Most Used Section */}
+        {filteredMostUsed.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-gray-400 text-xs mb-2">Most Used</h2>
+            <div className="space-y-2">
+              {filteredMostUsed.map((currency) => (
+                <button
+                  key={currency.code}
+                  onClick={() => handleCurrencySelect(currency.code)}
+                  className={`w-full p-3 rounded-lg border transition-colors ${
+                    selectedCurrency === currency.code
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-gray-600 bg-blue-900 hover:bg-blue-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <div className="text-white text-sm font-medium">{currency.code}</div>
+                      <div className="text-gray-400 text-xs">{currency.name}</div>
+                    </div>
+                    {selectedCurrency === currency.code && (
+                      <Check className="w-4 h-4 text-orange-500" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Currencies Section */}
+        {(searchQuery === '' || filteredOther.length > 0) && (
+          <div>
+            <h2 className="text-gray-400 text-xs mb-2">
+              {searchQuery === '' ? 'All Currencies' : 'More Results'}
+            </h2>
+            <div className="space-y-1">
+              {(searchQuery === '' ? additionalCurrenciesData : filteredOther).map((currency) => (
+                <button
+                  key={currency.code}
+                  onClick={() => handleCurrencySelect(currency.code)}
+                  className={`w-full p-2 rounded-lg text-left transition-colors ${
+                    selectedCurrency === currency.code
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-blue-800 text-gray-300 hover:bg-blue-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium">{currency.code}</span>
+                      <span className="text-xs text-gray-400 ml-2">{currency.name}</span>
+                    </div>
+                    {selectedCurrency === currency.code && (
+                      <Check className="w-4 h-4" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No Results */}
+        {searchQuery !== '' && filteredMostUsed.length === 0 && filteredOther.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-400 text-sm">No currencies found</p>
+          </div>
+        )}
       </div>
     </MobileLayout>
   );
