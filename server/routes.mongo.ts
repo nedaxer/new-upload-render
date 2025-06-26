@@ -1468,6 +1468,23 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
+  // Get user deposit transaction history (filtered by authenticated user)
+  app.get('/api/deposits/history', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserDepositTransactions(userId);
+      
+      console.log(`Deposit history API called for user ${userId}, found:`, transactions.length, 'transactions');
+      
+      res.json({ success: true, data: transactions });
+    } catch (error) {
+      console.error('Get deposit history error:', error);
+      res.status(500).json({ success: false, message: "Failed to get deposit history" });
+    }
+  });
+
   // Get single deposit transaction details
   app.get('/api/deposits/details/:transactionId', requireAuth, async (req: Request, res: Response) => {
     try {
@@ -1495,21 +1512,22 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
-  // Get user notifications (bypassing authentication for testing)
-  app.get('/api/notifications', async (req: Request, res: Response) => {
+  // Get user notifications (filtered by authenticated user)
+  app.get('/api/notifications', requireAuth, async (req: Request, res: Response) => {
     try {
+      const userId = req.session.userId!;
       const { getMongoClient } = await import('./mongodb');
       const client = await getMongoClient();
       const db = client.db('nedaxer');
       
-      // Get all notifications for testing
+      // Get notifications only for the authenticated user
       const notifications = await db.collection('notifications')
-        .find({})
+        .find({ userId: userId })
         .sort({ createdAt: -1 })
         .limit(50)
         .toArray();
       
-      console.log('Notifications API called, found:', notifications.length);
+      console.log(`Notifications API called for user ${userId}, found:`, notifications.length);
       
       res.json({ success: true, data: notifications });
     } catch (error) {

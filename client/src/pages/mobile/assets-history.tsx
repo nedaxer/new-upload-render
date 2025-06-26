@@ -10,13 +10,13 @@ export default function AssetsHistory() {
   const [activeTab, setActiveTab] = useState('Deposit');
   const { user } = useAuth();
 
-  // Fetch deposit transactions
+  // Fetch deposit transactions for authenticated user only
   const { data: transactionsResponse, isLoading } = useQuery({
-    queryKey: [`/api/deposits/${user?._id}`],
-    enabled: !!user?._id,
+    queryKey: ['/api/deposits/history'],
+    enabled: !!user,
   });
 
-  const transactions = transactionsResponse?.data || [];
+  const transactions = Array.isArray(transactionsResponse?.data) ? transactionsResponse.data : [];
 
   const historyTabs = ['All Transactions', 'Deposit', 'Withdraw', 'Transfer'];
 

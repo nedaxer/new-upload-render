@@ -139,7 +139,7 @@ export default function MobileNotifications() {
       </div>
 
       {/* Notifications Content */}
-      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)]">
+      <div className="flex-1 overflow-y-auto pb-20">
         {/* Notifications List */}
         {isLoading ? (
           <div className="px-4 space-y-2">
