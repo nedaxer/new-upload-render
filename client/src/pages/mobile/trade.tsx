@@ -226,7 +226,7 @@ export default function MobileTrade() {
       
       if (activeWidget && activeWidget.widget) {
         // Check if symbol is different before updating
-        const widgetCurrentSymbol = activeWidget.currentSymbol || selectedPair.symbol;
+        const widgetCurrentSymbol: string = activeWidget.currentSymbol || selectedPair.symbol;
         if (widgetCurrentSymbol !== selectedPair.symbol) {
           try {
             console.log('Updating chart symbol from', widgetCurrentSymbol, 'to:', selectedPair.tradingViewSymbol);
@@ -1036,7 +1036,10 @@ export default function MobileTrade() {
     selectedTradingType,
     selectedPair: selectedPair?.symbol,
     priceDataExists: !!priceData,
-    transformedDataLength: transformedCryptoData?.length
+    transformedDataLength: transformedCryptoData?.length,
+    priceData: priceData?.success ? 'success' : 'failed',
+    cryptoDataType: typeof priceData?.data,
+    isArray: Array.isArray(priceData?.data)
   });
 
   return (
