@@ -588,42 +588,53 @@ export default function AdminPortal() {
                 <p className="text-sm text-blue-200">Current Balance: ${selectedUser.balance.toFixed(2)}</p>
               </div>
               
-              <div className="flex space-x-3">
-                <Input
-                  type="number"
-                  placeholder="Amount (USD)"
-                  value={fundAmount}
-                  onChange={(e) => setFundAmount(e.target.value)}
-                  className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-blue-200"
-                />
-                <Button
-                  onClick={handleAddFunds}
-                  disabled={addFundsMutation.isPending}
-                  className="bg-green-600 hover:bg-green-700 text-white px-6"
-                >
-                  {addFundsMutation.isPending ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Adding...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Funds
-                    </div>
-                  )}
-                </Button>
+              <div className="space-y-4">
+                {/* Silent Fund Transfer (No History) */}
+                <div className="p-4 bg-gray-500/20 rounded-lg border border-gray-400/30">
+                  <h4 className="text-white font-medium mb-2">Silent Fund Transfer</h4>
+                  <p className="text-gray-300 text-sm mb-3">Add USD funds directly without creating transaction history</p>
+                  <div className="flex space-x-3">
+                    <Input
+                      type="number"
+                      placeholder="Amount (USD)"
+                      value={fundAmount}
+                      onChange={(e) => setFundAmount(e.target.value)}
+                      className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-blue-200"
+                    />
+                    <Button
+                      onClick={handleAddFunds}
+                      disabled={addFundsMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6"
+                    >
+                      {addFundsMutation.isPending ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Adding...
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Funds Silently
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
               
               <div className="pt-3 border-t border-white/20">
-                <AdminDepositCreator 
-                  userId={selectedUser._id} 
-                  username={selectedUser.username}
-                  onSuccess={() => {
-                    queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
-                    queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
-                  }}
-                />
+                <div className="p-4 bg-yellow-500/20 rounded-lg border border-yellow-400/30 mb-4">
+                  <h4 className="text-white font-medium mb-2">Deposit Transaction History</h4>
+                  <p className="text-yellow-200 text-sm mb-3">Create crypto deposit with transaction history and user notification</p>
+                  <AdminDepositCreator 
+                    userId={selectedUser._id} 
+                    username={selectedUser.username}
+                    onSuccess={() => {
+                      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+                      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </CardContent>

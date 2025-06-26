@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, DollarSign } from 'lucide-react';
+import { Plus, DollarSign, RefreshCw } from 'lucide-react';
 
 interface ChainInfo {
   name: string;
@@ -77,8 +77,36 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
   const [selectedChain, setSelectedChain] = useState<ChainInfo | null>(null);
   const [usdAmount, setUsdAmount] = useState('');
   const [senderAddress, setSenderAddress] = useState('');
+  const [cryptoPrices, setCryptoPrices] = useState<{ [key: string]: number }>({});
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch real-time crypto prices
+  const { data: priceData, refetch: refetchPrices } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 0, // Always consider data stale to ensure fresh prices
+    queryFn: async () => {
+      const response = await fetch('/api/crypto/realtime-prices');
+      if (!response.ok) {
+        throw new Error('Failed to fetch crypto prices');
+      }
+      return response.json();
+    },
+  });
+
+  useEffect(() => {
+    if (priceData && (priceData as any).success && (priceData as any).data && Array.isArray((priceData as any).data)) {
+      const prices: { [key: string]: number } = {};
+      (priceData as any).data.forEach((crypto: any) => {
+        if (crypto.symbol && crypto.price) {
+          prices[crypto.symbol.toUpperCase()] = crypto.price;
+        }
+      });
+      setCryptoPrices(prices);
+    }
+  }, [priceData]);
 
   const createDepositMutation = useMutation({
     mutationFn: async (data: {
@@ -91,10 +119,20 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
       usdAmount: number;
       cryptoPrice: number;
     }) => {
-      return apiRequest('/api/admin/deposits/create', {
+      const response = await fetch('/api/admin/deposits/create', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create deposit');
+      }
+      
+      return response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -177,12 +215,26 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
       </DialogTrigger>
       <DialogContent className="max-w-2xl bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <DollarSign className="w-5 h-5 text-green-400" />
-            <span>Create Deposit Transaction</span>
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="w-5 h-5 text-green-400" />
+              <span>Create Deposit Transaction</span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => refetchPrices()}
+              className="border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+            >
+              <RefreshCw className="w-4 h-4 mr-1" />
+              Update Prices
+            </Button>
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             Create a deposit transaction for user: <span className="text-white font-medium">{username}</span>
+            <br />
+            <span className="text-yellow-400 text-sm">Note: This will add funds to user's account and create transaction history</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -205,7 +257,9 @@ export default function AdminDepositCreator({ userId, username, onSuccess }: Adm
                       <span className="font-mono text-orange-400">{crypto.symbol}</span>
                       <span className="text-gray-400">-</span>
                       <span>{crypto.name}</span>
-                      <span className="text-green-400 text-sm">${cryptoPrices[crypto.symbol]?.toLocaleString()}</span>
+                      <span className="text-green-400 text-sm">
+                        ${cryptoPrices[crypto.symbol]?.toLocaleString() || 'Loading...'}
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
