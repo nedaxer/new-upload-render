@@ -226,10 +226,10 @@ export default function MobileTrade() {
       
       if (activeWidget && activeWidget.widget) {
         // Check if symbol is different before updating
-        const currentSymbol = activeWidget.currentSymbol || currentSymbol;
-        if (currentSymbol !== selectedPair.symbol) {
+        const widgetCurrentSymbol = activeWidget.currentSymbol || selectedPair.symbol;
+        if (widgetCurrentSymbol !== selectedPair.symbol) {
           try {
-            console.log('Updating chart symbol from', currentSymbol, 'to:', selectedPair.tradingViewSymbol);
+            console.log('Updating chart symbol from', widgetCurrentSymbol, 'to:', selectedPair.tradingViewSymbol);
             
             // Use proper TradingView setSymbol API with interval parameter
             activeWidget.widget.setSymbol(selectedPair.tradingViewSymbol, selectedTimeframe || '15', () => {
@@ -1000,6 +1000,8 @@ export default function MobileTrade() {
       // Create a CryptoPair object for consistency
       const cryptoPair: CryptoPair = {
         symbol: selectedCryptoPair.symbol.replace('USDT', ''),
+        baseAsset: selectedCryptoPair.symbol.replace('USDT', ''),
+        quoteAsset: 'USDT',
         name: selectedCryptoPair.name,
         tradingViewSymbol: `BINANCE:${selectedCryptoPair.symbol}`,
         price: selectedCryptoPair.price,
