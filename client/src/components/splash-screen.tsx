@@ -102,11 +102,11 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       setShowNedaxerLogo(true);
     }, 1300); // 1.3 seconds total
 
-    // Complete animation after exactly 2 seconds
+    // Complete animation after exactly 3 seconds
     const timer = setTimeout(() => {
       setShowLogo(false);
       setTimeout(onComplete, 300); // Quick fade out
-    }, 2000); // Exactly 2 seconds
+    }, 3000); // Exactly 3 seconds
 
     return () => {
       clearTimeout(clonesTimer);
