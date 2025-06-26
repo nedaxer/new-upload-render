@@ -124,7 +124,6 @@ function LoadingIndicator() {
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Always show splash screen for testing the optimizations
@@ -135,13 +134,6 @@ export default function App() {
     // if (lastSplashTime && parseInt(lastSplashTime) > fiveMinutesAgo) {
     //   setShowSplash(false);
     // }
-
-    // Just a small delay to ensure all routes are registered
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
   }, []);
 
   const handleSplashComplete = () => {
@@ -154,10 +146,8 @@ export default function App() {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
 
-  // Show loading indicator while routes are being set up
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
+  // Skip loading indicator to avoid duplicate screen after splash
+  // Routes can load directly without intermediate loading screen
 
   return (
     <QueryClientProvider client={queryClient}>
