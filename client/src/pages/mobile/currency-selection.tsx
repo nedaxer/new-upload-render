@@ -1,3 +1,4 @@
+
 import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +17,12 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useLanguage();
 
-  // Complete currency list with names for better searching (JPY removed)
+  // Complete currency list with names for better searching
   const allCurrencies = [
     { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
     { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
     { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
+    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
     { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
     { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
     { code: 'CHF', name: 'Swiss Franc', flag: '🇨🇭' },
@@ -48,36 +50,27 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
     { code: 'TRY', name: 'Turkish Lira', flag: '🇹🇷' },
     { code: 'RUB', name: 'Russian Ruble', flag: '🇷🇺' },
     { code: 'UAH', name: 'Ukrainian Hryvnia', flag: '🇺🇦' },
-    { code: 'ILS', name: 'Israeli Shekel', flag: '🇮🇱' },
-    { code: 'SAR', name: 'Saudi Riyal', flag: '🇸🇦' },
+    { code: 'ZAR', name: 'South African Rand', flag: '🇿🇦' },
+    { code: 'EGP', name: 'Egyptian Pound', flag: '🇪🇬' },
+    { code: 'NGN', name: 'Nigerian Naira', flag: '🇳🇬' },
+    { code: 'KES', name: 'Kenyan Shilling', flag: '🇰🇪' },
     { code: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
+    { code: 'SAR', name: 'Saudi Riyal', flag: '🇸🇦' },
     { code: 'QAR', name: 'Qatari Riyal', flag: '🇶🇦' },
     { code: 'KWD', name: 'Kuwaiti Dinar', flag: '🇰🇼' },
     { code: 'BHD', name: 'Bahraini Dinar', flag: '🇧🇭' },
     { code: 'OMR', name: 'Omani Rial', flag: '🇴🇲' },
-    { code: 'JOD', name: 'Jordanian Dinar', flag: '🇯🇴' },
-    { code: 'LBP', name: 'Lebanese Pound', flag: '🇱🇧' },
-    { code: 'EGP', name: 'Egyptian Pound', flag: '🇪🇬' },
-    { code: 'ZAR', name: 'South African Rand', flag: '🇿🇦' },
-    { code: 'NGN', name: 'Nigerian Naira', flag: '🇳🇬' },
-    { code: 'GHS', name: 'Ghanaian Cedi', flag: '🇬🇭' },
-    { code: 'KES', name: 'Kenyan Shilling', flag: '🇰🇪' },
-    { code: 'UGX', name: 'Ugandan Shilling', flag: '🇺🇬' },
-    { code: 'TZS', name: 'Tanzanian Shilling', flag: '🇹🇿' },
-    { code: 'ETB', name: 'Ethiopian Birr', flag: '🇪🇹' },
-    { code: 'MAD', name: 'Moroccan Dirham', flag: '🇲🇦' },
-    { code: 'TND', name: 'Tunisian Dinar', flag: '🇹🇳' },
-    { code: 'DZD', name: 'Algerian Dinar', flag: '🇩🇿' },
-    { code: 'LYD', name: 'Libyan Dinar', flag: '🇱🇾' },
+    { code: 'ILS', name: 'Israeli Shekel', flag: '🇮🇱' },
     { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
+    { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
     { code: 'ARS', name: 'Argentine Peso', flag: '🇦🇷' },
-    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
     { code: 'CLP', name: 'Chilean Peso', flag: '🇨🇱' },
+    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
     { code: 'PEN', name: 'Peruvian Sol', flag: '🇵🇪' },
     { code: 'NZD', name: 'New Zealand Dollar', flag: '🇳🇿' }
   ];
 
-  // Most used currencies (excluding JPY, top 6)
+  // Most used currencies (top 6)
   const mostUsedCurrencies = allCurrencies.slice(0, 6);
 
   // Filter currencies based on search query
@@ -115,63 +108,63 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
   return (
     <MobileLayout hideBottomNav={true}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 bg-[#0a0a2e] border-b border-gray-600">
+      <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-gray-600">
         <button onClick={() => window.history.back()}>
-          <ArrowLeft className="w-5 h-5 text-white" />
+          <ArrowLeft className="w-6 h-6 text-white" />
         </button>
-        <h1 className="text-base font-semibold text-white">{t('currency_selection')}</h1>
-        <div className="w-5 h-5" /> {/* Spacer */}
+        <h1 className="text-lg font-semibold text-white">{t('currency_selection')}</h1>
+        <div className="w-6 h-6" /> {/* Spacer */}
       </div>
 
-      <div className="px-3 py-4 bg-[#0a0a2e] min-h-screen">
+      <div className="px-4 py-6 bg-[#0a0a2e] min-h-screen">
         {/* Search Bar */}
-        <div className="relative mb-4">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search currencies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 bg-[#1a1a40] border-gray-600 text-white placeholder-gray-400 focus:border-orange-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                <X className="w-4 h-4 text-gray-400 hover:text-white" />
+              </button>
+            )}
           </div>
-          <Input
-            type="text"
-            placeholder="Search currencies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10 py-2 bg-[#1a1a40] border-gray-600 text-white placeholder-gray-400 focus:border-orange-500 text-sm"
-          />
-          {searchQuery && (
-            <button
-              onClick={clearSearch}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              <X className="h-4 w-4 text-gray-400 hover:text-white" />
-            </button>
-          )}
         </div>
 
         {!searchQuery ? (
           <>
             {/* Most Used Section */}
-            <div className="mb-5">
-              <h2 className="text-gray-400 text-xs mb-2">Most Used</h2>
+            <div className="mb-6">
+              <h2 className="text-gray-400 text-sm mb-3">Most Used</h2>
               <div className="space-y-2">
                 {mostUsedCurrencies.map((currency) => (
                   <button
                     key={currency.code}
                     onClick={() => handleCurrencySelect(currency.code)}
-                    className={`w-full p-3 rounded-lg border transition-colors ${
+                    className={`w-full p-4 rounded-lg border transition-colors ${
                       selectedCurrency === currency.code
                         ? 'border-orange-500 bg-orange-500/10'
                         : 'border-gray-600 bg-[#1a1a40] hover:bg-gray-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-lg">{currency.flag}</span>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{currency.flag}</span>
                         <div className="text-left">
-                          <div className="text-white font-medium text-xs">{currency.code}</div>
-                          <div className="text-gray-400 text-xs">{currency.name}</div>
+                          <div className="text-white font-medium">{currency.code}</div>
+                          <div className="text-gray-400 text-sm">{currency.name}</div>
                         </div>
                       </div>
                       {selectedCurrency === currency.code && (
-                        <Check className="w-4 h-4 text-orange-500" />
+                        <Check className="w-5 h-5 text-orange-500" />
                       )}
                     </div>
                   </button>
@@ -181,22 +174,22 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
 
             {/* All Other Currencies Grid */}
             <div>
-              <h2 className="text-gray-400 text-xs mb-2">All Currencies</h2>
-              <div className="grid grid-cols-2 gap-2">
+              <h2 className="text-gray-400 text-sm mb-3">All Currencies</h2>
+              <div className="grid grid-cols-2 gap-3">
                 {allCurrencies.slice(6).map((currency) => (
                   <button
                     key={currency.code}
                     onClick={() => handleCurrencySelect(currency.code)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-3 rounded-lg transition-colors ${
                       selectedCurrency === currency.code
                         ? 'bg-orange-500 text-white'
                         : 'bg-[#1a1a40] text-gray-300 hover:bg-gray-700'
                     }`}
                   >
-                    <div className="flex items-center space-x-1">
-                      <span className="text-sm">{currency.flag}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{currency.flag}</span>
                       <div className="text-left">
-                        <div className="font-medium text-xs">{currency.code}</div>
+                        <div className="font-medium text-sm">{currency.code}</div>
                         <div className="text-xs opacity-80">{currency.name}</div>
                       </div>
                     </div>
@@ -207,35 +200,41 @@ export default function CurrencySelection({ onSelectCurrency, currentCurrency = 
           </>
         ) : (
           /* Search Results */
-          <div className="space-y-2">
+          <div>
+            <h2 className="text-gray-400 text-sm mb-3">
+              Search Results ({filteredCurrencies.length})
+            </h2>
             {filteredCurrencies.length > 0 ? (
-              filteredCurrencies.map((currency) => (
-                <button
-                  key={currency.code}
-                  onClick={() => handleCurrencySelect(currency.code)}
-                  className={`w-full p-3 rounded-lg border transition-colors ${
-                    selectedCurrency === currency.code
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-gray-600 bg-[#1a1a40] hover:bg-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{currency.flag}</span>
-                      <div className="text-left">
-                        <div className="text-white font-medium text-xs">{currency.code}</div>
-                        <div className="text-gray-400 text-xs">{currency.name}</div>
+              <div className="space-y-2">
+                {filteredCurrencies.map((currency) => (
+                  <button
+                    key={currency.code}
+                    onClick={() => handleCurrencySelect(currency.code)}
+                    className={`w-full p-4 rounded-lg border transition-colors ${
+                      selectedCurrency === currency.code
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-gray-600 bg-[#1a1a40] hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{currency.flag}</span>
+                        <div className="text-left">
+                          <div className="text-white font-medium">{currency.code}</div>
+                          <div className="text-gray-400 text-sm">{currency.name}</div>
+                        </div>
                       </div>
+                      {selectedCurrency === currency.code && (
+                        <Check className="w-5 h-5 text-orange-500" />
+                      )}
                     </div>
-                    {selectedCurrency === currency.code && (
-                      <Check className="w-4 h-4 text-orange-500" />
-                    )}
-                  </div>
-                </button>
-              ))
+                  </button>
+                ))}
+              </div>
             ) : (
-              <div className="text-center text-gray-400 py-8">
-                <p className="text-sm">No currencies found matching "{searchQuery}"</p>
+              <div className="text-center py-8">
+                <div className="text-gray-400 text-sm">No currencies found</div>
+                <div className="text-gray-500 text-xs mt-1">Try a different search term</div>
               </div>
             )}
           </div>
