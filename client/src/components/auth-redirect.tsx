@@ -18,19 +18,9 @@ export const AuthRedirect: React.FC<AuthRedirectProps> = ({
 }) => {
   const { user, isLoading } = useAuth();
 
-  // Memoize the loading state to prevent unnecessary re-renders
-  const loadingComponent = useMemo(() => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0033a0] mx-auto mb-4" />
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    </div>
-  ), []);
-
-  // If still loading auth status, show loading indicator
+  // Skip loading screen to prevent duplicate splash
   if (isLoading) {
-    return loadingComponent;
+    return null;
   }
 
   // If user is authenticated, redirect to dashboard

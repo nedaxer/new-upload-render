@@ -155,10 +155,10 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     return <>{children}</>;
   }
 
-  // Show minimal loading or skip completely to avoid second Nedaxer screen
+  // Skip any loading screen to prevent duplicate splash
   if (isPreloading || !loadingSteps.complete) {
-    // Return empty div with transparent background to avoid flash
-    return <div className="min-h-screen bg-transparent"></div>;
+    // Return children immediately to prevent any second screen
+    return <>{children}</>;
   }
 
   // All data loaded, show the mobile app
