@@ -143,15 +143,8 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Nedaxer</h1>
-            <p className="text-orange-400 text-sm">Trading Platform</p>
-          </div>
-          <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto" />
-          </div>
-          <p className="text-gray-400 text-sm">Checking authentication...</p>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white">Nedaxer</h1>
         </div>
       </div>
     );
@@ -166,56 +159,11 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
   if (isPreloading || !loadingSteps.complete) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="text-center space-y-6">
-          {/* Nedaxer Logo */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Nedaxer</h1>
-            <p className="text-orange-400 text-sm">Trading Platform</p>
+        <div className="text-center">
+          {/* Smaller Nedaxer Logo */}
+          <div>
+            <h1 className="text-2xl font-bold text-white">Nedaxer</h1>
           </div>
-
-          {/* Loading Animation */}
-          <div className="relative">
-            <Loader2 className="h-12 w-12 animate-spin text-orange-500 mx-auto" />
-            <div className="absolute inset-0 rounded-full border-2 border-orange-200 opacity-20"></div>
-          </div>
-
-          {/* Loading Steps */}
-          <div className="space-y-2 min-w-64">
-            <LoadingStep 
-              label="Authenticating user" 
-              completed={loadingSteps.auth}
-              active={!loadingSteps.auth}
-            />
-            <LoadingStep 
-              label="Loading market prices" 
-              completed={loadingSteps.prices}
-              active={loadingSteps.auth && !loadingSteps.prices}
-            />
-            <LoadingStep 
-              label="Setting up account" 
-              completed={loadingSteps.wallet}
-              active={loadingSteps.prices && !loadingSteps.wallet}
-            />
-            <LoadingStep 
-              label="Preparing dashboard" 
-              completed={loadingSteps.balances}
-              active={loadingSteps.wallet && !loadingSteps.balances}
-            />
-            <LoadingStep 
-              label="Loading user data" 
-              completed={loadingSteps.favorites}
-              active={loadingSteps.balances && !loadingSteps.favorites}
-            />
-            <LoadingStep 
-              label="Finalizing setup" 
-              completed={loadingSteps.complete}
-              active={loadingSteps.favorites && !loadingSteps.complete}
-            />
-          </div>
-
-          <p className="text-gray-400 text-sm">
-            Setting up your trading environment...
-          </p>
         </div>
       </div>
     );
