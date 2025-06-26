@@ -10,14 +10,31 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 z-[99999] !z-[99999]" style={{ zIndex: 99999 }} data-modal="deposit">
+    <div 
+      className="fixed inset-0" 
+      style={{ 
+        zIndex: 999999,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }} 
+      data-modal="deposit"
+    >
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto z-[99999] !z-[99999]"
-           style={{
-             zIndex: 99999,
-             transform: 'translateY(0)',
-             transition: 'transform 0.3s ease-out'
-           }}>
+      <div 
+        className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
+        style={{
+          zIndex: 999999,
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          transform: 'translateY(0)',
+          transition: 'transform 0.3s ease-out'
+        }}
+      >
         <div className="p-4">
           <div className="flex flex-row items-center justify-between mb-4">
             <h2 className="text-base font-semibold">Select Payment Method</h2>
