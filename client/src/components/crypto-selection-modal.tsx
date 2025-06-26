@@ -55,12 +55,12 @@ export function CryptoSelectionModal({ isOpen, onClose, onSelectCrypto }: Crypto
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[2100]">
+    <div className="fixed inset-0 z-[55000]">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       
       {/* Modal Content */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] rounded-t-2xl z-[10012] max-h-[85vh] overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] rounded-t-2xl z-[55000] max-h-[85vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#1a1a40]">
           <button onClick={onClose} className="text-gray-400 hover:text-white">
