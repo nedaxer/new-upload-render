@@ -1,0 +1,26 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface INotification extends Document {
+  _id: string;
+  userId: string;
+  type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement';
+  title: string;
+  message: string;
+  data?: any;
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const NotificationSchema = new Schema<INotification>({
+  userId: { type: String, required: true, index: true },
+  type: { type: String, enum: ['deposit', 'withdrawal', 'system', 'trade', 'announcement'], required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  data: { type: Schema.Types.Mixed },
+  isRead: { type: Boolean, default: false },
+}, {
+  timestamps: true
+});
+
+export const Notification = mongoose.model<INotification>('Notification', NotificationSchema);

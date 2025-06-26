@@ -13,20 +13,21 @@ export default function MobileNotifications() {
   const { t } = useLanguage();
 
   // Fetch notifications
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notificationsResponse, isLoading } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => apiRequest('/api/users/notifications'),
+    queryFn: () => apiRequest('/api/notifications'),
   });
+
+  const notifications = notificationsResponse?.data || [];
 
   // Mark notification as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: (notificationId: string) => 
-      apiRequest(`/api/users/notifications/${notificationId}/read`, {
+      apiRequest(`/api/notifications/${notificationId}/read`, {
         method: 'PUT'
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'count'] });
     }
   });
 
@@ -150,28 +151,82 @@ export default function MobileNotifications() {
         </div>
       )}
 
-      {/* Sample notification structure (commented out since you want it empty) */}
-      {/*
-      <div className="px-4 space-y-3">
-        <Card className="bg-blue-950 border-blue-700 p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-white font-medium text-sm">Deposit Confirmed</h3>
-            <span className="text-xs text-gray-500">Yesterday 21:43</span>
+       {/* Notifications List */}
+      {isLoading ? (
+        <div className="px-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-blue-950 border-blue-700 p-4 animate-pulse">
+              <div className="h-4 bg-gray-700 rounded mb-2"></div>
+              <div className="h-3 bg-gray-700 rounded mb-1"></div>
+              <div className="h-3 bg-gray-700 rounded w-3/4"></div>
+            </Card>
+          ))}
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 px-4">
+          <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
+            <CheckCheck className="w-8 h-8 text-gray-500" />
           </div>
-          <p className="text-gray-400 text-xs mb-2">
-            Dear valued Nedaxer trader,<br/>
-            Your deposit has been confirmed.<br/>
-            Deposit amount: 0.00049602 BNB
+          <p className="text-gray-400 text-center">No notifications yet</p>
+          <p className="text-gray-500 text-sm text-center mt-1">
+            You'll see important updates here
           </p>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500 text-xs">System Notification</span>
-            <Button variant="ghost" size="sm" className="text-orange-500 text-xs p-0 h-auto">
-              View More →
-            </Button>
-          </div>
-        </Card>
-      </div>
-      */}
+        </div>
+      ) : (
+        <div className="px-4 space-y-3">
+          {notifications
+            .filter((notification: any) => 
+              activeTab === 'All' || 
+              notification.type === activeTab.toLowerCase() ||
+              (activeTab === t('system_notification') && notification.type === 'system') ||
+              (activeTab === t('latest_events') && notification.type === 'deposit') ||
+              (activeTab === t('announcement') && notification.type === 'announcement') ||
+              (activeTab === t('rewards') && notification.type === 'rewards')
+            )
+            .map((notification: any) => (
+              <Card 
+                key={notification._id} 
+                className={`border-blue-700 p-4 ${notification.isRead ? 'bg-slate-900' : 'bg-blue-950'}`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-white font-medium text-sm">{notification.title}</h3>
+                  <span className="text-xs text-gray-500">
+                    {new Date(notification.createdAt).toLocaleDateString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-xs mb-2 whitespace-pre-line">
+                  {notification.message}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 text-xs capitalize">
+                    {notification.type === 'deposit' ? 'System Notification' : notification.type}
+                  </span>
+                  {notification.type === 'deposit' && notification.data && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-orange-500 text-xs p-0 h-auto hover:text-orange-400"
+                      onClick={() => {
+                        if (!notification.isRead) {
+                          markAsReadMutation.mutate(notification._id);
+                        }
+                        // Navigate to asset history
+                        window.location.hash = '#/mobile/assets-history';
+                      }}
+                    >
+                      View More →
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            ))}
+        </div>
+      )}
     </div>
   );
 }

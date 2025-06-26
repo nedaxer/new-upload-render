@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { AdminPullToRefresh } from "@/components/admin-pull-to-refresh";
+import AdminDepositCreator from "@/components/admin-deposit-creator";
 import { 
   Search, 
   DollarSign, 
@@ -612,6 +613,17 @@ export default function AdminPortal() {
                     </div>
                   )}
                 </Button>
+              </div>
+              
+              <div className="pt-3 border-t border-white/20">
+                <AdminDepositCreator 
+                  userId={selectedUser._id} 
+                  username={selectedUser.username}
+                  onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+                    queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+                  }}
+                />
               </div>
             </div>
           </CardContent>

@@ -1,5 +1,7 @@
 // MongoDB models and types
 import { User, IUser } from './models/User';
+import { DepositTransaction, IDepositTransaction } from './models/DepositTransaction';
+import { Notification, INotification } from './models/Notification';
 import { InsertUser } from '@shared/schema';
 
 // Storage interface for MongoDB implementation
@@ -30,6 +32,33 @@ export interface IMongoStorage {
   addFundsToUser(userId: string, amount: number): Promise<void>;
   deleteUser(userId: string): Promise<void>;
   getUserBalance(userId: string): Promise<number>;
+  
+  // Deposit transaction functions
+  createDepositTransaction(data: {
+    userId: string;
+    adminId: string;
+    cryptoSymbol: string;
+    cryptoName: string;
+    chainType: string;
+    networkName: string;
+    senderAddress: string;
+    usdAmount: number;
+    cryptoAmount: number;
+    cryptoPrice: number;
+  }): Promise<IDepositTransaction>;
+  getUserDepositTransactions(userId: string): Promise<IDepositTransaction[]>;
+  getDepositTransaction(transactionId: string): Promise<IDepositTransaction | null>;
+  
+  // Notification functions
+  createNotification(data: {
+    userId: string;
+    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement';
+    title: string;
+    message: string;
+    data?: any;
+  }): Promise<INotification>;
+  getUserNotifications(userId: string): Promise<INotification[]>;
+  markNotificationAsRead(notificationId: string): Promise<void>;
 }
 
 export class MongoStorage implements IMongoStorage {
@@ -480,6 +509,94 @@ export class MongoStorage implements IMongoStorage {
     } catch (error) {
       console.error('Error getting user balance:', error);
       return 0;
+    }
+  }
+
+  // Deposit transaction methods
+  async createDepositTransaction(data: {
+    userId: string;
+    adminId: string;
+    cryptoSymbol: string;
+    cryptoName: string;
+    chainType: string;
+    networkName: string;
+    senderAddress: string;
+    usdAmount: number;
+    cryptoAmount: number;
+    cryptoPrice: number;
+  }): Promise<IDepositTransaction> {
+    try {
+      const transaction = await DepositTransaction.create({
+        ...data,
+        status: 'confirmed'
+      });
+      
+      console.log('Deposit transaction created:', transaction._id);
+      return transaction;
+    } catch (error) {
+      console.error('Error creating deposit transaction:', error);
+      throw error;
+    }
+  }
+
+  async getUserDepositTransactions(userId: string): Promise<IDepositTransaction[]> {
+    try {
+      const transactions = await DepositTransaction.find({ userId })
+        .sort({ createdAt: -1 });
+      return transactions;
+    } catch (error) {
+      console.error('Error getting user deposit transactions:', error);
+      return [];
+    }
+  }
+
+  async getDepositTransaction(transactionId: string): Promise<IDepositTransaction | null> {
+    try {
+      const transaction = await DepositTransaction.findById(transactionId);
+      return transaction;
+    } catch (error) {
+      console.error('Error getting deposit transaction:', error);
+      return null;
+    }
+  }
+
+  // Notification methods
+  async createNotification(data: {
+    userId: string;
+    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement';
+    title: string;
+    message: string;
+    data?: any;
+  }): Promise<INotification> {
+    try {
+      const notification = await Notification.create(data);
+      console.log('Notification created:', notification._id);
+      return notification;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  }
+
+  async getUserNotifications(userId: string): Promise<INotification[]> {
+    try {
+      const notifications = await Notification.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(50);
+      return notifications;
+    } catch (error) {
+      console.error('Error getting user notifications:', error);
+      return [];
+    }
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<void> {
+    try {
+      await Notification.findByIdAndUpdate(notificationId, { isRead: true });
+      console.log('Notification marked as read:', notificationId);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
     }
   }
 }

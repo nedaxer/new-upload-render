@@ -106,6 +106,8 @@ import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
+import AssetsHistory from '@/pages/mobile/assets-history';
+import DepositDetails from '@/pages/mobile/deposit-details';
 
 
 // Other Pages
@@ -378,6 +380,20 @@ export default function App() {
               {() => (
                 <MobileAppLoader>
                   <LanguageSelection />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/assets-history">
+              {() => (
+                <MobileAppLoader>
+                  <AssetsHistory />
+                </MobileAppLoader>
+              )}
+            </Route>
+            <Route path="/mobile/deposit-details/:transactionId">
+              {(params) => (
+                <MobileAppLoader>
+                  <DepositDetails {...params} />
                 </MobileAppLoader>
               )}
             </Route>

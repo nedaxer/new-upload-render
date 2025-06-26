@@ -1331,6 +1331,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin create deposit transaction
+  app.post('/api/admin/deposits/create', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { 
+        userId, 
+        cryptoSymbol, 
+        cryptoName, 
+        chainType, 
+        networkName, 
+        senderAddress, 
+        usdAmount, 
+        cryptoPrice 
+      } = req.body;
+
+      if (!userId || !cryptoSymbol || !cryptoName || !chainType || !networkName || !senderAddress || !usdAmount || !cryptoPrice) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const cryptoAmount = usdAmount / cryptoPrice;
+      const adminId = req.session?.adminId || 'admin';
+
+      // Create deposit transaction
+      const transaction = await mongoStorage.createDepositTransaction({
+        userId,
+        adminId,
+        cryptoSymbol,
+        cryptoName,
+        chainType,
+        networkName,
+        senderAddress,
+        usdAmount,
+        cryptoAmount,
+        cryptoPrice
+      });
+
+      // Add USD funds to user balance
+      await mongoStorage.addFundsToUser(userId, usdAmount);
+
+      // Create notification for user
+      const notificationMessage = `Dear valued Nedaxer trader,
+Your deposit has been confirmed.
+Deposit amount: ${cryptoAmount.toFixed(8)} ${cryptoSymbol}
+Deposit address: ${senderAddress}
+Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
+
+      await mongoStorage.createNotification({
+        userId,
+        type: 'deposit',
+        title: 'Deposit Confirmed',
+        message: notificationMessage,
+        data: {
+          transactionId: transaction._id,
+          cryptoSymbol,
+          cryptoAmount,
+          usdAmount,
+          senderAddress,
+          chainType,
+          networkName
+        }
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Deposit created successfully. User notified of ${cryptoAmount.toFixed(8)} ${cryptoSymbol} deposit.`,
+        transaction: transaction
+      });
+    } catch (error) {
+      console.error('Admin create deposit error:', error);
+      res.status(500).json({ success: false, message: "Failed to create deposit" });
+    }
+  });
+
+  // Get user deposit transactions  
+  app.get('/api/deposits/:userId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // Ensure user can only access their own transactions or admin can access any
+      const sessionUserId = req.session?.userId;
+      const isAdmin = req.session?.adminAuthenticated;
+      
+      if (!isAdmin && sessionUserId !== userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserDepositTransactions(userId);
+      
+      res.json({ success: true, data: transactions });
+    } catch (error) {
+      console.error('Get deposit transactions error:', error);
+      res.status(500).json({ success: false, message: "Failed to get transactions" });
+    }
+  });
+
+  // Get single deposit transaction details
+  app.get('/api/deposits/details/:transactionId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { transactionId } = req.params;
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      const transaction = await mongoStorage.getDepositTransaction(transactionId);
+      
+      if (!transaction) {
+        return res.status(404).json({ success: false, message: "Transaction not found" });
+      }
+
+      // Ensure user can only access their own transactions or admin can access any
+      const sessionUserId = req.session?.userId;
+      const isAdmin = req.session?.adminAuthenticated;
+      
+      if (!isAdmin && sessionUserId !== transaction.userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+      
+      res.json({ success: true, data: transaction });
+    } catch (error) {
+      console.error('Get deposit transaction details error:', error);
+      res.status(500).json({ success: false, message: "Failed to get transaction details" });
+    }
+  });
+
+  // Get user notifications
+  app.get('/api/notifications', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      const notifications = await mongoStorage.getUserNotifications(userId);
+      
+      res.json({ success: true, data: notifications });
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({ success: false, message: "Failed to get notifications" });
+    }
+  });
+
+  // Mark notification as read
+  app.put('/api/notifications/:notificationId/read', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { notificationId } = req.params;
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      await mongoStorage.markNotificationAsRead(notificationId);
+      
+      res.json({ success: true, message: "Notification marked as read" });
+    } catch (error) {
+      console.error('Mark notification as read error:', error);
+      res.status(500).json({ success: false, message: "Failed to mark notification as read" });
+    }
+  });
+
   // Register chatbot routes
   app.use('/api/chatbot', chatbotRoutes);
 
