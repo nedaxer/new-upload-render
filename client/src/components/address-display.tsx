@@ -93,9 +93,9 @@ export function AddressDisplay({ onBack, selectedCrypto, selectedChain }: Addres
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-[#0a0a2e] text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900">
+      <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="flex items-center space-x-4">
           <button onClick={onBack} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />

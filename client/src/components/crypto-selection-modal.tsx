@@ -60,9 +60,9 @@ export function CryptoSelectionModal({ isOpen, onClose, onSelectCrypto }: Crypto
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
       
       {/* Modal Content */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl z-50 max-h-[85vh] overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] rounded-t-2xl z-50 max-h-[85vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-[#1a1a40]">
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-6 h-6" />
           </button>
@@ -71,7 +71,7 @@ export function CryptoSelectionModal({ isOpen, onClose, onSelectCrypto }: Crypto
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-700">
+        <div className="flex border-b border-[#1a1a40]">
           <button
             onClick={() => setActiveTab('crypto')}
             className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${

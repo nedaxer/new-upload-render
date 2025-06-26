@@ -12,7 +12,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
   return (
     <div className="fixed inset-0 z-[10002]">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
            style={{
              transform: 'translateY(0)',
              transition: 'transform 0.3s ease-out'
@@ -32,7 +32,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
               
               <button 
                 onClick={() => onSelectMethod('buy-usd')}
-                className="w-full bg-gray-700 hover:bg-gray-600 rounded-lg p-3 mb-2 transition-colors"
+                className="w-full bg-[#1a1a40] hover:bg-[#2a2a50] rounded-lg p-3 mb-2 transition-colors"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
@@ -52,7 +52,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
 
               <button 
                 onClick={() => onSelectMethod('p2p')}
-                className="w-full bg-gray-700 hover:bg-gray-600 rounded-lg p-3 transition-colors"
+                className="w-full bg-[#1a1a40] hover:bg-[#2a2a50] rounded-lg p-3 transition-colors"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -72,7 +72,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
               
               <button 
                 onClick={() => onSelectMethod('crypto')}
-                className="w-full bg-gray-700 hover:bg-gray-600 rounded-lg p-3 transition-colors"
+                className="w-full bg-[#1a1a40] hover:bg-[#2a2a50] rounded-lg p-3 transition-colors"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
