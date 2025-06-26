@@ -249,12 +249,12 @@
   
   /* Ensure modals always appear above navigation with maximum priority */
   [data-modal="deposit"] {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
     position: fixed !important;
   }
   
   [data-modal="deposit"] > div:last-child {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
     position: fixed !important;
   }
   
@@ -269,7 +269,7 @@
   
   /* Override any other z-index rules that might interfere */
   .fixed[data-modal="deposit"] {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
   }
   
   /* Ensure all deposit modal elements have maximum z-index */
@@ -280,7 +280,7 @@
 
   /* Specific deposit modal CSS rules with maximum priority */
   .deposit-modal-overlay {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -289,7 +289,7 @@
   }
 
   .deposit-modal-content {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
@@ -298,20 +298,20 @@
 
   /* Force deposit modal above everything */
   div[data-modal="deposit"] {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
   }
 
   div[data-modal="deposit"] > div {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
   }
 
   /* Ultimate deposit modal override rules */
   html body div.deposit-modal-overlay {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
   }
 
   html body div.deposit-modal-content {
-    z-index: 9999999 !important;
+    z-index: 999999999 !important;
   }
 
   /* Make sure bottom navigation stays below modals */
