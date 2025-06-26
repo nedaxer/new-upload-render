@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hapticLight, hapticMedium } from '@/lib/haptics';
 import MobileSpot from './spot';
 import MobileFutures from './futures';
@@ -29,6 +30,7 @@ import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
+import { PairSelectionModal } from '@/components/pair-selection-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
@@ -76,6 +78,24 @@ export default function MobileTrade() {
   const [isChartLoading, setIsChartLoading] = useState(false);
   const [isTradingViewReady, setIsTradingViewReady] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
+
+  // Query client for data management
+  const queryClient = useQueryClient();
+
+  // Fetch real-time price data for pair selection modal
+  const { data: priceData } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
+    refetchInterval: 30000,
+    staleTime: 25000,
+    retry: 1
+  });
+
+  // Fetch user favorites for pair selection modal
+  const { data: userFavorites = [] } = useQuery<string[]>({
+    queryKey: ['/api/favorites'],
+    retry: 1,
+    staleTime: 5 * 60 * 1000
+  });
 
   // Initialize selected pair from persistent storage
   useEffect(() => {
@@ -943,6 +963,71 @@ export default function MobileTrade() {
         setShowPairSelector(false);
     };
 
+  // Transform price data to format expected by pair selection modal
+  const cryptoDataArray = Array.isArray(priceData?.data) ? priceData.data : (priceData?.success ? [] : []);
+  const transformedCryptoData = cryptoDataArray.map((crypto: any) => ({
+    symbol: crypto.symbol,
+    name: crypto.name || crypto.symbol,
+    price: parseFloat(crypto.price) || 0,
+    change: parseFloat(crypto.change24h) || 0,
+    volume: parseFloat(crypto.volume24h) || 0,
+    isFavorite: userFavorites.includes(crypto.symbol)
+  })) || [];
+
+  // Handle favorites toggle
+  const handleToggleFavorite = async (symbol: string) => {
+    try {
+      const response = await fetch('/api/favorites/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cryptoPairSymbol: symbol, cryptoId: symbol.toLowerCase() })
+      });
+      
+      if (response.ok) {
+        // Refetch favorites
+        queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
+
+  // Handle new pair selection from enhanced modal
+  const handleEnhancedPairSelection = (symbol: string) => {
+    // Find the matching crypto pair
+    const selectedCryptoPair = transformedCryptoData.find(crypto => crypto.symbol === symbol);
+    if (selectedCryptoPair) {
+      // Create a CryptoPair object for consistency
+      const cryptoPair: CryptoPair = {
+        symbol: selectedCryptoPair.symbol.replace('USDT', ''),
+        name: selectedCryptoPair.name,
+        tradingViewSymbol: `BINANCE:${selectedCryptoPair.symbol}`,
+        price: selectedCryptoPair.price,
+        change: selectedCryptoPair.change
+      };
+      
+      // Update all states
+      setSelectedPair(cryptoPair);
+      setCurrentSymbol(selectedCryptoPair.symbol);
+      setTradingViewSymbol(cryptoPair.tradingViewSymbol);
+      
+      // Store in persistent storage
+      const chartState = {
+        currentSymbol: selectedCryptoPair.symbol,
+        tradingViewSymbol: cryptoPair.tradingViewSymbol,
+        timeframe: selectedTimeframe,
+        lastUpdated: Date.now(),
+        isChartMounted: true
+      };
+      localStorage.setItem('nedaxer_chart_state', JSON.stringify(chartState));
+      
+      // Update chart if on Charts tab
+      if (selectedTab === 'Charts' && isTradingViewReady) {
+        loadChart(cryptoPair.tradingViewSymbol, false);
+      }
+    }
+  };
+
   return (
     <MobileLayout>
       {/* Trading Tabs - Smaller font and padding */}
@@ -1103,12 +1188,15 @@ export default function MobileTrade() {
         </div>
       )}
 
-      {/* Crypto Pair Selector Modal */}
-      <CryptoPairSelectorModal
+      {/* Enhanced Pair Selection Modal */}
+      <PairSelectionModal
         isOpen={showPairSelectorModal}
         onClose={() => setShowPairSelectorModal(false)}
-        onSelectPair={handlePairSelectionModal}
-        currentPair={selectedPair}
+        onSelectPair={handleEnhancedPairSelection}
+        currentPair={selectedPair.symbol + 'USDT'}
+        cryptoData={transformedCryptoData}
+        favorites={userFavorites}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       {/* Fixed Buy/Sell Panel - Positioned directly above bottom navigation */}
