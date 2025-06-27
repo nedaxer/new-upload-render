@@ -1,135 +1,201 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { SplashScreen } from './splash-screen';
+import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 
-export function MobileAppLoader({ children }: { children: React.ReactNode }) {
+interface MobileAppLoaderProps {
+  children: React.ReactNode;
+}
+
+export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) => {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
-  const [showSplash, setShowSplash] = useState(true);
-  const [emergencyTimeout, setEmergencyTimeout] = useState(false);
-  const [hasError, setHasError] = useState(false);
-
-  // Clear all caches on component mount to prevent blank screen issues
-  useEffect(() => {
-    const clearCaches = async () => {
-      try {
-        // Clear React Query cache
-        queryClient.clear();
-        console.log('All caches cleared');
-
-        // Clear browser caches if available
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          await Promise.all(
-            cacheNames.map(cacheName => caches.delete(cacheName))
-          );
-        }
-      } catch (error) {
-        console.error('Cache clearing error:', error);
-      }
-    };
-
-    // Only clear caches if this seems to be a page refresh
-    const isRefresh = performance.navigation?.type === 1 || 
-                     performance.getEntriesByType('navigation')[0]?.type === 'reload';
-
-    if (isRefresh) {
-      clearCaches();
-    }
-  }, [queryClient]);
-
-  // Emergency timeout to prevent infinite loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log('Emergency timeout reached, forcing app to load');
-      setEmergencyTimeout(true);
-      setShowSplash(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Error boundary for auth queries
-  useEffect(() => {
-    const handleError = () => {
-      setHasError(true);
-      setShowSplash(false);
-    };
-
-    window.addEventListener('unhandledrejection', handleError);
-    window.addEventListener('error', handleError);
-
-    return () => {
-      window.removeEventListener('unhandledrejection', handleError);
-      window.removeEventListener('error', handleError);
-    };
-  }, []);
-
-  // Preload critical data for authenticated users
-  const { isLoading: walletLoading, error: walletError } = useQuery({
-    queryKey: ['/api/wallet/summary'],
-    enabled: !!user && !emergencyTimeout && !hasError,
-    retry: 1,
-    staleTime: 30000,
-    onError: () => setHasError(true)
+  const [isPreloading, setIsPreloading] = useState(true);
+  const [authCheckComplete, setAuthCheckComplete] = useState(false);
+  const [loadingSteps, setLoadingSteps] = useState({
+    auth: false,
+    prices: false,
+    wallet: false,
+    balances: false,
+    favorites: false,
+    rates: false,
+    complete: false
   });
 
-  const { isLoading: priceLoading, error: priceError } = useQuery({
-    queryKey: ['/api/crypto/realtime-prices'],
-    enabled: !emergencyTimeout && !hasError,
-    retry: 1,
-    staleTime: 30000,
-    onError: () => console.log('Price data failed, continuing without it')
-  });
-
-  // Hide splash screen once critical data is loaded or timeout reached
+  // Wait for auth to complete before starting data loading
   useEffect(() => {
-    if (emergencyTimeout || hasError) {
-      setShowSplash(false);
-      return;
-    }
-
     if (!authLoading) {
-      if (user) {
-        // For authenticated users, wait for wallet data or handle error
-        if (!walletLoading || walletError) {
-          const timer = setTimeout(() => {
-            setShowSplash(false);
-          }, 1000);
-          return () => clearTimeout(timer);
-        }
-      } else {
-        // For unauthenticated users, show immediately
-        const timer = setTimeout(() => {
-          setShowSplash(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
+      setAuthCheckComplete(true);
+      setLoadingSteps(prev => ({ ...prev, auth: true }));
+      console.log('Auth check complete, user:', user ? 'authenticated' : 'not authenticated');
     }
-  }, [authLoading, user, walletLoading, walletError, emergencyTimeout, hasError]);
+  }, [authLoading, user]);
 
-  // Show error state if something went wrong
-  if (hasError && !showSplash) {
+  // Critical data queries with immediate execution and fast timeout for new users
+  const { data: priceData, isSuccess: pricesLoaded, isError: pricesError } = useQuery({
+    queryKey: ['/api/crypto/realtime-prices'],
+    enabled: authCheckComplete && !!user && isPreloading,
+    retry: 1,
+    staleTime: 30000,
+  });
+
+  const { data: walletData, isSuccess: walletLoaded, isError: walletError } = useQuery({
+    queryKey: ['/api/wallet/summary'],
+    enabled: authCheckComplete && !!user && isPreloading,
+    retry: 1,
+    staleTime: 30000,
+  });
+
+  const { data: balanceData, isSuccess: balancesLoaded, isError: balancesError } = useQuery({
+    queryKey: ['/api/balances'],
+    enabled: authCheckComplete && !!user && isPreloading,
+    retry: 1,
+    staleTime: 30000,
+  });
+
+  const { data: favoritesData, isSuccess: favoritesLoaded, isError: favoritesError } = useQuery({
+    queryKey: ['/api/favorites'],
+    enabled: authCheckComplete && !!user && isPreloading,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Preload exchange rates for currency conversion
+  const { data: exchangeRates, isSuccess: ratesLoaded } = useQuery({
+    queryKey: ['/api/market-data/conversion-rates'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/market-data/conversion-rates');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to fetch exchange rates:', error);
+        return null; // Continue without rates if failed
+      }
+    },
+    enabled: authCheckComplete && isPreloading,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Update loading steps as data loads or fails
+  useEffect(() => {
+    setLoadingSteps(prev => ({
+      ...prev,
+      prices: pricesLoaded || pricesError,
+      wallet: walletLoaded || walletError,
+      balances: balancesLoaded || balancesError,
+      favorites: favoritesLoaded || favoritesError,
+      rates: ratesLoaded || true, // Don't block on rates failure
+    }));
+  }, [pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, ratesLoaded, pricesError, walletError, balancesError, favoritesError]);
+
+  // Check if all critical data is loaded or failed (for new users)
+  useEffect(() => {
+    const allDataReady = authCheckComplete && 
+                        (pricesLoaded || pricesError) && 
+                        (walletLoaded || walletError) && 
+                        (balancesLoaded || balancesError) && 
+                        (favoritesLoaded || favoritesError) && 
+                        loadingSteps.rates;
+
+    if (user && allDataReady) {
+      // Add small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setLoadingSteps(prev => ({ ...prev, complete: true }));
+        setIsPreloading(false);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, authCheckComplete, pricesLoaded, walletLoaded, balancesLoaded, favoritesLoaded, loadingSteps.rates, pricesError, walletError, balancesError, favoritesError]);
+
+  // Emergency timeout for new users - don't wait more than 4 seconds after auth completes
+  useEffect(() => {
+    if (authCheckComplete && user && isPreloading) {
+      console.log('Starting emergency timeout for authenticated user');
+      const emergencyTimer = setTimeout(() => {
+        console.log('Emergency timeout triggered - proceeding with available data');
+        setLoadingSteps(prev => ({ ...prev, complete: true }));
+        setIsPreloading(false);
+      }, 4000);
+
+      return () => clearTimeout(emergencyTimer);
+    }
+  }, [authCheckComplete, user, isPreloading]);
+
+  // Additional safety net - if user exists but loader is stuck, force completion
+  useEffect(() => {
+    if (user && !authLoading && isPreloading) {
+      const safetyTimer = setTimeout(() => {
+        console.log('Safety timeout - forcing loader completion for authenticated user');
+        setLoadingSteps(prev => ({ ...prev, auth: true, complete: true }));
+        setIsPreloading(false);
+      }, 6000);
+
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [user, authLoading, isPreloading]);
+
+  // If auth is still loading, show basic loading
+  if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a2e] text-white">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-4">Loading Error</h2>
-          <p className="text-gray-400 mb-4">Something went wrong while loading the app.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded text-white"
-          >
-            Reload App
-          </button>
+          <h1 className="text-2xl font-bold text-white">Nedaxer</h1>
         </div>
       </div>
     );
   }
 
-  if (showSplash) {
-    return <SplashScreen />;
+  // If not authenticated, show children immediately
+  if (!user) {
+    return <>{children}</>;
   }
 
+  // Skip all loading screens to avoid duplicate splash screen
+  if (isPreloading || !loadingSteps.complete) {
+    // Return children immediately to avoid any duplicate loading screens
+    return <>{children}</>;
+  }
+
+  // All data loaded, show the mobile app
   return <>{children}</>;
+};
+
+interface LoadingStepProps {
+  label: string;
+  completed: boolean;
+  active: boolean;
 }
+
+const LoadingStep: React.FC<LoadingStepProps> = ({ label, completed, active }) => {
+  return (
+    <div className="flex items-center space-x-3 text-sm">
+      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+        completed 
+          ? 'bg-green-500 border-green-500' 
+          : active 
+            ? 'border-orange-500 animate-pulse' 
+            : 'border-gray-600'
+      }`}>
+        {completed && (
+          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        )}
+      </div>
+      <span className={`transition-colors duration-300 ${
+        completed 
+          ? 'text-green-400' 
+          : active 
+            ? 'text-orange-400' 
+            : 'text-gray-500'
+      }`}>
+        {label}
+      </span>
+    </div>
+  );
+};

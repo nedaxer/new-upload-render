@@ -115,52 +115,6 @@ import Transfer from '@/pages/mobile/transfer';
 import SiteMap from '@/pages/site-map';
 import PortfolioDemo from '@/pages/portfolio-demo';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('App Error Boundary caught an error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="flex items-center justify-center min-h-screen bg-[#0a0a2e] text-white">
-          <div className="text-center max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-4">Something went wrong</h2>
-            <p className="text-gray-400 mb-4">
-              The app encountered an error. Please refresh the page to continue.
-            </p>
-            <div className="space-y-2">
-              <button 
-                onClick={() => window.location.reload()} 
-                className="bg-orange-500 hover:bg-orange-600 px-6 py-2 rounded text-white w-full"
-              >
-                Refresh Page
-              </button>
-              <button 
-                onClick={() => this.setState({ hasError: false, error: null })} 
-                className="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded text-white w-full"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 
 // Provide a loading state
@@ -210,7 +164,6 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <ThemeProvider>
@@ -353,6 +306,6 @@ export default function App() {
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>
-    </ErrorBoundary>
+  </QueryClientProvider>
   );
 }
