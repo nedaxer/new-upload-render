@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
@@ -31,9 +31,9 @@ export default function Transfer() {
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [note, setNote] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'email' | 'uid' | null>(null);
-  const [inputType, setInputType] = useState<'email' | 'uid'>('email');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<'email' | 'uid'>('uid');
+  const [inputType, setInputType] = useState<'email' | 'uid'>('uid');
 
   // Fetch user balance
   const { data: walletData } = useQuery({
@@ -98,7 +98,7 @@ export default function Transfer() {
   const handleMethodSelection = (method: 'email' | 'uid') => {
     setSelectedMethod(method);
     setInputType(method);
-    setShowModal(false);
+    setShowDropdown(false);
     setRecipientIdentifier('');
     setRecipientInfo(null);
   };
@@ -186,7 +186,15 @@ export default function Transfer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a2e] text-white">
+    <div className="min-h-screen bg-[#0a0a2e] text-white relative">
+      {/* Blur overlay when dropdown is open */}
+      {showDropdown && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          onClick={() => setShowDropdown(false)}
+        />
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-gray-700">
         <Link href="/mobile/assets">
@@ -199,7 +207,7 @@ export default function Transfer() {
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-6">
+      <div className="px-4 py-6 space-y-6 relative z-10">
         {/* Send Method Selection */}
         <div className="space-y-2">
           <div className="flex items-center space-x-2 mb-3">
@@ -207,13 +215,40 @@ export default function Transfer() {
             <HelpCircle className="w-4 h-4 text-gray-400" />
           </div>
           
-          <Button
-            onClick={() => setShowModal(true)}
-            className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white justify-between hover:bg-[#2a2a50]"
-          >
-            <span>{selectedMethod ? (selectedMethod === 'email' ? 'Email' : 'Nedaxer UID') : 'Choose Email or UID'}</span>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+          <div className="relative">
+            <Button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white justify-between hover:bg-[#2a2a50]"
+            >
+              <span>{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+            
+            {/* Dropdown positioned below the button */}
+            {showDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border z-50">
+                <div className="py-2">
+                  <button
+                    onClick={() => handleMethodSelection('email')}
+                    className="w-full px-4 py-3 text-left text-black hover:bg-gray-50 text-base"
+                  >
+                    Email
+                  </button>
+                  <button
+                    onClick={() => handleMethodSelection('uid')}
+                    className="w-full px-4 py-3 text-left text-black hover:bg-gray-50 text-base flex items-center justify-between"
+                  >
+                    <span>Nedaxer ID</span>
+                    {selectedMethod === 'uid' && (
+                      <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Input Field Based on Selection */}
           {selectedMethod && (
@@ -339,32 +374,7 @@ export default function Transfer() {
           )}
         </Button>
 
-        {/* Method Selection Modal */}
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="bg-white border-0 text-black max-w-sm mx-auto rounded-t-3xl rounded-b-none fixed bottom-0 left-0 right-0 w-full">
-            <DialogHeader className="pb-4">
-              <DialogTitle className="text-black text-xl font-semibold text-center">Send Mode</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-0 pb-8">
-              <button
-                onClick={() => handleMethodSelection('email')}
-                className="w-full py-4 text-left text-black text-lg hover:bg-gray-50 border-b border-gray-100"
-              >
-                Email
-              </button>
-              
-              <button
-                onClick={() => handleMethodSelection('uid')}
-                className="w-full py-4 text-left text-black text-lg hover:bg-gray-50 flex items-center justify-between"
-              >
-                <span>Nedaxer ID</span>
-                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </DialogContent>
-        </Dialog>
+
       </div>
     </div>
   );
