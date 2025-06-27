@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // MongoDB User schema for validation
 export const mongoUserSchema = z.object({
-  uid: z.string().max(10),
+  uid: z.string().length(10).regex(/^[0-9]{10}$/, "UID must be exactly 10 digits"),
   username: z.string().min(1).max(255),
   email: z.string().email().max(255),
   password: z.string().min(6),

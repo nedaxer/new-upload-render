@@ -3,26 +3,27 @@
  */
 
 /**
- * Generates a random mixed alphanumeric UID (up to 10 characters)
- * Uses uppercase letters and numbers for better readability
+ * Generates a random numeric UID (10 digits)
+ * Example: 4286363824
  */
 export function generateUID(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  // Generate a 10-digit number
   let result = '';
   
-  // Generate 6-10 character UID
-  const length = Math.floor(Math.random() * 5) + 6; // 6 to 10 characters
+  // First digit should not be 0 to ensure it's always 10 digits
+  result += Math.floor(Math.random() * 9) + 1;
   
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  // Generate remaining 9 digits
+  for (let i = 0; i < 9; i++) {
+    result += Math.floor(Math.random() * 10);
   }
   
   return result;
 }
 
 /**
- * Validates UID format (alphanumeric, max 10 characters)
+ * Validates UID format (numeric only, exactly 10 digits)
  */
 export function isValidUID(uid: string): boolean {
-  return /^[A-Z0-9]{1,10}$/.test(uid);
+  return /^[0-9]{10}$/.test(uid);
 }
