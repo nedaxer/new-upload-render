@@ -239,37 +239,38 @@ export default function Transfer() {
                 <span className="text-sm">Searching...</span>
               </div>
             )}
+            
+            {/* Recipient Info - Show directly under input */}
+            {recipientInfo && (
+              <Card className="bg-[#1a1a40] border-gray-600 p-3 mt-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                    {(recipientInfo as any).profilePicture ? (
+                      <img 
+                        src={(recipientInfo as any).profilePicture} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-white text-sm">
+                      {recipientInfo.firstName} {recipientInfo.lastName}
+                    </div>
+                    <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
+                    <div className="text-xs text-gray-500">{recipientInfo.email}</div>
+                    <div className="text-xs text-gray-500">UID: {recipientInfo.uid}</div>
+                  </div>
+                </div>
+              </Card>
+            )}
+            
             <div className="text-xs text-gray-400">
               Please enter the correct {selectedMethod === 'email' ? 'Email' : 'Nedaxer UID'}
             </div>
           </div>
-        )}
-
-        {/* Recipient Info - Show under send method */}
-        {recipientInfo && (
-          <Card className="bg-[#1a1a40] border-gray-600 p-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
-                {(recipientInfo as any).profilePicture ? (
-                  <img 
-                    src={(recipientInfo as any).profilePicture} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-5 h-5 text-white" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-white text-sm">
-                  {recipientInfo.firstName} {recipientInfo.lastName}
-                </div>
-                <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
-                <div className="text-xs text-gray-500">{recipientInfo.email}</div>
-                <div className="text-xs text-gray-500">UID: {recipientInfo.uid}</div>
-              </div>
-            </div>
-          </Card>
         )}
 
         {/* Transfer Amount */}
