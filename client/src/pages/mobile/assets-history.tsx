@@ -148,15 +148,18 @@ export default function AssetsHistory() {
           // Loading skeleton
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-4 animate-pulse">
+              <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-3 animate-pulse">
                 <div className="flex justify-between items-center">
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-700 rounded w-16"></div>
-                    <div className="h-3 bg-gray-700 rounded w-32"></div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-700 rounded-full"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-700 rounded w-20"></div>
+                      <div className="h-3 bg-gray-700 rounded w-16"></div>
+                    </div>
                   </div>
-                  <div className="space-y-2 text-right">
-                    <div className="h-4 bg-gray-700 rounded w-24"></div>
-                    <div className="h-3 bg-gray-700 rounded w-16"></div>
+                  <div className="text-right space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-16"></div>
+                    <div className="h-3 bg-gray-700 rounded w-12"></div>
                   </div>
                 </div>
               </Card>
@@ -187,33 +190,39 @@ export default function AssetsHistory() {
                 key={transaction._id} 
                 href={`/mobile/deposit-details/${transaction._id}`}
               >
-                <Card className="bg-[#1a1a40] border-[#2a2a50] p-4 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-white font-medium text-sm">
-                        {transaction.cryptoSymbol}
-                      </p>
-                      <p className="text-gray-400 text-xs">
-                        {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-medium text-sm">
-                        {transaction.cryptoAmount.toFixed(8)}
-                      </p>
-                      <div className="flex items-center text-green-400 text-xs">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></div>
-                        Succeeded
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">
+                          {transaction.cryptoSymbol.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-white font-medium text-sm">
+                          {transaction.cryptoSymbol} Deposit
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-500 ml-2" />
+                    <div className="text-right flex items-center space-x-2">
+                      <div>
+                        <p className="text-green-400 font-medium text-sm">
+                          +{transaction.cryptoAmount.toFixed(6)}
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-500" />
+                    </div>
                   </div>
                 </Card>
               </Link>
