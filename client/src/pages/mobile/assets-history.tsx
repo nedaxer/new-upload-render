@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ChevronRight, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Link } from 'wouter';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -10,23 +10,6 @@ export default function AssetsHistory() {
   const [activeTab, setActiveTab] = useState('Deposit');
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [location] = useLocation();
-  
-  // Detect navigation context based on URL parameters or referrer
-  const getBackNavigationPath = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const from = urlParams.get('from');
-    
-    // Check if user came from notifications
-    if (from === 'notifications' || document.referrer.includes('/mobile/notifications')) {
-      return '/mobile/notifications';
-    }
-    
-    // Default to assets page
-    return '/mobile/assets';
-  };
-  
-  const backPath = getBackNavigationPath();
 
   // Fetch deposit transactions for authenticated user only
   const { data: transactionsResponse, isLoading, error } = useQuery({
@@ -118,14 +101,12 @@ export default function AssetsHistory() {
 
   return (
     <div className="min-h-screen bg-[#0a0a2e] text-white">
-      {/* Header with Context-Aware Back Navigation */}
-      <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-[#1a1a40]">
-        <Link href={backPath}>
-          <div className="flex items-center space-x-2 text-white hover:text-orange-500 transition-colors">
-            <ArrowLeft className="w-6 h-6" />
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
+        <Link href="/mobile/notifications">
+          <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold text-white">Transaction History</h1>
+        <h1 className="text-lg font-semibold">Asset History</h1>
         <div className="w-6 h-6" />
       </div>
 
@@ -182,7 +163,7 @@ export default function AssetsHistory() {
             </p>
           </div>
         ) : (
-          // Transaction items with enhanced design
+          // Transaction items
           transactions
             .filter((transaction: any) => 
               activeTab === 'All Transactions' || 
@@ -191,50 +172,35 @@ export default function AssetsHistory() {
             .map((transaction: any) => (
               <Link 
                 key={transaction._id} 
-                href={`/mobile/deposit-details/${transaction._id}?from=${backPath.includes('notifications') ? 'notifications' : 'assets'}`}
+                href={`/mobile/deposit-details/${transaction._id}`}
               >
-                <Card className="bg-gradient-to-r from-[#1a1a40] to-[#1e1e44] border-[#2a2a50] p-4 hover:from-[#2a2a50] hover:to-[#2e2e54] transition-all duration-200 cursor-pointer shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <p className="text-white font-semibold text-sm">
-                            {transaction.cryptoSymbol} Deposit
-                          </p>
-                          <div className="flex items-center">
-                            <CheckCircle className="w-4 h-4 text-green-400 mr-1" />
-                            <span className="text-green-400 text-xs font-medium">Completed</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Clock className="w-3 h-3 text-gray-400" />
-                          <p className="text-gray-400 text-xs">
-                            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                        <p className="text-gray-500 text-xs mt-0.5">
-                          {transaction.networkName} Network
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold text-base">
-                        +{transaction.cryptoAmount.toFixed(8)}
+                <Card className="bg-[#1a1a40] border-[#2a2a50] p-4 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-white font-medium text-sm">
+                        {transaction.cryptoSymbol}
                       </p>
                       <p className="text-gray-400 text-xs">
-                        ${transaction.usdAmount.toFixed(2)} USD
+                        {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}
                       </p>
-                      <ChevronRight className="w-4 h-4 text-gray-500 mt-1" />
                     </div>
+                    <div className="text-right">
+                      <p className="text-white font-medium text-sm">
+                        {transaction.cryptoAmount.toFixed(8)}
+                      </p>
+                      <div className="flex items-center text-green-400 text-xs">
+                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></div>
+                        Succeeded
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-500 ml-2" />
                   </div>
                 </Card>
               </Link>

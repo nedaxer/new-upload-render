@@ -444,7 +444,7 @@ export default function MobileAssets() {
             </div>
           </Link>
           
-          <Link href="/mobile/assets-history?from=assets">
+          <Link href="/mobile/assets-history">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <CreditCard className="w-7 h-7 text-orange-500" />
