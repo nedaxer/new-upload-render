@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, User, AlertCircle, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, AlertCircle, Check, Loader2, Mail, Hash } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { getCurrencySymbol, formatCurrency } from '@/lib/utils';
+
 
 interface RecipientInfo {
   _id: string;
@@ -25,11 +26,13 @@ export default function Transfer() {
   const { toast } = useToast();
   
   const [amount, setAmount] = useState('');
-  const [recipientIdentifier, setRecipientIdentifier] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientUID, setRecipientUID] = useState('');
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [searchError, setSearchError] = useState('');
+  const [activeTab, setActiveTab] = useState('email');
 
   // Load currency from localStorage
   useEffect(() => {
@@ -46,16 +49,29 @@ export default function Transfer() {
   });
 
   const getUserUSDBalance = () => {
-    if (!walletData?.data) return 0;
+    if (!walletData || !(walletData as any).data) return 0;
     
     // USD balance is directly in the data object
-    return walletData.data.usdBalance || 0;
+    return (walletData as any).data.usdBalance || 0;
   };
 
-  // Search for recipient
-  const searchRecipient = async () => {
-    if (!recipientIdentifier.trim()) {
-      setSearchError('Please enter an email or UID');
+  // Search for recipient by email or UID
+  const searchRecipient = async (searchType: 'email' | 'uid') => {
+    const identifier = searchType === 'email' ? recipientEmail.trim() : recipientUID.trim();
+    
+    if (!identifier) {
+      setSearchError(`Please enter a ${searchType === 'email' ? 'valid email address' : 'valid UID'}`);
+      return;
+    }
+
+    // Basic validation
+    if (searchType === 'email' && !identifier.includes('@')) {
+      setSearchError('Please enter a valid email address');
+      return;
+    }
+
+    if (searchType === 'uid' && identifier.length !== 10) {
+      setSearchError('UID must be exactly 10 digits');
       return;
     }
 
@@ -64,26 +80,35 @@ export default function Transfer() {
     setRecipientInfo(null);
 
     try {
-      const response = await apiRequest(`/api/users/search`, {
+      console.log(`Searching for user by ${searchType}:`, identifier);
+      
+      const response = await fetch('/api/users/search', {
         method: 'POST',
-        body: JSON.stringify({ identifier: recipientIdentifier.trim() }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ identifier }),
       });
 
-      if (response.success && response.data) {
+      const data = await response.json();
+      console.log('Search response:', data);
+
+      if (data.success && data.data) {
         // Check if trying to send to self
-        if (response.data._id === user?._id) {
+        if (data.data._id === user?._id) {
           setSearchError('You cannot transfer funds to yourself');
           setRecipientInfo(null);
         } else {
-          setRecipientInfo(response.data);
+          setRecipientInfo(data.data);
           setSearchError('');
         }
       } else {
-        setSearchError('User not found');
+        setSearchError('User not found. Please check the information and try again.');
         setRecipientInfo(null);
       }
     } catch (error) {
-      setSearchError('User not found');
+      console.error('Search error:', error);
+      setSearchError('User not found. Please check the information and try again.');
       setRecipientInfo(null);
     } finally {
       setIsSearching(false);
@@ -93,10 +118,19 @@ export default function Transfer() {
   // Transfer mutation
   const transferMutation = useMutation({
     mutationFn: async (transferData: { recipientId: string; amount: number }) => {
-      return apiRequest('/api/wallet/transfer', {
+      const response = await fetch('/api/wallet/transfer', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(transferData),
       });
+      
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Transfer failed');
+      }
+      return data;
     },
     onSuccess: () => {
       toast({
@@ -110,7 +144,8 @@ export default function Transfer() {
       
       // Reset form
       setAmount('');
-      setRecipientIdentifier('');
+      setRecipientEmail('');
+      setRecipientUID('');
       setRecipientInfo(null);
     },
     onError: (error: any) => {
@@ -169,7 +204,7 @@ export default function Transfer() {
         <div className="w-6 h-6" />
       </div>
 
-      <div className="px-4 py-6 space-y-6">
+      <div className="px-4 py-4 space-y-6">
         {/* Balance Card */}
         <Card className="bg-[#1a1a40] border-gray-800">
           <div className="p-4">
@@ -181,8 +216,8 @@ export default function Transfer() {
         </Card>
 
         {/* Amount Input */}
-        <div className="space-y-2">
-          <Label className="text-gray-400">Amount (USD)</Label>
+        <div className="space-y-3">
+          <Label className="text-gray-300 text-base">Amount to Transfer</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
             <Input
@@ -190,35 +225,84 @@ export default function Transfer() {
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="pl-8 bg-[#1a1a40] border-gray-700 text-white placeholder-gray-500 focus:border-orange-500"
+              className="pl-8 h-12 text-lg bg-[#1a1a40] border-gray-700 text-white placeholder-gray-500 focus:border-orange-500"
               step="0.01"
               min="0"
             />
           </div>
         </div>
 
-        {/* Recipient Search */}
-        <div className="space-y-2">
-          <Label className="text-gray-400">Recipient (Email or UID)</Label>
-          <div className="flex space-x-2">
-            <Input
-              type="text"
-              placeholder="Enter email or UID"
-              value={recipientIdentifier}
-              onChange={(e) => setRecipientIdentifier(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchRecipient()}
-              className="flex-1 bg-[#1a1a40] border-gray-700 text-white placeholder-gray-500 focus:border-orange-500"
-            />
-            <Button
-              onClick={searchRecipient}
-              disabled={isSearching}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
-            </Button>
-          </div>
+        {/* Recipient Selection with Tabs */}
+        <div className="space-y-3">
+          <Label className="text-gray-300 text-base">Transfer To</Label>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-[#1a1a40] border border-gray-700">
+              <TabsTrigger 
+                value="email" 
+                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-gray-400 flex items-center space-x-2"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Email</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="uid" 
+                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-gray-400 flex items-center space-x-2"
+              >
+                <Hash className="w-4 h-4" />
+                <span>UID</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="email" className="space-y-3 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-400 text-sm">Recipient Email Address</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && searchRecipient('email')}
+                    className="flex-1 h-12 bg-[#1a1a40] border-gray-700 text-white placeholder-gray-500 focus:border-orange-500"
+                  />
+                  <Button
+                    onClick={() => searchRecipient('email')}
+                    disabled={isSearching || !recipientEmail.trim()}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-12"
+                  >
+                    {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Find'}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="uid" className="space-y-3 mt-4">
+              <div className="space-y-2">
+                <Label className="text-gray-400 text-sm">Recipient UID (10 digits)</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    type="text"
+                    placeholder="Enter 10-digit UID"
+                    value={recipientUID}
+                    onChange={(e) => setRecipientUID(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && searchRecipient('uid')}
+                    className="flex-1 h-12 bg-[#1a1a40] border-gray-700 text-white placeholder-gray-500 focus:border-orange-500 font-mono"
+                    maxLength={10}
+                  />
+                  <Button
+                    onClick={() => searchRecipient('uid')}
+                    disabled={isSearching || !recipientUID.trim()}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 h-12"
+                  >
+                    {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Find'}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
           {searchError && (
-            <div className="flex items-center space-x-2 text-red-400 text-sm">
+            <div className="flex items-center space-x-2 text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
               <AlertCircle className="w-4 h-4" />
               <span>{searchError}</span>
             </div>
