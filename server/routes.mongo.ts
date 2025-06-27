@@ -641,11 +641,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ success: false, message: "Not authenticated" });
       }
 
+      console.log('🔍 Auth request - Session userId:', req.session.userId);
+
       // Standard user lookup from MongoDB
       const { mongoStorage } = await import('./mongoStorage');
       const user = await mongoStorage.getUser(req.session.userId);
+      
       if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
+        console.log('❌ User not found for session ID:', req.session.userId);
+        
+        // Clear invalid session
+        req.session.destroy((err) => {
+          if (err) console.error('Session destroy error:', err);
+        });
+        
+        return res.status(401).json({ 
+          success: false, 
+          message: "Invalid session - user not found" 
+        });
       }
 
       // Ensure profile picture is properly included
@@ -664,11 +677,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: user.createdAt
       };
 
-      console.log('Auth user response:', { 
+      console.log('✅ Auth user response:', { 
         userId: user._id, 
+        uid: user.uid,
+        username: user.username,
         hasProfilePicture: !!user.profilePicture,
         profilePictureLength: user.profilePicture?.length 
       });
+
+      console.log('📤 Sending user data with UID:', userData.uid);
 
       res.json(userData);
     } catch (error) {
