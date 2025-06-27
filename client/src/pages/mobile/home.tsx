@@ -219,11 +219,14 @@ export default function MobileHome() {
     'NZD': 1.68         // New Zealand Dollar
   };
 
-  // Convert USD amounts to selected currency
-  const convertToSelectedCurrency = (usdAmount: number): string => {
+  // Convert USD amounts to selected currency with real-time rates
+  const convertToSelectedCurrency = React.useCallback((usdAmount: number): string => {
     if (!usdAmount || usdAmount === 0) return '0.00';
     
-    const rate = conversionRates[selectedCurrency];
+    // Use real-time exchange rates from API
+    const currentRates = conversionData?.data || conversionRates;
+    const rate = currentRates[selectedCurrency];
+    
     if (!rate) {
       console.warn(`No conversion rate found for ${selectedCurrency}, using USD`);
       return usdAmount.toFixed(2);
@@ -243,7 +246,7 @@ export default function MobileHome() {
     else {
       return convertedAmount.toFixed(2);
     }
-  };
+  }, [selectedCurrency, conversionData, conversionRates]);
 
   // Get currency symbol - returns empty string to show only numbers
   const getCurrencySymbol = (currency: string): string => {
@@ -293,7 +296,24 @@ export default function MobileHome() {
 
   const handleCurrencySelect = (currency: string) => {
     setSelectedCurrency(currency);
+    // Save to localStorage for persistence
+    localStorage.setItem('selectedCurrency', currency);
     setCurrentView('home');
+    
+    // Force refresh exchange rates to get latest data for new currency
+    queryClient.invalidateQueries({ queryKey: ['/api/market-data/conversion-rates'] });
+    
+    // Trigger force refresh of exchange rates from server
+    fetch('/api/market-data/conversion-rates/refresh', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log(`Exchange rates refreshed for ${currency}:`, data.source);
+          // Invalidate queries to refresh UI with new rates
+          queryClient.invalidateQueries({ queryKey: ['/api/market-data/conversion-rates'] });
+        }
+      })
+      .catch(error => console.error('Failed to refresh exchange rates:', error));
   };
 
   const quickActions = [
@@ -691,7 +711,7 @@ export default function MobileHome() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                user ? `${getCurrencySymbol(selectedCurrency)}${parseFloat(convertToSelectedCurrency(getUserUSDBalance())).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
+                user ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(getUserUSDBalance())}` : `${getCurrencySymbol(selectedCurrency)}0.00`
               ) : '****'}
             </span>
             <button 
@@ -701,12 +721,18 @@ export default function MobileHome() {
               <span>{selectedCurrency}</span>
               <ChevronDown className="w-4 h-4" />
             </button>
+            {conversionData?.success === false && (
+              <span className="text-xs text-yellow-500">Using cached rates</span>
+            )}
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
             <span>≈ {showBalance ? 
               (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
               '********'
             } BTC</span>
+            {conversionData?.source && (
+              <span className="text-xs text-gray-500">• {conversionData.source}</span>
+            )}
           </div>
         </div>
 
