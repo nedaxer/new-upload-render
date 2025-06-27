@@ -83,7 +83,8 @@ export default function MobileNotifications() {
     mutationFn: (notificationId: string) => 
       apiRequest('PUT', `/api/notifications/${notificationId}/read`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
     }
   });
 
