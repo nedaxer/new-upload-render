@@ -16,6 +16,7 @@ type LoginData = {
 type UserData = Pick<
   User,
   | "id"
+  | "uid"
   | "username"
   | "firstName"
   | "lastName"
@@ -77,7 +78,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { user: data.user };
         } else if (data && (data._id || data.id)) {
           // Handle direct user object response (MongoDB format with _id)
-          return { user: data };
+          // Ensure UID is properly mapped from MongoDB structure
+          const userData = {
+            id: data._id || data.id,
+            uid: data.uid,
+            username: data.username,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            isAdmin: data.isAdmin,
+            profilePicture: data.profilePicture
+          };
+          return { user: userData };
         } else {
           return { user: null };
         }
@@ -109,8 +121,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: async (data) => {
       console.log("Login successful, updating cache with user:", data.user);
+      // Ensure UID is properly mapped from login response
+      const userData = {
+        id: data.user._id || data.user.id,
+        uid: data.user.uid,
+        username: data.user.username,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        email: data.user.email,
+        isAdmin: data.user.isAdmin,
+        profilePicture: data.user.profilePicture
+      };
       // Update the auth user data in the cache immediately
-      queryClient.setQueryData(["/api/auth/user"], data.user);
+      queryClient.setQueryData(["/api/auth/user"], { user: userData });
 
       // Aggressively preload all critical mobile app data
       await Promise.allSettled([
@@ -190,8 +213,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         "Registration successful, updating cache with user:",
         data.user,
       );
+      // Ensure UID is properly mapped from registration response
+      const userData = {
+        id: data.user._id || data.user.id,
+        uid: data.user.uid,
+        username: data.user.username,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        email: data.user.email,
+        isAdmin: data.user.isAdmin,
+        profilePicture: data.user.profilePicture
+      };
       // Update the auth user data in the cache immediately
-      queryClient.setQueryData(["/api/auth/user"], data.user);
+      queryClient.setQueryData(["/api/auth/user"], { user: userData });
 
       // Aggressively preload all critical mobile app data for new users
       await Promise.allSettled([
