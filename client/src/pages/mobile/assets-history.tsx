@@ -48,8 +48,8 @@ export default function AssetsHistory() {
     gcTime: 0,
   });
 
-  const deposits = Array.isArray(depositsResponse?.data) ? depositsResponse.data : [];
-  const transfers = Array.isArray(transfersResponse?.data) ? transfersResponse.data : [];
+  const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];
+  const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
   
   // Combine and sort all transactions
   const allTransactions = [...deposits, ...transfers].sort((a, b) => 

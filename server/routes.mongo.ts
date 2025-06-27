@@ -305,12 +305,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Transfer funds endpoint
   app.post('/api/wallet/transfer', requireAuth, async (req: Request, res: Response) => {
+    const senderId = req.session.userId!;
+    console.log(`🚀 Transfer request initiated by sender: ${senderId}`);
+    
     try {
-      const senderId = req.session.userId!;
       const { recipientId, amount } = req.body;
+      console.log(`📋 Transfer details - Recipient: ${recipientId}, Amount: ${amount}`);
       
       // Validate input
       if (!recipientId || typeof recipientId !== 'string') {
+        console.log('❌ Invalid recipient provided');
         return res.status(400).json({
           success: false,
           message: 'Invalid recipient'
@@ -319,9 +323,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const transferAmount = parseFloat(amount);
       if (isNaN(transferAmount) || transferAmount <= 0) {
+        console.log('❌ Invalid transfer amount provided');
         return res.status(400).json({
           success: false,
           message: 'Invalid transfer amount'
+        });
+      }
+      
+      // Prevent self-transfer
+      if (senderId === recipientId) {
+        console.log('❌ User attempting to transfer to themselves');
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot transfer to yourself'
         });
       }
       
@@ -349,8 +363,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currencyId: usdCurrency._id
         }).session(session);
         
-        if (!senderBalance || senderBalance.amount < transferAmount) {
-          throw new Error('Insufficient balance');
+        console.log(`💰 Sender balance found: ${senderBalance ? senderBalance.amount : 'NULL'}`);
+        console.log(`💰 Transfer amount: ${transferAmount}`);
+        
+        if (!senderBalance) {
+          throw new Error('Sender balance not found');
+        }
+        
+        if (senderBalance.amount < transferAmount) {
+          throw new Error(`Insufficient balance. Current: $${senderBalance.amount}, Required: $${transferAmount}`);
         }
         
         // Get or create recipient's balance
@@ -368,11 +389,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Update balances
+        console.log(`💰 Before transfer - Sender balance: $${senderBalance.amount}, Recipient balance: $${recipientBalance.amount}`);
         senderBalance.amount -= transferAmount;
         recipientBalance.amount += transferAmount;
+        console.log(`💰 After transfer calculation - Sender balance: $${senderBalance.amount}, Recipient balance: $${recipientBalance.amount}`);
         
+        console.log('💾 Saving sender balance...');
         await senderBalance.save({ session });
+        console.log('✅ Sender balance saved');
+        
+        console.log('💾 Saving recipient balance...');
         await recipientBalance.save({ session });
+        console.log('✅ Recipient balance saved');
         
         // Create transfer record
         const transactionId = `TRF${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
@@ -430,11 +458,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
         
+        console.log('💾 Saving sender notification:', senderNotification);
         await senderNotification.save({ session });
+        console.log('✅ Sender notification saved');
+        
+        console.log('💾 Saving recipient notification:', recipientNotification);
         await recipientNotification.save({ session });
+        console.log('✅ Recipient notification saved');
         
         // Commit transaction
+        console.log('🔄 Committing transaction...');
         await session.commitTransaction();
+        console.log('✅ Transaction committed successfully');
         
         // Broadcast via WebSocket
         const { getWebSocketServer } = await import('./websocket');
@@ -1642,6 +1677,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+
+  // Debug endpoint for checking notifications and transfers
+  app.get('/api/debug/transfers-notifications', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      // Import models
+      const { Transfer } = await import('./models/Transfer');
+      const { Notification } = await import('./models/Notification');
+      
+      // Check transfers for this user
+      const transfers = await Transfer.find({
+        $or: [{ fromUserId: userId }, { toUserId: userId }]
+      }).sort({ createdAt: -1 }).limit(5);
+      
+      // Check notifications for this user
+      const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(10);
+      
+      // Check all transfer notifications
+      const transferNotifications = await Notification.find({
+        type: { $in: ['transfer_sent', 'transfer_received'] }
+      }).sort({ createdAt: -1 }).limit(10);
+      
+      res.json({
+        success: true,
+        debug: {
+          userId,
+          transfers: transfers.length,
+          userNotifications: notifications.length,
+          transferNotifications: transferNotifications.length,
+          latestTransfers: transfers,
+          latestNotifications: notifications,
+          latestTransferNotifications: transferNotifications
+        }
+      });
+    } catch (error) {
+      console.error('Debug error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
 
   // Admin user search
   app.get('/api/admin/users/search', requireAdminAuth, async (req: Request, res: Response) => {

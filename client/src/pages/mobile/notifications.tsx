@@ -171,7 +171,7 @@ export default function MobileNotifications() {
                 activeTab === 'All' ||
                 notification.type === activeTab.toLowerCase() ||
                 (activeTab === t('system_notification') && notification.type === 'system') ||
-                (activeTab === t('latest_events') && notification.type === 'deposit') ||
+                (activeTab === t('latest_events') && (notification.type === 'deposit' || notification.type === 'transfer_sent' || notification.type === 'transfer_received')) ||
                 (activeTab === t('announcement') && notification.type === 'announcement') ||
                 (activeTab === t('rewards') && notification.type === 'rewards')
               )
