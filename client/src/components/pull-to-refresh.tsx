@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './pull-to-refresh-styles.css';
-import { hapticLight } from '@/lib/haptics';
+import { hapticMedium } from '@/lib/haptics';
 
-// Add haptic feedback utility with lighter vibration
+// Add haptic feedback utility with moderate vibration
 const triggerHapticFeedback = () => {
-  hapticLight(); // Use light haptic feedback instead of the stronger 50ms vibration
+  hapticMedium(); // Use medium haptic feedback for noticeable but gentle vibration
 };
 
 // Import the assets
