@@ -186,170 +186,150 @@ export default function Transfer() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a2e] text-white relative">
+    <div className="h-screen bg-[#0a0a2e] text-white flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-gray-700">
         <Link href="/mobile/assets">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold text-white">Transfer</h1>
+        <h1 className="text-lg font-semibold text-white">Send USD</h1>
         <div className="flex items-center space-x-3">
           <HelpCircle className="w-5 h-5 text-gray-400" />
           <Copy className="w-5 h-5 text-gray-400" />
         </div>
       </div>
 
-      <div className={`px-4 py-6 space-y-6 relative ${showDropdown ? 'z-10' : ''}`}>
-        {/* Blur overlay when dropdown is open */}
-        {showDropdown && (
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-0"
-            onClick={() => setShowDropdown(false)}
-            style={{ top: '73px' }}
-          />
-        )}
-        {/* Send Method Selection */}
+      {/* Main Content */}
+      <div className="flex-1 px-4 py-4 space-y-4">
+        {/* Send Method Selection - Now as simple label */}
         <div className="space-y-2">
-          <div className="flex items-center space-x-2 mb-3">
-            <Label className="text-white text-base font-semibold">Send Method</Label>
+          <div className="flex items-center space-x-2">
+            <Label className="text-white text-sm font-medium">Send Mode</Label>
             <HelpCircle className="w-4 h-4 text-gray-400" />
           </div>
           
-          <div className="relative">
-            <Button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white justify-between hover:bg-[#2a2a50]"
-            >
-              <span>{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-            
-            {/* Dropdown positioned below the button */}
-            {showDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border z-50">
-                <div className="py-2">
-                  <button
-                    onClick={() => handleMethodSelection('email')}
-                    className="w-full px-4 py-3 text-left text-black hover:bg-gray-50 text-base"
-                  >
-                    Email
-                  </button>
-                  <button
-                    onClick={() => handleMethodSelection('uid')}
-                    className="w-full px-4 py-3 text-left text-black hover:bg-gray-50 text-base flex items-center justify-between"
-                  >
-                    <span>Nedaxer ID</span>
-                    {selectedMethod === 'uid' && (
-                      <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Input Field Based on Selection */}
-          {selectedMethod && (
-            <div className="mt-3">
-              <Input
-                type="text"
-                placeholder={inputType === 'email' ? 'Enter email address' : 'Enter Nedaxer UID'}
-                value={recipientIdentifier}
-                onChange={(e) => setRecipientIdentifier(e.target.value)}
-                className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500"
-              />
-              {isSearching && (
-                <div className="flex items-center space-x-2 mt-2 text-gray-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Searching...</span>
-                </div>
-              )}
+          <div className="bg-[#1a1a40] border border-gray-600 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-white">{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Recipient Info */}
-        {recipientInfo && (
-          <Card className="bg-[#1a1a40] border-gray-600 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-white">
-                  {recipientInfo.firstName} {recipientInfo.lastName}
-                </div>
-                <div className="text-sm text-gray-400">@{recipientInfo.username}</div>
-                <div className="text-xs text-gray-500">{recipientInfo.email}</div>
-                <div className="text-xs text-gray-500">UID: {recipientInfo.uid}</div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Withdraw Amount */}
+        {/* Recipient Input */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Label className="text-white text-base font-semibold">Transfer Amount</Label>
-              <HelpCircle className="w-4 h-4 text-gray-400" />
+          <Label className="text-white text-sm font-medium">
+            {selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}
+          </Label>
+          <Input
+            type="text"
+            placeholder={inputType === 'email' ? 'Enter email address' : 'Enter Nedaxer ID'}
+            value={recipientIdentifier}
+            onChange={(e) => setRecipientIdentifier(e.target.value)}
+            className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500"
+          />
+          {isSearching && (
+            <div className="flex items-center space-x-2 text-gray-400">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Searching...</span>
             </div>
+          )}
+          <div className="text-xs text-gray-400">
+            Please enter the correct {selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}
           </div>
-          
+        </div>
+
+        {/* Transfer Amount */}
+        <div className="space-y-2">
+          <Label className="text-white text-sm font-medium">Withdraw Amount</Label>
           <div className="relative">
             <Input
               type="number"
-              placeholder="0.00"
+              placeholder="11.398066"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 pr-16"
+              className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 pr-20 text-lg"
               step="0.01"
               min="0"
             />
-            <Button
-              onClick={setMaxAmount}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-600 hover:bg-gray-500 text-white text-sm px-3 py-1 h-8"
-            >
-              Max
-            </Button>
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+              <Button
+                onClick={setMaxAmount}
+                className="bg-transparent hover:bg-gray-600 text-white text-sm px-2 py-1 h-6 border border-gray-500"
+              >
+                Max
+              </Button>
+              <span className="text-white text-sm">USD</span>
+            </div>
           </div>
-          
-          <div className="text-sm text-gray-400">
-            Available: ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="text-xs text-gray-400">
+            ≈ ${withdrawAmount ? (parseFloat(withdrawAmount) * 1).toFixed(2) : '0.00'} USD
+          </div>
+          <div className="text-xs text-gray-400">
+            Available: ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })} USD
           </div>
         </div>
 
         {/* Note */}
         <div className="space-y-2">
-          <Label className="text-white text-base font-semibold">Note (Optional)</Label>
+          <Label className="text-white text-sm font-medium">Note (Optional)</Label>
           <Textarea
             placeholder="Add a note for the recipient"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 resize-none"
-            rows={3}
+            className="bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 resize-none h-16"
             maxLength={50}
           />
-          <div className="text-right text-xs text-gray-500">
-            {note.length}/50
-          </div>
         </div>
 
-        {/* Info Text */}
-        <div className="text-xs text-gray-400 leading-relaxed">
-          • Send to a Nedaxer account via email or Nedaxer UID. Instant arrival with no fees. 
-          Refunds are not supported.{' '}
-          <span className="text-yellow-400 underline">Learn more</span>
-        </div>
+        {/* Recipient Info */}
+        {recipientInfo && (
+          <Card className="bg-[#1a1a40] border-gray-600 p-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-white text-sm">
+                  {recipientInfo.firstName} {recipientInfo.lastName}
+                </div>
+                <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
 
-        {/* Total Amount */}
-        <div className="flex justify-between items-center py-4">
-          <span className="text-white text-lg font-semibold">Total Amount</span>
-          <span className="text-white text-2xl font-bold">
-            ${withdrawAmount ? parseFloat(withdrawAmount).toFixed(2) : '0.00'}
-          </span>
+      {/* Bottom Section - Send Mode Selection */}
+      <div className="bg-white rounded-t-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-black text-lg font-semibold">Send Mode</h3>
+        </div>
+        
+        <div className="space-y-2">
+          <button
+            onClick={() => handleMethodSelection('email')}
+            className="w-full p-3 text-left text-black hover:bg-gray-50 rounded-lg flex items-center justify-between"
+          >
+            <span className="font-medium">Email</span>
+            {selectedMethod === 'email' && (
+              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
+          
+          <button
+            onClick={() => handleMethodSelection('uid')}
+            className="w-full p-3 text-left text-black hover:bg-gray-50 rounded-lg flex items-center justify-between"
+          >
+            <span className="font-medium">Nedaxer ID</span>
+            {selectedMethod === 'uid' && (
+              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Send Button */}
@@ -362,7 +342,7 @@ export default function Transfer() {
             parseFloat(withdrawAmount) > getUserUSDBalance() ||
             transferMutation.isPending
           }
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
         >
           {transferMutation.isPending ? (
             <div className="flex items-center space-x-2">
@@ -373,8 +353,6 @@ export default function Transfer() {
             'Send'
           )}
         </Button>
-
-
       </div>
     </div>
   );
