@@ -20,6 +20,7 @@ interface RecipientInfo {
   username: string;
   firstName: string;
   lastName: string;
+  profilePicture?: string;
 }
 
 export default function Transfer() {

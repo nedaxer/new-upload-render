@@ -281,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { email: trimmedIdentifier },
           { uid: trimmedIdentifier }
         ]
-      }).select('_id uid email username firstName lastName');
+      }).select('_id uid email username firstName lastName profilePicture');
       
       if (!user) {
         return res.status(404).json({
@@ -289,6 +289,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'User not found'
         });
       }
+      
+      console.log('🔍 User search result:', {
+        userId: user._id,
+        hasProfilePicture: !!user.profilePicture,
+        profilePictureLength: user.profilePicture ? user.profilePicture.length : 0
+      });
       
       res.json({
         success: true,
