@@ -38,13 +38,13 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   const [startY, setStartY] = useState(0);
   const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
   const [showNedaxerHeader, setShowNedaxerHeader] = useState(false);
-  const [isReturning, setIsReturning] = useState(false);
+  const [isReturning, setIsReturning] = useState(isReturning);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>();
 
   const handleTouchStart = (e: TouchEvent) => {
     if (disabled || isRefreshing) return;
-    
+
     const touch = e.touches[0];
     setStartY(touch.clientY);
     setIsPulling(true);
@@ -63,7 +63,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
 
     if (deltaY > 0) {
       e.preventDefault();
-      
+
       // Apply smooth resistance curve for natural feel
       let resistance;
       if (deltaY <= LOGO_START_THRESHOLD) {
@@ -74,13 +74,13 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
         resistance = LOGO_COMPLETE_THRESHOLD + (deltaY - LOGO_COMPLETE_THRESHOLD) * 0.5;
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
-      
-      // Trigger haptic feedback when logo AND header are fully visible
+
+      // Trigger haptic feedback when refresh header reaches its end (PULL_THRESHOLD)
       if (resistance >= PULL_THRESHOLD && !hasTriggeredHaptic) {
         triggerHapticFeedback();
         setHasTriggeredHaptic(true);
       }
-      
+
       // Direct update for smooth response
       setPullDistance(resistance);
     }
@@ -98,10 +98,10 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       setPullDistance(0);
       setIsRefreshing(true);
       setIsReturning(true);
-      
+
       // Show Nedaxer header immediately
       setShowNedaxerHeader(true);
-      
+
       try {
         await onRefresh();
         // Keep refreshing animation for 2 seconds as requested
@@ -198,7 +198,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
               background: 'linear-gradient(180deg, rgba(10, 10, 46, 0) 0%, rgba(10, 10, 46, 0.2) 20%, rgba(10, 10, 46, 0.4) 40%, rgba(10, 10, 46, 0.6) 60%, rgba(10, 10, 46, 0.8) 80%, #0a0a2e 100%)'
             }}
           />
-          
+
           {/* Logo mounted on background without animations */}
           {pullDistance > LOGO_START_THRESHOLD && (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -286,7 +286,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
                   ))}
                 </div>
               </motion.div>
-              
+
               {/* Compact gradient blend with mobile page */}
               <div 
                 className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none"
