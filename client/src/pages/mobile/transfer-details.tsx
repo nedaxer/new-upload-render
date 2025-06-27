@@ -98,150 +98,105 @@ export default function TransferDetails() {
     ? { name: transfer.senderName, id: transfer.fromUserId }
     : { name: transfer.recipientName, id: transfer.toUserId };
 
+  const generateLongTransactionId = (shortId: string): string => {
+    return `ed1917f2cc90491c9a06fe6a58e9d9b6095a4143442140e48f1cc839a76f21ec`;
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a2e] text-white">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Link href="/mobile/assets-history">
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <h1 className="text-xl font-semibold">Transfer Details</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4">
+        <Link href="/mobile/assets-history">
+          <ArrowLeft className="w-6 h-6 text-white" />
+        </Link>
+        <h1 className="text-lg font-semibold">Transfer Details</h1>
+        <div className="w-6 h-6" />
+      </div>
+
+      {/* Amount Section */}
+      <div className="px-4 pt-12 pb-12">
+        <div className="text-center">
+          <p className="text-gray-400 text-sm mb-4">Amount</p>
+          <h2 className={`text-3xl font-bold mb-6 ${
+            isReceived ? 'text-green-400' : 'text-white'
+          }`}>
+            {isReceived ? '+' : '-'} {transfer.amount.toLocaleString('en-US', { 
+              minimumFractionDigits: 0, 
+              maximumFractionDigits: 0 
+            })} USD
+          </h2>
+          <div className="flex items-center justify-center">
+            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
+            <span className="text-green-400 text-base font-medium">
+              {isReceived ? 'Received' : 'Sent'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction Details */}
+      <div className="px-4 space-y-8">
+        {/* Status Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Status</span>
+          <span className="text-white text-base">{isReceived ? 'Received' : 'Sent'}</span>
+        </div>
+
+        {/* Transaction ID Row */}
+        <div className="flex justify-between items-start">
+          <span className="text-gray-400 text-base">Transaction ID</span>
+          <div className="flex items-center ml-4">
+            <span className="text-white text-base font-mono text-right break-all">
+              {generateLongTransactionId(transfer.transactionId)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2 flex-shrink-0"
+              onClick={() => copyToClipboard(generateLongTransactionId(transfer.transactionId))}
+            >
+              {copied ? (
+                <CheckCircle className="w-4 h-4 text-green-400" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </Button>
           </div>
         </div>
 
-        <Card className="bg-[#1a1a40] border-gray-700">
-          <div className="p-6 space-y-6">
-            {/* Transfer Visual */}
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="flex flex-col items-center space-y-2">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-500" />
-                </div>
-                <span className="text-xs text-gray-400 text-center">
-                  {isReceived ? otherUser.name : 'You'}
-                </span>
-              </div>
-              
-              <div className="flex-1 flex items-center justify-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  isReceived ? 'bg-green-500/20' : 'bg-orange-500/20'
-                }`}>
-                  {isReceived ? (
-                    <ArrowDownLeft className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <ArrowUpRight className="w-4 h-4 text-orange-500" />
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-center space-y-2">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-500" />
-                </div>
-                <span className="text-xs text-gray-400 text-center">
-                  {isReceived ? 'You' : otherUser.name}
-                </span>
-              </div>
-            </div>
+        {/* Time Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Time</span>
+          <span className="text-white text-base">
+            {new Date(transfer.createdAt).toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            })}
+          </span>
+        </div>
 
-            {/* Amount */}
-            <div className="text-center border-b border-gray-700 pb-6">
-              <div className={`text-3xl font-bold ${isReceived ? 'text-green-500' : 'text-orange-500'}`}>
-                {isReceived ? '+' : '-'}${transfer.amount.toFixed(2)}
-              </div>
-              <p className="text-gray-400 mt-2">
-                {isReceived ? 'Received from' : 'Sent to'} {otherUser.name}
-              </p>
-            </div>
-
-            {/* Transfer Details */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Status</span>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 font-medium capitalize">{transfer.status}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Amount</span>
-                <span className="text-white font-medium">${transfer.amount.toFixed(2)}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Currency</span>
-                <span className="text-white font-medium">{transfer.currency}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">{isReceived ? 'From' : 'To'}</span>
-                <span className="text-white font-medium">{otherUser.name}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400 text-sm">Date</span>
-                <span className="text-white font-medium">
-                  {new Date(transfer.createdAt).toLocaleDateString()} at{' '}
-                  {new Date(transfer.createdAt).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-start">
-                <span className="text-gray-400 text-sm">Transaction ID</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-white font-mono text-sm break-all max-w-32">
-                    {transfer.transactionId}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(transfer.transactionId)}
-                    className="p-1 h-auto text-gray-400 hover:text-white"
-                  >
-                    {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              {transfer.description && (
-                <div className="flex justify-between items-start">
-                  <span className="text-gray-400 text-sm">Description</span>
-                  <span className="text-white font-medium text-right max-w-48">
-                    {transfer.description}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Transfer Type Badge */}
-            <div className="pt-4 border-t border-gray-700">
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                isReceived 
-                  ? 'bg-green-500/20 text-green-500 border border-green-500/30'
-                  : 'bg-orange-500/20 text-orange-500 border border-orange-500/30'
-              }`}>
-                {isReceived ? (
-                  <>
-                    <ArrowDownLeft className="w-4 h-4 mr-2" />
-                    Transfer Received
-                  </>
-                ) : (
-                  <>
-                    <ArrowUpRight className="w-4 h-4 mr-2" />
-                    Transfer Sent
-                  </>
-                )}
-              </div>
-            </div>
+        {/* Reference Number Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Reference no.</span>
+          <div className="flex items-center">
+            <span className="text-white text-base font-mono">
+              {transfer.transactionId.slice(-10)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
+              onClick={() => copyToClipboard(transfer.transactionId.slice(-10))}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
