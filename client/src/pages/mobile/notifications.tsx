@@ -98,9 +98,9 @@ export default function MobileNotifications() {
 
   const handleReadAll = async () => {
     if (notificationData && Array.isArray(notificationData)) {
-      const unreadNotifications = notificationData.filter((n: any) => !n.read);
+      const unreadNotifications = notificationData.filter((n: any) => !n.isRead);
       for (const notification of unreadNotifications) {
-        markAsReadMutation.mutate(notification.id.toString());
+        markAsReadMutation.mutate(notification._id);
       }
     }
   };
