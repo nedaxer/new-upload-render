@@ -201,19 +201,20 @@ export default function Transfer() {
 
       {/* Main Content */}
       <div className="flex-1 px-4 py-4 space-y-4">
-        {/* Send Method Selection - Now as simple label */}
+        {/* Send Method Selection */}
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Label className="text-white text-sm font-medium">Send Mode</Label>
             <HelpCircle className="w-4 h-4 text-gray-400" />
           </div>
           
-          <div className="bg-[#1a1a40] border border-gray-600 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-white">{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="w-full bg-[#1a1a40] border border-gray-600 rounded-lg p-3 flex items-center justify-between hover:bg-[#2a2a50]"
+          >
+            <span className="text-white">{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </button>
         </div>
 
         {/* Recipient Input */}
@@ -300,39 +301,8 @@ export default function Transfer() {
         )}
       </div>
 
-      {/* Bottom Section - Send Mode Selection */}
-      <div className="bg-white rounded-t-2xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-black text-lg font-semibold">Send Mode</h3>
-        </div>
-        
-        <div className="space-y-2">
-          <button
-            onClick={() => handleMethodSelection('email')}
-            className="w-full p-3 text-left text-black hover:bg-gray-50 rounded-lg flex items-center justify-between"
-          >
-            <span className="font-medium">Email</span>
-            {selectedMethod === 'email' && (
-              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            )}
-          </button>
-          
-          <button
-            onClick={() => handleMethodSelection('uid')}
-            className="w-full p-3 text-left text-black hover:bg-gray-50 rounded-lg flex items-center justify-between"
-          >
-            <span className="font-medium">Nedaxer ID</span>
-            {selectedMethod === 'uid' && (
-              <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* Send Button */}
+      {/* Send Button */}
+      <div className="px-4 pb-4">
         <Button
           onClick={handleSend}
           disabled={
@@ -342,7 +312,7 @@ export default function Transfer() {
             parseFloat(withdrawAmount) > getUserUSDBalance() ||
             transferMutation.isPending
           }
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {transferMutation.isPending ? (
             <div className="flex items-center space-x-2">
@@ -354,6 +324,49 @@ export default function Transfer() {
           )}
         </Button>
       </div>
+
+      {/* Dropdown Modal - Send Mode Selection */}
+      {showDropdown && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end">
+          <div className="w-full bg-[#0a0a2e] rounded-t-2xl p-4 space-y-3 animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white text-lg font-semibold">Send Mode</h3>
+              <button
+                onClick={() => setShowDropdown(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              <button
+                onClick={() => handleMethodSelection('email')}
+                className="w-full p-3 text-left text-white hover:bg-[#1a1a40] rounded-lg flex items-center justify-between"
+              >
+                <span className="font-medium">Email</span>
+                {selectedMethod === 'email' && (
+                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+              
+              <button
+                onClick={() => handleMethodSelection('uid')}
+                className="w-full p-3 text-left text-white hover:bg-[#1a1a40] rounded-lg flex items-center justify-between"
+              >
+                <span className="font-medium">Nedaxer ID</span>
+                {selectedMethod === 'uid' && (
+                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
