@@ -17,6 +17,7 @@ import {
   User,
   Shield,
   Plus,
+  Minus,
   AlertTriangle,
   Mail,
   CreditCard,
@@ -158,6 +159,33 @@ export default function AdminPortal() {
     },
   });
 
+  // Remove funds mutation
+  const removeFundsMutation = useMutation({
+    mutationFn: async ({ userId, amount }: { userId: string; amount: number }) => {
+      const response = await apiRequest("POST", "/api/admin/users/remove-funds", { userId, amount });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Funds Removed Successfully",
+        description: `$${fundAmount} removed from user account`,
+        variant: "default",
+      });
+      setFundAmount("");
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchSearch();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Removing Funds",
+        description: error.message || "Failed to remove funds",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -231,6 +259,29 @@ export default function AdminPortal() {
     }
 
     addFundsMutation.mutate({ userId: selectedUser._id, amount });
+  };
+
+  const handleRemoveFunds = () => {
+    if (!selectedUser || !fundAmount) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a user and enter amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amount = parseFloat(fundAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    removeFundsMutation.mutate({ userId: selectedUser._id, amount });
   };
 
   const handleDeleteUser = (user: AdminUser) => {
@@ -592,32 +643,51 @@ export default function AdminPortal() {
                 {/* Silent Fund Transfer (No History) */}
                 <div className="p-4 bg-gray-500/20 rounded-lg border border-gray-400/30">
                   <h4 className="text-white font-medium mb-2">Silent Fund Transfer</h4>
-                  <p className="text-gray-300 text-sm mb-3">Add USD funds directly without creating transaction history</p>
-                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                  <p className="text-gray-300 text-sm mb-3">Add or remove USD funds directly without creating transaction history</p>
+                  <div className="flex flex-col space-y-3">
                     <Input
                       type="number"
                       placeholder="Amount (USD)"
                       value={fundAmount}
                       onChange={(e) => setFundAmount(e.target.value)}
-                      className="flex-1 bg-white/20 border-white/30 text-white placeholder:text-blue-200"
+                      className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
                     />
-                    <Button
-                      onClick={handleAddFunds}
-                      disabled={addFundsMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 w-full sm:w-auto"
-                    >
-                      {addFundsMutation.isPending ? (
-                        <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Adding...
-                        </div>
-                      ) : (
-                        <div className="flex items-center">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add Funds Silently
-                        </div>
-                      )}
-                    </Button>
+                    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                      <Button
+                        onClick={handleAddFunds}
+                        disabled={addFundsMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 flex-1"
+                      >
+                        {addFundsMutation.isPending ? (
+                          <div className="flex items-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Adding...
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Funds
+                          </div>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={handleRemoveFunds}
+                        disabled={removeFundsMutation.isPending}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 sm:px-6 flex-1"
+                      >
+                        {removeFundsMutation.isPending ? (
+                          <div className="flex items-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Removing...
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <AlertTriangle className="w-4 h-4 mr-1" />
+                            Remove Funds
+                          </div>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

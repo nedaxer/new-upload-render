@@ -1366,6 +1366,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin remove funds
+  app.post('/api/admin/users/remove-funds', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, amount } = req.body;
+      
+      if (!userId || !amount || amount <= 0) {
+        return res.status(400).json({ success: false, message: "Valid user ID and amount required" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      await mongoStorage.removeFundsFromUser(userId, parseFloat(amount));
+      
+      console.log(`✓ Admin removed $${amount} from user ${userId}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully removed $${amount} from user account`
+      });
+    } catch (error) {
+      console.error('Admin remove funds error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to remove funds" 
+      });
+    }
+  });
+
   // Admin delete user
   app.delete('/api/admin/users/:userId', requireAdminAuth, async (req: Request, res: Response) => {
     try {
