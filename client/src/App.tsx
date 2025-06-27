@@ -93,7 +93,7 @@ import MobileTrade from '@/pages/mobile/trade';
 import MobileMarkets from '@/pages/mobile/markets';
 import MobileEarn from '@/pages/mobile/earn';
 import MobileProfile from '@/pages/mobile/profile';
-import MobileConvert from '@/pages/mobile/convert';
+
 import MobileFutures from '@/pages/mobile/futures';
 import MobileSpot from '@/pages/mobile/spot';
 import MobileInviteFriends from '@/pages/mobile/invite-friends';
@@ -262,7 +262,7 @@ export default function App() {
             <Route path="/mobile/markets" component={MobileMarkets} />
             <Route path="/mobile/earn" component={MobileEarn} />
             <Route path="/mobile/profile" component={MobileProfile} />
-            <Route path="/mobile/convert" component={MobileConvert} />
+
             <Route path="/mobile/futures" component={MobileFutures} />
             <Route path="/mobile/spot" component={MobileSpot} />
             <Route path="/mobile/invite-friends" component={MobileInviteFriends} />
