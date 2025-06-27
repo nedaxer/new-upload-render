@@ -721,18 +721,12 @@ export default function MobileHome() {
               <span>{selectedCurrency}</span>
               <ChevronDown className="w-4 h-4" />
             </button>
-            {conversionData?.success === false && (
-              <span className="text-xs text-yellow-500">Using cached rates</span>
-            )}
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
             <span>≈ {showBalance ? 
               (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
               '********'
             } BTC</span>
-            {conversionData?.source && (
-              <span className="text-xs text-gray-500">• {conversionData.source}</span>
-            )}
           </div>
         </div>
 
