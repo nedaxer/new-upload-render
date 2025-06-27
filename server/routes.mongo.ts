@@ -389,11 +389,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await transfer.save({ session });
         
+        // Get sender and recipient info for notifications
+        const sender = await User.findById(senderId).select('firstName lastName');
+        const recipient = await User.findById(recipientId).select('firstName lastName');
+        
+        // Create notifications for both users
+        const { Notification } = await import('./models/Notification');
+        
+        // Notification for sender (transfer sent)
+        const senderNotification = new Notification({
+          userId: senderId,
+          type: 'transfer_sent',
+          title: 'Transfer Sent',
+          message: `You sent $${transferAmount.toFixed(2)} to ${recipient?.firstName} ${recipient?.lastName}`,
+          data: {
+            transferId: transfer._id,
+            transactionId,
+            amount: transferAmount,
+            currency: 'USD',
+            recipientName: `${recipient?.firstName} ${recipient?.lastName}`,
+            recipientId: recipientId,
+            status: 'completed'
+          }
+        });
+        
+        // Notification for recipient (transfer received)
+        const recipientNotification = new Notification({
+          userId: recipientId,
+          type: 'transfer_received',
+          title: 'Transfer Received',
+          message: `You received $${transferAmount.toFixed(2)} from ${sender?.firstName} ${sender?.lastName}`,
+          data: {
+            transferId: transfer._id,
+            transactionId,
+            amount: transferAmount,
+            currency: 'USD',
+            senderName: `${sender?.firstName} ${sender?.lastName}`,
+            senderId: senderId,
+            status: 'completed'
+          }
+        });
+        
+        await senderNotification.save({ session });
+        await recipientNotification.save({ session });
+        
         // Commit transaction
         await session.commitTransaction();
-        
-        // Get recipient info for notification
-        const recipient = await User.findById(recipientId).select('firstName lastName');
         
         // Broadcast via WebSocket
         const { getWebSocketServer } = await import('./websocket');
@@ -402,6 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (wss) {
           wss.clients.forEach((client: any) => {
             if (client.readyState === 1) {
+              // Balance updates for both users
               client.send(JSON.stringify({
                 type: 'balance_update',
                 userId: senderId
@@ -410,11 +452,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 type: 'balance_update',
                 userId: recipientId
               }));
+              
+              // Notification updates for both users
+              client.send(JSON.stringify({
+                type: 'notification_update',
+                userId: senderId
+              }));
+              client.send(JSON.stringify({
+                type: 'notification_update',
+                userId: recipientId
+              }));
+              
+              // Transfer received event
               client.send(JSON.stringify({
                 type: 'transfer_received',
                 userId: recipientId,
                 amount: transferAmount,
-                senderName: `Transfer received`
+                senderName: `${sender?.firstName} ${sender?.lastName}`
               }));
             }
           });
@@ -496,6 +550,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch transfer history'
+      });
+    }
+  });
+
+  // Get transfer details by transaction ID
+  app.get('/api/transfers/details/:transactionId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const { transactionId } = req.params;
+      
+      // Import models
+      const { Transfer } = await import('./models/Transfer');
+      const { User } = await import('./models/User');
+      
+      // Find transfer by transaction ID where user is involved
+      const transfer = await Transfer.findOne({
+        transactionId,
+        $or: [
+          { fromUserId: userId },
+          { toUserId: userId }
+        ]
+      })
+      .populate('fromUserId', 'firstName lastName email uid')
+      .populate('toUserId', 'firstName lastName email uid');
+      
+      if (!transfer) {
+        return res.status(404).json({
+          success: false,
+          message: 'Transfer not found'
+        });
+      }
+      
+      // Format transfer for frontend
+      const formattedTransfer = {
+        _id: transfer._id,
+        transactionId: transfer.transactionId,
+        amount: transfer.amount,
+        currency: transfer.currency,
+        status: transfer.status,
+        description: transfer.description,
+        fromUserId: transfer.fromUserId._id,
+        toUserId: transfer.toUserId._id,
+        senderName: `${transfer.fromUserId.firstName} ${transfer.fromUserId.lastName}`,
+        recipientName: `${transfer.toUserId.firstName} ${transfer.toUserId.lastName}`,
+        senderEmail: transfer.fromUserId.email,
+        recipientEmail: transfer.toUserId.email,
+        senderUID: transfer.fromUserId.uid,
+        recipientUID: transfer.toUserId.uid,
+        createdAt: transfer.createdAt,
+        updatedAt: transfer.updatedAt
+      };
+      
+      res.json({
+        success: true,
+        data: formattedTransfer
+      });
+    } catch (error) {
+      console.error('Transfer details error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch transfer details'
       });
     }
   });

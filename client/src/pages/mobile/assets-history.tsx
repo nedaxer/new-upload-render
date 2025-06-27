@@ -211,33 +211,39 @@ export default function AssetsHistory() {
               const otherUser = isSent ? transaction.toUser : transaction.fromUser;
               
               return (
-                <Card key={transaction._id} className="bg-[#1a1a40] border-[#2a2a50] p-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">
-                        {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
-                      </p>
-                      <p className="text-gray-400 text-xs">
-                        {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right flex items-center space-x-2">
-                      <div>
-                        <p className={`font-medium text-sm ${isSent ? 'text-red-400' : 'text-green-400'}`}>
-                          {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <Link 
+                  key={transaction._id} 
+                  href={`/mobile/transfer-details/${transaction.transactionId}`}
+                >
+                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">
+                          {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
                         </p>
                         <p className="text-gray-400 text-xs">
-                          {transaction.status}
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className={`font-medium text-sm ${isSent ? 'text-red-400' : 'text-green-400'}`}>
+                            {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {transaction.status}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
               );
             } else {
               // Deposit transaction

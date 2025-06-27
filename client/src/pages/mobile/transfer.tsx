@@ -95,7 +95,7 @@ export default function Transfer() {
 
       if (data.success && data.data) {
         // Check if trying to send to self
-        if (data.data._id === user?._id) {
+        if (data.data._id === (user as any)?._id) {
           setSearchError('You cannot transfer funds to yourself');
           setRecipientInfo(null);
         } else {

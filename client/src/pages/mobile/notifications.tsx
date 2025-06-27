@@ -203,7 +203,7 @@ export default function MobileNotifications() {
                     <span className="text-gray-500 text-[9px] capitalize">
                       {notification.type === 'deposit' ? 'System Notification' : notification.type}
                     </span>
-                    {notification.type === 'deposit' && notification.data && (
+                    {(notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') && notification.data && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -212,10 +212,16 @@ export default function MobileNotifications() {
                           if (!notification.isRead) {
                             markAsReadMutation.mutate(notification._id);
                           }
-                          // Set referrer for smart back navigation
-                          localStorage.setItem('assetsHistoryReferrer', 'notifications');
-                          // Navigate to asset history
-                          window.location.hash = '#/mobile/assets-history';
+                          
+                          if (notification.type === 'deposit') {
+                            // Set referrer for smart back navigation
+                            localStorage.setItem('assetsHistoryReferrer', 'notifications');
+                            // Navigate to asset history
+                            window.location.hash = '#/mobile/assets-history';
+                          } else if (notification.type === 'transfer_received' || notification.type === 'transfer_sent') {
+                            // Navigate to transfer details page
+                            window.location.hash = `#/mobile/transfer-details/${notification.data.transactionId}`;
+                          }
                         }}
                       >
                         View More →
