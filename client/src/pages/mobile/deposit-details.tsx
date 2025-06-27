@@ -187,27 +187,7 @@ export default function DepositDetails() {
               </span>
             </div>
 
-            {/* Deposit Address */}
-            <div className="py-2 border-t border-gray-700">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-400 text-xs">Deposit Address</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                  onClick={() => copyToClipboard(transaction.senderAddress)}
-                >
-                  {copied ? (
-                    <CheckCircle className="w-3 h-3 text-green-400" />
-                  ) : (
-                    <Copy className="w-3 h-3" />
-                  )}
-                </Button>
-              </div>
-              <span className="text-white text-xs font-mono break-all block">
-                {transaction.senderAddress}
-              </span>
-            </div>
+
           </div>
         </Card>
       </div>
