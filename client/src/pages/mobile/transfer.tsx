@@ -187,14 +187,6 @@ export default function Transfer() {
 
   return (
     <div className="min-h-screen bg-[#0a0a2e] text-white relative">
-      {/* Blur overlay when dropdown is open */}
-      {showDropdown && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-          onClick={() => setShowDropdown(false)}
-        />
-      )}
-      
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-gray-700">
         <Link href="/mobile/assets">
@@ -207,7 +199,15 @@ export default function Transfer() {
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-6 relative z-10">
+      <div className={`px-4 py-6 space-y-6 relative ${showDropdown ? 'z-10' : ''}`}>
+        {/* Blur overlay when dropdown is open */}
+        {showDropdown && (
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-0"
+            onClick={() => setShowDropdown(false)}
+            style={{ top: '73px' }}
+          />
+        )}
         {/* Send Method Selection */}
         <div className="space-y-2">
           <div className="flex items-center space-x-2 mb-3">
