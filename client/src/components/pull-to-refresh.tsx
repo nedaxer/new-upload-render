@@ -75,8 +75,8 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
       }
       resistance = Math.min(resistance, MAX_PULL_DISTANCE);
       
-      // Trigger haptic feedback when logo AND header are fully visible
-      if (resistance >= PULL_THRESHOLD && !hasTriggeredHaptic) {
+      // Trigger haptic feedback when header is fully visible (earlier than logo completion)
+      if (resistance >= LOGO_COMPLETE_THRESHOLD && !hasTriggeredHaptic) {
         triggerHapticFeedback();
         setHasTriggeredHaptic(true);
       }
@@ -297,7 +297,7 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
             </motion.div>
 
             {/* Release to refresh message positioned under header */}
-            {hasTriggeredHaptic && (
+            {pullDistance >= LOGO_COMPLETE_THRESHOLD && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
