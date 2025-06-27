@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
+import { useHaptics } from '@/hooks/use-haptics';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
   const queryClient = useQueryClient();
   const { t } = useLanguage();
+  const { medium } = useHaptics();
 
   // Fetch notifications with automatic refetch every 10 seconds for real-time updates
   const { data: notificationsResponse, isLoading } = useQuery({
@@ -97,10 +99,43 @@ export default function MobileNotifications() {
   ];
 
   const handleReadAll = async () => {
+    // Trigger haptic feedback immediately
+    medium();
+    
     if (notificationData && Array.isArray(notificationData)) {
       const unreadNotifications = notificationData.filter((n: any) => !n.isRead);
+      
+      if (unreadNotifications.length === 0) {
+        return; // No unread notifications
+      }
+      
+      // Immediately update the UI by marking all as read optimistically
+      const updatedNotifications = notificationData.map((notification: any) => ({
+        ...notification,
+        isRead: true
+      }));
+      
+      // Update the cache immediately for instant UI feedback
+      queryClient.setQueryData(['/api/notifications'], (oldData: any) => ({
+        ...oldData,
+        data: updatedNotifications
+      }));
+      
+      // Update unread count to 0 immediately
+      queryClient.setQueryData(['/api/notifications/unread-count'], { 
+        success: true, 
+        unreadCount: 0 
+      });
+      
+      // Then make the API calls in the background
       for (const notification of unreadNotifications) {
-        markAsReadMutation.mutate(notification._id);
+        markAsReadMutation.mutate(notification._id, {
+          onError: () => {
+            // If any request fails, refetch the data to get the correct state
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+          }
+        });
       }
     }
   };
