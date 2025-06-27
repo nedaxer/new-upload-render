@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 // Removed crypto logos as per user request
 
 export default function AssetsHistory() {
-  const [activeTab, setActiveTab] = useState('Deposit');
+  const [activeTab, setActiveTab] = useState('All Transactions');
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [location] = useLocation();
@@ -27,7 +27,7 @@ export default function AssetsHistory() {
   };
 
   // Fetch deposit transactions for authenticated user only
-  const { data: transactionsResponse, isLoading, error } = useQuery({
+  const { data: depositsResponse, isLoading: isLoadingDeposits } = useQuery({
     queryKey: ['/api/deposits/history'],
     enabled: !!user,
     refetchInterval: 30000, // Refresh every 30 seconds for new deposits
@@ -37,30 +37,51 @@ export default function AssetsHistory() {
     gcTime: 0, // Don't cache to avoid stale data (replaces cacheTime in newer versions)
   });
 
-  const transactions = Array.isArray(transactionsResponse?.data) ? transactionsResponse.data : [];
+  // Fetch transfer transactions for authenticated user only
+  const { data: transfersResponse, isLoading: isLoadingTransfers } = useQuery({
+    queryKey: ['/api/transfers/history'],
+    enabled: !!user,
+    refetchInterval: 30000,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+  const deposits = Array.isArray(depositsResponse?.data) ? depositsResponse.data : [];
+  const transfers = Array.isArray(transfersResponse?.data) ? transfersResponse.data : [];
   
-  console.log('Assets History - Transactions data:', transactionsResponse);
-  console.log('Assets History - Error:', error);
-  console.log('Assets History - User:', user);
-  console.log('Assets History - Loading:', isLoading);
+  // Combine and sort all transactions
+  const allTransactions = [...deposits, ...transfers].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  
+  // Filter transactions based on active tab
+  const getFilteredTransactions = () => {
+    switch(activeTab) {
+      case 'All Transactions':
+        return allTransactions;
+      case 'Deposit':
+        return deposits;
+      case 'Transfer':
+        return transfers;
+      case 'Withdraw':
+        return []; // No withdrawals implemented yet
+      default:
+        return allTransactions;
+    }
+  };
+  
+  const transactions = getFilteredTransactions();
+  const isLoading = isLoadingDeposits || isLoadingTransfers;
   
   // Force refresh when user changes
   useEffect(() => {
     if (user) {
-      console.log('User authenticated, refreshing deposit history...');
       queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/transfers/history'] });
     }
   }, [user, queryClient]);
-
-  // Show debug information for troubleshooting
-  const showDebugInfo = transactions.length === 0 && !isLoading && user;
-  
-  if (showDebugInfo) {
-    console.log('DEBUG: No transactions found despite user being authenticated');
-    console.log('User ID:', user._id);
-    console.log('API Response:', transactionsResponse);
-    console.log('Error Object:', error);
-  }
 
   // WebSocket connection for real-time transaction updates
   useEffect(() => {
@@ -176,26 +197,25 @@ export default function AssetsHistory() {
             </div>
             <p className="text-gray-400 text-center">No transaction history</p>
             <p className="text-gray-500 text-sm text-center mt-1">
-              Your deposit transactions will appear here
+              Your transactions will appear here
             </p>
           </div>
         ) : (
           // Transaction items
-          transactions
-            .filter((transaction: any) => 
-              activeTab === 'All Transactions' || 
-              activeTab === 'Deposit'
-            )
-            .map((transaction: any) => (
-              <Link 
-                key={transaction._id} 
-                href={`/mobile/deposit-details/${transaction._id}`}
-              >
-                <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+          transactions.map((transaction: any) => {
+            // Check if it's a transfer or deposit
+            const isTransfer = transaction.type === 'sent' || transaction.type === 'received';
+            
+            if (isTransfer) {
+              const isSent = transaction.type === 'sent';
+              const otherUser = isSent ? transaction.toUser : transaction.fromUser;
+              
+              return (
+                <Card key={transaction._id} className="bg-[#1a1a40] border-[#2a2a50] p-3">
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
                       <p className="text-white font-medium text-sm">
-                        {transaction.cryptoSymbol} Deposit
+                        {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
                       </p>
                       <p className="text-gray-400 text-xs">
                         {new Date(transaction.createdAt).toLocaleDateString('en-US', {
@@ -208,19 +228,56 @@ export default function AssetsHistory() {
                     </div>
                     <div className="text-right flex items-center space-x-2">
                       <div>
-                        <p className="text-green-400 font-medium text-sm">
-                          +{transaction.cryptoAmount.toFixed(6)}
+                        <p className={`font-medium text-sm ${isSent ? 'text-red-400' : 'text-green-400'}`}>
+                          {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-gray-400 text-xs">
-                          ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {transaction.status}
                         </p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-500" />
                     </div>
                   </div>
                 </Card>
-              </Link>
-            ))
+              );
+            } else {
+              // Deposit transaction
+              return (
+                <Link 
+                  key={transaction._id} 
+                  href={`/mobile/deposit-details/${transaction._id}`}
+                >
+                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">
+                          {transaction.cryptoSymbol} Deposit
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className="text-green-400 font-medium text-sm">
+                            +{transaction.cryptoAmount.toFixed(6)}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            }
+          })
         )}
       </div>
     </div>

@@ -107,6 +107,7 @@ import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
 import AssetsHistory from '@/pages/mobile/assets-history';
 import DepositDetails from '@/pages/mobile/deposit-details';
+import Transfer from '@/pages/mobile/transfer';
 
 
 // Other Pages
@@ -281,6 +282,7 @@ export default function App() {
             <Route path="/mobile/currency-selection">
               {() => <div>Currency Selection</div>}
             </Route>
+            <Route path="/mobile/transfer" component={Transfer} />
 
 
             {/* Admin Portal Route */}

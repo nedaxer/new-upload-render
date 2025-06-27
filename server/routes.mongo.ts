@@ -258,6 +258,248 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search endpoint for transfers
+  app.post('/api/users/search', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { identifier } = req.body;
+      
+      if (!identifier || typeof identifier !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid email or UID'
+        });
+      }
+      
+      const trimmedIdentifier = identifier.trim();
+      
+      // Import User model
+      const { User } = await import('./models/User');
+      
+      // Search by email or UID
+      const user = await User.findOne({
+        $or: [
+          { email: trimmedIdentifier },
+          { uid: trimmedIdentifier }
+        ]
+      }).select('_id uid email username firstName lastName');
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      res.json({
+        success: true,
+        data: user
+      });
+    } catch (error) {
+      console.error('User search error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to search user'
+      });
+    }
+  });
+  
+  // Transfer funds endpoint
+  app.post('/api/wallet/transfer', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const senderId = req.session.userId!;
+      const { recipientId, amount } = req.body;
+      
+      // Validate input
+      if (!recipientId || typeof recipientId !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid recipient'
+        });
+      }
+      
+      const transferAmount = parseFloat(amount);
+      if (isNaN(transferAmount) || transferAmount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid transfer amount'
+        });
+      }
+      
+      // Import models
+      const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
+      const { Transfer } = await import('./models/Transfer');
+      const { User } = await import('./models/User');
+      
+      // Start MongoDB transaction
+      const mongoose = await import('mongoose');
+      const session = await mongoose.startSession();
+      session.startTransaction();
+      
+      try {
+        // Find USD currency
+        const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+        if (!usdCurrency) {
+          throw new Error('USD currency not found');
+        }
+        
+        // Get sender's balance
+        const senderBalance = await UserBalance.findOne({
+          userId: senderId,
+          currencyId: usdCurrency._id
+        }).session(session);
+        
+        if (!senderBalance || senderBalance.amount < transferAmount) {
+          throw new Error('Insufficient balance');
+        }
+        
+        // Get or create recipient's balance
+        let recipientBalance = await UserBalance.findOne({
+          userId: recipientId,
+          currencyId: usdCurrency._id
+        }).session(session);
+        
+        if (!recipientBalance) {
+          recipientBalance = new UserBalance({
+            userId: recipientId,
+            currencyId: usdCurrency._id,
+            amount: 0
+          });
+        }
+        
+        // Update balances
+        senderBalance.amount -= transferAmount;
+        recipientBalance.amount += transferAmount;
+        
+        await senderBalance.save({ session });
+        await recipientBalance.save({ session });
+        
+        // Create transfer record
+        const transactionId = `TRF${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
+        
+        const transfer = new Transfer({
+          fromUserId: senderId,
+          toUserId: recipientId,
+          amount: transferAmount,
+          currency: 'USD',
+          status: 'completed',
+          transactionId,
+          description: 'USD Transfer'
+        });
+        
+        await transfer.save({ session });
+        
+        // Commit transaction
+        await session.commitTransaction();
+        
+        // Get recipient info for notification
+        const recipient = await User.findById(recipientId).select('firstName lastName');
+        
+        // Broadcast via WebSocket
+        const { getWebSocketServer } = await import('./websocket');
+        const wss = getWebSocketServer();
+        
+        if (wss) {
+          wss.clients.forEach((client: any) => {
+            if (client.readyState === 1) {
+              client.send(JSON.stringify({
+                type: 'balance_update',
+                userId: senderId
+              }));
+              client.send(JSON.stringify({
+                type: 'balance_update',
+                userId: recipientId
+              }));
+              client.send(JSON.stringify({
+                type: 'transfer_received',
+                userId: recipientId,
+                amount: transferAmount,
+                senderName: `Transfer received`
+              }));
+            }
+          });
+        }
+        
+        res.json({
+          success: true,
+          message: 'Transfer completed successfully',
+          transactionId
+        });
+      } catch (error) {
+        await session.abortTransaction();
+        throw error;
+      } finally {
+        session.endSession();
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to complete transfer'
+      });
+    }
+  });
+
+  // Get transfer history for a user
+  app.get('/api/transfers/history', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      // Import models
+      const { Transfer } = await import('./models/Transfer');
+      const { User } = await import('./models/User');
+      
+      // Get transfers where user is sender or recipient
+      const transfers = await Transfer.find({
+        $or: [
+          { fromUserId: userId },
+          { toUserId: userId }
+        ]
+      })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .populate('fromUserId', 'firstName lastName email uid')
+      .populate('toUserId', 'firstName lastName email uid');
+      
+      // Format transfers for frontend
+      const formattedTransfers = transfers.map(transfer => {
+        const isSender = transfer.fromUserId._id.toString() === userId;
+        return {
+          _id: transfer._id,
+          transactionId: transfer.transactionId,
+          type: isSender ? 'sent' : 'received',
+          amount: transfer.amount,
+          currency: transfer.currency,
+          status: transfer.status,
+          fromUser: {
+            _id: transfer.fromUserId._id,
+            name: `${transfer.fromUserId.firstName} ${transfer.fromUserId.lastName}`,
+            email: transfer.fromUserId.email,
+            uid: transfer.fromUserId.uid
+          },
+          toUser: {
+            _id: transfer.toUserId._id,
+            name: `${transfer.toUserId.firstName} ${transfer.toUserId.lastName}`,
+            email: transfer.toUserId.email,
+            uid: transfer.toUserId.uid
+          },
+          createdAt: transfer.createdAt
+        };
+      });
+      
+      res.json({
+        success: true,
+        data: formattedTransfers
+      });
+    } catch (error) {
+      console.error('Transfer history error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch transfer history'
+      });
+    }
+  });
+
   // Add realtime prices endpoint with caching
   const { getRealtimePrices } = await import('./api/realtime-prices');
   app.get('/api/crypto/realtime-prices', getRealtimePrices);
