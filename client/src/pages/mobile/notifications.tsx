@@ -212,6 +212,8 @@ export default function MobileNotifications() {
                           if (!notification.isRead) {
                             markAsReadMutation.mutate(notification._id);
                           }
+                          // Set referrer for smart back navigation
+                          localStorage.setItem('assetsHistoryReferrer', 'notifications');
                           // Navigate to asset history
                           window.location.hash = '#/mobile/assets-history';
                         }}

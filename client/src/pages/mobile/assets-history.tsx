@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,6 +10,19 @@ export default function AssetsHistory() {
   const [activeTab, setActiveTab] = useState('Deposit');
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [location] = useLocation();
+  
+  // Determine back navigation path based on referrer
+  const getBackPath = () => {
+    // Check if we came from notifications (check URL parameters or localStorage)
+    const urlParams = new URLSearchParams(window.location.search);
+    const from = urlParams.get('from') || localStorage.getItem('assetsHistoryReferrer') || 'assets';
+    
+    if (from === 'notifications') {
+      return '/mobile/notifications';
+    }
+    return '/mobile/assets';
+  };
 
   // Fetch deposit transactions for authenticated user only
   const { data: transactionsResponse, isLoading, error } = useQuery({
@@ -103,7 +116,7 @@ export default function AssetsHistory() {
     <div className="min-h-screen bg-[#0a0a2e] text-white">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
-        <Link href="/mobile/notifications">
+        <Link href={getBackPath()}>
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
         <h1 className="text-lg font-semibold">Asset History</h1>

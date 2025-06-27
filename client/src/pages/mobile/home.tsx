@@ -711,7 +711,7 @@ export default function MobileHome() {
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">
               {showBalance ? (
-                user ? `${getCurrencySymbol(selectedCurrency)}${convertToSelectedCurrency(getUserUSDBalance())}` : `${getCurrencySymbol(selectedCurrency)}0.00`
+                user ? `${getCurrencySymbol(selectedCurrency)}${parseFloat(convertToSelectedCurrency(getUserUSDBalance())).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
               ) : '****'}
             </span>
             <button 
