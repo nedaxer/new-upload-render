@@ -192,7 +192,7 @@ export default function Transfer() {
         <Link href="/mobile/assets">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold text-white">Send to a Binance account...Nedaxer UID</h1>
+        <h1 className="text-lg font-semibold text-white">Transfer</h1>
         <div className="flex items-center space-x-3">
           <HelpCircle className="w-5 h-5 text-gray-400" />
           <Copy className="w-5 h-5 text-gray-400" />
@@ -341,34 +341,27 @@ export default function Transfer() {
 
         {/* Method Selection Modal */}
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="bg-[#0a0a2e] border border-gray-600 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-white">Choose Transfer Method</DialogTitle>
+          <DialogContent className="bg-white border-0 text-black max-w-sm mx-auto rounded-t-3xl rounded-b-none fixed bottom-0 left-0 right-0 w-full">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-black text-xl font-semibold text-center">Send Mode</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <Button
+            <div className="space-y-0 pb-8">
+              <button
                 onClick={() => handleMethodSelection('email')}
-                className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white hover:bg-[#2a2a50] justify-start"
+                className="w-full py-4 text-left text-black text-lg hover:bg-gray-50 border-b border-gray-100"
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold">@</span>
-                  </div>
-                  <span>Email Address</span>
-                </div>
-              </Button>
+                Email
+              </button>
               
-              <Button
+              <button
                 onClick={() => handleMethodSelection('uid')}
-                className="w-full h-12 bg-[#1a1a40] border border-gray-600 text-white hover:bg-[#2a2a50] justify-start"
+                className="w-full py-4 text-left text-black text-lg hover:bg-gray-50 flex items-center justify-between"
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-bold">#</span>
-                  </div>
-                  <span>Nedaxer UID</span>
-                </div>
-              </Button>
+                <span>Nedaxer ID</span>
+                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
           </DialogContent>
         </Dialog>
