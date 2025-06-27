@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './pull-to-refresh-styles.css';
+import { hapticLight } from '@/lib/haptics';
 
-// Add haptic feedback utility
+// Add haptic feedback utility with lighter vibration
 const triggerHapticFeedback = () => {
-  if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-    navigator.vibrate(50); // Light vibration for 50ms
-  }
+  hapticLight(); // Use light haptic feedback instead of the stronger 50ms vibration
 };
 
 // Import the assets
