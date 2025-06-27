@@ -42,14 +42,14 @@ export default function MobileNotifications() {
           const data = JSON.parse(event.data);
           console.log('Real-time notification update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED') {
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
             // Force immediate refresh of all notification-related data
             queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
             queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
             queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
             
-            console.log('Notification data refreshed due to deposit creation');
+            console.log('Notification data refreshed due to deposit/transfer creation');
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -213,14 +213,11 @@ export default function MobileNotifications() {
                             markAsReadMutation.mutate(notification._id);
                           }
                           
-                          if (notification.type === 'deposit') {
+                          if (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') {
                             // Set referrer for smart back navigation
                             localStorage.setItem('assetsHistoryReferrer', 'notifications');
                             // Navigate to asset history
                             window.location.hash = '#/mobile/assets-history';
-                          } else if (notification.type === 'transfer_received' || notification.type === 'transfer_sent') {
-                            // Navigate to transfer details page
-                            window.location.hash = `#/mobile/transfer-details/${notification.data.transactionId}`;
                           }
                         }}
                       >

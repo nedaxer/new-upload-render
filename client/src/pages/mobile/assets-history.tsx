@@ -102,10 +102,11 @@ export default function AssetsHistory() {
           const data = JSON.parse(event.data);
           console.log('Real-time transaction update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED') {
-            // Refresh transaction history when new deposits are created
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
+            // Refresh transaction history when new deposits or transfers are created
             queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
-            console.log('Transaction history refreshed due to new deposit');
+            queryClient.invalidateQueries({ queryKey: ['/api/transfers/history'] });
+            console.log('Transaction history refreshed due to new deposit/transfer');
           }
         } catch (error) {
           console.error('WebSocket message error:', error);

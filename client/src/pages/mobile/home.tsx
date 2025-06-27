@@ -461,13 +461,13 @@ export default function MobileHome() {
           const data = JSON.parse(event.data);
           console.log('Real-time home update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED') {
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
             // Update notification badge and balance data instantly
             queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
             queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
             
-            console.log('Home page data refreshed due to deposit creation');
+            console.log('Home page data refreshed due to deposit/transfer creation');
           }
         } catch (error) {
           console.error('WebSocket message error:', error);

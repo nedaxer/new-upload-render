@@ -478,6 +478,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (wss) {
           wss.clients.forEach((client: any) => {
             if (client.readyState === 1) {
+              // Send TRANSFER_CREATED event for automatic client updates
+              client.send(JSON.stringify({
+                type: 'TRANSFER_CREATED',
+                senderId: senderId,
+                recipientId: recipientId,
+                amount: transferAmount,
+                transactionId,
+                senderName: `${sender?.firstName} ${sender?.lastName}`,
+                recipientName: `${recipient?.firstName} ${recipient?.lastName}`
+              }));
+              
               // Balance updates for both users
               client.send(JSON.stringify({
                 type: 'balance_update',
@@ -496,14 +507,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               client.send(JSON.stringify({
                 type: 'notification_update',
                 userId: recipientId
-              }));
-              
-              // Transfer received event
-              client.send(JSON.stringify({
-                type: 'transfer_received',
-                userId: recipientId,
-                amount: transferAmount,
-                senderName: `${sender?.firstName} ${sender?.lastName}`
               }));
             }
           });
