@@ -245,9 +245,9 @@ export default function Transfer() {
               <Card className="bg-[#1a1a40] border-gray-600 p-3 mt-2">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
-                    {(recipientInfo as any).profilePicture ? (
+                    {recipientInfo.profilePicture ? (
                       <img 
-                        src={(recipientInfo as any).profilePicture} 
+                        src={recipientInfo.profilePicture} 
                         alt="Profile" 
                         className="w-full h-full object-cover"
                       />
@@ -260,7 +260,6 @@ export default function Transfer() {
                       {recipientInfo.firstName} {recipientInfo.lastName}
                     </div>
                     <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
-                    <div className="text-xs text-gray-500">{recipientInfo.email}</div>
                     <div className="text-xs text-gray-500">UID: {recipientInfo.uid}</div>
                   </div>
                 </div>
