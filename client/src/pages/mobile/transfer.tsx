@@ -32,7 +32,7 @@ export default function Transfer() {
   const [isSearching, setIsSearching] = useState(false);
   const [note, setNote] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'email' | 'uid'>('uid');
+  const [selectedMethod, setSelectedMethod] = useState<'email' | 'uid' | null>(null);
   const [inputType, setInputType] = useState<'email' | 'uid'>('uid');
 
   // Fetch user balance
@@ -135,6 +135,7 @@ export default function Transfer() {
       setRecipientIdentifier('');
       setRecipientInfo(null);
       setNote('');
+      setSelectedMethod(null);
     },
     onError: (error: any) => {
       toast({
@@ -212,33 +213,37 @@ export default function Transfer() {
             onClick={() => setShowDropdown(!showDropdown)}
             className="w-full bg-[#1a1a40] border border-gray-600 rounded-lg p-3 flex items-center justify-between hover:bg-[#2a2a50]"
           >
-            <span className="text-white">{selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}</span>
+            <span className="text-white">
+              {selectedMethod ? (selectedMethod === 'email' ? 'Email' : 'Nedaxer UID') : 'Select Email/UID'}
+            </span>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
         </div>
 
-        {/* Recipient Input */}
-        <div className="space-y-2">
-          <Label className="text-white text-sm font-medium">
-            {selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}
-          </Label>
-          <Input
-            type="text"
-            placeholder={inputType === 'email' ? 'Enter email address' : 'Enter Nedaxer ID'}
-            value={recipientIdentifier}
-            onChange={(e) => setRecipientIdentifier(e.target.value)}
-            className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500"
-          />
-          {isSearching && (
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Searching...</span>
+        {/* Recipient Input - Only show after method selected */}
+        {selectedMethod && (
+          <div className="space-y-2">
+            <Label className="text-white text-sm font-medium">
+              {selectedMethod === 'email' ? 'Email' : 'Nedaxer UID'}
+            </Label>
+            <Input
+              type="text"
+              placeholder={inputType === 'email' ? 'Enter email address' : 'Enter Nedaxer UID'}
+              value={recipientIdentifier}
+              onChange={(e) => setRecipientIdentifier(e.target.value)}
+              className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500"
+            />
+            {isSearching && (
+              <div className="flex items-center space-x-2 text-gray-400">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Searching...</span>
+              </div>
+            )}
+            <div className="text-xs text-gray-400">
+              Please enter the correct {selectedMethod === 'email' ? 'Email' : 'Nedaxer UID'}
             </div>
-          )}
-          <div className="text-xs text-gray-400">
-            Please enter the correct {selectedMethod === 'email' ? 'Email' : 'Nedaxer ID'}
           </div>
-        </div>
+        )}
 
         {/* Transfer Amount */}
         <div className="space-y-2">
@@ -263,9 +268,7 @@ export default function Transfer() {
               <span className="text-white text-sm">USD</span>
             </div>
           </div>
-          <div className="text-xs text-gray-400">
-            ≈ ${withdrawAmount ? (parseFloat(withdrawAmount) * 1).toFixed(2) : '0.00'} USD
-          </div>
+
           <div className="text-xs text-gray-400">
             Available: ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })} USD
           </div>
@@ -287,8 +290,16 @@ export default function Transfer() {
         {recipientInfo && (
           <Card className="bg-[#1a1a40] border-gray-600 p-3">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                {(recipientInfo as any).profilePicture ? (
+                  <img 
+                    src={(recipientInfo as any).profilePicture} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-white" />
+                )}
               </div>
               <div className="flex-1">
                 <div className="font-medium text-white text-sm">
@@ -356,7 +367,7 @@ export default function Transfer() {
                 onClick={() => handleMethodSelection('uid')}
                 className="w-full p-3 text-left text-white hover:bg-[#1a1a40] rounded-lg flex items-center justify-between"
               >
-                <span className="font-medium">Nedaxer ID</span>
+                <span className="font-medium">Nedaxer UID</span>
                 {selectedMethod === 'uid' && (
                   <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
