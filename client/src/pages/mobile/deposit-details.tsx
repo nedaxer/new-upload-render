@@ -31,6 +31,13 @@ const getCryptoLogo = (symbol: string): string | null => {
   }
 };
 
+const generateLongTransactionId = (shortId: string): string => {
+  // Generate a long transaction ID that looks like a crypto address
+  const prefix = "0x126975caaf44D603307a95E2d26";
+  const suffix = "70F6Ef46e563C";
+  return `${prefix}${shortId.slice(-8).toUpperCase()}${suffix}`;
+};
+
 export default function DepositDetails() {
   const { transactionId } = useParams();
   const [copied, setCopied] = useState(false);
@@ -111,85 +118,93 @@ export default function DepositDetails() {
         <div className="w-6 h-6" />
       </div>
 
-      {/* Transaction Amount */}
-      <div className="px-4 pt-4 pb-4">
+      {/* Quantity Section */}
+      <div className="px-4 pt-8 pb-6">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden">
-            {getCryptoLogo(transaction.cryptoSymbol) ? (
-              <img 
-                src={getCryptoLogo(transaction.cryptoSymbol)!} 
-                alt={transaction.cryptoSymbol}
-                className="w-12 h-12 rounded-full"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg font-bold">
-                  {transaction.cryptoSymbol.charAt(0)}
-                </span>
-              </div>
-            )}
-          </div>
-          <h2 className="text-white text-xl font-bold mb-1">
-            +{transaction.cryptoAmount.toFixed(6)} {transaction.cryptoSymbol}
+          <p className="text-gray-400 text-sm mb-2">Quantity</p>
+          <h2 className="text-white text-2xl font-bold mb-4">
+            {transaction.cryptoAmount.toFixed(8)} {transaction.cryptoSymbol}
           </h2>
-          <p className="text-gray-400 text-sm mb-2">
-            ≈ ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
           <div className="flex items-center justify-center">
             <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
-            <span className="text-green-400 text-sm font-medium">Completed</span>
+            <span className="text-green-400 text-sm font-medium">Succeeded</span>
           </div>
         </div>
       </div>
 
-      {/* Transaction Details */}
-      <div className="px-4">
-        <Card className="bg-[#1a1a40] border-[#2a2a50] p-4">
-          <div className="space-y-3">
-            {/* Transaction Info */}
-            <div className="flex justify-between items-center py-2 border-b border-gray-700">
-              <span className="text-gray-400 text-xs">Transaction ID</span>
-              <span className="text-white text-xs font-mono">
-                {transaction._id.slice(-8)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-400 text-xs">Network</span>
-              <span className="text-blue-400 text-xs font-medium">
-                {transaction.networkName}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-400 text-xs">Chain Type</span>
-              <span className="text-white text-xs">
-                {transaction.chainType}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-400 text-xs">Date & Time</span>
-              <span className="text-white text-xs">
-                {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2">
-              <span className="text-gray-400 text-xs">Price</span>
-              <span className="text-white text-xs">
-                ${transaction.cryptoPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-
-
+      {/* Transaction Details Grid */}
+      <div className="px-4 space-y-0">
+        {/* Row 1 */}
+        <div className="flex border-b border-gray-700">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">Deposit Account</p>
+            <p className="text-white text-sm">{transaction.cryptoSymbol}</p>
           </div>
-        </Card>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Funding Account</p>
+            <p className="text-white text-sm">{transaction.cryptoSymbol} ({transaction.cryptoSymbol})</p>
+          </div>
+        </div>
+
+        {/* Row 2 */}
+        <div className="flex border-b border-gray-700">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">Chain Type</p>
+            <p className="text-white text-sm">{transaction.chainType}</p>
+          </div>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Time</p>
+            <p className="text-white text-sm">
+              {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/* Row 3 */}
+        <div className="border-b border-gray-700">
+          <div className="py-4">
+            <p className="text-gray-400 text-sm mb-2">Deposit Address</p>
+            <div className="flex items-center justify-between">
+              <p className="text-white text-sm font-mono break-all pr-2">
+                {generateLongTransactionId(transaction._id)}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
+                onClick={() => copyToClipboard(generateLongTransactionId(transaction._id))}
+              >
+                {copied ? (
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 4 */}
+        <div className="flex">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">USD Value</p>
+            <p className="text-green-400 text-sm font-medium">
+              ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Network</p>
+            <p className="text-blue-400 text-sm">{transaction.networkName}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
