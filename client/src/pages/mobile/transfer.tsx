@@ -245,13 +245,40 @@ export default function Transfer() {
           </div>
         )}
 
+        {/* Recipient Info - Show under send method */}
+        {recipientInfo && (
+          <Card className="bg-[#1a1a40] border-gray-600 p-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                {(recipientInfo as any).profilePicture ? (
+                  <img 
+                    src={(recipientInfo as any).profilePicture} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-white text-sm">
+                  {recipientInfo.firstName} {recipientInfo.lastName}
+                </div>
+                <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
+                <div className="text-xs text-gray-500">{recipientInfo.email}</div>
+                <div className="text-xs text-gray-500">UID: {recipientInfo.uid}</div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Transfer Amount */}
         <div className="space-y-2">
           <Label className="text-white text-sm font-medium">Withdraw Amount</Label>
           <div className="relative">
             <Input
               type="number"
-              placeholder="11.398066"
+              placeholder="0.00"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 pr-20 text-lg"
@@ -270,7 +297,7 @@ export default function Transfer() {
           </div>
 
           <div className="text-xs text-gray-400">
-            Available: ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })} USD
+            Available: ${getUserUSDBalance().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
           </div>
         </div>
 
@@ -286,30 +313,7 @@ export default function Transfer() {
           />
         </div>
 
-        {/* Recipient Info */}
-        {recipientInfo && (
-          <Card className="bg-[#1a1a40] border-gray-600 p-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center overflow-hidden">
-                {(recipientInfo as any).profilePicture ? (
-                  <img 
-                    src={(recipientInfo as any).profilePicture} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-4 h-4 text-white" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-white text-sm">
-                  {recipientInfo.firstName} {recipientInfo.lastName}
-                </div>
-                <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
-              </div>
-            </div>
-          </Card>
-        )}
+
       </div>
 
       {/* Send Button */}
