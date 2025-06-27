@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './pull-to-refresh-styles.css';
-import { hapticMedium } from '@/lib/haptics';
 
-// Add haptic feedback utility with moderate vibration
+// Add haptic feedback utility with 50% of original strength
 const triggerHapticFeedback = () => {
-  hapticMedium(); // Use medium haptic feedback for noticeable but gentle vibration
+  if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(25); // 50% of original 50ms vibration
+  }
 };
 
 // Import the assets
