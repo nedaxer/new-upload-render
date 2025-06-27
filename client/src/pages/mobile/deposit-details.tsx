@@ -118,81 +118,91 @@ export default function DepositDetails() {
         <div className="w-6 h-6" />
       </div>
 
-      {/* Amount Section */}
-      <div className="px-4 pt-12 pb-12">
+      {/* Quantity Section */}
+      <div className="px-4 pt-8 pb-6">
         <div className="text-center">
-          <p className="text-gray-400 text-sm mb-4">Amount</p>
-          <h2 className="text-white text-3xl font-bold mb-6">
-            +{transaction.cryptoAmount.toFixed(8)} {transaction.cryptoSymbol}
+          <p className="text-gray-400 text-sm mb-2">Quantity</p>
+          <h2 className="text-white text-2xl font-bold mb-4">
+            {transaction.cryptoAmount.toFixed(8)} {transaction.cryptoSymbol}
           </h2>
           <div className="flex items-center justify-center">
-            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-            <span className="text-green-400 text-base font-medium">Succeeded</span>
+            <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+            <span className="text-green-400 text-sm font-medium">Succeeded</span>
           </div>
         </div>
       </div>
 
-      {/* Transaction Details */}
-      <div className="px-4 space-y-8">
-        {/* Status Row */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Status</span>
-          <span className="text-white text-base">Succeeded</span>
-        </div>
-
-        {/* Transaction ID Row */}
-        <div className="flex justify-between items-start">
-          <span className="text-gray-400 text-base">Transaction ID</span>
-          <div className="flex items-center ml-4">
-            <span className="text-white text-base font-mono text-right break-all">
-              {generateLongTransactionId(transaction._id)}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2 flex-shrink-0"
-              onClick={() => copyToClipboard(generateLongTransactionId(transaction._id))}
-            >
-              {copied ? (
-                <CheckCircle className="w-4 h-4 text-green-400" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-            </Button>
+      {/* Transaction Details Grid */}
+      <div className="px-4 space-y-0">
+        {/* Row 1 */}
+        <div className="flex border-b border-gray-700">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">Deposit Account</p>
+            <p className="text-white text-sm">{transaction.cryptoSymbol}</p>
+          </div>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Funding Account</p>
+            <p className="text-white text-sm">{transaction.cryptoSymbol} ({transaction.cryptoSymbol})</p>
           </div>
         </div>
 
-        {/* Time Row */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Time</span>
-          <span className="text-white text-base">
-            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-              month: '2-digit',
-              day: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false
-            })}
-          </span>
+        {/* Row 2 */}
+        <div className="flex border-b border-gray-700">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">Chain Type</p>
+            <p className="text-white text-sm">{transaction.chainType}</p>
+          </div>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Time</p>
+            <p className="text-white text-sm">
+              {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+              })}
+            </p>
+          </div>
         </div>
 
-        {/* Reference Number Row */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Reference no.</span>
-          <div className="flex items-center">
-            <span className="text-white text-base font-mono">
-              {transaction._id.slice(-10)}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
-              onClick={() => copyToClipboard(transaction._id.slice(-10))}
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
+        {/* Row 3 */}
+        <div className="border-b border-gray-700">
+          <div className="py-4">
+            <p className="text-gray-400 text-sm mb-2">Deposit Address</p>
+            <div className="flex items-center justify-between">
+              <p className="text-white text-sm font-mono break-all pr-2">
+                {generateLongTransactionId(transaction._id)}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
+                onClick={() => copyToClipboard(generateLongTransactionId(transaction._id))}
+              >
+                {copied ? (
+                  <CheckCircle className="w-3 h-3 text-green-400" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 4 */}
+        <div className="flex">
+          <div className="flex-1 py-4 pr-2">
+            <p className="text-gray-400 text-sm mb-1">USD Value</p>
+            <p className="text-green-400 text-sm font-medium">
+              ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div className="flex-1 py-4 pl-2">
+            <p className="text-gray-400 text-sm mb-1">Network</p>
+            <p className="text-blue-400 text-sm">{transaction.networkName}</p>
           </div>
         </div>
       </div>

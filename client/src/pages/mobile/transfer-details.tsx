@@ -117,9 +117,7 @@ export default function TransferDetails() {
       <div className="px-4 pt-12 pb-12">
         <div className="text-center">
           <p className="text-gray-400 text-sm mb-4">Amount</p>
-          <h2 className={`text-3xl font-bold mb-6 ${
-            isReceived ? 'text-green-400' : 'text-white'
-          }`}>
+          <h2 className="text-white text-3xl font-bold mb-6">
             {isReceived ? '+' : '-'} {transfer.amount.toLocaleString('en-US', { 
               minimumFractionDigits: 0, 
               maximumFractionDigits: 0 
