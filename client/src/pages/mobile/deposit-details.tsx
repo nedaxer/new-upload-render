@@ -7,6 +7,30 @@ import { apiRequest } from '@/lib/queryClient';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+// Crypto logos
+const btcLogo = '/logos/btc-logo.svg';
+const ethLogo = '/logos/eth-logo.svg';
+const usdtLogo = '/logos/usdt-logo.svg';
+const bnbLogo = '/logos/bnb-logo.svg';
+
+const getCryptoLogo = (symbol: string): string | null => {
+  switch (symbol.toLowerCase()) {
+    case 'btc':
+    case 'bitcoin':
+      return btcLogo;
+    case 'eth':
+    case 'ethereum':
+      return ethLogo;
+    case 'usdt':
+    case 'tether':
+      return usdtLogo;
+    case 'bnb':
+      return bnbLogo;
+    default:
+      return null;
+  }
+};
+
 export default function DepositDetails() {
   const { transactionId } = useParams();
   const [copied, setCopied] = useState(false);
@@ -90,10 +114,20 @@ export default function DepositDetails() {
       {/* Transaction Amount */}
       <div className="px-4 pt-4 pb-4">
         <div className="text-center">
-          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-white text-lg font-bold">
-              {transaction.cryptoSymbol.charAt(0)}
-            </span>
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden">
+            {getCryptoLogo(transaction.cryptoSymbol) ? (
+              <img 
+                src={getCryptoLogo(transaction.cryptoSymbol)!} 
+                alt={transaction.cryptoSymbol}
+                className="w-12 h-12 rounded-full"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-lg font-bold">
+                  {transaction.cryptoSymbol.charAt(0)}
+                </span>
+              </div>
+            )}
           </div>
           <h2 className="text-white text-xl font-bold mb-1">
             +{transaction.cryptoAmount.toFixed(6)} {transaction.cryptoSymbol}

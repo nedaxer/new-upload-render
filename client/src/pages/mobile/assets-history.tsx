@@ -6,6 +6,30 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
+// Crypto logos
+const btcLogo = '/logos/btc-logo.svg';
+const ethLogo = '/logos/eth-logo.svg';
+const usdtLogo = '/logos/usdt-logo.svg';
+const bnbLogo = '/logos/bnb-logo.svg';
+
+const getCryptoLogo = (symbol: string): string | null => {
+  switch (symbol.toLowerCase()) {
+    case 'btc':
+    case 'bitcoin':
+      return btcLogo;
+    case 'eth':
+    case 'ethereum':
+      return ethLogo;
+    case 'usdt':
+    case 'tether':
+      return usdtLogo;
+    case 'bnb':
+      return bnbLogo;
+    default:
+      return null;
+  }
+};
+
 export default function AssetsHistory() {
   const [activeTab, setActiveTab] = useState('Deposit');
   const { user } = useAuth();
@@ -193,10 +217,20 @@ export default function AssetsHistory() {
                 <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">
-                          {transaction.cryptoSymbol.charAt(0)}
-                        </span>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+                        {getCryptoLogo(transaction.cryptoSymbol) ? (
+                          <img 
+                            src={getCryptoLogo(transaction.cryptoSymbol)!} 
+                            alt={transaction.cryptoSymbol}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">
+                              {transaction.cryptoSymbol.charAt(0)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <p className="text-white font-medium text-sm">
