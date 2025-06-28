@@ -9,18 +9,18 @@ interface VerificationCompleteProps {
 
 export const VerificationComplete: React.FC<VerificationCompleteProps> = ({ onContinue }) => {
   return (
-    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
+    <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="w-6 h-6" />
-        <h1 className="text-white text-base font-medium">Verification</h1>
+        <h1 className="text-white text-lg font-semibold">Verification</h1>
         <div className="w-6 h-6" />
       </div>
 
       {/* Progress Bar - Complete */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full w-full"></div>
+          <div className="bg-green-500 h-2 rounded-full w-full"></div>
         </div>
       </div>
 
@@ -28,25 +28,25 @@ export const VerificationComplete: React.FC<VerificationCompleteProps> = ({ onCo
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         {/* Success Icon */}
         <div className="mb-8">
-          <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
+            <CheckCircle className="w-12 h-12 text-white" />
           </div>
         </div>
 
         {/* Title */}
-        <h2 className="text-lg font-semibold text-white text-center mb-4">
+        <h2 className="text-2xl font-bold text-white text-center mb-4">
           Thank you!
         </h2>
 
         {/* Message */}
-        <p className="text-gray-300 text-center mb-12 px-4 leading-relaxed text-sm">
+        <p className="text-gray-300 text-center mb-12 px-4 leading-relaxed">
           Your profile has been submitted and is under verification.
         </p>
 
         {/* Continue Button */}
         <Button 
           onClick={onContinue}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 text-base rounded-full"
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-lg rounded-full"
         >
           Continue to home page
         </Button>
@@ -59,6 +59,6 @@ export const VerificationComplete: React.FC<VerificationCompleteProps> = ({ onCo
           </p>
         </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };

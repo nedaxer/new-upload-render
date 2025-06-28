@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
+import { useLocation } from 'wouter';
+import MobileLayout from '@/components/mobile-layout';
 import hikerImage from '@assets/first image_1751118123626.jpg';
 
 interface VerificationStartProps {
@@ -10,16 +12,23 @@ interface VerificationStartProps {
 
 export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, onClose }) => {
   return (
-    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
+    <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="w-6 h-6" />
+        <h1 className="text-white text-lg font-semibold">Profile</h1>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="px-4 py-2">
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div className="bg-green-500 h-2 rounded-full w-1/6"></div>
+        </div>
       </div>
 
       {/* Content */}
@@ -57,6 +66,6 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           We may not be able to provide our services when you choose not to provide the required information.
         </p>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
