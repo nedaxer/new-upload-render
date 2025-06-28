@@ -37,6 +37,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
+import { useOfflineWalletSummary, useOfflineCryptoPrices, useOfflineFavorites, useOnlineStatus } from '@/hooks/use-offline-data';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -99,31 +100,11 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch wallet data with optimized settings
-  const { data: walletData, isLoading: walletLoading } = useQuery({
-    queryKey: ['/api/wallet/summary'],
-    enabled: !!user,
-    refetchInterval: 30000,
-    staleTime: 25000,
-    retry: 1,
-  });
-
-  // Fetch real-time prices - prioritize loading this first
-  const { data: priceData, isLoading: priceLoading } = useQuery({
-    queryKey: ['/api/crypto/realtime-prices'],
-    refetchInterval: 30000,
-    staleTime: 25000,
-    retry: 1,
-    retryDelay: 500
-  });
-
-  // Fetch user favorites - lower priority, longer cache
-  const { data: userFavorites } = useQuery<string[]>({
-    queryKey: ['/api/favorites'],
-    enabled: !!user,
-    retry: 1,
-    staleTime: 5 * 60 * 1000
-  });
+  // Use offline-enabled data hooks
+  const { data: walletData, isLoading: walletLoading, isOffline: walletOffline } = useOfflineWalletSummary();
+  const { data: priceData, isLoading: priceLoading, isOffline: pricesOffline } = useOfflineCryptoPrices();
+  const { data: userFavorites, isOffline: favoritesOffline } = useOfflineFavorites();
+  const { isOnline } = useOnlineStatus();
 
   // Fetch user balances - defer loading to reduce initial wait
   const { data: balanceData, isLoading: balanceLoading } = useQuery({

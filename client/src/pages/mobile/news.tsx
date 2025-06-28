@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { PullToRefresh } from '@/components/pull-to-refresh';
+import { useOfflineNews, useOnlineStatus } from '@/hooks/use-offline-data';
 
 interface NewsArticle {
   title: string;
@@ -30,21 +31,8 @@ export default function MobileNews() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const { data: newsData, isLoading, error } = useQuery<NewsArticle[]>({
-    queryKey: ['/api/crypto/news'],
-    queryFn: async () => {
-      const response = await fetch('/api/crypto/news');
-      if (!response.ok) {
-        throw new Error('Failed to fetch news');
-      }
-      return response.json();
-    },
-    retry: 2,
-    retryDelay: 3000,
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes for fresh news
-    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
-    gcTime: 15 * 60 * 1000 // Keep in cache for 15 minutes
-  });
+  const { data: newsData, isLoading, error, isOffline, hasOfflineData } = useOfflineNews();
+  const { isOnline } = useOnlineStatus();
 
   // WebSocket connection for real-time news updates
   useEffect(() => {
