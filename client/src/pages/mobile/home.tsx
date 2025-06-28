@@ -1,4 +1,4 @@
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +37,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
+import { VerificationBanner } from '@/components/VerificationBanner';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -624,6 +625,12 @@ export default function MobileHome() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
+        {/* Verification Banner */}
+        <VerificationBanner 
+          userName={user?.username || user?.email || 'User'}
+          onVerifyClick={() => navigate('/mobile/verification')}
+        />
+        
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="flex items-center space-x-3">

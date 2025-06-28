@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';

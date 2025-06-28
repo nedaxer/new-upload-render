@@ -1,4 +1,4 @@
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

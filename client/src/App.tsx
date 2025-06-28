@@ -106,6 +106,7 @@ import AssetsHistory from '@/pages/mobile/assets-history';
 import DepositDetails from '@/pages/mobile/deposit-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
+import { VerificationFlow } from '@/pages/mobile/verification/VerificationFlow';
 
 
 // Admin Pages
@@ -288,6 +289,7 @@ export default function App() {
               {() => <div>Currency Selection</div>}
             </Route>
             <Route path="/mobile/transfer" component={Transfer} />
+            <Route path="/mobile/verification" component={VerificationFlow} />
 
 
             {/* Admin Portal Routes */}

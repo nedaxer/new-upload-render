@@ -9,10 +9,14 @@ const token = process.env.GITHUB_TOKEN || '';
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1-mini";
 
-const client = ModelClient(
-  endpoint,
-  new AzureKeyCredential(token),
-);
+// Only initialize client if token is available
+let client: any = null;
+if (token) {
+  client = ModelClient(
+    endpoint,
+    new AzureKeyCredential(token),
+  );
+}
 
 // Company knowledge base for Nedaxer
 const NEDAXER_KNOWLEDGE = `
@@ -88,6 +92,13 @@ router.post('/message', async (req: Request, res: Response) => {
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // If no client available, return fallback response
+    if (!client) {
+      return res.json({ 
+        response: "I'm sorry, the chat service is temporarily unavailable. Please contact our support team directly for assistance with your account or trading questions."
+      });
     }
 
     // Build conversation context

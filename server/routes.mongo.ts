@@ -16,6 +16,7 @@ import { getNewsSourceLogo } from "./logo-service";
 
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
+import verificationRoutes from "./api/verification-routes";
 import compression from "compression";
 import serveStatic from "serve-static";
 import Parser from 'rss-parser';
@@ -2368,6 +2369,10 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
 
   // Register chatbot routes
   app.use('/api/chatbot', chatbotRoutes);
+  
+  // Register verification routes
+  const { default: verificationRoutes } = await import('./api/verification-routes');
+  app.use('/api/verification', verificationRoutes);
 
   const httpServer = createServer(app);
   

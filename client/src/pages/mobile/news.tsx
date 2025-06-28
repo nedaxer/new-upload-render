@@ -1,4 +1,4 @@
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, ExternalLink, Clock, Wifi, WifiOff, Zap } from 'lucide-react';

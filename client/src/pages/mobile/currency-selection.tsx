@@ -1,5 +1,5 @@
 
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Check, Search } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Search } from 'lucide-react';
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { useLanguage } from '@/contexts/language-context';
 

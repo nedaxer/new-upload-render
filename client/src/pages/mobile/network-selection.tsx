@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { useLanguage } from '@/contexts/language-context';
 
 const btcLogo = '/logos/btc-logo.svg';

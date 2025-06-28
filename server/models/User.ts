@@ -28,6 +28,27 @@ export interface IUser {
   isOnline?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  // KYC verification fields
+  kycStatus?: 'none' | 'pending' | 'verified' | 'rejected';
+  kycData?: {
+    hearAboutUs?: string;
+    dateOfBirth?: {
+      day: number;
+      month: number;
+      year: number;
+    };
+    sourceOfIncome?: string;
+    annualIncome?: string;
+    investmentExperience?: string;
+    plannedDeposit?: string;
+    investmentGoal?: string;
+    documentType?: string;
+    documents?: {
+      front?: string;
+      back?: string;
+      selfie?: string;
+    };
+  };
 }
 
 const UserSchema = new mongoose.Schema({
@@ -54,7 +75,28 @@ const UserSchema = new mongoose.Schema({
   lastActivity: { type: Date, default: Date.now },
   onlineTime: { type: Number, default: 0 }, // Total online time in minutes
   sessionStart: Date,
-  isOnline: { type: Boolean, default: false }
+  isOnline: { type: Boolean, default: false },
+  // KYC verification fields
+  kycStatus: { type: String, enum: ['none', 'pending', 'verified', 'rejected'], default: 'none' },
+  kycData: {
+    hearAboutUs: String,
+    dateOfBirth: {
+      day: Number,
+      month: Number,
+      year: Number
+    },
+    sourceOfIncome: String,
+    annualIncome: String,
+    investmentExperience: String,
+    plannedDeposit: String,
+    investmentGoal: String,
+    documentType: String,
+    documents: {
+      front: String,
+      back: String,
+      selfie: String
+    }
+  }
 }, {
   timestamps: true
 });

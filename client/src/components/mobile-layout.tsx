@@ -10,7 +10,7 @@ interface MobileLayoutProps {
   hideBottomNav?: boolean;
 }
 
-export function MobileLayout({ children, className = '', hideBottomNav = false }: MobileLayoutProps) {
+export default function MobileLayout({ children, className = '', hideBottomNav = false }: MobileLayoutProps) {
   const [location] = useLocation();
   const { getBackgroundClass, getTextClass } = useTheme();
   

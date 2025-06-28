@@ -2,7 +2,7 @@ import { ArrowLeft, Copy, Save, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { useLanguage } from '@/contexts/language-context';
 
 const btcLogo = '/logos/btc-logo.svg';
