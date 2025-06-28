@@ -113,117 +113,88 @@ export default function TransferDetails() {
         <div className="w-6 h-6" />
       </div>
 
-      {/* Transfer Details Card */}
-      <div className="px-4 pt-8">
-        <Card className="bg-[#1a1a40] border-[#2a2a50] p-0">
-          {/* Amount Section */}
-          <div className="text-center py-8 px-6 border-b border-gray-600">
-            <p className="text-gray-400 text-sm mb-2">Transfer Amount</p>
-            <h2 className={`text-4xl font-bold mb-4 ${isReceived ? 'text-green-400' : 'text-red-400'}`}>
-              {isReceived ? '+' : '-'}${transfer.amount.toLocaleString('en-US', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-              })}
-            </h2>
-            <div className="flex items-center justify-center">
-              <div className={`w-3 h-3 rounded-full mr-2 ${
-                transfer.status === 'completed' ? 'bg-green-400' : 'bg-yellow-400'
-              }`}></div>
-              <span className={`text-base font-medium ${isReceived ? 'text-green-400' : 'text-red-400'}`}>
-                {isReceived ? 'Transfer Received' : 'Transfer Sent'}
-              </span>
-            </div>
+      {/* Amount Section */}
+      <div className="px-4 pt-12 pb-12">
+        <div className="text-center">
+          <p className="text-gray-400 text-sm mb-4">Amount</p>
+          <h2 className="text-white text-3xl font-bold mb-6">
+            {isReceived ? '+' : '-'} {transfer.amount.toLocaleString('en-US', { 
+              minimumFractionDigits: 0, 
+              maximumFractionDigits: 0 
+            })} USD
+          </h2>
+          <div className="flex items-center justify-center">
+            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
+            <span className="text-green-400 text-base font-medium">
+              {isReceived ? 'Received' : 'Sent'}
+            </span>
           </div>
+        </div>
+      </div>
 
-          {/* Transfer Information Grid */}
-          <div className="p-6">
-            <div className="divide-y divide-gray-600">
-              {/* Row 1: Transfer Type and Status */}
-              <div className="flex">
-                <div className="flex-1 py-4 pr-2">
-                  <p className="text-gray-400 text-sm mb-1">Transfer Type</p>
-                  <p className="text-white text-sm font-medium">
-                    {isReceived ? 'Incoming Transfer' : 'Outgoing Transfer'}
-                  </p>
-                </div>
-                <div className="flex-1 py-4 pl-2">
-                  <p className="text-gray-400 text-sm mb-1">Status</p>
-                  <p className={`text-sm font-medium capitalize ${
-                    transfer.status === 'completed' ? 'text-green-400' : 'text-yellow-400'
-                  }`}>
-                    {transfer.status}
-                  </p>
-                </div>
-              </div>
+      {/* Transaction Details */}
+      <div className="px-4 space-y-8">
+        {/* Status Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Status</span>
+          <span className="text-white text-base">{isReceived ? 'Received' : 'Sent'}</span>
+        </div>
 
-              {/* Row 2: Sender/Recipient and Currency */}
-              <div className="flex">
-                <div className="flex-1 py-4 pr-2">
-                  <p className="text-gray-400 text-sm mb-1">{isReceived ? 'Sender' : 'Recipient'}</p>
-                  <p className="text-blue-400 text-sm">{otherUser.name}</p>
-                </div>
-                <div className="flex-1 py-4 pl-2">
-                  <p className="text-gray-400 text-sm mb-1">Currency</p>
-                  <p className="text-white text-sm font-medium">{transfer.currency || 'USD'}</p>
-                </div>
-              </div>
-
-              {/* Row 3: Transaction ID */}
-              <div className="py-4">
-                <p className="text-gray-400 text-sm mb-2">Transaction ID</p>
-                <div className="flex items-center justify-between bg-gray-800 rounded p-3">
-                  <span className="text-white text-xs font-mono break-all mr-2">
-                    {generateLongTransactionId(transfer.transactionId)}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
-                    onClick={() => copyToClipboard(generateLongTransactionId(transfer.transactionId))}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Row 4: Date and Reference */}
-              <div className="flex">
-                <div className="flex-1 py-4 pr-2">
-                  <p className="text-gray-400 text-sm mb-1">Date & Time</p>
-                  <p className="text-white text-sm">
-                    {new Date(transfer.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </p>
-                  <p className="text-gray-400 text-xs">
-                    {new Date(transfer.createdAt).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                <div className="flex-1 py-4 pl-2">
-                  <p className="text-gray-400 text-sm mb-1">Reference No.</p>
-                  <div className="flex items-center">
-                    <p className="text-blue-400 text-sm font-mono">
-                      {transfer.transactionId.slice(-12)}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-4 w-4 p-0 text-gray-400 hover:text-white ml-1"
-                      onClick={() => copyToClipboard(transfer.transactionId.slice(-12))}
-                    >
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Transaction ID Row */}
+        <div className="flex justify-between items-start">
+          <span className="text-gray-400 text-base">Transaction ID</span>
+          <div className="flex items-center ml-4">
+            <span className="text-white text-base font-mono text-right break-all">
+              {generateLongTransactionId(transfer.transactionId)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2 flex-shrink-0"
+              onClick={() => copyToClipboard(generateLongTransactionId(transfer.transactionId))}
+            >
+              {copied ? (
+                <CheckCircle className="w-4 h-4 text-green-400" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </Button>
           </div>
-        </Card>
+        </div>
+
+        {/* Time Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Time</span>
+          <span className="text-white text-base">
+            {new Date(transfer.createdAt).toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            })}
+          </span>
+        </div>
+
+        {/* Reference Number Row */}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-base">Reference no.</span>
+          <div className="flex items-center">
+            <span className="text-white text-base font-mono">
+              {transfer.transactionId.slice(-10)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
+              onClick={() => copyToClipboard(transfer.transactionId.slice(-10))}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
