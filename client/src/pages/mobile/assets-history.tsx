@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -169,32 +169,21 @@ export default function AssetsHistory() {
       {/* Transaction List */}
       <div className="px-4 space-y-3">
         {isLoading ? (
-          // Loading skeleton matching new layout
+          // Loading skeleton
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-4 animate-pulse">
-                <div className="flex items-center space-x-3">
-                  {/* Icon skeleton */}
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-700"></div>
-                  
-                  {/* Content skeleton */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-gray-700 rounded w-24"></div>
-                        <div className="h-3 bg-gray-700 rounded w-20"></div>
-                        <div className="h-3 bg-gray-700 rounded w-16"></div>
-                      </div>
-                      
-                      <div className="text-right space-y-2">
-                        <div className="h-4 bg-gray-700 rounded w-20"></div>
-                        <div className="h-3 bg-gray-700 rounded w-16"></div>
-                      </div>
+              <Card key={i} className="bg-[#1a1a40] border-[#2a2a50] p-3 animate-pulse">
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-700 rounded w-20"></div>
+                      <div className="h-3 bg-gray-700 rounded w-16"></div>
                     </div>
                   </div>
-                  
-                  {/* Arrow skeleton */}
-                  <div className="w-4 h-4 bg-gray-700 rounded flex-shrink-0"></div>
+                  <div className="text-right space-y-2">
+                    <div className="h-4 bg-gray-700 rounded w-16"></div>
+                    <div className="h-3 bg-gray-700 rounded w-12"></div>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -220,7 +209,6 @@ export default function AssetsHistory() {
             
             if (isTransfer) {
               const isSent = transaction.type === 'sent';
-              const isReceived = transaction.type === 'received';
               const otherUser = isSent ? transaction.toUser : transaction.fromUser;
               
               return (
@@ -228,63 +216,32 @@ export default function AssetsHistory() {
                   key={transaction._id} 
                   href={`/mobile/transfer-details/${transaction.transactionId}`}
                 >
-                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-4 hover:bg-[#2a2a50] transition-colors cursor-pointer">
-                    <div className="flex items-center space-x-3">
-                      {/* Transaction Type Icon */}
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                        isSent ? 'bg-red-500/20' : 'bg-green-500/20'
-                      }`}>
-                        {isSent ? (
-                          <ArrowUp className="w-5 h-5 text-red-400" />
-                        ) : (
-                          <ArrowDown className="w-5 h-5 text-green-400" />
-                        )}
+                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">
+                          {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
-                      
-                      {/* Transaction Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-white font-medium text-sm mb-1">
-                              {isSent ? 'Transfer Sent' : 'Transfer Received'}
-                            </p>
-                            <p className="text-gray-400 text-xs mb-1">
-                              {isSent ? 'To: ' : 'From: '}{otherUser?.name || 'Unknown User'}
-                            </p>
-                            <p className="text-gray-500 text-xs">
-                              {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                          
-                          {/* Amount and Status */}
-                          <div className="text-right">
-                            <p className={`font-semibold text-sm mb-1 ${
-                              isSent ? 'text-red-400' : 'text-green-400'
-                            }`}>
-                              {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { 
-                                minimumFractionDigits: 2, 
-                                maximumFractionDigits: 2 
-                              })}
-                            </p>
-                            <div className="flex items-center justify-end space-x-1">
-                              <div className={`w-2 h-2 rounded-full ${
-                                transaction.status === 'completed' ? 'bg-green-400' : 'bg-yellow-400'
-                              }`}></div>
-                              <p className="text-gray-400 text-xs capitalize">
-                                {transaction.status}
-                              </p>
-                            </div>
-                          </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className={`font-medium text-sm ${isSent ? 'text-red-400' : 'text-green-400'}`}>
+                            {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {transaction.status}
+                          </p>
                         </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
                       </div>
-                      
-                      {/* Arrow Icon */}
-                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
                     </div>
                   </Card>
                 </Link>
@@ -296,52 +253,32 @@ export default function AssetsHistory() {
                   key={transaction._id} 
                   href={`/mobile/deposit-details/${transaction._id}`}
                 >
-                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-4 hover:bg-[#2a2a50] transition-colors cursor-pointer">
-                    <div className="flex items-center space-x-3">
-                      {/* Deposit Icon */}
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
-                        </div>
+                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">
+                          {transaction.cryptoSymbol} Deposit
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
-                      
-                      {/* Deposit Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-white font-medium text-sm mb-1">
-                              {transaction.cryptoSymbol} Deposit
-                            </p>
-                            <p className="text-gray-400 text-xs mb-1">
-                              Network: {transaction.networkName || 'Unknown'}
-                            </p>
-                            <p className="text-gray-500 text-xs">
-                              {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                          
-                          {/* Amount */}
-                          <div className="text-right">
-                            <p className="text-blue-400 font-semibold text-sm mb-1">
-                              +{transaction.cryptoAmount.toFixed(6)} {transaction.cryptoSymbol}
-                            </p>
-                            <p className="text-gray-400 text-xs">
-                              ${transaction.usdAmount.toLocaleString('en-US', { 
-                                minimumFractionDigits: 2, 
-                                maximumFractionDigits: 2 
-                              })}
-                            </p>
-                          </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className="text-green-400 font-medium text-sm">
+                            +{transaction.cryptoAmount.toFixed(6)}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
                         </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
                       </div>
-                      
-                      {/* Arrow Icon */}
-                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
                     </div>
                   </Card>
                 </Link>
