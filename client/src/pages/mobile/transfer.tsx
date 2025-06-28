@@ -328,7 +328,7 @@ export default function Transfer() {
             parseFloat(withdrawAmount) > getUserUSDBalance() ||
             transferMutation.isPending
           }
-          className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {transferMutation.isPending ? (
             <div className="flex items-center space-x-2">
