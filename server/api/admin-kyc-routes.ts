@@ -1,6 +1,4 @@
 import express from 'express';
-import { UserStorage } from '../storage';
-import { WebSocketManager } from '../websocket-manager';
 
 const router = express.Router();
 
@@ -23,8 +21,12 @@ router.post('/approve-kyc', async (req, res) => {
       });
     }
 
-    // Update user verification status
-    const user = await UserStorage.getUser(userId);
+    // Import MongoDB models
+    const { User } = await import('../models/User');
+    const { Notification } = await import('../models/Notification');
+
+    // Find user
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ 
         success: false, 
@@ -32,8 +34,12 @@ router.post('/approve-kyc', async (req, res) => {
       });
     }
 
-    // Update verification status
-    await UserStorage.updateVerificationStatus(userId, status, reason);
+    // Update user verification status
+    user.kycStatus = status;
+    if (reason) {
+      user.kycRejectionReason = reason;
+    }
+    await user.save();
 
     // Create notification for user
     const notificationData = {
@@ -52,23 +58,29 @@ router.post('/approve-kyc', async (req, res) => {
       isRead: false
     };
 
-    await UserStorage.createNotification(notificationData);
+    const notification = new Notification(notificationData);
+    await notification.save();
 
     // Broadcast real-time notification via WebSocket
-    const wsManager = WebSocketManager.getInstance();
-    wsManager.sendToUser(userId, {
-      type: 'kyc_status_update',
-      data: {
-        status,
-        notification: notificationData
+    try {
+      const app = req.app;
+      const wss = app.get('wss');
+      
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'KYC_STATUS_UPDATE',
+              userId,
+              status,
+              notification: notificationData
+            }));
+          }
+        });
       }
-    });
-
-    // Also send notification update
-    wsManager.sendToUser(userId, {
-      type: 'notification_update',
-      data: notificationData
-    });
+    } catch (wsError) {
+      console.error('Error broadcasting WebSocket:', wsError);
+    }
 
     res.json({
       success: true,
@@ -92,7 +104,13 @@ router.post('/approve-kyc', async (req, res) => {
 // Get pending KYC verifications for admin
 router.get('/pending-kyc', async (req, res) => {
   try {
-    const pendingVerifications = await UserStorage.getPendingVerifications();
+    // Import User model
+    const { User } = await import('../models/User');
+    
+    // Find users with pending KYC status
+    const pendingVerifications = await User.find({ 
+      kycStatus: 'pending' 
+    }).select('_id uid email username firstName lastName kycStatus kycData createdAt');
     
     res.json({
       success: true,

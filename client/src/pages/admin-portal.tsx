@@ -45,6 +45,7 @@ export default function AdminPortal() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showKycPanel, setShowKycPanel] = useState(false);
 
   // Check admin authentication on mount
   useEffect(() => {
@@ -116,6 +117,13 @@ export default function AdminPortal() {
   // Get all users for admin header with auto-refresh
   const { data: allUsers = [], refetch: refetchUsers } = useQuery({
     queryKey: ["/api/admin/users/all"],
+    enabled: isAuthenticated,
+    refetchInterval: 5000, // Refresh every 5 seconds
+  });
+
+  // Get pending KYC verifications
+  const { data: pendingKyc = [], refetch: refetchKyc } = useQuery({
+    queryKey: ["/api/admin/pending-kyc"],
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds
   });
@@ -208,6 +216,30 @@ export default function AdminPortal() {
       toast({
         title: "Error Deleting Account",
         description: error.message || "Failed to delete user account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // KYC Approval mutation
+  const approveKycMutation = useMutation({
+    mutationFn: async ({ userId, status, reason }: { userId: string; status: 'verified' | 'rejected'; reason?: string }) => {
+      const response = await apiRequest("POST", "/api/admin/approve-kyc", { userId, status, reason });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: variables.status === 'verified' ? "KYC Approved" : "KYC Rejected",
+        description: `User verification ${variables.status} successfully`,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-kyc"] });
+      refetchKyc();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Processing KYC",
+        description: error.message || "Failed to process KYC verification",
         variant: "destructive",
       });
     },
@@ -306,7 +338,9 @@ export default function AdminPortal() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-kyc"] }),
         refetchUsers(),
+        refetchKyc(),
         searchQuery.length > 0 && refetchSearch()
       ]);
       
@@ -413,6 +447,15 @@ export default function AdminPortal() {
               Users ({(allUsers as any)?.length || 0})
             </Button>
             <Button 
+              onClick={() => setShowKycPanel(!showKycPanel)}
+              variant="outline" 
+              size="sm"
+              className="border-white/30 text-white hover:bg-white/20 flex-1 sm:flex-initial"
+            >
+              <UserCheck className="w-4 h-4 mr-1" />
+              KYC ({(pendingKyc as any)?.length || 0})
+            </Button>
+            <Button 
               onClick={handleLogout} 
               variant="outline" 
               size="sm"
@@ -505,6 +548,116 @@ export default function AdminPortal() {
                   >
                     Use search below to find specific users
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* KYC Management Panel */}
+        {showKycPanel && (
+          <Card className="mb-4 bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-white">
+                <div className="flex items-center">
+                  <UserCheck className="w-5 h-5 mr-2 text-orange-400" />
+                  KYC Verifications
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-orange-500/20 text-orange-200">
+                    {(pendingKyc as any)?.length || 0} Pending
+                  </Badge>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-orange-400">Live</span>
+                  </div>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(pendingKyc as any)?.length === 0 ? (
+                <div className="text-center py-8">
+                  <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-300 text-lg font-medium">No Pending Verifications</p>
+                  <p className="text-gray-400 text-sm">All KYC submissions have been processed</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {(pendingKyc as any)?.map((verification: any) => (
+                    <div
+                      key={verification._id}
+                      className="p-4 bg-white/10 rounded-lg border border-white/20"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-white font-medium">
+                              {verification.firstName && verification.lastName 
+                                ? `${verification.firstName} ${verification.lastName}` 
+                                : verification.username
+                              }
+                            </p>
+                            <p className="text-blue-200 text-sm">{verification.email}</p>
+                            <p className="text-gray-400 text-xs">UID: {verification.uid}</p>
+                          </div>
+                        </div>
+                        <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+                          Pending Review
+                        </Badge>
+                      </div>
+                      
+                      {verification.kycData && (
+                        <div className="mb-4 space-y-2">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-400">Document Type:</span>
+                              <span className="text-white ml-2">{verification.kycData.documentType || 'Not specified'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Source of Income:</span>
+                              <span className="text-white ml-2">{verification.kycData.sourceOfIncome || 'Not specified'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Annual Income:</span>
+                              <span className="text-white ml-2">{verification.kycData.annualIncome || 'Not specified'}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Investment Experience:</span>
+                              <span className="text-white ml-2">{verification.kycData.investmentExperience || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-2 pt-3 border-t border-white/10">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                          onClick={() => approveKycMutation.mutate({ userId: verification._id, status: 'verified' })}
+                          disabled={approveKycMutation.isPending}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500/30 text-red-300 hover:bg-red-500/20 flex-1"
+                          onClick={() => {
+                            const reason = prompt("Enter rejection reason (optional):");
+                            approveKycMutation.mutate({ userId: verification._id, status: 'rejected', reason: reason || undefined });
+                          }}
+                          disabled={approveKycMutation.isPending}
+                        >
+                          <AlertTriangle className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>

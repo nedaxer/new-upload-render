@@ -2373,6 +2373,10 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   // Register verification routes
   const { default: verificationRoutes } = await import('./api/verification-routes');
   app.use('/api/verification', verificationRoutes);
+  
+  // Register admin KYC routes
+  const { default: adminKycRoutes } = await import('./api/admin-kyc-routes');
+  app.use('/api/admin', adminKycRoutes);
 
   const httpServer = createServer(app);
   

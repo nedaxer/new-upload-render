@@ -8,14 +8,15 @@ interface MobileLayoutProps {
   children: ReactNode;
   className?: string;
   hideBottomNav?: boolean;
+  hideNavigation?: boolean;
 }
 
-export default function MobileLayout({ children, className = '', hideBottomNav = false }: MobileLayoutProps) {
+export default function MobileLayout({ children, className = '', hideBottomNav = false, hideNavigation = false }: MobileLayoutProps) {
   const [location] = useLocation();
   const { getBackgroundClass, getTextClass } = useTheme();
   
-  // Hide bottom navigation for profile and settings pages
-  const shouldHideBottomNav = hideBottomNav || 
+  // Hide bottom navigation for profile and settings pages or when explicitly requested
+  const shouldHideBottomNav = hideBottomNav || hideNavigation ||
     location.includes('/profile') || 
     location.includes('/settings') ||
     location.includes('/kyc') || 

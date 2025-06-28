@@ -63,7 +63,7 @@ export default function MobileKYCStatus() {
           icon: Clock,
           color: 'text-orange-500',
           bgColor: 'bg-orange-900 bg-opacity-20 border-orange-500',
-          title: 'Under Review',
+          title: 'KYC verification is pending for review',
           subtitle: 'Your documents are being processed',
           description: 'Our team is reviewing your submission. This typically takes 24-48 hours. We\'ll notify you once complete.'
         };
@@ -103,19 +103,6 @@ export default function MobileKYCStatus() {
       </div>
 
       <div className="p-4 space-y-6 bg-[#0a0a2e] min-h-screen">
-        {/* Progress Section */}
-        <Card className="bg-blue-900 border-blue-700 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white text-sm font-medium">Verification Progress</span>
-            <span className="text-orange-500 text-sm font-bold">
-              {getVerificationProgress()}% Complete
-            </span>
-          </div>
-          <Progress 
-            value={getVerificationProgress()} 
-            className="w-full h-3 bg-blue-800"
-          />
-        </Card>
 
         {/* Status Card */}
         <Card className={`${statusInfo.bgColor} border p-4`}>
