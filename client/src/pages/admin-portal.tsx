@@ -47,6 +47,34 @@ export default function AdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showKycPanel, setShowKycPanel] = useState(false);
 
+  // Force desktop view for admin portal
+  useEffect(() => {
+    // Set viewport to desktop width to prevent mobile rendering
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=1200, initial-scale=1.0');
+    } else {
+      const metaViewport = document.createElement('meta');
+      metaViewport.name = 'viewport';
+      metaViewport.content = 'width=1200, initial-scale=1.0';
+      document.head.appendChild(metaViewport);
+    }
+
+    // Apply desktop-only CSS styles
+    document.body.style.minWidth = '1200px';
+    document.body.style.overflow = 'auto';
+
+    return () => {
+      // Reset viewport on unmount
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+      document.body.style.minWidth = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // Check admin authentication on mount
   useEffect(() => {
     sessionStorage.setItem('skipSplashScreen', 'true');
@@ -107,9 +135,18 @@ export default function AdminPortal() {
     },
   });
 
-  // Search users with real-time updates
+  // Search users with real-time updates using the correct endpoint
   const { data: searchResults = [], isLoading: searchLoading, refetch: refetchSearch } = useQuery({
     queryKey: ["/api/admin/users/search", searchQuery],
+    queryFn: async () => {
+      if (!searchQuery.trim()) return [];
+      const response = await fetch(`/api/admin/users/search?q=${encodeURIComponent(searchQuery)}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Search failed');
+      const data = await response.json();
+      return data || [];
+    },
     enabled: searchQuery.length > 0 && isAuthenticated,
     refetchInterval: searchQuery.length > 0 ? 2000 : false, // Refetch every 2 seconds when searching
   });
@@ -117,6 +154,14 @@ export default function AdminPortal() {
   // Get all users for admin header with auto-refresh
   const { data: allUsers = [], refetch: refetchUsers } = useQuery({
     queryKey: ["/api/admin/users/all"],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/users/all', {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      return data.data || [];
+    },
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds
   });
@@ -444,7 +489,7 @@ export default function AdminPortal() {
               className="border-white/30 text-white hover:bg-white/20 flex-1 sm:flex-initial"
             >
               <Users className="w-4 h-4 mr-1" />
-              Users ({(allUsers as any)?.length || 0})
+              Users ({Array.isArray(allUsers) ? allUsers.length : 0})
             </Button>
             <Button 
               onClick={() => setShowKycPanel(!showKycPanel)}
@@ -478,7 +523,7 @@ export default function AdminPortal() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Badge variant="secondary" className="bg-blue-500/20 text-blue-200">
-                    {allUsers.length} Total Users
+                    {Array.isArray(allUsers) ? allUsers.length : 0} Total Users
                   </Badge>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -489,7 +534,7 @@ export default function AdminPortal() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allUsers.slice(0, 12).map((user: AdminUser) => (
+                {Array.isArray(allUsers) && allUsers.slice(0, 12).map((user: AdminUser) => (
                   <div
                     key={user._id}
                     className="p-3 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"
@@ -535,7 +580,7 @@ export default function AdminPortal() {
                   </div>
                 ))}
               </div>
-              {allUsers.length > 12 && (
+              {Array.isArray(allUsers) && allUsers.length > 12 && (
                 <div className="text-center mt-4">
                   <p className="text-blue-200 text-sm">
                     Showing first 12 users • {allUsers.length - 12} more available
@@ -697,7 +742,7 @@ export default function AdminPortal() {
               </div>
             )}
 
-            {searchResults.length > 0 && (
+            {Array.isArray(searchResults) && searchResults.length > 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-blue-200">{searchResults.length} user(s) found</p>
                 {searchResults.map((user: AdminUser) => (
@@ -752,10 +797,17 @@ export default function AdminPortal() {
                       </div>
                       <div className="flex flex-col items-end space-y-1">
                         {user.isVerified && (
-                          <Badge className="bg-green-500 text-white text-xs">
-                            <UserCheck className="w-3 h-3 mr-1" />
-                            Verified
-                          </Badge>
+                          <div className="flex items-center">
+                            <Badge className="bg-green-500 text-white text-xs mr-1">
+                              <UserCheck className="w-3 h-3 mr-1" />
+                              Verified
+                            </Badge>
+                            <img 
+                              src="/images/verified-badge.png" 
+                              alt="Verified" 
+                              className="w-4 h-4"
+                            />
+                          </div>
                         )}
                         {user.isAdmin && (
                           <Badge className="bg-red-500 text-white text-xs">ADMIN</Badge>

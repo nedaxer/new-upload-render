@@ -84,6 +84,34 @@ export default function AdminPortalEnhanced() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Force desktop view for admin portal
+  useEffect(() => {
+    // Set viewport to desktop width to prevent mobile rendering
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+      viewport.setAttribute('content', 'width=1200, initial-scale=1.0');
+    } else {
+      const metaViewport = document.createElement('meta');
+      metaViewport.name = 'viewport';
+      metaViewport.content = 'width=1200, initial-scale=1.0';
+      document.head.appendChild(metaViewport);
+    }
+
+    // Apply desktop-only CSS styles
+    document.body.style.minWidth = '1200px';
+    document.body.style.overflow = 'auto';
+
+    return () => {
+      // Reset viewport on unmount
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+      document.body.style.minWidth = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // Check admin authentication on mount
   useEffect(() => {
     sessionStorage.setItem('skipSplashScreen', 'true');
