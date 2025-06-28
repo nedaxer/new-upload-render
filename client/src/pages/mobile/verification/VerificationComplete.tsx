@@ -50,21 +50,23 @@ export const VerificationComplete: React.FC<VerificationCompleteProps> = ({ onCo
           Your profile has been submitted and is under verification.
         </p>
 
-        {/* Continue Button - Orange accent */}
+        {/* Additional Info */}
+        <div className="bg-gray-800/50 p-4 rounded-lg mb-24">
+          <p className="text-gray-400 text-sm text-center">
+            We'll notify you once your verification is complete. 
+            This process typically takes 24-48 hours.
+          </p>
+        </div>
+      </div>
+
+      {/* Fixed Bottom Button like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50">
         <Button 
           onClick={handleContinue}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-base rounded-full"
         >
           Continue to home page
         </Button>
-
-        {/* Additional Info */}
-        <div className="mt-8 bg-gray-800/50 p-4 rounded-lg">
-          <p className="text-gray-400 text-sm text-center">
-            We'll notify you once your verification is complete. 
-            This process typically takes 24-48 hours.
-          </p>
-        </div>
       </div>
     </MobileLayout>
   );

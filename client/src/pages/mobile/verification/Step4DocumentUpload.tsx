@@ -170,24 +170,27 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
           </div>
         </div>
 
-        {/* Bottom section with instructions and button */}
-        <div className="pb-8 space-y-4">
-          <p className="text-gray-400 text-center text-xs">
-            Please tap "next" to save your documents
-          </p>
+        {/* Spacer for fixed button */}
+        <div className="pb-32"></div>
+      </div>
 
-          <Button 
-            onClick={handleNext}
-            disabled={!canProceed || isLoading}
-            className={`w-full py-4 text-sm font-medium rounded-full ${
-              canProceed && !isLoading
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </Button>
-        </div>
+      {/* Fixed Bottom Button like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50 space-y-4">
+        <p className="text-gray-400 text-center text-xs">
+          Please tap "next" to save your documents
+        </p>
+
+        <Button 
+          onClick={handleNext}
+          disabled={!canProceed || isLoading}
+          className={`w-full py-4 text-sm font-medium rounded-full ${
+            canProceed && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
       </div>
     </MobileLayout>
   );

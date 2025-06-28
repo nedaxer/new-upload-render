@@ -195,20 +195,23 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           </div>
         </div>
 
-        {/* Next Button at bottom */}
-        <div className="pb-8">
-          <Button 
-            onClick={handleNext}
-            disabled={!selectedAnswer || isLoading}
-            className={`w-full py-4 text-sm font-medium rounded-full ${
-              selectedAnswer && !isLoading
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
-          </Button>
-        </div>
+        {/* Spacer for fixed button */}
+        <div className="pb-24"></div>
+      </div>
+
+      {/* Fixed Bottom Button like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50">
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedAnswer || isLoading}
+          className={`w-full py-4 text-sm font-medium rounded-full ${
+            selectedAnswer && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
+        </Button>
       </div>
     </MobileLayout>
   );

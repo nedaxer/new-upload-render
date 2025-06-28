@@ -114,26 +114,29 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           </div>
         </div>
 
-        {/* Bottom section with button and notice */}
-        <div className="pb-8 space-y-4">
-          <Button 
-            onClick={handleNext}
-            disabled={!selectedType || isLoading}
-            className={`w-full py-4 text-sm font-medium rounded-full ${
-              selectedType && !isLoading
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </Button>
+        {/* Spacer for fixed button */}
+        <div className="pb-32"></div>
+      </div>
 
-          {/* Security Notice */}
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <p className="text-gray-300 text-sm text-center">
-              Your information will be encrypted, stored securely and only used to verify your identity
-            </p>
-          </div>
+      {/* Fixed Bottom Button and Notice like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50 space-y-4">
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedType || isLoading}
+          className={`w-full py-4 text-sm font-medium rounded-full ${
+            selectedType && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
+
+        {/* Security Notice */}
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <p className="text-gray-300 text-sm text-center">
+            Your information will be encrypted, stored securely and only used to verify your identity
+          </p>
         </div>
       </div>
     </MobileLayout>

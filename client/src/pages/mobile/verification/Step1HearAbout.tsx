@@ -100,29 +100,32 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons at bottom */}
-        <div className="pb-8 space-y-3">
-          <Button 
-            onClick={handleNext}
-            disabled={!selectedOption || isLoading}
-            className={`w-full py-4 text-sm font-medium rounded-full ${
-              selectedOption && !isLoading
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </Button>
-          
-          <Button 
-            onClick={handleSkip}
-            variant="ghost"
-            disabled={isLoading}
-            className="w-full py-4 text-sm text-gray-400 hover:text-white disabled:opacity-50"
-          >
-            {isLoading ? "Loading..." : "Skip"}
-          </Button>
-        </div>
+        {/* Spacer for fixed buttons */}
+        <div className="pb-32"></div>
+      </div>
+
+      {/* Fixed Bottom Buttons like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50 space-y-3">
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedOption || isLoading}
+          className={`w-full py-4 text-sm font-medium rounded-full ${
+            selectedOption && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
+        
+        <Button 
+          onClick={handleSkip}
+          variant="ghost"
+          disabled={isLoading}
+          className="w-full py-4 text-sm text-gray-400 hover:text-white disabled:opacity-50"
+        >
+          {isLoading ? "Loading..." : "Skip"}
+        </Button>
       </div>
     </MobileLayout>
   );

@@ -66,24 +66,24 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
 
           </div>
 
-        {/* Bottom Button Area */}
-        <div className="pb-32">
-          <Button 
-            onClick={handleNext}
-            disabled={isLoading}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
-          >
-            {isLoading ? "Loading..." : "Let's Do It"}
-          </Button>
-        </div>
-
-        {/* Disclaimer at absolute bottom */}
-        <div className="pb-2">
+        {/* Disclaimer */}
+        <div className="pb-24">
           <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
             We rely on you for accurate information. Keep us informed of any material changes. 
             We may not be able to provide our services when you choose not to provide the required information.
           </p>
         </div>
+      </div>
+
+      {/* Fixed Bottom Button like home navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 p-4 border-t border-gray-700 z-50">
+        <Button 
+          onClick={handleNext}
+          disabled={isLoading}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
+        >
+          {isLoading ? "Loading..." : "Let's Do It"}
+        </Button>
       </div>
     </MobileLayout>
   );
