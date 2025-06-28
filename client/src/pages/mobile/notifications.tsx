@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Settings, CheckCheck, WifiOff } from 'lucide-react';
+import { ArrowLeft, Settings, CheckCheck } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useHaptics } from '@/hooks/use-haptics';
-import { useOfflineNotifications, useOnlineStatus } from '@/hooks/use-offline-data';
-import { offlineStorage } from '@/utils/offline-storage';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
@@ -16,16 +14,14 @@ export default function MobileNotifications() {
   const { t } = useLanguage();
   const { medium } = useHaptics();
 
-  // Use offline-enabled notifications hook
-  const { data: notificationResponse, isLoading, isOffline, hasOfflineData } = useOfflineNotifications();
-  const { isOnline } = useOnlineStatus();
-  
-  // Ensure we get the data array properly from either online or offline response
-  const notificationData = Array.isArray(notificationResponse) 
-    ? notificationResponse 
-    : Array.isArray((notificationResponse as any)?.data) 
-      ? (notificationResponse as any).data 
-      : [];
+  // Fetch notifications with automatic refetch every 10 seconds for real-time updates
+  const { data: notificationsResponse, isLoading } = useQuery({
+    queryKey: ['/api/notifications'],
+    refetchInterval: 10000, // Refetch every 10 seconds for real-time updates
+    refetchIntervalInBackground: true,
+  });
+
+  const notificationData = Array.isArray((notificationsResponse as any)?.data) ? (notificationsResponse as any).data : [];
 
   // WebSocket connection for real-time updates
   useEffect(() => {
@@ -88,9 +84,7 @@ export default function MobileNotifications() {
   const markAsReadMutation = useMutation({
     mutationFn: (notificationId: string) => 
       apiRequest('PUT', `/api/notifications/${notificationId}/read`),
-    onSuccess: (_, notificationId) => {
-      // Update local storage
-      offlineStorage.updateNotificationReadStatus(notificationId);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
     }
@@ -153,15 +147,7 @@ export default function MobileNotifications() {
         <Link href="/mobile">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <div className="flex items-center space-x-2">
-          <h1 className="text-lg font-semibold">{t('notifications')}</h1>
-          {!isOnline && (
-            <div className="flex items-center space-x-1">
-              <WifiOff className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-400">Offline</span>
-            </div>
-          )}
-        </div>
+        <h1 className="text-lg font-semibold">{t('notifications')}</h1>
         <div className="flex items-center space-x-3">
           <button onClick={handleReadAll}>
             <CheckCheck className="w-6 h-6 text-gray-400" />

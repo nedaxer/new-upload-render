@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ChevronRight, WifiOff } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { useOfflineTransactions, useOfflineTransfers, useOnlineStatus } from '@/hooks/use-offline-data';
 
 // Removed crypto logos as per user request
 
@@ -27,29 +26,27 @@ export default function AssetsHistory() {
     return '/mobile/assets';
   };
 
-  // Fetch deposits and transfers
+  // Fetch deposit transactions for authenticated user only
   const { data: depositsResponse, isLoading: isLoadingDeposits } = useQuery({
     queryKey: ['/api/deposits/history'],
-    queryFn: async () => {
-      const response = await fetch('/api/deposits/history');
-      if (!response.ok) throw new Error('Failed to fetch deposits');
-      return response.json();
-    },
     enabled: !!user,
-    retry: 3
+    refetchInterval: 30000, // Refresh every 30 seconds for new deposits
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache to avoid stale data (replaces cacheTime in newer versions)
   });
 
+  // Fetch transfer transactions for authenticated user only
   const { data: transfersResponse, isLoading: isLoadingTransfers } = useQuery({
     queryKey: ['/api/transfers/history'],
-    queryFn: async () => {
-      const response = await fetch('/api/transfers/history');
-      if (!response.ok) throw new Error('Failed to fetch transfers');
-      return response.json();
-    },
     enabled: !!user,
-    retry: 3
+    refetchInterval: 30000,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 0,
+    gcTime: 0,
   });
-  const { isOnline } = useOnlineStatus();
 
   const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];
   const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
@@ -146,15 +143,7 @@ export default function AssetsHistory() {
         <Link href={getBackPath()}>
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <div className="flex items-center space-x-2">
-          <h1 className="text-base font-medium">Asset History</h1>
-          {!isOnline && (
-            <div className="flex items-center space-x-1">
-              <WifiOff className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-400">Offline</span>
-            </div>
-          )}
-        </div>
+        <h1 className="text-base font-medium">Asset History</h1>
         <div className="w-6 h-6" />
       </div>
 
