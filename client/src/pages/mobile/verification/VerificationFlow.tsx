@@ -115,7 +115,7 @@ export const VerificationFlow: React.FC = () => {
   });
 
   const handleClose = () => {
-    setLocation('/mobile/home');
+    setLocation('/mobile');
   };
 
   const handleStepNavigation = (step: VerificationStep, data?: any) => {

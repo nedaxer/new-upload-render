@@ -39,10 +39,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Development mode: Allow access to mobile routes without authentication for testing
+  // But protect sensitive routes like verification flows
   const isDevelopment = import.meta.env.DEV;
   const isMobileRoute = path.startsWith('/mobile');
+  const isVerificationRoute = path.includes('/verification') || path.includes('/kyc-status');
   
-  if (!user && !(isDevelopment && isMobileRoute)) {
+  if (!user && !(isDevelopment && isMobileRoute && !isVerificationRoute)) {
     console.log('No user found, redirecting to login');
     return <Redirect to="/account/login" />;
   }
@@ -61,7 +63,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           return loadingComponent;
         }
 
-        if (!user && !(isDevelopment && isMobileRoute)) {
+        if (!user && !(isDevelopment && isMobileRoute && !isVerificationRoute)) {
           return <Redirect to="/account/login" />;
         }
 

@@ -57,9 +57,8 @@ export default function MobileSettings() {
 
   // Fetch KYC status
   const { data: kycData } = useQuery({
-    queryKey: ['kyc', 'status', user?.id],
-    queryFn: () => apiRequest('/api/users/kyc/status'),
-    enabled: !!user?.id,
+    queryKey: ['/api/verification/status'],
+    enabled: !!user,
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
 
@@ -381,16 +380,16 @@ export default function MobileSettings() {
               <span>Identity Verification</span>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-1 rounded ${
-                  kycData?.verification?.status === 'verified' 
+                  kycData?.data?.kycStatus === 'verified' 
                     ? 'bg-green-600' 
-                    : kycData?.verification?.status === 'processing'
+                    : kycData?.data?.kycStatus === 'pending'
                       ? 'bg-yellow-600'
                       : 'bg-red-600'
                 }`}>
-                  {kycData?.verification?.status === 'verified' 
+                  {kycData?.data?.kycStatus === 'verified' 
                     ? 'Lv.1 Verified' 
-                    : kycData?.verification?.status === 'processing'
-                      ? 'Processing'
+                    : kycData?.data?.kycStatus === 'pending'
+                      ? 'Pending'
                       : 'Not Verified'
                   }
                 </span>

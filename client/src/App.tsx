@@ -291,9 +291,9 @@ export default function App() {
               {() => <div>Currency Selection</div>}
             </Route>
             <Route path="/mobile/transfer" component={Transfer} />
-            <Route path="/mobile/verification" component={VerificationFlow} />
-            <Route path="/mobile/kyc-status" component={MobileKYCStatus} />
-            <Route path="/mobile/verification-submitted" component={VerificationSubmitted} />
+            <ProtectedRoute path="/mobile/verification" component={VerificationFlow} />
+            <ProtectedRoute path="/mobile/kyc-status" component={MobileKYCStatus} />
+            <ProtectedRoute path="/mobile/verification-submitted" component={VerificationSubmitted} />
 
 
             {/* Admin Portal Routes */}

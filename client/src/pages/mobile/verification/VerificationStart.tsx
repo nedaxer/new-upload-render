@@ -36,9 +36,7 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* Remove X button as requested */}
       </div>
 
       {/* No progress bar on first screen */}

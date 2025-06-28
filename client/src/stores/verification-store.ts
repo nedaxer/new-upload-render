@@ -3,14 +3,18 @@ export interface VerificationProgress {
   currentStep: string;
   completedSteps: string[];
   formData: {
+    hearAboutUs?: string;
+    dateOfBirth?: { day: number; month: number; year: number };
     sourceOfIncome?: string;
-    investmentExperience?: string;
     annualIncome?: string;
-    dateOfBirth?: string;
-    selectedDocumentType?: string;
-    uploadedDocuments?: {
-      front?: string;
-      back?: string;
+    investmentExperience?: string;
+    plannedDeposit?: string;
+    investmentGoal?: string;
+    documentType?: string;
+    documents?: {
+      front?: File;
+      back?: File;
+      single?: File;
     };
   };
   isCompleted: boolean;
