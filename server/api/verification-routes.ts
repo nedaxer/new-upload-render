@@ -93,69 +93,24 @@ router.post('/submit', requireAuth, upload.fields([
       }
     };
 
+    // Import User model
+    const { User } = await import('../models/User');
+    
     // Get current user and update with KYC data
-    const currentUser = await storage.getUser(userId);
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     // Update user with KYC data and set status to pending
-    const updatedUser = {
-      ...currentUser,
-      kycStatus: 'pending' as const,
-      kycData
-    };
+    currentUser.kycStatus = 'pending';
+    currentUser.kycData = kycData;
+    await currentUser.save();
+
+    // KYC submission is now pending admin review
+    console.log(`📋 KYC submission completed for user ${userId}, status set to pending`);
     
-    await storage.updateUserProfile(userId, updatedUser);
-
-    // Simulate real-time verification process
-    setTimeout(async () => {
-      try {
-        // Simulate OCR and face verification
-        const mockVerificationResults = {
-          documentValid: true,
-          faceMatch: true,
-          ocrResults: {
-            name: `${currentUser.firstName} ${currentUser.lastName}`,
-            dateOfBirth: `${parsedDateOfBirth.day}/${parsedDateOfBirth.month}/${parsedDateOfBirth.year}`,
-            documentNumber: 'DOC' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-            expiryDate: '2030-12-31'
-          },
-          confidence: 95,
-          issues: []
-        };
-
-        // Update verification status to verified
-        const verifiedUser = {
-          ...updatedUser,
-          kycStatus: 'verified' as const,
-          kycData: {
-            ...kycData,
-            verificationResults: mockVerificationResults
-          }
-        };
-        
-        await storage.updateUserProfile(userId, verifiedUser);
-        console.log(`✅ User ${userId} verification completed successfully`);
-      } catch (error) {
-        console.error('Error updating verification status:', error);
-        
-        // Mark as rejected if verification fails
-        const rejectedUser = {
-          ...updatedUser,
-          kycStatus: 'rejected' as const,
-          kycData: {
-            ...kycData,
-            verificationResults: {
-              ...kycData.verificationResults,
-              issues: ['Verification failed due to technical error']
-            }
-          }
-        };
-        
-        await storage.updateUserProfile(userId, rejectedUser);
-      }
-    }, 5000); // 5 second delay to simulate processing
+    // Note: The verification status will remain 'pending' until admin manually approves/rejects via admin portal
 
     res.json({
       success: true,
@@ -180,7 +135,10 @@ router.get('/status', requireAuth, async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
 
-    const user = await storage.getUser(userId);
+    // Import User model
+    const { User } = await import('../models/User');
+    
+    const user = await User.findById(userId).select('kycStatus kycData');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
