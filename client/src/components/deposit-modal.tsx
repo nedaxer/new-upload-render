@@ -15,6 +15,22 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const bottomNav = document.querySelector('[data-navigation="bottom"]') as HTMLElement;
+    if (isOpen && bottomNav) {
+      bottomNav.style.filter = 'blur(4px)';
+      bottomNav.style.transition = 'filter 0.3s ease-out';
+    } else if (bottomNav) {
+      bottomNav.style.filter = 'none';
+    }
+
+    return () => {
+      if (bottomNav) {
+        bottomNav.style.filter = 'none';
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !mounted) return null;
   
   return createPortal(
@@ -30,7 +46,7 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
       }} 
       data-modal="deposit"
     >
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
       <div 
         className="deposit-modal-content fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] text-white rounded-t-2xl animate-slide-up max-h-[70vh] overflow-y-auto"
         style={{
