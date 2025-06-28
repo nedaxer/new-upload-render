@@ -65,7 +65,7 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           </div>
 
         {/* Bottom Button Area */}
-        <div className="pb-16">
+        <div className="pb-32">
           <Button 
             onClick={handleNext}
             disabled={isLoading}
