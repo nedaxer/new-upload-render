@@ -141,15 +141,15 @@ export default function AdminPortalNew() {
   // Search users by email
   const { data: emailSearchResults = { users: [] }, isLoading: emailSearchLoading } = useQuery({
     queryKey: ["/api/admin/search/email", { q: emailSearchQuery }],
-    enabled: emailSearchQuery.length >= 2 && isAuthenticated,
-    refetchInterval: emailSearchQuery.length > 0 ? 2000 : false,
+    enabled: emailSearchQuery.length >= 1 && isAuthenticated,
+    refetchInterval: false,
   });
 
   // Search users by UID
   const { data: uidSearchResults = { users: [] }, isLoading: uidSearchLoading } = useQuery({
     queryKey: ["/api/admin/search/uid", { q: uidSearchQuery }],
-    enabled: uidSearchQuery.length >= 2 && isAuthenticated,
-    refetchInterval: uidSearchQuery.length > 0 ? 2000 : false,
+    enabled: uidSearchQuery.length >= 1 && isAuthenticated,
+    refetchInterval: false,
   });
 
   // Get all users for admin header with auto-refresh
@@ -492,12 +492,13 @@ export default function AdminPortalNew() {
                       )}
                     </div>
                     
-                    {emailSearchQuery.length >= 2 && (
-                      <div className="space-y-3">
-                        <p className="text-sm text-blue-200">
-                          {emailSearchResults.users?.length || 0} user(s) found
-                        </p>
-                        {emailSearchResults.users?.map((user: AdminUser) => (
+                    <div className="space-y-3">
+                      {emailSearchQuery.length > 0 ? (
+                        <>
+                          <p className="text-sm text-blue-200">
+                            {emailSearchResults.users?.length || 0} user(s) found
+                          </p>
+                          {emailSearchResults.users?.map((user: AdminUser) => (
                           <div
                             key={user._id}
                             className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${

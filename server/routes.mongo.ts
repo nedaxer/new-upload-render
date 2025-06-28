@@ -2429,7 +2429,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   app.get('/api/admin/search/email', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const { q } = req.query;
-      if (!q || typeof q !== 'string' || q.length < 2) {
+      if (!q || typeof q !== 'string' || q.length < 1) {
         return res.json({ success: true, users: [] });
       }
       
@@ -2477,7 +2477,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   app.get('/api/admin/search/uid', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const { q } = req.query;
-      if (!q || typeof q !== 'string' || q.length < 2) {
+      if (!q || typeof q !== 'string' || q.length < 1) {
         return res.json({ success: true, users: [] });
       }
       
