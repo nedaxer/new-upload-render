@@ -169,6 +169,14 @@ export default function AdminPortal() {
   // Get pending KYC verifications
   const { data: pendingKyc = [], refetch: refetchKyc } = useQuery({
     queryKey: ["/api/admin/pending-kyc"],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/pending-kyc', {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch pending KYC');
+      const data = await response.json();
+      return data.data || [];
+    },
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds
   });
@@ -234,6 +242,39 @@ export default function AdminPortal() {
       toast({
         title: "Error Removing Funds",
         description: error.message || "Failed to remove funds",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // KYC approval mutation
+  const approveKycMutation = useMutation({
+    mutationFn: async ({ userId, status, reason }: { userId: string; status: string; reason?: string }) => {
+      const response = await fetch('/api/admin/approve-kyc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId, status, reason })
+      });
+      if (!response.ok) throw new Error('Failed to update KYC status');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      const action = variables.status === 'verified' ? 'approved' : 'rejected';
+      toast({
+        title: `KYC ${action}`,
+        description: `User verification has been ${action} successfully`,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-kyc"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchKyc();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "KYC Update Failed",
+        description: error.message || "Failed to update KYC status",
         variant: "destructive",
       });
     },

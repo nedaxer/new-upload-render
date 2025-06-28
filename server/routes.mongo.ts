@@ -17,6 +17,7 @@ import { getNewsSourceLogo } from "./logo-service";
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
 import verificationRoutes from "./api/verification-routes";
+import adminKycRoutes from "./api/admin-kyc-routes";
 import compression from "compression";
 import serveStatic from "serve-static";
 import Parser from 'rss-parser';

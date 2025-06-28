@@ -2,8 +2,19 @@ import express from 'express';
 
 const router = express.Router();
 
+// Admin authentication middleware
+const requireAdminAuth = (req: any, res: any, next: any) => {
+  if (!req.session?.adminAuthenticated) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Admin authentication required" 
+    });
+  }
+  next();
+};
+
 // Admin KYC approval/rejection endpoint
-router.post('/approve-kyc', async (req, res) => {
+router.post('/approve-kyc', requireAdminAuth, async (req, res) => {
   try {
     const { userId, status, reason } = req.body;
     
@@ -102,15 +113,33 @@ router.post('/approve-kyc', async (req, res) => {
 });
 
 // Get pending KYC verifications for admin
-router.get('/pending-kyc', async (req, res) => {
+router.get('/pending-kyc', requireAdminAuth, async (req, res) => {
   try {
-    // Import User model
-    const { User } = await import('../models/User');
+    // Import MongoDB connection
+    const { MongoClient } = await import('mongodb');
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/';
     
-    // Find users with pending KYC status
-    const pendingVerifications = await User.find({ 
-      kycStatus: 'pending' 
-    }).select('_id uid email username firstName lastName kycStatus kycData createdAt');
+    const client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    const db = client.db('nedaxer');
+    const usersCollection = db.collection('users');
+    
+    // Find users with pending KYC status (submitted = pending approval)
+    const pendingVerifications = await usersCollection.find({ 
+      kycStatus: 'submitted' 
+    }).project({
+      _id: 1,
+      uid: 1,
+      email: 1,
+      username: 1,
+      firstName: 1,
+      lastName: 1,
+      kycStatus: 1,
+      kycData: 1,
+      createdAt: 1
+    }).toArray();
+    
+    await client.close();
     
     res.json({
       success: true,
