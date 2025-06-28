@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
+import MobileLayout from '@/components/mobile-layout';
 
 interface Step1HearAboutProps {
   onNext: (value: string) => void;
@@ -37,53 +38,53 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
-      {/* Header - No "Profile" text */}
+    <MobileLayout>
+      {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div></div>
+        <h1 className="text-white text-lg font-semibold">Profile</h1>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
       </div>
 
-      {/* Progress Bar - Orange color */}
+      {/* Progress Bar */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full w-2/6"></div>
+          <div className="bg-green-500 h-2 rounded-full w-2/6"></div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 py-8">
-        {/* Title - Reduced font size */}
-        <h2 className="text-lg font-bold text-white text-center mb-2">
+        {/* Title */}
+        <h2 className="text-2xl font-bold text-white text-center mb-2">
           How did you hear about Nedaxer?
         </h2>
         
-        <p className="text-gray-400 text-center mb-6 text-xs">
+        <p className="text-gray-400 text-center mb-8 text-sm">
           Help us understand how you discovered our platform
         </p>
 
         {/* Options */}
-        <div className="space-y-2 mb-6">
+        <div className="space-y-3 mb-8">
           {options.map((option) => (
             <button
               key={option.value}
               onClick={() => setSelectedOption(option.value)}
-              className={`w-full p-3 rounded-lg border text-left transition-all ${
+              className={`w-full p-4 rounded-lg border text-left transition-all ${
                 selectedOption === option.value
-                  ? 'border-orange-500 bg-orange-500/10 text-white'
+                  ? 'border-green-500 bg-green-500/10 text-white'
                   : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{option.label}</span>
+                <span className="font-medium">{option.label}</span>
                 {selectedOption === option.value && (
-                  <div className="w-4 h-4 rounded-full bg-orange-500 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
                   </div>
                 )}
               </div>
@@ -92,13 +93,13 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Button 
             onClick={handleNext}
             disabled={!selectedOption}
-            className={`w-full py-3 text-base font-semibold rounded-full ${
+            className={`w-full py-4 text-lg font-semibold rounded-full ${
               selectedOption 
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                ? 'bg-green-500 hover:bg-green-600 text-white' 
                 : 'bg-gray-600 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -108,12 +109,12 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           <Button 
             onClick={handleSkip}
             variant="ghost"
-            className="w-full py-3 text-base text-gray-400 hover:text-white"
+            className="w-full py-4 text-lg text-gray-400 hover:text-white"
           >
             Skip
           </Button>
         </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
