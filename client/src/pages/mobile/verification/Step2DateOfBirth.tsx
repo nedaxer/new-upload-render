@@ -110,19 +110,14 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
           </div>
         </div>
 
-        {/* Large spacer to push button to bottom */}
-        <div className="flex-1"></div>
-
-        {/* Next Button at very bottom - Orange accent with loading */}
-        <div className="pb-6">
-          <Button 
-            onClick={handleNext}
-            disabled={isLoading}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </Button>
-        </div>
+        {/* Next Button - Orange accent with loading */}
+        <Button 
+          onClick={handleNext}
+          disabled={isLoading}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
       </div>
     </MobileLayout>
   );
