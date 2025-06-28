@@ -263,17 +263,7 @@ export default function MobileKYCStatus() {
           </ul>
         </Card>
 
-        {/* Tips Card */}
-        <Card className="bg-blue-900 border-blue-700 p-4">
-          <h3 className="text-white font-semibold mb-3">Verification Tips</h3>
-          <ul className="space-y-2 text-gray-300 text-sm">
-            <li>• Use good lighting when taking photos</li>
-            <li>• Ensure documents are flat and clearly visible</li>
-            <li>• Avoid glare and shadows on documents</li>
-            <li>• Make sure all text is readable</li>
-            <li>• Your face should be clearly visible in selfies</li>
-          </ul>
-        </Card>
+        
       </div>
     </MobileLayout>
   );
