@@ -197,7 +197,68 @@ export default function TransferDetails() {
             </Button>
           </div>
         </div>
+
+        {/* Sender Information */}
+        <div className="mt-8">
+          <h3 className="text-gray-400 text-sm mb-4">Sender Information</h3>
+          <div className="bg-[#1a1a40] rounded-lg p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Name</span>
+              <span className="text-white text-sm">{transfer.senderName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Nedaxer UID</span>
+              <div className="flex items-center">
+                <span className="text-white text-sm font-mono">{transfer.senderUID}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0 text-gray-400 hover:text-white ml-2"
+                  onClick={() => copyToClipboard(transfer.senderUID)}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Email</span>
+              <span className="text-white text-sm">{transfer.senderEmail}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Receiver Information */}
+        <div className="mt-6">
+          <h3 className="text-gray-400 text-sm mb-4">Receiver Information</h3>
+          <div className="bg-[#1a1a40] rounded-lg p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Name</span>
+              <span className="text-white text-sm">{transfer.recipientName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Nedaxer UID</span>
+              <div className="flex items-center">
+                <span className="text-white text-sm font-mono">{transfer.recipientUID}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0 text-gray-400 hover:text-white ml-2"
+                  onClick={() => copyToClipboard(transfer.recipientUID)}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-sm">Email</span>
+              <span className="text-white text-sm">{transfer.recipientEmail}</span>
+            </div>
+          </div>
+        </div>
       </div>
+      
+      {/* Bottom spacing for mobile navigation */}
+      <div className="h-24"></div>
     </div>
   );
 }
