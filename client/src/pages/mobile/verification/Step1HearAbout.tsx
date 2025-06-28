@@ -67,7 +67,7 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
         <h2 className="text-base font-medium text-white text-center mb-2">
           How did you hear about Nedaxer?
         </h2>
-
+        
         <p className="text-gray-400 text-center mb-8 text-xs">
           Help us understand how you discovered our platform
         </p>
@@ -98,13 +98,7 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
         </div>
 
         {/* Action Buttons - Must tap Next to proceed */}
-        
-
-        {/* Large spacer to push buttons to bottom */}
-        <div className="flex-1"></div>
-
-        {/* Action Buttons at very bottom - Must tap Next to proceed */}
-        <div className="space-y-3 pb-6">
+        <div className="space-y-3">
           <Button 
             onClick={handleNext}
             disabled={!selectedOption || isLoading}
@@ -116,7 +110,7 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           >
             {isLoading ? "Loading..." : "Next"}
           </Button>
-
+          
           <Button 
             onClick={handleSkip}
             variant="ghost"

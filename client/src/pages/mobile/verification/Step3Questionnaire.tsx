@@ -99,7 +99,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
     if (selectedAnswer) {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
-
+      
       if (isLastQuestion) {
         onNext(answers);
       } else {
@@ -143,7 +143,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
         <h2 className="text-base font-medium text-white text-center mb-2">
           {currentQuestion.title}
         </h2>
-
+        
         {currentQuestion.subtitle && (
           <p className="text-gray-400 text-center mb-8 text-xs">
             {currentQuestion.subtitle}
@@ -192,11 +192,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           ))}
         </div>
 
-        {/* Large spacer to push button to bottom */}
-        <div className="flex-1"></div>
-
-        {/* Next Button at very bottom - Must tap to proceed */}
-        <div className="pb-6">
+        {/* Next Button - Must tap to proceed */}
         <Button 
           onClick={handleNext}
           disabled={!selectedAnswer || isLoading}

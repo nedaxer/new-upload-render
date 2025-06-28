@@ -110,11 +110,6 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
           </div>
         </div>
 
-        {/* Large spacer to push button to bottom */}
-        <div className="flex-1"></div>
-
-        {/* Next Button at very bottom - Orange accent with loading */}
-        <div className="pb-6">
         {/* Next Button - Orange accent with loading */}
         <Button 
           onClick={handleNext}
