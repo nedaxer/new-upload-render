@@ -1207,6 +1207,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity tracking function
+  const trackUserActivity = async (userId: string, activityType: string, details: any = {}, sessionId?: string) => {
+    try {
+      if (userId !== 'ADMIN001') {
+        const { UserActivity } = await import('./models/UserActivity');
+        const { UserSession } = await import('./models/UserSession');
+        
+        // Create activity record
+        await UserActivity.create({
+          userId,
+          activityType,
+          details: {
+            ...details,
+            timestamp: new Date()
+          },
+          timestamp: new Date()
+        });
+        
+        // Handle session tracking for login
+        if (activityType === 'login' && sessionId) {
+          // End any existing active sessions for this user
+          const existingSessions = await UserSession.find({ userId, isActive: true });
+          for (const session of existingSessions) {
+            const duration = Math.floor((new Date().getTime() - session.loginTime.getTime()) / 1000);
+            await UserSession.findByIdAndUpdate(session._id, {
+              isActive: false,
+              logoutTime: new Date(),
+              duration
+            });
+          }
+          
+          // Create new session
+          await UserSession.create({
+            userId,
+            sessionId,
+            loginTime: new Date(),
+            lastActivity: new Date(),
+            duration: 0,
+            ip: details.ip || 'unknown',
+            userAgent: details.userAgent || 'unknown',
+            isActive: true
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Activity tracking error:', error);
+    }
+  };
+
   // Login endpoint with hardcoded admin bypass
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
@@ -1285,6 +1334,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set session
       req.session.userId = user._id.toString();
+
+      // Track login activity
+      await trackUserActivity(user._id.toString(), 'login', {
+        ip: req.ip || req.connection.remoteAddress || 'unknown',
+        userAgent: req.get('User-Agent') || 'unknown',
+        description: 'User logged in successfully'
+      }, req.sessionID);
 
       res.json({ 
         success: true, 
@@ -2192,6 +2248,279 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     });
   });
   
+  // Admin Activity Routes
+  
+  // Get user activity data
+  app.get('/api/admin/activity/:userId', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { page = 1, limit = 50, type } = req.query;
+      
+      const { UserActivity } = await import('./models/UserActivity');
+      const { User } = await import('./models/User');
+      
+      // Verify user exists
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      // Build query
+      const query: any = { userId };
+      if (type && type !== 'all') {
+        query.activityType = type;
+      }
+      
+      // Get activity with pagination
+      const skip = (Number(page) - 1) * Number(limit);
+      const activities = await UserActivity.find(query)
+        .sort({ timestamp: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('userId', 'username email firstName lastName uid');
+      
+      const totalActivities = await UserActivity.countDocuments(query);
+      
+      res.json({
+        success: true,
+        data: {
+          activities,
+          pagination: {
+            page: Number(page),
+            limit: Number(limit),
+            total: totalActivities,
+            pages: Math.ceil(totalActivities / Number(limit))
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Get user activity error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch user activity' });
+    }
+  });
+
+  // Get user session data and online time
+  app.get('/api/admin/sessions/:userId', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { days = 7 } = req.query;
+      
+      const { UserSession } = await import('./models/UserSession');
+      const { User } = await import('./models/User');
+      
+      // Verify user exists
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - Number(days));
+      
+      // Get sessions within date range
+      const sessions = await UserSession.find({
+        userId,
+        loginTime: { $gte: startDate }
+      }).sort({ loginTime: -1 });
+      
+      // Calculate total online time
+      const totalOnlineTime = sessions.reduce((total, session) => {
+        return total + (session.duration || 0);
+      }, 0);
+      
+      // Get current active session
+      const activeSession = await UserSession.findOne({
+        userId,
+        isActive: true
+      }).sort({ loginTime: -1 });
+      
+      // Calculate daily online time for chart
+      const dailyStats = [];
+      for (let i = Number(days) - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        date.setHours(0, 0, 0, 0);
+        
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + 1);
+        
+        const daySessions = sessions.filter(session => 
+          session.loginTime >= date && session.loginTime < nextDate
+        );
+        
+        const dayDuration = daySessions.reduce((total, session) => {
+          return total + (session.duration || 0);
+        }, 0);
+        
+        dailyStats.push({
+          date: date.toISOString().split('T')[0],
+          duration: Math.round(dayDuration / 60), // Convert to minutes
+          sessionCount: daySessions.length
+        });
+      }
+      
+      res.json({
+        success: true,
+        data: {
+          sessions: sessions.slice(0, 20), // Latest 20 sessions
+          totalOnlineTime: Math.round(totalOnlineTime / 60), // Convert to minutes
+          activeSession,
+          dailyStats,
+          isCurrentlyOnline: !!activeSession
+        }
+      });
+    } catch (error) {
+      console.error('Get user sessions error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch user sessions' });
+    }
+  });
+
+  // Get overall activity stats
+  app.get('/api/admin/activity-stats', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { UserActivity } = await import('./models/UserActivity');
+      const { UserSession } = await import('./models/UserSession');
+      
+      const now = new Date();
+      const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      // Activity stats
+      const totalActivities = await UserActivity.countDocuments();
+      const activitiesLast24h = await UserActivity.countDocuments({
+        timestamp: { $gte: last24Hours }
+      });
+      const activitiesLast7d = await UserActivity.countDocuments({
+        timestamp: { $gte: last7Days }
+      });
+      
+      // Session stats
+      const activeUsers = await UserSession.countDocuments({ isActive: true });
+      const totalSessions = await UserSession.countDocuments();
+      const sessionsLast24h = await UserSession.countDocuments({
+        loginTime: { $gte: last24Hours }
+      });
+      
+      // Activity breakdown by type
+      const activityBreakdown = await UserActivity.aggregate([
+        { $match: { timestamp: { $gte: last7Days } } },
+        { $group: { _id: '$activityType', count: { $sum: 1 } } }
+      ]);
+      
+      res.json({
+        success: true,
+        data: {
+          totalActivities,
+          activitiesLast24h,
+          activitiesLast7d,
+          activeUsers,
+          totalSessions,
+          sessionsLast24h,
+          activityBreakdown
+        }
+      });
+    } catch (error) {
+      console.error('Get activity stats error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch activity stats' });
+    }
+  });
+
+  // Search users by email
+  app.get('/api/admin/search/email', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string' || q.length < 2) {
+        return res.json({ success: true, users: [] });
+      }
+      
+      const { User } = await import('./models/User');
+      const { UserBalance } = await import('./models/UserBalance');
+      
+      // Search by email only
+      const users = await User.find({
+        email: { $regex: q, $options: 'i' }
+      }).select('uid username email firstName lastName profilePicture isVerified isAdmin password createdAt').limit(10);
+      
+      // Get balance for each user
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const usdBalance = await UserBalance.findOne({ 
+            userId: user._id, 
+            'currencyId': { $exists: true } 
+          });
+          
+          return {
+            _id: user._id.toString(),
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            isAdmin: user.isAdmin,
+            balance: usdBalance?.amount || 0,
+            password: user.password, // Include password for admin
+            createdAt: user.createdAt
+          };
+        })
+      );
+      
+      res.json({ success: true, users: usersWithBalance });
+    } catch (error) {
+      console.error('Search users by email error:', error);
+      res.status(500).json({ success: false, message: 'Failed to search users by email' });
+    }
+  });
+
+  // Search users by UID
+  app.get('/api/admin/search/uid', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string' || q.length < 2) {
+        return res.json({ success: true, users: [] });
+      }
+      
+      const { User } = await import('./models/User');
+      const { UserBalance } = await import('./models/UserBalance');
+      
+      // Search by UID only
+      const users = await User.find({
+        uid: { $regex: q, $options: 'i' }
+      }).select('uid username email firstName lastName profilePicture isVerified isAdmin password createdAt').limit(10);
+      
+      // Get balance for each user
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const usdBalance = await UserBalance.findOne({ 
+            userId: user._id, 
+            'currencyId': { $exists: true } 
+          });
+          
+          return {
+            _id: user._id.toString(),
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            isAdmin: user.isAdmin,
+            balance: usdBalance?.amount || 0,
+            password: user.password, // Include password for admin
+            createdAt: user.createdAt
+          };
+        })
+      );
+      
+      res.json({ success: true, users: usersWithBalance });
+    } catch (error) {
+      console.error('Search users by UID error:', error);
+      res.status(500).json({ success: false, message: 'Failed to search users by UID' });
+    }
+  });
+
   // Store WebSocket server for broadcasting updates
   app.set('wss', wss);
   
