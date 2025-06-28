@@ -49,21 +49,6 @@ export interface IUser {
       selfie?: string;
     };
   };
-  verificationData?: {
-    hearAboutUs?: string;
-    dateOfBirth?: { day: number; month: number; year: number };
-    sourceOfIncome?: string;
-    annualIncome?: string;
-    investmentExperience?: string;
-    plannedDeposit?: string;
-    investmentGoal?: string;
-    documentType?: string;
-    documents?: {
-      front?: string;
-      back?: string;
-      single?: string;
-    };
-  };
 }
 
 const UserSchema = new mongoose.Schema({
@@ -110,25 +95,6 @@ const UserSchema = new mongoose.Schema({
       front: String,
       back: String,
       selfie: String
-    }
-  },
-  verificationData: {
-    hearAboutUs: String,
-    dateOfBirth: {
-      day: Number,
-      month: Number,
-      year: Number
-    },
-    sourceOfIncome: String,
-    annualIncome: String,
-    investmentExperience: String,
-    plannedDeposit: String,
-    investmentGoal: String,
-    documentType: String,
-    documents: {
-      front: String,
-      back: String,
-      single: String
     }
   }
 }, {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface QuestionnaireData {
@@ -99,7 +99,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
     if (selectedAnswer) {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
-
+      
       if (isLastQuestion) {
         onNext(answers);
       } else {
@@ -121,15 +121,13 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="w-6 h-6"></div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* Spacer for centering */}
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color, smaller */}
@@ -147,7 +145,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           <h2 className="text-base font-medium text-white text-center mb-2">
             {currentQuestion.title}
           </h2>
-
+          
           {currentQuestion.subtitle && (
             <p className="text-gray-400 text-center mb-8 text-xs">
               {currentQuestion.subtitle}

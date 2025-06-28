@@ -1,6 +1,3 @@
-Adding the cancel button to the header of the Step1HearAbout component.
-```
-```replit_final_file
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -48,15 +45,13 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="w-6 h-6"></div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* Spacer for centering */}
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color, smaller */}
@@ -74,7 +69,7 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           <h2 className="text-base font-medium text-white text-center mb-2">
             How did you hear about Nedaxer?
           </h2>
-
+          
           <p className="text-gray-400 text-center mb-8 text-xs">
             Help us understand how you discovered our platform
           </p>
@@ -122,7 +117,7 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
         >
           {isLoading ? "Loading..." : "Next"}
         </Button>
-
+        
         <Button 
           onClick={handleSkip}
           variant="ghost"
