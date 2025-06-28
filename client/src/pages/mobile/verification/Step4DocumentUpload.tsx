@@ -89,11 +89,11 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
         <div>
           <p className="text-white font-medium">{label}</p>
           {file ? (
-            <p className="text-green-500 text-sm mt-1">✓ {file.name}</p>
+            <p className="text-orange-500 text-sm mt-1">✓ {file.name}</p>
           ) : (
             <button
               onClick={() => inputRef.current?.click()}
-              className="text-green-500 text-sm hover:text-green-400"
+              className="text-orange-500 text-sm hover:text-orange-400"
             >
               Upload document
             </button>
@@ -104,29 +104,29 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
   );
 
   return (
-    <MobileLayout>
-      {/* Header */}
+    <MobileLayout hideBottomNav>
+      {/* Header - No title label */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Verification</h1>
+        <div className="w-6 h-6"></div> {/* Spacer for centering */}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Orange color */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-green-500 h-2 rounded-full w-5/6"></div>
+          <div className="bg-orange-500 h-2 rounded-full w-5/6"></div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 py-8">
-        {/* Title */}
-        <h2 className="text-xl font-bold text-white text-center mb-2">
+        {/* Title - Smaller font */}
+        <h2 className="text-lg font-semibold text-white text-center mb-2">
           {getTitle()}
         </h2>
         
@@ -168,13 +168,13 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
           Please tap "next" to save your documents
         </p>
 
-        {/* Next Button */}
+        {/* Next Button - Orange accent */}
         <Button 
           onClick={handleNext}
           disabled={!canProceed}
-          className={`w-full py-4 text-lg font-semibold rounded-full ${
+          className={`w-full py-4 text-base font-medium rounded-full ${
             canProceed 
-              ? 'bg-green-500 hover:bg-green-600 text-white' 
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
               : 'bg-gray-600 text-gray-400 cursor-not-allowed'
           }`}
         >

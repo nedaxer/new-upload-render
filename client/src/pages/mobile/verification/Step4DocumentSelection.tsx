@@ -45,29 +45,29 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
   };
 
   return (
-    <MobileLayout>
-      {/* Header */}
+    <MobileLayout hideBottomNav>
+      {/* Header - No title label */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Verification</h1>
+        <div className="w-6 h-6"></div> {/* Spacer for centering */}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Orange color */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-green-500 h-2 rounded-full w-5/6"></div>
+          <div className="bg-orange-500 h-2 rounded-full w-5/6"></div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 py-8">
-        {/* Title */}
-        <h2 className="text-xl font-bold text-white text-center mb-2">
+        {/* Title - Smaller font */}
+        <h2 className="text-lg font-semibold text-white text-center mb-2">
           Verify Your Identity
         </h2>
         
@@ -75,7 +75,7 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           Choose your document type
         </p>
 
-        {/* Document Types */}
+        {/* Document Types - Neutral styling */}
         <div className="space-y-4 mb-8">
           {documentTypes.map((docType) => {
             const IconComponent = docType.icon;
@@ -83,12 +83,12 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
               <button
                 key={docType.value}
                 onClick={() => handleSelect(docType.value)}
-                className="w-full p-4 border border-gray-600 rounded-lg text-left hover:border-gray-500 transition-all"
+                className="w-full p-4 border border-gray-600 rounded-lg text-left hover:border-orange-400 transition-all"
               >
                 <div className="flex items-center space-x-4">
                   <IconComponent className="w-6 h-6 text-gray-400" />
                   <div className="flex-1">
-                    <h3 className="text-white font-semibold">{docType.label}</h3>
+                    <h3 className="text-white font-medium">{docType.label}</h3>
                     <p className="text-gray-400 text-sm">{docType.description}</p>
                   </div>
                 </div>

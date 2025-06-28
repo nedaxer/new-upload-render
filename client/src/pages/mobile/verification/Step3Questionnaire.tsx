@@ -110,29 +110,29 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
   const selectedAnswer = answers[currentQuestion.id as keyof QuestionnaireData];
 
   return (
-    <MobileLayout>
-      {/* Header */}
+    <MobileLayout hideBottomNav>
+      {/* Header - No title label */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Questionnaire</h1>
+        <div className="w-6 h-6"></div> {/* Spacer for centering */}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Orange color */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-green-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }}></div>
+          <div className="bg-orange-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }}></div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 py-8">
-        {/* Question Title */}
-        <h2 className="text-xl font-bold text-white text-center mb-2">
+        {/* Question Title - Smaller font */}
+        <h2 className="text-lg font-semibold text-white text-center mb-2">
           {currentQuestion.title}
         </h2>
         
@@ -159,7 +159,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           </div>
         )}
 
-        {/* Options */}
+        {/* Options - Orange accent */}
         <div className="space-y-4 mb-8">
           {currentQuestion.options.map((option) => (
             <button
@@ -167,14 +167,14 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
               onClick={() => handleAnswer(option.value)}
               className={`w-full p-4 rounded-lg text-left transition-all ${
                 selectedAnswer === option.value
-                  ? 'bg-gray-700 text-white border-l-4 border-green-500'
+                  ? 'bg-gray-700 text-white border-l-4 border-orange-500'
                   : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option.label}</span>
                 {selectedAnswer === option.value && (
-                  <div className="w-5 h-5 text-green-500">
+                  <div className="w-5 h-5 text-orange-500">
                     ✓
                   </div>
                 )}
@@ -183,11 +183,11 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           ))}
         </div>
 
-        {/* Next Button (only show if answer selected) */}
+        {/* Next Button - Orange accent (only show if answer selected) */}
         {selectedAnswer && !isLastQuestion && (
           <Button 
             onClick={() => handleAnswer(selectedAnswer)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-lg rounded-full"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-base rounded-full"
           >
             Next
           </Button>
