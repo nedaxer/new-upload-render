@@ -25,17 +25,8 @@ import {
   Copy,
   CheckCircle,
   Clock,
-  UserPlus,
-  Activity,
-  BarChart3,
-  Calendar,
-  Hash,
-  Eye,
-  EyeOff
+  UserPlus
 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 interface AdminUser {
   _id: string;
@@ -47,46 +38,13 @@ interface AdminUser {
   isVerified: boolean;
   isAdmin: boolean;
   balance: number;
-  password?: string;
-  createdAt?: Date;
-}
-
-interface UserActivity {
-  _id: string;
-  userId: string;
-  activityType: 'login' | 'logout' | 'page_view' | 'trade' | 'deposit' | 'withdrawal' | 'transfer';
-  details: {
-    page?: string;
-    ip?: string;
-    userAgent?: string;
-    amount?: number;
-    currency?: string;
-    description?: string;
-  };
-  timestamp: Date;
-}
-
-interface UserSession {
-  _id: string;
-  userId: string;
-  sessionId: string;
-  loginTime: Date;
-  logoutTime?: Date;
-  lastActivity: Date;
-  duration: number;
-  ip: string;
-  userAgent: string;
-  isActive: boolean;
 }
 
 export default function AdminPortal() {
-  const [emailSearchQuery, setEmailSearchQuery] = useState("");
-  const [uidSearchQuery, setUidSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [showPassword, setShowPassword] = useState<{[key: string]: boolean}>({});
 
   // Check admin authentication on mount
   useEffect(() => {
@@ -148,18 +106,11 @@ export default function AdminPortal() {
     },
   });
 
-  // Search users by email
-  const { data: emailSearchResults = [], isLoading: emailSearchLoading } = useQuery({
-    queryKey: ["/api/admin/search/email", emailSearchQuery],
-    enabled: emailSearchQuery.length >= 2 && isAuthenticated,
-    refetchInterval: emailSearchQuery.length > 0 ? 2000 : false,
-  });
-
-  // Search users by UID
-  const { data: uidSearchResults = [], isLoading: uidSearchLoading } = useQuery({
-    queryKey: ["/api/admin/search/uid", uidSearchQuery],
-    enabled: uidSearchQuery.length >= 2 && isAuthenticated,
-    refetchInterval: uidSearchQuery.length > 0 ? 2000 : false,
+  // Search users with real-time updates
+  const { data: searchResults = [], isLoading: searchLoading, refetch: refetchSearch } = useQuery({
+    queryKey: ["/api/admin/users/search", searchQuery],
+    enabled: searchQuery.length > 0 && isAuthenticated,
+    refetchInterval: searchQuery.length > 0 ? 2000 : false, // Refetch every 2 seconds when searching
   });
 
   // Get all users for admin header with auto-refresh
@@ -167,27 +118,6 @@ export default function AdminPortal() {
     queryKey: ["/api/admin/users/all"],
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds
-  });
-
-  // Get user activity for selected user
-  const { data: userActivity } = useQuery({
-    queryKey: ["/api/admin/activity", selectedUser?._id],
-    enabled: !!selectedUser && isAuthenticated,
-    refetchInterval: 5000,
-  });
-
-  // Get user sessions and online time for selected user
-  const { data: userSessions } = useQuery({
-    queryKey: ["/api/admin/sessions", selectedUser?._id],
-    enabled: !!selectedUser && isAuthenticated,
-    refetchInterval: 10000,
-  });
-
-  // Get overall activity stats
-  const { data: activityStats } = useQuery({
-    queryKey: ["/api/admin/activity-stats"],
-    enabled: isAuthenticated,
-    refetchInterval: 30000,
   });
 
   // Copy user ID function
@@ -299,21 +229,13 @@ export default function AdminPortal() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setAdminCredentials({ email: "", password: "" });
-    setEmailSearchQuery("");
-    setUidSearchQuery("");
+    setSearchQuery("");
     setSelectedUser(null);
     toast({
       title: "Logged Out",
       description: "Admin session ended",
       variant: "default",
     });
-  };
-
-  const togglePasswordVisibility = (userId: string) => {
-    setShowPassword(prev => ({
-      ...prev,
-      [userId]: !prev[userId]
-    }));
   };
 
   const handleAddFunds = () => {

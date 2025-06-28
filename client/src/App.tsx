@@ -84,7 +84,7 @@ import LegacyStaking from '@/pages/dashboard/staking';
 import LegacyDeposit from '@/pages/dashboard/deposit';
 
 // Admin Pages
-import AdminPortal from '@/pages/admin-portal-working';
+import AdminPortal from '@/pages/admin-portal';
 
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
