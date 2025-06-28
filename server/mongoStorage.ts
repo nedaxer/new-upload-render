@@ -83,7 +83,7 @@ export class MongoStorage implements IMongoStorage {
         firstName: user.firstName,
         lastName: user.lastName,
         isAdmin: user.isAdmin || false,
-        isVerified: user.isVerified || false,
+        isVerified: false, // Temporarily set to false for testing verification banner
         profilePicture: user.profilePicture || null, // Ensure explicit null if not set
         preferences: user.preferences,
         favorites: user.favorites || [],
@@ -172,7 +172,7 @@ export class MongoStorage implements IMongoStorage {
         password: hashedPassword, // Store hashed password
         firstName: userData.firstName,
         lastName: userData.lastName,
-        isVerified: true, // Set users as verified by default
+        isVerified: false, // Set users as unverified by default for testing
       });
       
       return await newUser.save();

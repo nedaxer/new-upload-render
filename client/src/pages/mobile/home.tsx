@@ -625,11 +625,13 @@ export default function MobileHome() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        {/* Verification Banner */}
-        <VerificationBanner 
-          userName={user?.username || user?.email || 'User'}
-          onVerifyClick={() => navigate('/mobile/verification')}
-        />
+        {/* Verification Banner - Only show for unverified users */}
+        {user && !user.isVerified && (
+          <VerificationBanner 
+            userName={user.firstName || user.username || 'User'}
+            onVerifyClick={() => navigate('/mobile/verification')}
+          />
+        )}
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">

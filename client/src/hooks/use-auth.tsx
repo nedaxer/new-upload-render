@@ -22,6 +22,7 @@ type UserData = Pick<
   | "lastName"
   | "email"
   | "isAdmin"
+  | "isVerified"
   | "profilePicture"
 >;
 
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             lastName: data.lastName,
             email: data.email,
             isAdmin: data.isAdmin,
+            isVerified: data.isVerified,
             profilePicture: data.profilePicture
           };
           return { user: userData };
@@ -130,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         lastName: data.user.lastName,
         email: data.user.email,
         isAdmin: data.user.isAdmin,
+        isVerified: data.user.isVerified,
         profilePicture: data.user.profilePicture
       };
       // Update the auth user data in the cache immediately
@@ -222,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         lastName: data.user.lastName,
         email: data.user.email,
         isAdmin: data.user.isAdmin,
+        isVerified: data.user.isVerified,
         profilePicture: data.user.profilePicture
       };
       // Update the auth user data in the cache immediately
