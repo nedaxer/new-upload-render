@@ -120,70 +120,74 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
         <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
-      {/* Progress Bar - Orange color */}
-      <div className="px-4 py-2">
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full w-5/6"></div>
+      {/* Progress Bar - Orange color, smaller */}
+      <div className="px-4 py-1">
+        <div className="w-full bg-gray-700 rounded-full h-1">
+          <div className="bg-orange-500 h-1 rounded-full w-5/6"></div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-8">
-        {/* Title - Smaller font */}
-        <h2 className="text-base font-medium text-white text-center mb-2">
-          {getTitle()}
-        </h2>
-        
-        {requiresTwoSides && (
-          <p className="text-gray-400 text-center mb-8 text-xs">
-            Two files required. One for each side
-          </p>
-        )}
-
-        {/* Upload Areas */}
-        <div className="space-y-6 mb-8">
-          {isPassport ? (
-            <DocumentUploadBox
-              type="single"
-              label="Upload document"
-              file={files.single}
-              inputRef={singleInputRef}
-            />
-          ) : (
-            <>
-              <DocumentUploadBox
-                type="front"
-                label="Front side"
-                file={files.front}
-                inputRef={frontInputRef}
-              />
-              <DocumentUploadBox
-                type="back"
-                label="Back side"
-                file={files.back}
-                inputRef={backInputRef}
-              />
-            </>
+      <div className="flex-1 flex flex-col px-6">
+        {/* Main content area */}
+        <div className="flex-1 py-8">
+          {/* Title - Smaller font */}
+          <h2 className="text-base font-medium text-white text-center mb-2">
+            {getTitle()}
+          </h2>
+          
+          {requiresTwoSides && (
+            <p className="text-gray-400 text-center mb-8 text-xs">
+              Two files required. One for each side
+            </p>
           )}
+
+          {/* Upload Areas */}
+          <div className="space-y-6">
+            {isPassport ? (
+              <DocumentUploadBox
+                type="single"
+                label="Upload document"
+                file={files.single}
+                inputRef={singleInputRef}
+              />
+            ) : (
+              <>
+                <DocumentUploadBox
+                  type="front"
+                  label="Front side"
+                  file={files.front}
+                  inputRef={frontInputRef}
+                />
+                <DocumentUploadBox
+                  type="back"
+                  label="Back side"
+                  file={files.back}
+                  inputRef={backInputRef}
+                />
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Instructions */}
-        <p className="text-gray-400 text-center mb-8 text-xs">
-          Please tap "next" to save your documents
-        </p>
+        {/* Bottom section with instructions and button */}
+        <div className="pb-8 space-y-4">
+          <p className="text-gray-400 text-center text-xs">
+            Please tap "next" to save your documents
+          </p>
 
-        {/* Next Button - Orange accent with loading */}
-        <Button 
-          onClick={handleNext}
-          disabled={!canProceed || isLoading}
-          className={`w-full py-4 text-sm font-medium rounded-full ${
-            canProceed && !isLoading
-              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {isLoading ? "Loading..." : "Next"}
-        </Button>
+          <Button 
+            onClick={handleNext}
+            disabled={!canProceed || isLoading}
+            className={`w-full py-4 text-sm font-medium rounded-full ${
+              canProceed && !isLoading
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? "Loading..." : "Next"}
+          </Button>
+        </div>
       </div>
     </MobileLayout>
   );

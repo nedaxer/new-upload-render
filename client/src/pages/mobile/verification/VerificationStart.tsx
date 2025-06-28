@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useLocation } from 'wouter';
 import MobileLayout from '@/components/mobile-layout';
 import professionalImage from '@assets/Picsart_25-06-28_15-49-20-738 (1)_1751125238732.png';
 
@@ -12,6 +13,7 @@ interface VerificationStartProps {
 
 export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, onClose }) => {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
 
   // Get user's full name or fallback to username
@@ -28,9 +30,9 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No X button, only back arrow */}
+      {/* Header - Back arrow navigates to home */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
+        <Button variant="ghost" size="sm" onClick={() => setLocation('/mobile')} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}

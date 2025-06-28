@@ -45,10 +45,10 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
         <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
-      {/* Progress Bar - Orange color */}
-      <div className="px-4 py-2">
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full w-3/6"></div>
+      {/* Progress Bar - Orange color, smaller */}
+      <div className="px-4 py-1">
+        <div className="w-full bg-gray-700 rounded-full h-1">
+          <div className="bg-orange-500 h-1 rounded-full w-3/6"></div>
         </div>
       </div>
 

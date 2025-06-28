@@ -54,51 +54,54 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
         <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
-      {/* Progress Bar - Orange color */}
-      <div className="px-4 py-2">
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full w-2/6"></div>
+      {/* Progress Bar - Orange color, smaller */}
+      <div className="px-4 py-1">
+        <div className="w-full bg-gray-700 rounded-full h-1">
+          <div className="bg-orange-500 h-1 rounded-full w-2/6"></div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-8">
-        {/* Title - Smaller font */}
-        <h2 className="text-base font-medium text-white text-center mb-2">
-          How did you hear about Nedaxer?
-        </h2>
-        
-        <p className="text-gray-400 text-center mb-8 text-xs">
-          Help us understand how you discovered our platform
-        </p>
+      <div className="flex-1 flex flex-col px-6">
+        {/* Main content area */}
+        <div className="flex-1 py-8">
+          {/* Title - Smaller font */}
+          <h2 className="text-base font-medium text-white text-center mb-2">
+            How did you hear about Nedaxer?
+          </h2>
+          
+          <p className="text-gray-400 text-center mb-8 text-xs">
+            Help us understand how you discovered our platform
+          </p>
 
-        {/* Options - Orange accent - No automatic navigation */}
-        <div className="space-y-3 mb-8">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setSelectedOption(option.value)}
-              disabled={isLoading}
-              className={`w-full p-4 rounded-lg border text-left transition-all ${
-                selectedOption === option.value
-                  ? 'border-orange-500 bg-orange-500/10 text-white'
-                  : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
-              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{option.label}</span>
-                {selectedOption === option.value && (
-                  <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
+          {/* Options - Orange accent - No automatic navigation */}
+          <div className="space-y-3">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSelectedOption(option.value)}
+                disabled={isLoading}
+                className={`w-full p-4 rounded-lg border text-left transition-all ${
+                  selectedOption === option.value
+                    ? 'border-orange-500 bg-orange-500/10 text-white'
+                    : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{option.label}</span>
+                  {selectedOption === option.value && (
+                    <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Action Buttons - Must tap Next to proceed */}
-        <div className="space-y-3">
+        {/* Action Buttons at bottom */}
+        <div className="pb-8 space-y-3">
           <Button 
             onClick={handleNext}
             disabled={!selectedOption || isLoading}

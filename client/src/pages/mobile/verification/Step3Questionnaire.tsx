@@ -130,80 +130,85 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
         <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
-      {/* Progress Bar - Orange color */}
-      <div className="px-4 py-2">
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-orange-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }}></div>
+      {/* Progress Bar - Orange color, smaller */}
+      <div className="px-4 py-1">
+        <div className="w-full bg-gray-700 rounded-full h-1">
+          <div className="bg-orange-500 h-1 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }}></div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-8">
-        {/* Question Title - Smaller font */}
-        <h2 className="text-base font-medium text-white text-center mb-2">
-          {currentQuestion.title}
-        </h2>
-        
-        {currentQuestion.subtitle && (
-          <p className="text-gray-400 text-center mb-8 text-xs">
-            {currentQuestion.subtitle}
-          </p>
-        )}
+      <div className="flex-1 flex flex-col px-6">
+        {/* Main content area */}
+        <div className="flex-1 py-8">
+          {/* Question Title - Smaller font */}
+          <h2 className="text-base font-medium text-white text-center mb-2">
+            {currentQuestion.title}
+          </h2>
+          
+          {currentQuestion.subtitle && (
+            <p className="text-gray-400 text-center mb-8 text-xs">
+              {currentQuestion.subtitle}
+            </p>
+          )}
 
-        {/* Crypto Icons for investment goal question */}
-        {currentQuestion.id === 'investmentGoal' && (
-          <div className="flex justify-center mb-8">
-            <div className="flex space-x-2">
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 font-bold">Ξ</span>
-              </div>
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 font-bold">₿</span>
-              </div>
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 text-xs">XRP</span>
+          {/* Crypto Icons for investment goal question */}
+          {currentQuestion.id === 'investmentGoal' && (
+            <div className="flex justify-center mb-8">
+              <div className="flex space-x-2">
+                <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
+                  <span className="text-gray-400 font-bold">Ξ</span>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
+                  <span className="text-gray-400 font-bold">₿</span>
+                </div>
+                <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">XRP</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Options - Orange accent - No automatic navigation */}
-        <div className="space-y-4 mb-8">
-          {currentQuestion.options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleAnswer(option.value)}
-              disabled={isLoading}
-              className={`w-full p-4 rounded-lg text-left transition-all ${
-                selectedAnswer === option.value
-                  ? 'bg-gray-700 text-white border-l-4 border-orange-500'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{option.label}</span>
-                {selectedAnswer === option.value && (
-                  <div className="w-5 h-5 text-orange-500">
-                    ✓
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
+          {/* Options - Orange accent - No automatic navigation */}
+          <div className="space-y-4">
+            {currentQuestion.options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleAnswer(option.value)}
+                disabled={isLoading}
+                className={`w-full p-4 rounded-lg text-left transition-all ${
+                  selectedAnswer === option.value
+                    ? 'bg-gray-700 text-white border-l-4 border-orange-500'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{option.label}</span>
+                  {selectedAnswer === option.value && (
+                    <div className="w-5 h-5 text-orange-500">
+                      ✓
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Next Button - Must tap to proceed */}
-        <Button 
-          onClick={handleNext}
-          disabled={!selectedAnswer || isLoading}
-          className={`w-full py-4 text-sm font-medium rounded-full ${
-            selectedAnswer && !isLoading
-              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
-        </Button>
+        {/* Next Button at bottom */}
+        <div className="pb-8">
+          <Button 
+            onClick={handleNext}
+            disabled={!selectedAnswer || isLoading}
+            className={`w-full py-4 text-sm font-medium rounded-full ${
+              selectedAnswer && !isLoading
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
+          </Button>
+        </div>
       </div>
     </MobileLayout>
   );
