@@ -22,6 +22,10 @@ export interface IUser {
   verificationExpiry?: Date;
   resetPasswordCode?: string;
   resetPasswordExpiry?: Date;
+  lastActivity?: Date;
+  onlineTime?: number; // Total online time in minutes
+  sessionStart?: Date;
+  isOnline?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -46,7 +50,11 @@ const UserSchema = new mongoose.Schema({
   verificationCode: String,
   verificationExpiry: Date,
   resetPasswordCode: String,
-  resetPasswordExpiry: Date
+  resetPasswordExpiry: Date,
+  lastActivity: { type: Date, default: Date.now },
+  onlineTime: { type: Number, default: 0 }, // Total online time in minutes
+  sessionStart: Date,
+  isOnline: { type: Boolean, default: false }
 }, {
   timestamps: true
 });

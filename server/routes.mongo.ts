@@ -1731,7 +1731,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin user search
+  // Admin user search by email
+  app.get('/api/admin/users/search/email', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const email = req.query.q as string;
+      if (!email || email.length < 1) {
+        return res.json([]);
+      }
+
+      const { User } = await import('./models/User');
+      const users = await User.find({
+        email: { $regex: email, $options: 'i' }
+      }).select('-password').limit(10);
+
+      const { UserBalance } = await import('./models/UserBalance');
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const balance = await UserBalance.findOne({ userId: user._id.toString() });
+          return {
+            ...user.toObject(),
+            balance: balance?.usdBalance || 0
+          };
+        })
+      );
+
+      res.json(usersWithBalance);
+    } catch (error) {
+      console.error('Admin user email search error:', error);
+      res.status(500).json({ success: false, message: "Failed to search users by email" });
+    }
+  });
+
+  // Admin user search by UID
+  app.get('/api/admin/users/search/uid', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const uid = req.query.q as string;
+      if (!uid || uid.length < 1) {
+        return res.json([]);
+      }
+
+      const { User } = await import('./models/User');
+      const users = await User.find({
+        uid: { $regex: uid, $options: 'i' }
+      }).select('-password').limit(10);
+
+      const { UserBalance } = await import('./models/UserBalance');
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const balance = await UserBalance.findOne({ userId: user._id.toString() });
+          return {
+            ...user.toObject(),
+            balance: balance?.usdBalance || 0
+          };
+        })
+      );
+
+      res.json(usersWithBalance);
+    } catch (error) {
+      console.error('Admin user UID search error:', error);
+      res.status(500).json({ success: false, message: "Failed to search users by UID" });
+    }
+  });
+
+  // Admin user search (legacy endpoint - now searches both email and UID)
   app.get('/api/admin/users/search', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const query = req.query.q as string;
@@ -1754,9 +1816,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { mongoStorage } = await import('./mongoStorage');
       const { User } = await import('./models/User');
       
-      // Get all users with balance info
+      // Get all users with balance info and activity tracking
       const users = await User.find({})
-        .select('uid username email firstName lastName isVerified isAdmin createdAt')
+        .select('uid username email firstName lastName isVerified isAdmin profilePicture lastActivity onlineTime isOnline sessionStart createdAt')
         .sort({ createdAt: -1 })
         .limit(50);
 
@@ -1770,9 +1832,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            profilePicture: user.profilePicture,
             isVerified: user.isVerified,
             isAdmin: user.isAdmin,
             balance: balance || 0,
+            lastActivity: user.lastActivity,
+            onlineTime: user.onlineTime || 0,
+            isOnline: user.isOnline || false,
+            sessionStart: user.sessionStart,
             createdAt: user.createdAt
           };
         })
@@ -1782,6 +1849,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin get all users error:', error);
       res.status(500).json({ success: false, message: "Failed to fetch users" });
+    }
+  });
+
+  // Get user password for admin
+  app.get('/api/admin/users/:userId/password', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { User } = await import('./models/User');
+      
+      const user = await User.findById(userId).select('password username email');
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({
+        success: true,
+        password: user.password,
+        username: user.username,
+        email: user.email
+      });
+    } catch (error) {
+      console.error('Admin get user password error:', error);
+      res.status(500).json({ success: false, message: "Failed to get user password" });
+    }
+  });
+
+  // Track user activity
+  app.post('/api/admin/users/:userId/activity', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { action, data } = req.body;
+      
+      const { User } = await import('./models/User');
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const now = new Date();
+      
+      if (action === 'login') {
+        await User.findByIdAndUpdate(userId, {
+          isOnline: true,
+          sessionStart: now,
+          lastActivity: now
+        });
+      } else if (action === 'logout') {
+        if (user.sessionStart) {
+          const sessionTime = Math.floor((now.getTime() - user.sessionStart.getTime()) / (1000 * 60)); // minutes
+          await User.findByIdAndUpdate(userId, {
+            isOnline: false,
+            onlineTime: (user.onlineTime || 0) + sessionTime,
+            lastActivity: now,
+            $unset: { sessionStart: 1 }
+          });
+        }
+      } else {
+        await User.findByIdAndUpdate(userId, {
+          lastActivity: now
+        });
+      }
+
+      res.json({ success: true, message: "Activity tracked" });
+    } catch (error) {
+      console.error('Admin track activity error:', error);
+      res.status(500).json({ success: false, message: "Failed to track activity" });
+    }
+  });
+
+  // Get user activity analytics
+  app.get('/api/admin/users/analytics', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { User } = await import('./models/User');
+      
+      const now = new Date();
+      const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const [
+        totalUsers,
+        onlineUsers,
+        activeUsers24h,
+        activeUsers7d,
+        topActiveUsers
+      ] = await Promise.all([
+        User.countDocuments({}),
+        User.countDocuments({ isOnline: true }),
+        User.countDocuments({ lastActivity: { $gte: last24Hours } }),
+        User.countDocuments({ lastActivity: { $gte: last7Days } }),
+        User.find({})
+          .select('username email onlineTime lastActivity isOnline')
+          .sort({ onlineTime: -1 })
+          .limit(10)
+      ]);
+
+      res.json({
+        success: true,
+        analytics: {
+          totalUsers,
+          onlineUsers,
+          activeUsers24h,
+          activeUsers7d,
+          topActiveUsers
+        }
+      });
+    } catch (error) {
+      console.error('Admin analytics error:', error);
+      res.status(500).json({ success: false, message: "Failed to get analytics" });
     }
   });
 
@@ -1808,6 +1984,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin add funds error:', error);
       res.status(500).json({ success: false, message: "Failed to add funds" });
+    }
+  });
+
+  // Admin remove funds
+  app.post('/api/admin/users/remove-funds', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, amount } = req.body;
+      
+      if (!userId || !amount || amount <= 0) {
+        return res.status(400).json({ success: false, message: "Valid user ID and amount required" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      await mongoStorage.removeFundsFromUser(userId, parseFloat(amount));
+      
+      console.log(`✓ Admin removed $${amount} from user ${userId}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully removed $${amount} from user account`
+      });
+    } catch (error) {
+      console.error('Admin remove funds error:', error);
+      res.status(500).json({ success: false, message: "Failed to remove funds" });
     }
   });
 

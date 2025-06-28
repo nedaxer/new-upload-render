@@ -83,9 +83,6 @@ import Trade from '@/pages/dashboard/trade';
 import LegacyStaking from '@/pages/dashboard/staking';
 import LegacyDeposit from '@/pages/dashboard/deposit';
 
-// Admin Pages
-import AdminPortal from '@/pages/admin-portal';
-
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
 import MobileAssets from '@/pages/mobile/assets';
@@ -110,6 +107,10 @@ import DepositDetails from '@/pages/mobile/deposit-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
 
+
+// Admin Pages
+import AdminPortal from '@/pages/admin-portal';
+import AdminPortalEnhanced from '@/pages/admin-portal-enhanced';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -289,8 +290,9 @@ export default function App() {
             <Route path="/mobile/transfer" component={Transfer} />
 
 
-            {/* Admin Portal Route */}
-            <Route path="/admin-portal" component={AdminPortal} />
+            {/* Admin Portal Routes */}
+            <Route path="/admin-portal" component={AdminPortalEnhanced} />
+            <Route path="/admin-portal-enhanced" component={AdminPortalEnhanced} />
 
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />

@@ -524,6 +524,67 @@ export class MongoStorage implements IMongoStorage {
         currencyId: usdCurrency._id 
       });
       
+      if (!existingBalance) {
+        throw new Error('User balance not found');
+      }
+
+      const currentAmount = existingBalance.amount || 0;
+      if (currentAmount < amount) {
+        throw new Error(`Insufficient funds. Current balance: $${currentAmount}, Requested removal: $${amount}`);
+      }
+
+      const newAmount = currentAmount - amount;
+      
+      await UserBalance.findOneAndUpdate(
+        { userId: userId, currencyId: usdCurrency._id },
+        { amount: newAmount, updatedAt: new Date() },
+        { new: true }
+      );
+      
+      console.log(`✅ UserBalance updated: $${currentAmount} → $${newAmount}`);
+
+      // Also update User.balance field for consistency
+      const currentUserBalance = user.balance || 0;
+      const newUserBalance = Math.max(0, currentUserBalance - amount);
+      
+      await User.findByIdAndUpdate(userId, { 
+        balance: newUserBalance 
+      }, { new: true });
+      
+      console.log(`✅ User.balance updated: $${currentUserBalance} → $${newUserBalance}`);
+      
+    } catch (error) {
+      console.error('❌ Error removing funds from user:', error);
+      throw error;
+    }
+  }
+
+  async removeFundsFromUser(userId: string, amount: number): Promise<void> {
+    try {
+      const { User } = await import('./models/User');
+      const { UserBalance } = await import('./models/UserBalance');
+      const { Currency } = await import('./models/Currency');
+      
+      console.log(`💸 Removing $${amount} from user ${userId}`);
+      
+      // Get current user
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Find USD currency
+      const usdCurrency = await Currency.findOne({ symbol: 'USD' });
+      if (!usdCurrency) {
+        throw new Error('USD currency not found');
+      }
+
+      // Get current balance from UserBalance collection
+      const existingBalance = await UserBalance.findOne({ 
+        userId: userId, 
+        currencyId: usdCurrency._id 
+      });
+      
       const currentAmount = existingBalance?.amount || 0;
       
       // Check if user has sufficient funds
