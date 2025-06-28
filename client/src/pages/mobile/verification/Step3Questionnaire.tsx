@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface QuestionnaireData {
@@ -83,6 +83,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<QuestionnaireData>(initialValue || {});
+  const [isLoading, setIsLoading] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
@@ -91,11 +92,20 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
   const handleAnswer = (value: string) => {
     const newAnswers = { ...answers, [currentQuestion.id]: value };
     setAnswers(newAnswers);
+  };
 
-    if (isLastQuestion) {
-      onNext(newAnswers);
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleNext = async () => {
+    const selectedAnswer = answers[currentQuestion.id as keyof QuestionnaireData];
+    if (selectedAnswer) {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      if (isLastQuestion) {
+        onNext(answers);
+      } else {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -111,15 +121,13 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No title label */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color */}
@@ -159,17 +167,18 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           </div>
         )}
 
-        {/* Options - Orange accent */}
+        {/* Options - Orange accent - No automatic navigation */}
         <div className="space-y-4 mb-8">
           {currentQuestion.options.map((option) => (
             <button
               key={option.value}
               onClick={() => handleAnswer(option.value)}
+              disabled={isLoading}
               className={`w-full p-4 rounded-lg text-left transition-all ${
                 selectedAnswer === option.value
                   ? 'bg-gray-700 text-white border-l-4 border-orange-500'
                   : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-              }`}
+              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option.label}</span>
@@ -183,15 +192,18 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           ))}
         </div>
 
-        {/* Next Button - Orange accent (only show if answer selected) */}
-        {selectedAnswer && !isLastQuestion && (
-          <Button 
-            onClick={() => handleAnswer(selectedAnswer)}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-base rounded-full"
-          >
-            Next
-          </Button>
-        )}
+        {/* Next Button - Must tap to proceed */}
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedAnswer || isLoading}
+          className={`w-full py-4 text-base font-medium rounded-full ${
+            selectedAnswer && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
+        </Button>
       </div>
     </MobileLayout>
   );

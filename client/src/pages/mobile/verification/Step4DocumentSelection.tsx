@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X, FileText, CreditCard, Home } from 'lucide-react';
+import { ArrowLeft, FileText, CreditCard, Home } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface Step4DocumentSelectionProps {
@@ -38,23 +38,29 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
   initialValue 
 }) => {
   const [selectedType, setSelectedType] = useState(initialValue || '');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSelect = (type: string) => {
     setSelectedType(type);
-    onNext(type);
+  };
+
+  const handleNext = async () => {
+    if (selectedType) {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 600));
+      onNext(selectedType);
+    }
   };
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No title label */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color */}
@@ -75,7 +81,7 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           Choose your document type
         </p>
 
-        {/* Document Types - Neutral styling */}
+        {/* Document Types - No automatic navigation */}
         <div className="space-y-4 mb-8">
           {documentTypes.map((docType) => {
             const IconComponent = docType.icon;
@@ -83,7 +89,12 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
               <button
                 key={docType.value}
                 onClick={() => handleSelect(docType.value)}
-                className="w-full p-4 border border-gray-600 rounded-lg text-left hover:border-orange-400 transition-all"
+                disabled={isLoading}
+                className={`w-full p-4 border rounded-lg text-left transition-all ${
+                  selectedType === docType.value
+                    ? 'border-orange-500 bg-orange-500/10'
+                    : 'border-gray-600 hover:border-orange-400'
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center space-x-4">
                   <IconComponent className="w-6 h-6 text-gray-400" />
@@ -91,11 +102,27 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
                     <h3 className="text-white font-medium">{docType.label}</h3>
                     <p className="text-gray-400 text-sm">{docType.description}</p>
                   </div>
+                  {selectedType === docType.value && (
+                    <div className="w-5 h-5 text-orange-500">✓</div>
+                  )}
                 </div>
               </button>
             );
           })}
         </div>
+
+        {/* Next Button - Must tap to proceed */}
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedType || isLoading}
+          className={`w-full py-4 text-base font-medium rounded-full mb-4 ${
+            selectedType && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
 
         {/* Security Notice */}
         <div className="bg-gray-800/50 p-4 rounded-lg">

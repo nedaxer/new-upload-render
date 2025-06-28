@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface Step1HearAboutProps {
@@ -26,28 +26,32 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
   initialValue 
 }) => {
   const [selectedOption, setSelectedOption] = useState(initialValue || '');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (selectedOption) {
+      setIsLoading(true);
+      // Add loading delay for professional UX
+      await new Promise(resolve => setTimeout(resolve, 600));
       onNext(selectedOption);
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
     onNext('');
   };
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No title label */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color */}
@@ -68,17 +72,18 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           Help us understand how you discovered our platform
         </p>
 
-        {/* Options - Orange accent */}
+        {/* Options - Orange accent - No automatic navigation */}
         <div className="space-y-3 mb-8">
           {options.map((option) => (
             <button
               key={option.value}
               onClick={() => setSelectedOption(option.value)}
+              disabled={isLoading}
               className={`w-full p-4 rounded-lg border text-left transition-all ${
                 selectedOption === option.value
                   ? 'border-orange-500 bg-orange-500/10 text-white'
                   : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
-              }`}
+              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{option.label}</span>
@@ -92,26 +97,27 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           ))}
         </div>
 
-        {/* Action Buttons - Orange accent */}
+        {/* Action Buttons - Must tap Next to proceed */}
         <div className="space-y-3">
           <Button 
             onClick={handleNext}
-            disabled={!selectedOption}
+            disabled={!selectedOption || isLoading}
             className={`w-full py-4 text-base font-medium rounded-full ${
-              selectedOption 
+              selectedOption && !isLoading
                 ? 'bg-orange-500 hover:bg-orange-600 text-white' 
                 : 'bg-gray-600 text-gray-400 cursor-not-allowed'
             }`}
           >
-            Next
+            {isLoading ? "Loading..." : "Next"}
           </Button>
           
           <Button 
             onClick={handleSkip}
             variant="ghost"
-            className="w-full py-4 text-base text-gray-400 hover:text-white"
+            disabled={isLoading}
+            className="w-full py-4 text-base text-gray-400 hover:text-white disabled:opacity-50"
           >
-            Skip
+            {isLoading ? "Loading..." : "Skip"}
           </Button>
         </div>
       </div>

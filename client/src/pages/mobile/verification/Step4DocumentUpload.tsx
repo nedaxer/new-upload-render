@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X, Upload } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface DocumentFiles {
@@ -49,10 +49,16 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
     setFiles(prev => ({ ...prev, [type]: file }));
   };
 
-  const handleNext = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleNext = async () => {
     if (isPassport && files.single) {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 600));
       onNext({ single: files.single });
     } else if (requiresTwoSides && files.front && files.back) {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 600));
       onNext({ front: files.front, back: files.back });
     }
   };
@@ -105,15 +111,13 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No title label */}
+      {/* Header - No X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
+        <div className="w-6 h-6"></div> {/* No X button */}
       </div>
 
       {/* Progress Bar - Orange color */}
@@ -168,17 +172,17 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
           Please tap "next" to save your documents
         </p>
 
-        {/* Next Button - Orange accent */}
+        {/* Next Button - Orange accent with loading */}
         <Button 
           onClick={handleNext}
-          disabled={!canProceed}
+          disabled={!canProceed || isLoading}
           className={`w-full py-4 text-base font-medium rounded-full ${
-            canProceed 
+            canProceed && !isLoading
               ? 'bg-orange-500 hover:bg-orange-600 text-white' 
               : 'bg-gray-600 text-gray-400 cursor-not-allowed'
           }`}
         >
-          Next
+          {isLoading ? "Loading..." : "Next"}
         </Button>
       </div>
     </MobileLayout>
