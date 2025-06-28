@@ -93,7 +93,9 @@ export default function TransferDetails() {
     );
   }
 
-  const isReceived = transfer.toUserId === (user as any)?._id;
+  // Use the type field from the API response which correctly determines sent/received
+  const isReceived = transfer.type === 'received';
+
   const otherUser = isReceived 
     ? { name: transfer.senderName, id: transfer.fromUserId }
     : { name: transfer.recipientName, id: transfer.toUserId };

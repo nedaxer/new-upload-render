@@ -626,10 +626,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Determine if current user is sender or recipient
+      const isSender = transfer.fromUserId._id.toString() === userId;
+      
       // Format transfer for frontend
       const formattedTransfer = {
         _id: transfer._id,
         transactionId: transfer.transactionId,
+        type: isSender ? 'sent' : 'received',
         amount: transfer.amount,
         currency: transfer.currency,
         status: transfer.status,
