@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { VerificationStore } from '@/stores/verification-store';
 
 // Import all verification components
 import { VerificationStart } from './VerificationStart';
@@ -46,6 +47,18 @@ export const VerificationFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<VerificationStep>('start');
   const [verificationData, setVerificationData] = useState<VerificationData>({});
 
+  // Initialize verification flow with resume capability
+  useEffect(() => {
+    const canResume = VerificationStore.canResume();
+    if (canResume) {
+      const progress = VerificationStore.getProgress();
+      if (progress) {
+        setCurrentStep(VerificationStore.getResumeStep() as VerificationStep);
+        setVerificationData(progress.formData);
+      }
+    }
+  }, []);
+
   // Submit verification mutation
   const submitVerificationMutation = useMutation({
     mutationFn: async (data: VerificationData) => {
@@ -82,6 +95,10 @@ export const VerificationFlow: React.FC = () => {
       });
     },
     onSuccess: () => {
+      // Mark verification as completed and clear progress
+      VerificationStore.markCompleted();
+      VerificationStore.clearProgress();
+      
       // Invalidate user data to refresh verification status
       queryClient.invalidateQueries({ queryKey: ['/api/user/me'] });
       queryClient.invalidateQueries({ queryKey: ['/api/verification/status'] });
@@ -106,6 +123,9 @@ export const VerificationFlow: React.FC = () => {
       setVerificationData(prev => ({ ...prev, ...data }));
     }
     setCurrentStep(step);
+    
+    // Save progress to localStorage for resume functionality
+    VerificationStore.updateStep(step, data);
   };
 
   const handleSubmit = (documents: any) => {

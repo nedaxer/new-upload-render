@@ -634,11 +634,12 @@ export default function MobileHome() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Verification Banner - Only show for unverified users who haven't submitted KYC */}
-        {user && !user.isVerified && kycStatus?.data?.kycStatus !== 'pending' && kycStatus?.data?.kycStatus !== 'verified' && (
+        {user && !user.isVerified && (
           <VerificationBanner 
             userName={user.firstName || user.username || 'User'}
             onVerifyClick={() => navigate('/mobile/verification')}
             questionsCompleted={kycStatus?.data?.kycData?.sourceOfIncome ? true : false}
+            kycStatus={kycStatus?.data?.kycStatus || 'none'}
           />
         )}
         

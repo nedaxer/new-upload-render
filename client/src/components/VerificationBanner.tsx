@@ -6,20 +6,26 @@ interface VerificationBannerProps {
   userName: string;
   onVerifyClick: () => void;
   questionsCompleted?: boolean;
+  kycStatus?: 'none' | 'pending' | 'verified' | 'rejected';
 }
 
 export const VerificationBanner: React.FC<VerificationBannerProps> = ({ 
   userName, 
   onVerifyClick,
-  questionsCompleted = false 
+  questionsCompleted = false,
+  kycStatus = 'none'
 }) => {
+  // Hide banner when KYC is submitted (pending) or verified
+  if (kycStatus === 'pending' || kycStatus === 'verified') {
+    return null;
+  }
   return (
     <div className="mx-4 mb-4 p-4 bg-orange-500 rounded-lg shadow-lg">
       {/* Progress indicators */}
       <div className="flex items-center justify-center mb-4 space-x-4">
         {/* Step 1 - Questions (always completed when shown) */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500">
-          <Check className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#0a0a2e]">
+          <Check className="w-6 h-6 text-green-500" />
         </div>
         
         <div className="w-8 h-1 bg-gray-300 rounded"></div>

@@ -97,7 +97,7 @@ import MobileInviteFriends from '@/pages/mobile/invite-friends';
 import MobileNotifications from '@/pages/mobile/notifications';
 import NotificationSettings from '@/pages/mobile/notification-settings';
 import Chatbot from '@/pages/mobile/chatbot';
-import MobileKYC from '@/pages/mobile/kyc';
+
 import MobileNews from '@/pages/mobile/news';
 import MobileSettings from '@/pages/mobile/settings';
 import MobileSecurity from '@/pages/mobile/security';
@@ -275,7 +275,7 @@ export default function App() {
             <Route path="/mobile/notifications" component={MobileNotifications} />
             <Route path="/mobile/notification-settings" component={NotificationSettings} />
             <Route path="/mobile/chatbot" component={Chatbot} />
-            <Route path="/mobile/kyc" component={MobileKYC} />
+
             <Route path="/mobile/news" component={MobileNews} />
             <Route path="/mobile/settings" component={MobileSettings} />
             <Route path="/mobile/security" component={MobileSecurity} />
