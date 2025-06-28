@@ -62,15 +62,10 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
             We just need to collect some details to fully activate your account.
           </p>
 
-          {/* Disclaimer */}
-          <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
-            We rely on you for accurate information. Keep us informed of any material changes. 
-            We may not be able to provide our services when you choose not to provide the required information.
-          </p>
-        </div>
+          </div>
 
         {/* Bottom Button Area */}
-        <div className="pb-8">
+        <div className="pb-4">
           <Button 
             onClick={handleNext}
             disabled={isLoading}
@@ -78,6 +73,14 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           >
             {isLoading ? "Loading..." : "Let's Do It"}
           </Button>
+        </div>
+
+        {/* Disclaimer at very bottom */}
+        <div className="pb-8">
+          <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
+            We rely on you for accurate information. Keep us informed of any material changes. 
+            We may not be able to provide our services when you choose not to provide the required information.
+          </p>
         </div>
       </div>
     </MobileLayout>
