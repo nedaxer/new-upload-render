@@ -233,7 +233,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className={`font-medium text-sm ${isSent ? 'text-red-400' : 'text-green-400'}`}>
+                          <p className="font-medium text-sm text-green-400">
                             {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-gray-400 text-xs">

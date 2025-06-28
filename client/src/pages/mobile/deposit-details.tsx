@@ -70,16 +70,16 @@ export default function DepositDetails() {
           <Link href="/mobile/assets-history">
             <ArrowLeft className="w-6 h-6 text-white" />
           </Link>
-          <h1 className="text-lg font-semibold">Deposit Details</h1>
+          <h1 className="text-base font-medium">Deposit Details</h1>
           <div className="w-6 h-6" />
         </div>
         
-        <div className="px-4 pt-8">
-          <Card className="bg-[#1a1a40] border-[#2a2a50] p-6 animate-pulse">
-            <div className="text-center space-y-4">
-              <div className="h-6 bg-gray-700 rounded w-32 mx-auto"></div>
-              <div className="h-8 bg-gray-700 rounded w-48 mx-auto"></div>
+        <div className="px-4 pt-6">
+          <Card className="bg-[#1a1a40] border-[#2a2a50] p-5 animate-pulse">
+            <div className="text-center space-y-3">
               <div className="h-4 bg-gray-700 rounded w-24 mx-auto"></div>
+              <div className="h-6 bg-gray-700 rounded w-40 mx-auto"></div>
+              <div className="h-3 bg-gray-700 rounded w-20 mx-auto"></div>
             </div>
           </Card>
         </div>
@@ -94,13 +94,13 @@ export default function DepositDetails() {
           <Link href="/mobile/assets-history">
             <ArrowLeft className="w-6 h-6 text-white" />
           </Link>
-          <h1 className="text-lg font-semibold">Deposit Details</h1>
+          <h1 className="text-base font-medium">Deposit Details</h1>
           <div className="w-6 h-6" />
         </div>
         
-        <div className="px-4 pt-8">
+        <div className="px-4 pt-6">
           <div className="text-center">
-            <p className="text-gray-400">Transaction not found</p>
+            <p className="text-gray-400 text-sm">Transaction not found</p>
           </div>
         </div>
       </div>
@@ -114,20 +114,20 @@ export default function DepositDetails() {
         <Link href="/mobile/assets-history">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">Deposit Details</h1>
+        <h1 className="text-base font-medium">Deposit Details</h1>
         <div className="w-6 h-6" />
       </div>
 
       {/* Quantity Section */}
-      <div className="px-4 pt-8 pb-6">
+      <div className="px-4 pt-6 pb-5">
         <div className="text-center">
-          <p className="text-gray-400 text-sm mb-2">Quantity</p>
-          <h2 className="text-white text-2xl font-bold mb-4">
+          <p className="text-gray-400 text-xs mb-2">Quantity</p>
+          <h2 className="text-white text-xl font-semibold mb-3">
             {transaction.cryptoAmount.toFixed(8)} {transaction.cryptoSymbol}
           </h2>
           <div className="flex items-center justify-center">
-            <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
-            <span className="text-green-400 text-sm font-medium">Succeeded</span>
+            <CheckCircle className="w-3 h-3 text-green-400 mr-2" />
+            <span className="text-green-400 text-xs font-medium">Succeeded</span>
           </div>
         </div>
       </div>
@@ -136,25 +136,25 @@ export default function DepositDetails() {
       <div className="px-4 space-y-0">
         {/* Row 1 */}
         <div className="flex border-b border-gray-700">
-          <div className="flex-1 py-4 pr-2">
-            <p className="text-gray-400 text-sm mb-1">Deposit Account</p>
-            <p className="text-white text-sm">{transaction.cryptoSymbol}</p>
+          <div className="flex-1 py-3 pr-2">
+            <p className="text-gray-400 text-xs mb-1">Deposit Account</p>
+            <p className="text-white text-xs">{transaction.cryptoSymbol}</p>
           </div>
-          <div className="flex-1 py-4 pl-2">
-            <p className="text-gray-400 text-sm mb-1">Funding Account</p>
-            <p className="text-white text-sm">{transaction.cryptoSymbol} ({transaction.cryptoSymbol})</p>
+          <div className="flex-1 py-3 pl-2">
+            <p className="text-gray-400 text-xs mb-1">Funding Account</p>
+            <p className="text-white text-xs">{transaction.cryptoSymbol} ({transaction.cryptoSymbol})</p>
           </div>
         </div>
 
         {/* Row 2 */}
         <div className="flex border-b border-gray-700">
-          <div className="flex-1 py-4 pr-2">
-            <p className="text-gray-400 text-sm mb-1">Chain Type</p>
-            <p className="text-white text-sm">{transaction.chainType}</p>
+          <div className="flex-1 py-3 pr-2">
+            <p className="text-gray-400 text-xs mb-1">Chain Type</p>
+            <p className="text-white text-xs">{transaction.chainType}</p>
           </div>
-          <div className="flex-1 py-4 pl-2">
-            <p className="text-gray-400 text-sm mb-1">Time</p>
-            <p className="text-white text-sm">
+          <div className="flex-1 py-3 pl-2">
+            <p className="text-gray-400 text-xs mb-1">Time</p>
+            <p className="text-white text-xs">
               {new Date(transaction.createdAt).toLocaleDateString('en-US', {
                 month: '2-digit',
                 day: '2-digit',
@@ -170,16 +170,16 @@ export default function DepositDetails() {
 
         {/* Row 3 */}
         <div className="border-b border-gray-700">
-          <div className="py-4">
-            <p className="text-gray-400 text-sm mb-2">Deposit Address</p>
+          <div className="py-3">
+            <p className="text-gray-400 text-xs mb-2">Deposit Address</p>
             <div className="flex items-center justify-between">
-              <p className="text-white text-sm font-mono break-all pr-2">
+              <p className="text-white text-xs font-mono break-all pr-2">
                 {generateLongTransactionId(transaction._id)}
               </p>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
+                className="h-5 w-5 p-0 text-gray-400 hover:text-white flex-shrink-0"
                 onClick={() => copyToClipboard(generateLongTransactionId(transaction._id))}
               >
                 {copied ? (
@@ -194,15 +194,15 @@ export default function DepositDetails() {
 
         {/* Row 4 */}
         <div className="flex">
-          <div className="flex-1 py-4 pr-2">
-            <p className="text-gray-400 text-sm mb-1">USD Value</p>
-            <p className="text-green-400 text-sm font-medium">
+          <div className="flex-1 py-3 pr-2">
+            <p className="text-gray-400 text-xs mb-1">USD Value</p>
+            <p className="text-green-400 text-xs font-medium">
               ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
-          <div className="flex-1 py-4 pl-2">
-            <p className="text-gray-400 text-sm mb-1">Network</p>
-            <p className="text-blue-400 text-sm">{transaction.networkName}</p>
+          <div className="flex-1 py-3 pl-2">
+            <p className="text-gray-400 text-xs mb-1">Network</p>
+            <p className="text-blue-400 text-xs">{transaction.networkName}</p>
           </div>
         </div>
       </div>
