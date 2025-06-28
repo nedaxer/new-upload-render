@@ -194,7 +194,7 @@ export default function Transfer() {
         <Link href="/mobile/assets">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold text-white">Send USD</h1>
+        <h1 className="text-base font-medium text-white">Send USD</h1>
         <div className="flex items-center space-x-3">
           <HelpCircle className="w-5 h-5 text-gray-400" />
           <Copy className="w-5 h-5 text-gray-400" />
@@ -206,7 +206,7 @@ export default function Transfer() {
         {/* Send Method Selection */}
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Label className="text-white text-sm font-medium">Send Mode</Label>
+            <Label className="text-white text-xs font-medium">Send Mode</Label>
             <HelpCircle className="w-4 h-4 text-gray-400" />
           </div>
           
@@ -224,7 +224,7 @@ export default function Transfer() {
         {/* Recipient Input - Only show after method selected */}
         {selectedMethod && (
           <div className="space-y-2">
-            <Label className="text-white text-sm font-medium">
+            <Label className="text-white text-xs font-medium">
               {selectedMethod === 'email' ? 'Email' : 'Nedaxer UID'}
             </Label>
             <Input
@@ -237,7 +237,7 @@ export default function Transfer() {
             {isSearching && (
               <div className="flex items-center space-x-2 text-gray-400">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Searching...</span>
+                <span className="text-xs">Searching...</span>
               </div>
             )}
             
@@ -257,7 +257,7 @@ export default function Transfer() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-white text-sm">
+                    <div className="font-medium text-white text-xs">
                       {recipientInfo.firstName} {recipientInfo.lastName}
                     </div>
                     <div className="text-xs text-gray-400">@{recipientInfo.username}</div>
@@ -275,25 +275,25 @@ export default function Transfer() {
 
         {/* Transfer Amount */}
         <div className="space-y-2">
-          <Label className="text-white text-sm font-medium">Withdraw Amount</Label>
+          <Label className="text-white text-xs font-medium">Withdraw Amount</Label>
           <div className="relative">
             <Input
               type="number"
               placeholder="0.00"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 pr-20 text-lg"
+              className="h-12 bg-[#1a1a40] border border-gray-600 text-white placeholder-gray-500 pr-20 text-base"
               step="0.01"
               min="0"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
               <Button
                 onClick={setMaxAmount}
-                className="bg-transparent hover:bg-gray-600 text-white text-sm px-2 py-1 h-6 border border-gray-500"
+                className="bg-transparent hover:bg-gray-600 text-white text-xs px-2 py-1 h-6 border border-gray-500"
               >
                 Max
               </Button>
-              <span className="text-white text-sm">USD</span>
+              <span className="text-white text-xs">USD</span>
             </div>
           </div>
 
@@ -304,7 +304,7 @@ export default function Transfer() {
 
         {/* Note */}
         <div className="space-y-2">
-          <Label className="text-white text-sm font-medium">Note (Optional)</Label>
+          <Label className="text-white text-xs font-medium">Note (Optional)</Label>
           <Textarea
             placeholder="Add a note for the recipient"
             value={note}

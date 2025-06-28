@@ -143,7 +143,7 @@ export default function AssetsHistory() {
         <Link href={getBackPath()}>
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">Asset History</h1>
+        <h1 className="text-base font-medium">Asset History</h1>
         <div className="w-6 h-6" />
       </div>
 
@@ -154,7 +154,7 @@ export default function AssetsHistory() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap pb-2 px-2 text-sm ${
+              className={`whitespace-nowrap pb-2 px-2 text-xs ${
                 activeTab === tab
                   ? 'text-orange-500 border-b-2 border-orange-500'
                   : 'text-gray-400 hover:text-white'
@@ -196,8 +196,8 @@ export default function AssetsHistory() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-gray-400 text-center">No transaction history</p>
-            <p className="text-gray-500 text-sm text-center mt-1">
+            <p className="text-gray-400 text-center text-sm">No transaction history</p>
+            <p className="text-gray-500 text-xs text-center mt-1">
               Your transactions will appear here
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function AssetsHistory() {
                   <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
                     <div className="flex justify-between items-center">
                       <div className="flex-1">
-                        <p className="text-white font-medium text-sm">
+                        <p className="text-white font-medium text-xs">
                           {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
                         </p>
                         <p className="text-gray-400 text-xs">
@@ -233,7 +233,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className="font-medium text-sm text-green-400">
+                          <p className="font-medium text-xs text-green-400">
                             {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-gray-400 text-xs">
@@ -256,7 +256,7 @@ export default function AssetsHistory() {
                   <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
                     <div className="flex justify-between items-center">
                       <div className="flex-1">
-                        <p className="text-white font-medium text-sm">
+                        <p className="text-white font-medium text-xs">
                           {transaction.cryptoSymbol} Deposit
                         </p>
                         <p className="text-gray-400 text-xs">
@@ -270,7 +270,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className="text-green-400 font-medium text-sm">
+                          <p className="text-green-400 font-medium text-xs">
                             +{transaction.cryptoAmount.toFixed(6)}
                           </p>
                           <p className="text-gray-400 text-xs">
