@@ -97,8 +97,10 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
           ))}
         </div>
 
-        {/* Action Buttons - Must tap Next to proceed */}
-        <div className="space-y-3">
+        </div>
+
+        {/* Action Buttons at bottom - Must tap Next to proceed */}
+        <div className="space-y-3 pb-8">
           <Button 
             onClick={handleNext}
             disabled={!selectedOption || isLoading}
