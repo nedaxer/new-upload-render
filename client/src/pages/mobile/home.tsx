@@ -100,18 +100,28 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Fetch wallet summary
+  // Fetch wallet summary with instant localStorage fallback
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['/api/wallet/summary'],
     queryFn: async () => {
       const response = await fetch('/api/wallet/summary');
       if (!response.ok) throw new Error('Failed to fetch wallet summary');
       const result = await response.json();
+      // Cache in localStorage for instant loading
+      localStorage.setItem('walletSummary', JSON.stringify(result.data));
       return result.data;
     },
     enabled: !!user,
-    staleTime: 30 * 1000, // 30 seconds
-    retry: 3
+    staleTime: 60 * 1000, // 1 minute - longer cache
+    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+    retry: 1, // Reduce retries for faster response
+    refetchOnWindowFocus: false, // Don't refetch on focus
+    refetchOnReconnect: false, // Don't refetch on reconnect
+    placeholderData: () => {
+      // Use cached data immediately for instant display
+      const cached = localStorage.getItem('walletSummary');
+      return cached ? JSON.parse(cached) : undefined;
+    }
   });
   const { data: priceData, isLoading: priceLoading, isOffline: pricesOffline } = useOfflineCryptoPrices();
   const { data: userFavorites, isOffline: favoritesOffline } = useOfflineFavorites();
@@ -701,11 +711,17 @@ export default function MobileHome() {
 
         <div className="mb-2">
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white">
-              {showBalance ? (
-                user ? `${getCurrencySymbol(selectedCurrency)}${parseFloat(convertToSelectedCurrency(getUserUSDBalance())).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
-              ) : '****'}
-            </span>
+            {walletLoading ? (
+              <div className="animate-pulse">
+                <div className="h-9 bg-gray-700 rounded w-32"></div>
+              </div>
+            ) : (
+              <span className="text-3xl font-bold text-white">
+                {showBalance ? (
+                  user ? `${getCurrencySymbol(selectedCurrency)}${parseFloat(convertToSelectedCurrency(getUserUSDBalance())).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${getCurrencySymbol(selectedCurrency)}0.00`
+                ) : '****'}
+              </span>
+            )}
             <button 
               onClick={() => setCurrentView('currency-selection')}
               className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors"
@@ -715,10 +731,16 @@ export default function MobileHome() {
             </button>
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-400">
-            <span>≈ {showBalance ? 
-              (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
-              '********'
-            } BTC</span>
+            {walletLoading ? (
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-700 rounded w-24"></div>
+              </div>
+            ) : (
+              <span>≈ {showBalance ? 
+                (user ? convertUSDToBTC(getUserUSDBalance()).toFixed(8) : '0.00000000') : 
+                '********'
+              } BTC</span>
+            )}
           </div>
         </div>
 
