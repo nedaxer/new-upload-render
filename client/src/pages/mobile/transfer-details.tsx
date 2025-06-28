@@ -111,23 +111,23 @@ export default function TransferDetails() {
         <Link href="/mobile/assets-history">
           <ArrowLeft className="w-6 h-6 text-white" />
         </Link>
-        <h1 className="text-lg font-semibold">Transfer Details</h1>
+        <h1 className="text-base font-medium">Transfer Details</h1>
         <div className="w-6 h-6" />
       </div>
 
       {/* Amount Section */}
-      <div className="px-4 pt-12 pb-12">
+      <div className="px-4 pt-8 pb-8">
         <div className="text-center">
-          <p className="text-gray-400 text-sm mb-4">Amount</p>
-          <h2 className="text-white text-3xl font-bold mb-6">
+          <p className="text-gray-400 text-xs mb-3">Amount</p>
+          <h2 className="text-white text-2xl font-semibold mb-4">
             {isReceived ? '+' : '-'} {transfer.amount.toLocaleString('en-US', { 
               minimumFractionDigits: 0, 
               maximumFractionDigits: 0 
             })} USD
           </h2>
           <div className="flex items-center justify-center">
-            <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-            <span className="text-green-400 text-base font-medium">
+            <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+            <span className="text-green-400 text-sm font-medium">
               {isReceived ? 'Received' : 'Sent'}
             </span>
           </div>
@@ -135,30 +135,30 @@ export default function TransferDetails() {
       </div>
 
       {/* Transaction Details */}
-      <div className="px-4 space-y-8">
+      <div className="px-4 space-y-6">
         {/* Status Row */}
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Status</span>
-          <span className="text-white text-base">{isReceived ? 'Received' : 'Sent'}</span>
+          <span className="text-gray-400 text-sm">Status</span>
+          <span className="text-white text-sm">{isReceived ? 'Received' : 'Sent'}</span>
         </div>
 
         {/* Transaction ID Row */}
         <div className="flex justify-between items-start">
-          <span className="text-gray-400 text-base">Transaction ID</span>
+          <span className="text-gray-400 text-sm">Transaction ID</span>
           <div className="flex items-center ml-4">
-            <span className="text-white text-base font-mono text-right break-all">
+            <span className="text-white text-xs font-mono text-right break-all">
               {generateLongTransactionId(transfer.transactionId)}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2 flex-shrink-0"
+              className="h-5 w-5 p-0 text-gray-400 hover:text-white ml-2 flex-shrink-0"
               onClick={() => copyToClipboard(generateLongTransactionId(transfer.transactionId))}
             >
               {copied ? (
-                <CheckCircle className="w-4 h-4 text-green-400" />
+                <CheckCircle className="w-3 h-3 text-green-400" />
               ) : (
-                <Copy className="w-4 h-4" />
+                <Copy className="w-3 h-3" />
               )}
             </Button>
           </div>
@@ -166,8 +166,8 @@ export default function TransferDetails() {
 
         {/* Time Row */}
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Time</span>
-          <span className="text-white text-base">
+          <span className="text-gray-400 text-sm">Time</span>
+          <span className="text-white text-sm">
             {new Date(transfer.createdAt).toLocaleDateString('en-US', {
               month: '2-digit',
               day: '2-digit',
@@ -182,18 +182,18 @@ export default function TransferDetails() {
 
         {/* Reference Number Row */}
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-base">Reference no.</span>
+          <span className="text-gray-400 text-sm">Reference no.</span>
           <div className="flex items-center">
-            <span className="text-white text-base font-mono">
+            <span className="text-white text-sm font-mono">
               {transfer.transactionId.slice(-10)}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
+              className="h-5 w-5 p-0 text-gray-400 hover:text-white ml-2"
               onClick={() => copyToClipboard(transfer.transactionId.slice(-10))}
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3 h-3" />
             </Button>
           </div>
         </div>
