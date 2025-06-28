@@ -40,40 +40,45 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
       {/* No progress bar on first screen */}
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
-        {/* Professional Illustration */}
-        <div className="mb-8">
-          <img 
-            src={professionalImage} 
-            alt="Professional verification" 
-            className="w-64 h-48 object-contain"
-          />
+      <div className="flex-1 flex flex-col px-6">
+        {/* Main content area - centered */}
+        <div className="flex-1 flex flex-col items-center justify-center">
+          {/* Professional Illustration - Bigger */}
+          <div className="mb-6">
+            <img 
+              src={professionalImage} 
+              alt="Professional verification" 
+              className="w-80 h-64 object-contain"
+            />
+          </div>
+
+          {/* Title - Updated message */}
+          <h2 className="text-base font-medium text-white text-center mb-3">
+            You're on the path to investing!
+          </h2>
+
+          {/* Subtitle */}
+          <p className="text-gray-300 text-center mb-6 px-4 text-xs leading-relaxed">
+            We just need to collect some details to fully activate your account.
+          </p>
+
+          {/* Disclaimer */}
+          <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
+            We rely on you for accurate information. Keep us informed of any material changes. 
+            We may not be able to provide our services when you choose not to provide the required information.
+          </p>
         </div>
 
-        {/* Title with user's full name */}
-        <h2 className="text-xl font-semibold text-white text-center mb-4">
-          {displayName}, is it really you?
-        </h2>
-
-        {/* Subtitle */}
-        <p className="text-gray-300 text-center mb-12 px-4 text-sm leading-relaxed">
-          We just need to collect some details to fully activate your account.
-        </p>
-
-        {/* CTA Button with loading state */}
-        <Button 
-          onClick={handleNext}
-          disabled={isLoading}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-base rounded-full mb-8 disabled:opacity-50"
-        >
-          {isLoading ? "Loading..." : "Let's Do It"}
-        </Button>
-
-        {/* Disclaimer */}
-        <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
-          We rely on you for accurate information. Keep us informed of any material changes. 
-          We may not be able to provide our services when you choose not to provide the required information.
-        </p>
+        {/* Bottom Button Area */}
+        <div className="pb-8">
+          <Button 
+            onClick={handleNext}
+            disabled={isLoading}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
+          >
+            {isLoading ? "Loading..." : "Let's Do It"}
+          </Button>
+        </div>
       </div>
     </MobileLayout>
   );

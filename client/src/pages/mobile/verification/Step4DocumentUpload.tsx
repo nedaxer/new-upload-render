@@ -130,12 +130,12 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-8">
         {/* Title - Smaller font */}
-        <h2 className="text-lg font-semibold text-white text-center mb-2">
+        <h2 className="text-base font-medium text-white text-center mb-2">
           {getTitle()}
         </h2>
         
         {requiresTwoSides && (
-          <p className="text-gray-400 text-center mb-8 text-sm">
+          <p className="text-gray-400 text-center mb-8 text-xs">
             Two files required. One for each side
           </p>
         )}
@@ -168,7 +168,7 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
         </div>
 
         {/* Instructions */}
-        <p className="text-gray-400 text-center mb-8 text-sm">
+        <p className="text-gray-400 text-center mb-8 text-xs">
           Please tap "next" to save your documents
         </p>
 
@@ -176,7 +176,7 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
         <Button 
           onClick={handleNext}
           disabled={!canProceed || isLoading}
-          className={`w-full py-4 text-base font-medium rounded-full ${
+          className={`w-full py-4 text-sm font-medium rounded-full ${
             canProceed && !isLoading
               ? 'bg-orange-500 hover:bg-orange-600 text-white' 
               : 'bg-gray-600 text-gray-400 cursor-not-allowed'

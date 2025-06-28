@@ -140,12 +140,12 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-8">
         {/* Question Title - Smaller font */}
-        <h2 className="text-lg font-semibold text-white text-center mb-2">
+        <h2 className="text-base font-medium text-white text-center mb-2">
           {currentQuestion.title}
         </h2>
         
         {currentQuestion.subtitle && (
-          <p className="text-gray-400 text-center mb-8 text-sm">
+          <p className="text-gray-400 text-center mb-8 text-xs">
             {currentQuestion.subtitle}
           </p>
         )}
@@ -181,7 +181,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium">{option.label}</span>
+                <span className="text-sm">{option.label}</span>
                 {selectedAnswer === option.value && (
                   <div className="w-5 h-5 text-orange-500">
                     ✓
@@ -196,7 +196,7 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
         <Button 
           onClick={handleNext}
           disabled={!selectedAnswer || isLoading}
-          className={`w-full py-4 text-base font-medium rounded-full ${
+          className={`w-full py-4 text-sm font-medium rounded-full ${
             selectedAnswer && !isLoading
               ? 'bg-orange-500 hover:bg-orange-600 text-white' 
               : 'bg-gray-600 text-gray-400 cursor-not-allowed'

@@ -55,7 +55,7 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-8">
         {/* Title - Smaller font */}
-        <h2 className="text-xl font-semibold text-white text-center mb-12">
+        <h2 className="text-base font-medium text-white text-center mb-12">
           What is your date of birth?
         </h2>
 
@@ -63,7 +63,7 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
         <div className="grid grid-cols-3 gap-4 mb-16">
           {/* Day */}
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-2">Day</p>
+            <p className="text-gray-400 text-xs mb-2">Day</p>
             <select
               value={day}
               onChange={(e) => setDay(Number(e.target.value))}
@@ -79,7 +79,7 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
 
           {/* Month */}
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-2">Month</p>
+            <p className="text-gray-400 text-xs mb-2">Month</p>
             <select
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
@@ -95,7 +95,7 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
 
           {/* Year */}
           <div className="text-center">
-            <p className="text-gray-400 text-sm mb-2">Year</p>
+            <p className="text-gray-400 text-xs mb-2">Year</p>
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
@@ -114,7 +114,7 @@ export const Step2DateOfBirth: React.FC<Step2DateOfBirthProps> = ({
         <Button 
           onClick={handleNext}
           disabled={isLoading}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-base rounded-full disabled:opacity-50"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-4 text-sm rounded-full disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Next"}
         </Button>
