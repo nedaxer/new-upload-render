@@ -45,6 +45,7 @@ interface AdminUser {
   isAdmin: boolean;
   balance: number;
   password?: string;
+  profilePicture?: string;
   createdAt?: Date;
 }
 
@@ -56,6 +57,8 @@ export default function AdminPortalWorking() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState<{[key: string]: boolean}>({});
+  const [cryptoCurrency, setCryptoCurrency] = useState("USDT");
+  const [createHistory, setCreateHistory] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -116,11 +119,18 @@ export default function AdminPortalWorking() {
 
   // Add funds mutation
   const addFundsMutation = useMutation({
-    mutationFn: ({ userId, amount }: { userId: string; amount: number }) =>
-      apiRequest(`/api/admin/add-funds`, {
+    mutationFn: async ({ userId, amount }: { userId: string; amount: number }) => {
+      const response = await fetch(`/api/admin/add-funds`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ userId, amount }),
-      }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to add funds");
+      return data;
+    },
     onSuccess: () => {
       toast({
         title: "Funds Added Successfully",
@@ -141,11 +151,18 @@ export default function AdminPortalWorking() {
 
   // Remove funds mutation
   const removeFundsMutation = useMutation({
-    mutationFn: ({ userId, amount }: { userId: string; amount: number }) =>
-      apiRequest(`/api/admin/remove-funds`, {
+    mutationFn: async ({ userId, amount }: { userId: string; amount: number }) => {
+      const response = await fetch(`/api/admin/remove-funds`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ userId, amount }),
-      }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to remove funds");
+      return data;
+    },
     onSuccess: () => {
       toast({
         title: "Funds Removed Successfully",
@@ -159,6 +176,43 @@ export default function AdminPortalWorking() {
       toast({
         title: "Error Removing Funds",
         description: error.message || "Failed to remove funds",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create deposit transaction mutation
+  const createDepositMutation = useMutation({
+    mutationFn: async ({ userId, amount, cryptoCurrency, cryptoAmount }: { 
+      userId: string; 
+      amount: number; 
+      cryptoCurrency: string;
+      cryptoAmount: number;
+    }) => {
+      const response = await fetch(`/api/admin/create-deposit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify({ userId, amount, cryptoCurrency, cryptoAmount }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to create deposit");
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Deposit Created Successfully",
+        description: `$${fundAmount} deposit created with transaction history`,
+        variant: "default",
+      });
+      setFundAmount("");
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Creating Deposit",
+        description: error.message || "Failed to create deposit",
         variant: "destructive",
       });
     },
@@ -217,7 +271,18 @@ export default function AdminPortalWorking() {
       return;
     }
 
-    addFundsMutation.mutate({ userId: selectedUser._id, amount });
+    if (createHistory) {
+      // Create with transaction history
+      createDepositMutation.mutate({ 
+        userId: selectedUser._id, 
+        amount, 
+        cryptoCurrency,
+        cryptoAmount: amount 
+      });
+    } else {
+      // Silent fund addition
+      addFundsMutation.mutate({ userId: selectedUser._id, amount });
+    }
   };
 
   const handleRemoveFunds = () => {
@@ -405,11 +470,19 @@ export default function AdminPortalWorking() {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                                <User className="w-5 h-5 text-white" />
-                              </div>
+                              {user.profilePicture ? (
+                                <img 
+                                  src={user.profilePicture} 
+                                  alt="Profile" 
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+                                  <User className="w-6 h-6 text-white" />
+                                </div>
+                              )}
                               <div className="flex-1">
-                                <p className="font-medium text-white">
+                                <p className="text-base font-semibold text-white">
                                   {user.firstName && user.lastName 
                                     ? `${user.firstName} ${user.lastName}` 
                                     : user.username
@@ -428,6 +501,28 @@ export default function AdminPortalWorking() {
                                     <Badge variant="destructive" className="text-xs">Admin</Badge>
                                   )}
                                 </div>
+                                {user.password && (
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    <p className="text-xs text-yellow-400 font-mono">
+                                      Password: {showPassword[user._id] ? user.password : '••••••••'}
+                                    </p>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 text-yellow-300 hover:text-white hover:bg-white/10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        togglePasswordVisibility(user._id);
+                                      }}
+                                    >
+                                      {showPassword[user._id] ? (
+                                        <EyeOff className="w-3 h-3" />
+                                      ) : (
+                                        <Eye className="w-3 h-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -462,7 +557,7 @@ export default function AdminPortalWorking() {
                         </div>
                         
                         <div>
-                          <label className="text-sm text-blue-200 mb-2 block">Fund Amount</label>
+                          <label className="text-sm text-blue-200 mb-2 block">Fund Amount (USD)</label>
                           <Input
                             type="number"
                             placeholder="Enter amount"
@@ -471,15 +566,43 @@ export default function AdminPortalWorking() {
                             className="bg-white/20 border-white/30 text-white placeholder:text-blue-200"
                           />
                         </div>
+
+                        <div className="space-y-3">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={createHistory}
+                              onChange={(e) => setCreateHistory(e.target.checked)}
+                              className="w-4 h-4 text-blue-600 bg-white/20 border-white/30 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-blue-200">Create Transaction History</span>
+                          </label>
+
+                          {createHistory && (
+                            <div>
+                              <label className="text-sm text-blue-200 mb-2 block">Crypto Currency</label>
+                              <select
+                                value={cryptoCurrency}
+                                onChange={(e) => setCryptoCurrency(e.target.value)}
+                                className="w-full bg-white/20 border-white/30 text-white rounded-md px-3 py-2 text-sm"
+                              >
+                                <option value="USDT" className="bg-gray-800">USDT (Tether)</option>
+                                <option value="BTC" className="bg-gray-800">BTC (Bitcoin)</option>
+                                <option value="ETH" className="bg-gray-800">ETH (Ethereum)</option>
+                                <option value="BNB" className="bg-gray-800">BNB (Binance Coin)</option>
+                              </select>
+                            </div>
+                          )}
+                        </div>
                         
                         <div className="flex space-x-2">
                           <Button
                             onClick={handleAddFunds}
                             className="flex-1 bg-green-600 hover:bg-green-700"
-                            disabled={addFundsMutation.isPending}
+                            disabled={addFundsMutation.isPending || createDepositMutation.isPending}
                           >
                             <Plus className="w-4 h-4 mr-1" />
-                            Add
+                            {createHistory ? "Create Deposit" : "Add Funds"}
                           </Button>
                           <Button
                             onClick={handleRemoveFunds}
@@ -539,23 +662,44 @@ export default function AdminPortalWorking() {
                       {filteredUsers.map((user: AdminUser) => (
                         <div
                           key={user._id}
-                          className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                          className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
                             selectedUser?._id === user._id
                               ? "bg-blue-500/30 border border-blue-400"
                               : "bg-white/10 border border-white/20 hover:bg-white/20"
                           }`}
                           onClick={() => setSelectedUser(user)}
                         >
-                          <p className="font-medium text-white">
-                            {user.firstName && user.lastName 
-                              ? `${user.firstName} ${user.lastName}` 
-                              : user.username
-                            }
-                          </p>
-                          <p className="text-sm text-blue-200">{user.email}</p>
-                          <p className="text-sm text-green-400">
-                            Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
-                          </p>
+                          <div className="flex items-center space-x-3">
+                            {user.profilePicture ? (
+                              <img 
+                                src={user.profilePicture} 
+                                alt="Profile" 
+                                className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <User className="w-5 h-5 text-white" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="font-medium text-white">
+                                {user.firstName && user.lastName 
+                                  ? `${user.firstName} ${user.lastName}` 
+                                  : user.username
+                                }
+                              </p>
+                              <p className="text-sm text-blue-200">{user.email}</p>
+                              <p className="text-sm text-green-400">
+                                Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
+                              </p>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <p className="text-xs text-blue-400">UID: {user.uid}</p>
+                                <Badge variant={user.isVerified ? "default" : "secondary"} className="text-xs">
+                                  {user.isVerified ? "Verified" : "Unverified"}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -593,24 +737,44 @@ export default function AdminPortalWorking() {
                       {filteredUsers.map((user: AdminUser) => (
                         <div
                           key={user._id}
-                          className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                          className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
                             selectedUser?._id === user._id
                               ? "bg-purple-500/30 border border-purple-400"
                               : "bg-white/10 border border-white/20 hover:bg-white/20"
                           }`}
                           onClick={() => setSelectedUser(user)}
                         >
-                          <p className="font-medium text-white">
-                            {user.firstName && user.lastName 
-                              ? `${user.firstName} ${user.lastName}` 
-                              : user.username
-                            }
-                          </p>
-                          <p className="text-sm text-blue-200">{user.email}</p>
-                          <p className="text-sm text-purple-400">UID: {user.uid}</p>
-                          <p className="text-sm text-green-400">
-                            Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
-                          </p>
+                          <div className="flex items-center space-x-3">
+                            {user.profilePicture ? (
+                              <img 
+                                src={user.profilePicture} 
+                                alt="Profile" 
+                                className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+                                <User className="w-5 h-5 text-white" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="font-medium text-white">
+                                {user.firstName && user.lastName 
+                                  ? `${user.firstName} ${user.lastName}` 
+                                  : user.username
+                                }
+                              </p>
+                              <p className="text-sm text-blue-200">{user.email}</p>
+                              <p className="text-sm text-purple-400">UID: {user.uid}</p>
+                              <p className="text-sm text-green-400">
+                                Balance: ${user.balance ? user.balance.toFixed(2) : '0.00'}
+                              </p>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Badge variant={user.isVerified ? "default" : "secondary"} className="text-xs">
+                                  {user.isVerified ? "Verified" : "Unverified"}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
