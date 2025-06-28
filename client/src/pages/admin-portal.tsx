@@ -12,7 +12,6 @@ import {
   Search, 
   DollarSign, 
   Trash2, 
-  UserCheck, 
   LogOut,
   User,
   Shield,
@@ -25,7 +24,8 @@ import {
   Copy,
   CheckCircle,
   Clock,
-  UserPlus
+  UserPlus,
+  UserCheck
 } from "lucide-react";
 
 interface AdminUser {
@@ -45,7 +45,7 @@ export default function AdminPortal() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showKycPanel, setShowKycPanel] = useState(false);
+
 
   // Force desktop view for admin portal
   useEffect(() => {
@@ -94,6 +94,7 @@ export default function AdminPortal() {
   }, []);
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const [showUsersList, setShowUsersList] = useState(false);
+  const [showKycPanel, setShowKycPanel] = useState(true);
   const [copiedId, setCopiedId] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -247,38 +248,7 @@ export default function AdminPortal() {
     },
   });
 
-  // KYC approval mutation
-  const approveKycMutation = useMutation({
-    mutationFn: async ({ userId, status, reason }: { userId: string; status: string; reason?: string }) => {
-      const response = await fetch('/api/admin/approve-kyc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ userId, status, reason })
-      });
-      if (!response.ok) throw new Error('Failed to update KYC status');
-      return response.json();
-    },
-    onSuccess: (data, variables) => {
-      const action = variables.status === 'verified' ? 'approved' : 'rejected';
-      toast({
-        title: `KYC ${action}`,
-        description: `User verification has been ${action} successfully`,
-        variant: "default",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-kyc"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
-      refetchKyc();
-      refetchUsers();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "KYC Update Failed",
-        description: error.message || "Failed to update KYC status",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   // Delete user mutation
   const deleteUserMutation = useMutation({
@@ -840,7 +810,7 @@ export default function AdminPortal() {
                         {user.isVerified && (
                           <div className="flex items-center">
                             <Badge className="bg-green-500 text-white text-xs mr-1">
-                              <UserCheck className="w-3 h-3 mr-1" />
+                              <CheckCircle className="w-3 h-3 mr-1" />
                               Verified
                             </Badge>
                             <img 

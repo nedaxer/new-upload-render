@@ -115,31 +115,13 @@ router.post('/approve-kyc', requireAdminAuth, async (req, res) => {
 // Get pending KYC verifications for admin
 router.get('/pending-kyc', requireAdminAuth, async (req, res) => {
   try {
-    // Import MongoDB connection
-    const { MongoClient } = await import('mongodb');
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/';
+    // Import User model directly from MongoDB
+    const { User } = await import('../models/User');
     
-    const client = new MongoClient(MONGODB_URI);
-    await client.connect();
-    const db = client.db('nedaxer');
-    const usersCollection = db.collection('users');
-    
-    // Find users with pending KYC status (submitted = pending approval)
-    const pendingVerifications = await usersCollection.find({ 
-      kycStatus: 'submitted' 
-    }).project({
-      _id: 1,
-      uid: 1,
-      email: 1,
-      username: 1,
-      firstName: 1,
-      lastName: 1,
-      kycStatus: 1,
-      kycData: 1,
-      createdAt: 1
-    }).toArray();
-    
-    await client.close();
+    // Find users with submitted KYC status
+    const pendingVerifications = await User.find({ 
+      kycStatus: { $in: ['submitted', 'pending'] }
+    }).select('_id uid email username firstName lastName kycStatus kycData createdAt');
     
     res.json({
       success: true,
