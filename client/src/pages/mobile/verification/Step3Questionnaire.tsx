@@ -1,79 +1,25 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
-import MobileLayout from '@/components/mobile-layout';
-
-interface QuestionnaireData {
-  sourceOfIncome?: string;
-  annualIncome?: string;
-  investmentExperience?: string;
-  plannedDeposit?: string;
-  investmentGoal?: string;
-}
 
 interface Step3QuestionnaireProps {
-  onNext: (data: QuestionnaireData) => void;
+  onNext: (data: {
+    sourceOfIncome: string;
+    annualIncome: string;
+    investmentExperience: string;
+    plannedDeposit: string;
+    investmentGoal: string;
+  }) => void;
   onBack: () => void;
   onClose: () => void;
-  initialValue?: QuestionnaireData;
+  initialValue?: {
+    sourceOfIncome?: string;
+    annualIncome?: string;
+    investmentExperience?: string;
+    plannedDeposit?: string;
+    investmentGoal?: string;
+  };
 }
-
-const questions = [
-  {
-    id: 'sourceOfIncome',
-    title: 'What is your source of income?',
-    options: [
-      { value: 'employment', label: 'Employment' },
-      { value: 'business', label: 'Business' },
-      { value: 'investments', label: 'Investments' },
-      { value: 'pension', label: 'Pension' },
-      { value: 'other', label: 'Other' }
-    ]
-  },
-  {
-    id: 'annualIncome',
-    title: 'What is your annual income range?',
-    options: [
-      { value: 'below_10k', label: 'Below $10,000' },
-      { value: '10k_50k', label: '$10,000–$50,000' },
-      { value: '50k_100k', label: '$50,000–$100,000' },
-      { value: 'above_100k', label: 'Above $100,000' }
-    ]
-  },
-  {
-    id: 'investmentExperience',
-    title: 'What is your experience with investing?',
-    options: [
-      { value: 'none', label: 'None' },
-      { value: 'beginner', label: 'Beginner' },
-      { value: 'intermediate', label: 'Intermediate' },
-      { value: 'advanced', label: 'Advanced' }
-    ]
-  },
-  {
-    id: 'plannedDeposit',
-    title: 'How much do you plan to deposit?',
-    subtitle: 'over the course of this year.',
-    options: [
-      { value: 'below_500', label: 'Up to $20K' },
-      { value: '500_2k', label: '$20K - $50K' },
-      { value: '2k_10k', label: '$50K - $200K' },
-      { value: 'above_10k', label: '$200K - $500K' },
-      { value: 'very_high', label: '$500K - $1M' },
-      { value: 'ultra_high', label: 'Above $1M' }
-    ]
-  },
-  {
-    id: 'investmentGoal',
-    title: 'Which best describes your primary purpose in trading with us?',
-    options: [
-      { value: 'short_term_returns', label: 'Short-term Returns' },
-      { value: 'additional_revenue', label: 'Additional Revenue' },
-      { value: 'future_planning', label: 'Future Planning (Children\'s Education, Retirement, etc.)' },
-      { value: 'saving_for_home', label: 'Saving for a Home' }
-    ]
-  }
-];
 
 export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({ 
   onNext, 
@@ -81,118 +27,211 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
   onClose, 
   initialValue 
 }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<QuestionnaireData>(initialValue || {});
+  const [sourceOfIncome, setSourceOfIncome] = useState(initialValue?.sourceOfIncome || '');
+  const [annualIncome, setAnnualIncome] = useState(initialValue?.annualIncome || '');
+  const [investmentExperience, setInvestmentExperience] = useState(initialValue?.investmentExperience || '');
+  const [plannedDeposit, setPlannedDeposit] = useState(initialValue?.plannedDeposit || '');
+  const [investmentGoal, setInvestmentGoal] = useState(initialValue?.investmentGoal || '');
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 0.5 + 0.5; // 50% to 100%
-
-  const handleAnswer = (value: string) => {
-    const newAnswers = { ...answers, [currentQuestion.id]: value };
-    setAnswers(newAnswers);
-
-    if (isLastQuestion) {
-      onNext(newAnswers);
-    } else {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
+  const handleNext = () => {
+    onNext({
+      sourceOfIncome,
+      annualIncome,
+      investmentExperience,
+      plannedDeposit,
+      investmentGoal
+    });
   };
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    } else {
-      onBack();
-    }
-  };
+  const isValid = sourceOfIncome && annualIncome && investmentExperience && plannedDeposit && investmentGoal;
 
-  const selectedAnswer = answers[currentQuestion.id as keyof QuestionnaireData];
+  const incomeOptions = [
+    { value: 'employment', label: 'Employment' },
+    { value: 'self_employed', label: 'Self-employed' },
+    { value: 'investments', label: 'Investments' },
+    { value: 'pension', label: 'Pension' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  const annualIncomeOptions = [
+    { value: 'under_25k', label: 'Under $25,000' },
+    { value: '25k_50k', label: '$25,000 - $50,000' },
+    { value: '50k_100k', label: '$50,000 - $100,000' },
+    { value: '100k_250k', label: '$100,000 - $250,000' },
+    { value: 'over_250k', label: 'Over $250,000' }
+  ];
+
+  const experienceOptions = [
+    { value: 'beginner', label: 'Beginner' },
+    { value: 'intermediate', label: 'Intermediate' },
+    { value: 'experienced', label: 'Experienced' },
+    { value: 'professional', label: 'Professional trader' }
+  ];
+
+  const depositOptions = [
+    { value: 'under_1k', label: 'Under $1,000' },
+    { value: '1k_5k', label: '$1,000 - $5,000' },
+    { value: '5k_25k', label: '$5,000 - $25,000' },
+    { value: '25k_100k', label: '$25,000 - $100,000' },
+    { value: 'over_100k', label: 'Over $100,000' }
+  ];
+
+  const goalOptions = [
+    { value: 'growth', label: 'Long-term growth' },
+    { value: 'income', label: 'Regular income' },
+    { value: 'speculation', label: 'Short-term speculation' },
+    { value: 'diversification', label: 'Portfolio diversification' }
+  ];
 
   return (
-    <MobileLayout>
-      {/* Header */}
+    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
+      {/* Header - No "Profile" text */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
-        <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Questionnaire</h1>
+        <div></div>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - Orange color */}
       <div className="px-4 py-2">
         <div className="w-full bg-gray-700 rounded-full h-2">
-          <div className="bg-green-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }}></div>
+          <div className="bg-orange-500 h-2 rounded-full w-4/6"></div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-8">
-        {/* Question Title */}
-        <h2 className="text-xl font-bold text-white text-center mb-2">
-          {currentQuestion.title}
+      <div className="flex-1 px-6 py-6 overflow-y-auto">
+        {/* Title - Reduced font size */}
+        <h2 className="text-lg font-bold text-white text-center mb-4">
+          Investment Profile
         </h2>
         
-        {currentQuestion.subtitle && (
-          <p className="text-gray-400 text-center mb-8 text-sm">
-            {currentQuestion.subtitle}
-          </p>
-        )}
+        <p className="text-gray-400 text-center mb-6 text-xs">
+          Help us understand your investment profile
+        </p>
 
-        {/* Crypto Icons for investment goal question */}
-        {currentQuestion.id === 'investmentGoal' && (
-          <div className="flex justify-center mb-8">
-            <div className="flex space-x-2">
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 font-bold">Ξ</span>
-              </div>
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 font-bold">₿</span>
-              </div>
-              <div className="w-12 h-12 rounded-full border-2 border-gray-500 flex items-center justify-center">
-                <span className="text-gray-400 text-xs">XRP</span>
-              </div>
+        {/* Questions */}
+        <div className="space-y-6">
+          {/* Source of Income */}
+          <div>
+            <h3 className="text-white text-sm font-medium mb-3">Primary source of income</h3>
+            <div className="space-y-2">
+              {incomeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setSourceOfIncome(option.value)}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    sourceOfIncome === option.value
+                      ? 'border-orange-500 bg-orange-500/10 text-white'
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Options */}
-        <div className="space-y-4 mb-8">
-          {currentQuestion.options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleAnswer(option.value)}
-              className={`w-full p-4 rounded-lg text-left transition-all ${
-                selectedAnswer === option.value
-                  ? 'bg-gray-700 text-white border-l-4 border-green-500'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{option.label}</span>
-                {selectedAnswer === option.value && (
-                  <div className="w-5 h-5 text-green-500">
-                    ✓
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
+          {/* Annual Income */}
+          <div>
+            <h3 className="text-white text-sm font-medium mb-3">Annual income</h3>
+            <div className="space-y-2">
+              {annualIncomeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setAnnualIncome(option.value)}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    annualIncome === option.value
+                      ? 'border-orange-500 bg-orange-500/10 text-white'
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Investment Experience */}
+          <div>
+            <h3 className="text-white text-sm font-medium mb-3">Investment experience</h3>
+            <div className="space-y-2">
+              {experienceOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setInvestmentExperience(option.value)}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    investmentExperience === option.value
+                      ? 'border-orange-500 bg-orange-500/10 text-white'
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Planned Deposit */}
+          <div>
+            <h3 className="text-white text-sm font-medium mb-3">Planned initial deposit</h3>
+            <div className="space-y-2">
+              {depositOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setPlannedDeposit(option.value)}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    plannedDeposit === option.value
+                      ? 'border-orange-500 bg-orange-500/10 text-white'
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Investment Goal */}
+          <div>
+            <h3 className="text-white text-sm font-medium mb-3">Primary investment goal</h3>
+            <div className="space-y-2">
+              {goalOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setInvestmentGoal(option.value)}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    investmentGoal === option.value
+                      ? 'border-orange-500 bg-orange-500/10 text-white'
+                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500'
+                  }`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Next Button (only show if answer selected) */}
-        {selectedAnswer && !isLastQuestion && (
+        {/* Next Button */}
+        <div className="mt-8 mb-6">
           <Button 
-            onClick={() => handleAnswer(selectedAnswer)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-lg rounded-full"
+            onClick={handleNext}
+            disabled={!isValid}
+            className={`w-full py-3 text-base font-semibold rounded-full ${
+              isValid 
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
           >
             Next
           </Button>
-        )}
+        </div>
       </div>
-    </MobileLayout>
+    </div>
   );
 };
