@@ -76,7 +76,7 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
         <h2 className="text-base font-medium text-white text-center mb-2">
           Verify Your Identity
         </h2>
-        
+
         <p className="text-gray-400 text-center mb-8 text-xs">
           Choose your document type
         </p>
@@ -111,7 +111,11 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           })}
         </div>
 
-        {/* Next Button - Must tap to proceed */}
+        {/* Large spacer to push button to bottom */}
+        <div className="flex-1"></div>
+
+        {/* Next Button at very bottom - Must tap to proceed */}
+        <div className="pb-6">
         <Button 
           onClick={handleNext}
           disabled={!selectedType || isLoading}
@@ -123,6 +127,7 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
         >
           {isLoading ? "Loading..." : "Next"}
         </Button>
+        </div>
 
         {/* Security Notice */}
         <div className="bg-gray-800/50 p-4 rounded-lg">
