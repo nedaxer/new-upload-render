@@ -179,7 +179,7 @@ export default function MobileProfile() {
     {
       icon: Shield,
       label: t('identityVerification'),
-      href: '/mobile/kyc',
+      href: '/mobile/kyc-status',
       rightElement: (
         <div className="flex items-center space-x-2">
           <span className={`text-sm ${
