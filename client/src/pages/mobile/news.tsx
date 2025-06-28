@@ -31,7 +31,16 @@ export default function MobileNews() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const { data: newsData, isLoading, error, isOffline, hasOfflineData } = useOfflineNews();
+  const { data: newsData, isLoading, error } = useQuery({
+    queryKey: ['/api/crypto/news'],
+    queryFn: async () => {
+      const response = await fetch('/api/crypto/news');
+      if (!response.ok) throw new Error('Failed to fetch news');
+      return response.json();
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 3
+  });
   const { isOnline } = useOnlineStatus();
 
   // WebSocket connection for real-time news updates
@@ -229,7 +238,7 @@ export default function MobileNews() {
                             const target = e.target as HTMLVideoElement;
                             const parent = target.parentElement?.parentElement;
                             if (parent) {
-                              parent.innerHTML = getSourceIcon(article.source?.name || 'Crypto News');
+                              parent.innerHTML = `<div class="text-gray-400 text-sm">${article.source?.name || 'Crypto News'}</div>`;
                             }
                           }}
                         />

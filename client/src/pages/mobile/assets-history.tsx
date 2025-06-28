@@ -27,9 +27,28 @@ export default function AssetsHistory() {
     return '/mobile/assets';
   };
 
-  // Use offline-enabled transaction hooks
-  const { data: depositsResponse, isLoading: isLoadingDeposits, isOffline: depositsOffline } = useOfflineTransactions();
-  const { data: transfersResponse, isLoading: isLoadingTransfers, isOffline: transfersOffline } = useOfflineTransfers();
+  // Fetch deposits and transfers
+  const { data: depositsResponse, isLoading: isLoadingDeposits } = useQuery({
+    queryKey: ['/api/deposits/history'],
+    queryFn: async () => {
+      const response = await fetch('/api/deposits/history');
+      if (!response.ok) throw new Error('Failed to fetch deposits');
+      return response.json();
+    },
+    enabled: !!user,
+    retry: 3
+  });
+
+  const { data: transfersResponse, isLoading: isLoadingTransfers } = useQuery({
+    queryKey: ['/api/transfers/history'],
+    queryFn: async () => {
+      const response = await fetch('/api/transfers/history');
+      if (!response.ok) throw new Error('Failed to fetch transfers');
+      return response.json();
+    },
+    enabled: !!user,
+    retry: 3
+  });
   const { isOnline } = useOnlineStatus();
 
   const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];

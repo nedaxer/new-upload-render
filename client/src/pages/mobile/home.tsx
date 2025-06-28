@@ -100,8 +100,19 @@ export default function MobileHome() {
     }
   }, [user]);
 
-  // Use offline-enabled data hooks
-  const { data: walletData, isLoading: walletLoading, isOffline: walletOffline } = useOfflineWalletSummary();
+  // Fetch wallet summary
+  const { data: walletData, isLoading: walletLoading } = useQuery({
+    queryKey: ['/api/wallet/summary'],
+    queryFn: async () => {
+      const response = await fetch('/api/wallet/summary');
+      if (!response.ok) throw new Error('Failed to fetch wallet summary');
+      const result = await response.json();
+      return result.data;
+    },
+    enabled: !!user,
+    staleTime: 30 * 1000, // 30 seconds
+    retry: 3
+  });
   const { data: priceData, isLoading: priceLoading, isOffline: pricesOffline } = useOfflineCryptoPrices();
   const { data: userFavorites, isOffline: favoritesOffline } = useOfflineFavorites();
   const { isOnline } = useOnlineStatus();
@@ -639,10 +650,10 @@ export default function MobileHome() {
           <Link href="/mobile/notifications">
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 text-gray-400 hover:text-white transition-colors" />
-              {notificationCount?.unreadCount > 0 && (
+              {(notificationCount as any)?.unreadCount > 0 && (
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-[10px] font-bold">
-                    {notificationCount.unreadCount > 9 ? '9+' : notificationCount.unreadCount}
+                    {(notificationCount as any).unreadCount > 9 ? '9+' : (notificationCount as any).unreadCount}
                   </span>
                 </div>
               )}

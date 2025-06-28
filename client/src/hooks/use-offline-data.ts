@@ -107,12 +107,12 @@ export function useOfflineNotifications() {
  */
 export function useOfflineNews() {
   return useOfflineQuery(
-    '/api/news',
+    '/api/crypto/news',
     async () => {
-      const response = await fetch('/api/news');
+      const response = await fetch('/api/crypto/news');
       if (!response.ok) throw new Error('Failed to fetch news');
       const result = await response.json();
-      return result.data;
+      return result; // News endpoint returns array directly
     },
     {
       getOfflineData: () => offlineStorage.getNews(),
@@ -198,6 +198,7 @@ export function useOfflineWalletSummary() {
       getOfflineData: () => offlineStorage.getWalletSummary(),
       storeOfflineData: (data) => offlineStorage.storeWalletSummary(data),
       staleTime: 30 * 1000, // 30 seconds
+      enabledOnline: true
     }
   );
 }
