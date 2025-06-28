@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from 'wouter';
 import MobileLayout from '@/components/mobile-layout';
@@ -36,7 +36,9 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <div className="w-6 h-6"></div> {/* No X button */}
+        <Button variant="ghost" size="sm" onClick={() => setLocation('/mobile')} className="text-white p-0">
+          <X className="w-6 h-6" />
+        </Button>
       </div>
 
       {/* No progress bar on first screen */}

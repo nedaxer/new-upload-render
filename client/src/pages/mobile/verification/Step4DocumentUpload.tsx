@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, Upload, Camera, X } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface DocumentFiles {
@@ -89,7 +89,7 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
         }}
         className="hidden"
       />
-      
+
       <div className="flex flex-col items-center space-y-3">
         <Upload className="w-12 h-12 text-gray-500" />
         <div>
@@ -111,13 +111,15 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No X button */}
+      {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <div className="w-6 h-6"></div> {/* No X button */}
+        <div className="w-6 h-6"></div>
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
+          <X className="w-6 h-6" />
+        </Button>
       </div>
 
       {/* Progress Bar - Orange color, smaller */}
@@ -135,7 +137,7 @@ export const Step4DocumentUpload: React.FC<Step4DocumentUploadProps> = ({
           <h2 className="text-base font-medium text-white text-center mb-2">
             {getTitle()}
           </h2>
-          
+
           {requiresTwoSides && (
             <p className="text-gray-400 text-center mb-8 text-xs">
               Two files required. One for each side

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, CreditCard, Home } from 'lucide-react';
+import { ArrowLeft, FileText, CreditCard, Home, X } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface Step4DocumentSelectionProps {
@@ -54,13 +54,15 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No X button */}
+      {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <div className="w-6 h-6"></div> {/* No X button */}
+        <div className="w-6 h-6"></div>
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
+          <X className="w-6 h-6" />
+        </Button>
       </div>
 
       {/* Progress Bar - Orange color, smaller */}
@@ -78,7 +80,7 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           <h2 className="text-base font-medium text-white text-center mb-2">
             Verify Your Identity
           </h2>
-          
+
           <p className="text-gray-400 text-center mb-8 text-xs">
             Choose your document type
           </p>

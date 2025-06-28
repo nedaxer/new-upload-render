@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
 import { useLocation } from 'wouter';
 import MobileLayout from '@/components/mobile-layout';
 
@@ -21,7 +21,9 @@ export const VerificationComplete: React.FC<VerificationCompleteProps> = ({ onCo
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="w-6 h-6" />
         <div className="w-6 h-6" />
-        <div className="w-6 h-6" />
+        <Button variant="ghost" size="sm" onClick={handleContinue} className="text-white p-0">
+          <X className="w-6 h-6" />
+        </Button>
       </div>
 
       {/* Progress Bar - Complete - Orange color, smaller */}
