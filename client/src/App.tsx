@@ -107,6 +107,8 @@ import DepositDetails from '@/pages/mobile/deposit-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
 import { VerificationFlow } from '@/pages/mobile/verification/VerificationFlow';
+import MobileKYCStatus from '@/pages/mobile/kyc-status';
+import VerificationSubmitted from '@/pages/mobile/verification-submitted';
 
 
 // Admin Pages
@@ -290,6 +292,8 @@ export default function App() {
             </Route>
             <Route path="/mobile/transfer" component={Transfer} />
             <Route path="/mobile/verification" component={VerificationFlow} />
+            <Route path="/mobile/kyc-status" component={MobileKYCStatus} />
+            <Route path="/mobile/verification-submitted" component={VerificationSubmitted} />
 
 
             {/* Admin Portal Routes */}

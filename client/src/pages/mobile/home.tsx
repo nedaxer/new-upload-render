@@ -144,6 +144,14 @@ export default function MobileHome() {
     retry: 1
   });
 
+  // Fetch KYC verification status for verification banner
+  const { data: kycStatus } = useQuery({
+    queryKey: ['/api/verification/status'],
+    enabled: !!user,
+    staleTime: 30000,
+    retry: 1
+  });
+
   // Since MobileAppLoader handles initial loading, we can be more relaxed here
   const isLoadingCriticalData = false; // Handled by MobileAppLoader
 
@@ -625,11 +633,12 @@ export default function MobileHome() {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        {/* Verification Banner - Only show for unverified users */}
-        {user && !user.isVerified && (
+        {/* Verification Banner - Only show for unverified users who haven't submitted KYC */}
+        {user && !user.isVerified && kycStatus?.data?.kycStatus !== 'pending' && kycStatus?.data?.kycStatus !== 'verified' && (
           <VerificationBanner 
             userName={user.firstName || user.username || 'User'}
             onVerifyClick={() => navigate('/mobile/verification')}
+            questionsCompleted={kycStatus?.data?.kycData?.sourceOfIncome ? true : false}
           />
         )}
         

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
 interface Step1HearAboutProps {
@@ -45,13 +45,15 @@ export const Step1HearAbout: React.FC<Step1HearAboutProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - No X button */}
+      {/* Header - With X button */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <div className="w-6 h-6"></div> {/* No X button */}
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
+          <X className="w-6 h-6" />
+        </Button>
       </div>
 
       {/* Progress Bar - Orange color, smaller */}

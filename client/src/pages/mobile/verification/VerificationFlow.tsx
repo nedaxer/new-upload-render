@@ -84,7 +84,9 @@ export const VerificationFlow: React.FC = () => {
     onSuccess: () => {
       // Invalidate user data to refresh verification status
       queryClient.invalidateQueries({ queryKey: ['/api/user/me'] });
-      setCurrentStep('complete');
+      queryClient.invalidateQueries({ queryKey: ['/api/verification/status'] });
+      // Redirect to verification submitted page
+      setLocation('/mobile/verification-submitted');
     },
     onError: (error: any) => {
       toast({

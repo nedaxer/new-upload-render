@@ -375,7 +375,7 @@ export default function MobileSettings() {
           <div className="space-y-0">
             <Button
               variant="ghost"
-              onClick={() => setLocation('/mobile/kyc')}
+              onClick={() => setLocation('/mobile/kyc-status')}
               className={`w-full justify-between py-3 h-auto ${getTextClass()} hover:bg-gray-100 hover:bg-opacity-10`}
             >
               <span>Identity Verification</span>
