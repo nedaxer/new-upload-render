@@ -75,8 +75,8 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
           </Button>
         </div>
 
-        {/* Disclaimer at very bottom */}
-        <div className="pb-8">
+        {/* Disclaimer at absolute bottom */}
+        <div className="pb-2">
           <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
             We rely on you for accurate information. Keep us informed of any material changes. 
             We may not be able to provide our services when you choose not to provide the required information.
