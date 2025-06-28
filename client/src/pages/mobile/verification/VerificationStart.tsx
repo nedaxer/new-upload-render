@@ -13,7 +13,7 @@ interface VerificationStartProps {
 export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, onClose }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Get user's full name or fallback to username
   const displayName = user?.firstName && user?.lastName 
     ? `${user.firstName} ${user.lastName}`
