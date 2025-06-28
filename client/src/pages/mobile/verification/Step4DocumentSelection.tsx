@@ -111,28 +111,24 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           })}
         </div>
 
-        </div>
+        {/* Next Button - Must tap to proceed */}
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedType || isLoading}
+          className={`w-full py-4 text-sm font-medium rounded-full mb-4 ${
+            selectedType && !isLoading
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {isLoading ? "Loading..." : "Next"}
+        </Button>
 
-        {/* Next Button at bottom - Must tap to proceed */}
-        <div className="pb-8">
-          <Button 
-            onClick={handleNext}
-            disabled={!selectedType || isLoading}
-            className={`w-full py-4 text-sm font-medium rounded-full mb-4 ${
-              selectedType && !isLoading
-                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isLoading ? "Loading..." : "Next"}
-          </Button>
-
-          {/* Security Notice */}
-          <div className="bg-gray-800/50 p-4 rounded-lg">
-            <p className="text-gray-300 text-sm text-center">
-              Your information will be encrypted, stored securely and only used to verify your identity
-            </p>
-          </div>
+        {/* Security Notice */}
+        <div className="bg-gray-800/50 p-4 rounded-lg">
+          <p className="text-gray-300 text-sm text-center">
+            Your information will be encrypted, stored securely and only used to verify your identity
+          </p>
         </div>
       </div>
     </MobileLayout>
