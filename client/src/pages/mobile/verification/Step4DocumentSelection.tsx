@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X, FileText, CreditCard, Home } from 'lucide-react';
-import MobileLayout from '@/components/mobile-layout';
+// Removed MobileLayout to hide bottom navigation
 
 interface Step4DocumentSelectionProps {
   onNext: (documentType: string) => void;
@@ -45,13 +45,13 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
   };
 
   return (
-    <MobileLayout>
+    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={onBack} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Verification</h1>
+        <h1 className="text-white text-base font-medium">Verification</h1>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
@@ -104,6 +104,6 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
           </p>
         </div>
       </div>
-    </MobileLayout>
+    </div>
   );
 };

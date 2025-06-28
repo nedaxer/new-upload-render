@@ -1,14 +1,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
-import hikerImage from '@assets/first image_1751118123626.jpg';
+import hikerImage from '@assets/Picsart_25-06-28_15-49-20-738 (1)_1751122763615.png';
 
-interface VerificationStartProps {
+interface VerificationIntroProps {
+  userName: string;
   onNext: () => void;
   onClose: () => void;
 }
 
-export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, onClose }) => {
+export const VerificationIntro: React.FC<VerificationIntroProps> = ({ userName, onNext, onClose }) => {
   return (
     <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
       {/* Header */}
@@ -28,34 +29,28 @@ export const VerificationStart: React.FC<VerificationStartProps> = ({ onNext, on
         <div className="mb-8">
           <img 
             src={hikerImage} 
-            alt="You're on the path to investing!" 
+            alt="Verification illustration" 
             className="w-64 h-48 object-contain"
           />
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-white text-center mb-4">
-          You're on the path to investing!
+        <h2 className="text-xl font-bold text-white text-center mb-4">
+          {userName}, is it really you?
         </h2>
 
-        {/* Subtitle */}
-        <p className="text-gray-300 text-center mb-12 px-4 leading-relaxed">
-          We just need to collect some details to fully activate your account.
+        {/* Description */}
+        <p className="text-gray-300 text-center mb-12 px-4 leading-relaxed text-sm">
+          Verifying your identity helps us prevent someone else from creating an account in your name.
         </p>
 
-        {/* CTA Button */}
+        {/* Verify Button */}
         <Button 
           onClick={onNext}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 text-lg rounded-full mb-8"
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-lg rounded-full max-w-sm"
         >
-          Let's Do It
+          Verify Your Account
         </Button>
-
-        {/* Disclaimer */}
-        <p className="text-xs text-gray-400 text-center px-4 leading-relaxed">
-          We rely on you for accurate information. Keep us informed of any material changes. 
-          We may not be able to provide our services when you choose not to provide the required information.
-        </p>
       </div>
     </div>
   );

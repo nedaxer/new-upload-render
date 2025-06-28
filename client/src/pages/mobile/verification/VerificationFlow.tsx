@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { apiRequest } from '@/lib/queryClient';
 
 // Import all verification components
+import { VerificationIntro } from './VerificationIntro';
 import { VerificationStart } from './VerificationStart';
 import { Step1HearAbout } from './Step1HearAbout';
 import { Step2DateOfBirth } from './Step2DateOfBirth';
@@ -14,6 +16,7 @@ import { Step4DocumentUpload } from './Step4DocumentUpload';
 import { VerificationComplete } from './VerificationComplete';
 
 type VerificationStep = 
+  | 'intro'
   | 'start' 
   | 'hear-about' 
   | 'date-of-birth' 
@@ -41,9 +44,10 @@ interface VerificationData {
 export const VerificationFlow: React.FC = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  const [currentStep, setCurrentStep] = useState<VerificationStep>('start');
+  const [currentStep, setCurrentStep] = useState<VerificationStep>('intro');
   const [verificationData, setVerificationData] = useState<VerificationData>({});
 
   // Submit verification mutation
@@ -118,6 +122,15 @@ export const VerificationFlow: React.FC = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
+      case 'intro':
+        return (
+          <VerificationIntro
+            userName={user?.username || user?.email?.split('@')[0] || 'User'}
+            onNext={() => handleStepNavigation('start')}
+            onClose={handleClose}
+          />
+        );
+
       case 'start':
         return (
           <VerificationStart

@@ -627,7 +627,7 @@ export default function MobileHome() {
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Verification Banner */}
         <VerificationBanner 
-          userName={user?.username || user?.email || 'User'}
+          userName={user?.username || user?.email?.split('@')[0] || 'User'}
           onVerifyClick={() => navigate('/mobile/verification')}
         />
         

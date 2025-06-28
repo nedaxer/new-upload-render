@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, X } from 'lucide-react';
-import MobileLayout from '@/components/mobile-layout';
 
 interface QuestionnaireData {
   sourceOfIncome?: string;
@@ -110,13 +109,13 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
   const selectedAnswer = answers[currentQuestion.id as keyof QuestionnaireData];
 
   return (
-    <MobileLayout>
+    <div className="min-h-screen bg-[#0a0a2e] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
-        <h1 className="text-white text-lg font-semibold">Questionnaire</h1>
+        <h1 className="text-white text-base font-medium">Verification</h1>
         <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
           <X className="w-6 h-6" />
         </Button>
@@ -193,6 +192,6 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
           </Button>
         )}
       </div>
-    </MobileLayout>
+    </div>
   );
 };
