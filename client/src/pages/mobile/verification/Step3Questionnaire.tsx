@@ -197,17 +197,18 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
 
         {/* Next Button at very bottom - Must tap to proceed */}
         <div className="pb-6">
-        <Button 
-          onClick={handleNext}
-          disabled={!selectedAnswer || isLoading}
-          className={`w-full py-4 text-sm font-medium rounded-full ${
-            selectedAnswer && !isLoading
-              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
-        </Button>
+          <Button 
+            onClick={handleNext}
+            disabled={!selectedAnswer || isLoading}
+            className={`w-full py-4 text-sm font-medium rounded-full ${
+              selectedAnswer && !isLoading
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? "Loading..." : (isLastQuestion ? "Complete" : "Next")}
+          </Button>
+        </div>
       </div>
     </MobileLayout>
   );

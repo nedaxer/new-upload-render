@@ -116,17 +116,17 @@ export const Step4DocumentSelection: React.FC<Step4DocumentSelectionProps> = ({
 
         {/* Next Button at very bottom - Must tap to proceed */}
         <div className="pb-6">
-        <Button 
-          onClick={handleNext}
-          disabled={!selectedType || isLoading}
-          className={`w-full py-4 text-sm font-medium rounded-full mb-4 ${
-            selectedType && !isLoading
-              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {isLoading ? "Loading..." : "Next"}
-        </Button>
+          <Button 
+            onClick={handleNext}
+            disabled={!selectedType || isLoading}
+            className={`w-full py-4 text-sm font-medium rounded-full mb-4 ${
+              selectedType && !isLoading
+                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isLoading ? "Loading..." : "Next"}
+          </Button>
         </div>
 
         {/* Security Notice */}
