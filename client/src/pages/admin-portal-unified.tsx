@@ -88,6 +88,8 @@ export default function UnifiedAdminPortal() {
   const [messageText, setMessageText] = useState('');
   const [withdrawalAmount, setWithdrawalAmount] = useState('500');
   const [userPassword, setUserPassword] = useState("");
+  const [hasActualPassword, setHasActualPassword] = useState(true);
+  const [newPasswordForReset, setNewPasswordForReset] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
   const [showUsersList, setShowUsersList] = useState(true);
@@ -459,6 +461,7 @@ export default function UnifiedAdminPortal() {
     onSuccess: (data) => {
       setUserPassword(data.password);
       setShowPassword(true);
+      setHasActualPassword(data.hasActualPassword);
       toast({
         title: "Password Key Retrieved",
         description: "User password key has been fetched for security review",
@@ -469,6 +472,44 @@ export default function UnifiedAdminPortal() {
       toast({
         title: "Error",
         description: error.message || "Failed to get user password key",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reset user password
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
+      const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ newPassword })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setUserPassword(data.newPassword);
+      setHasActualPassword(true);
+      setShowPassword(true);
+      toast({
+        title: "Password Reset",
+        description: "User password has been reset successfully",
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password",
         variant: "destructive",
       });
     },

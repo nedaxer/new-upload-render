@@ -1989,18 +1989,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ success: false, message: "User not found" });
       }
 
-      // Return actual password if available, otherwise return a placeholder
-      const displayPassword = user.actualPassword || "Password not available - created before update";
+      let displayPassword = user.actualPassword;
+      
+      // If no actualPassword exists, provide admin option to set a temporary password
+      if (!displayPassword) {
+        displayPassword = "No actual password stored - use 'Reset Password' to set a new one";
+      }
 
       res.json({
         success: true,
         password: displayPassword,
         username: user.username,
-        email: user.email
+        email: user.email,
+        hasActualPassword: !!user.actualPassword
       });
     } catch (error) {
       console.error('Admin get user password error:', error);
       res.status(500).json({ success: false, message: "Failed to get user password" });
+    }
+  });
+
+  // Admin reset user password
+  app.post('/api/admin/users/:userId/reset-password', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { newPassword } = req.body;
+      
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 6 characters long'
+        });
+      }
+      
+      const { User } = await import('./models/User');
+      const bcrypt = await import('bcrypt');
+      
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      
+      // Hash new password
+      const saltRounds = 10;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+      
+      // Update both hashed password and actual password
+      await User.findByIdAndUpdate(userId, {
+        password: hashedNewPassword,
+        actualPassword: newPassword
+      });
+      
+      console.log(`🔐 Admin reset password for user ${userId} (${user.username})`);
+      
+      // Broadcast password reset event via WebSocket
+      const { getWebSocketServer } = await import('./websocket');
+      const wss = getWebSocketServer();
+      
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'ADMIN_PASSWORD_RESET',
+              userId: userId,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Password reset successfully',
+        newPassword: newPassword
+      });
+    } catch (error) {
+      console.error('Admin reset password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to reset password'
+      });
     }
   });
 
