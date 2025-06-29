@@ -1,72 +1,85 @@
-import { AlertTriangle } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, DollarSign, Shield, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { DepositModal } from './deposit-modal';
 
 interface TradingRequirementModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  minimumRequired?: number;
-  onMakeDeposit: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function TradingRequirementModal({
-  open,
-  onOpenChange,
-  minimumRequired = 500,
-  onMakeDeposit
-}: TradingRequirementModalProps) {
+export function TradingRequirementModal({ isOpen, onClose }: TradingRequirementModalProps) {
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+
+  const handleDepositClick = () => {
+    onClose();
+    setDepositModalOpen(true);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#1a1a40] border border-orange-500/30 text-white">
-        <DialogHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-8 h-8 text-orange-500" />
-          </div>
-          <DialogTitle className="text-xl font-semibold text-white">
-            Deposit Required to Trade
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4 text-center">
-          <p className="text-gray-300 text-base leading-relaxed">
-            You need to make a deposit of at least ${minimumRequired.toLocaleString()} before you can access our trading features.
-          </p>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="bg-[#0a0a2e] border-[#2a2a50] text-white max-w-sm mx-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-orange-500/20 p-3 rounded-full">
+                <AlertTriangle className="w-8 h-8 text-orange-500" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-lg font-semibold text-white">
+              Trading Access Required
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-300 text-sm">
+              To access trading features, you need to meet our minimum deposit requirement
+            </DialogDescription>
+          </DialogHeader>
           
-          <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 space-y-2">
-            <h4 className="text-orange-400 font-medium text-sm">What you'll get access to:</h4>
-            <ul className="text-xs text-gray-300 space-y-1">
-              <li>• Spot Trading</li>
-              <li>• Futures Trading</li>
-              <li>• Staking Features</li>
-              <li>• Portfolio Management</li>
-              <li>• Advanced Trading Tools</li>
-            </ul>
+          <div className="space-y-4 py-4">
+            <div className="bg-[#1a1a40] p-4 rounded-lg border border-[#2a2a50]">
+              <div className="flex items-center space-x-3 mb-3">
+                <DollarSign className="w-5 h-5 text-orange-500" />
+                <span className="font-medium text-white">Minimum Deposit</span>
+              </div>
+              <div className="text-2xl font-bold text-orange-500 mb-1">$500.00</div>
+              <p className="text-xs text-gray-400">Required to unlock trading features</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Shield className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-gray-300">Secure and regulated platform</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <TrendingUp className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-gray-300">Access to all trading pairs</span>
+              </div>
+            </div>
           </div>
-          
-          <p className="text-xs text-gray-500">
-            This requirement helps protect your account and ensures compliance with financial regulations.
-          </p>
-        </div>
-        
-        <div className="flex gap-3 pt-4">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1 border-gray-600 text-white hover:bg-gray-700"
-          >
-            Maybe Later
-          </Button>
-          <Button
-            onClick={() => {
-              onOpenChange(false);
-              onMakeDeposit();
-            }}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            Make Deposit
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          <div className="flex flex-col space-y-2 pt-4">
+            <Button 
+              onClick={handleDepositClick}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-medium"
+            >
+              Make Deposit
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={onClose}
+              className="text-gray-400 hover:text-white hover:bg-[#1a1a40]"
+            >
+              Continue Browsing
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <DepositModal 
+        isOpen={depositModalOpen} 
+        onClose={() => setDepositModalOpen(false)}
+        onSelectMethod={() => {}}
+      />
+    </>
   );
 }

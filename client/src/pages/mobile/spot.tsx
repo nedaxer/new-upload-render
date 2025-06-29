@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { TradingRequirementModal } from '@/components/trading-requirement-modal';
-import { DepositModal } from '@/components/deposit-modal';
 import { 
   ChevronDown,
   Info,
@@ -25,7 +24,6 @@ export default function MobileSpot() {
   const [tpSlEnabled, setTpSlEnabled] = useState(false);
   const [postOnlyEnabled, setPostOnlyEnabled] = useState(false);
   const [tradingRequirementOpen, setTradingRequirementOpen] = useState(false);
-  const [depositModalOpen, setDepositModalOpen] = useState(false);
 
   // Check withdrawal eligibility (reuse same check for trading)
   const { data: withdrawalEligibility } = useQuery({
@@ -348,17 +346,8 @@ export default function MobileSpot() {
 
       {/* Trading Requirement Modal */}
       <TradingRequirementModal
-        open={tradingRequirementOpen}
-        onOpenChange={setTradingRequirementOpen}
-        minimumRequired={(withdrawalEligibility as any)?.data?.minimumRequired || 500}
-        onMakeDeposit={() => setDepositModalOpen(true)}
-      />
-
-      {/* Deposit Modal */}
-      <DepositModal
-        isOpen={depositModalOpen}
-        onClose={() => setDepositModalOpen(false)}
-        onSelectMethod={() => {}}
+        isOpen={tradingRequirementOpen}
+        onClose={() => setTradingRequirementOpen(false)}
       />
     </div>
   );
