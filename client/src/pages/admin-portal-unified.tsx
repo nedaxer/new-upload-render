@@ -982,7 +982,31 @@ export default function UnifiedAdminPortal() {
                     {(pendingKyc as any)?.map((verification: any) => (
                       <div
                         key={verification._id}
-                        className="p-4 bg-white/10 rounded-lg border border-white/20"
+                        className="p-4 bg-white/10 rounded-lg border border-white/20 cursor-pointer hover:bg-white/15 transition-all hover:border-orange-500/50"
+                        onClick={() => {
+                          // Check if documents exist before opening modal
+                          if (verification.kycData?.documents) {
+                            const documents = verification.kycData.documents;
+                            const availableDocs: string[] = [];
+                            
+                            if (documents.front) {
+                              availableDocs.push(`data:image/jpeg;base64,${documents.front}`);
+                            }
+                            if (documents.back) {
+                              availableDocs.push(`data:image/jpeg;base64,${documents.back}`);
+                            }
+                            if (documents.single) {
+                              availableDocs.push(`data:image/jpeg;base64,${documents.single}`);
+                            }
+                            
+                            if (availableDocs.length > 0) {
+                              setAllDocuments(availableDocs);
+                              setCurrentDocumentIndex(0);
+                              setSelectedDocumentImage(availableDocs[0]);
+                              setDocumentModalOpen(true);
+                            }
+                          }
+                        }}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center space-x-3">
@@ -1000,9 +1024,17 @@ export default function UnifiedAdminPortal() {
                               <p className="text-gray-400 text-xs">UID: {verification.uid}</p>
                             </div>
                           </div>
-                          <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30">
-                            Pending Review
-                          </Badge>
+                          <div className="flex flex-col items-end space-y-2">
+                            <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+                              Pending Review
+                            </Badge>
+                            {verification.kycData?.documents && (
+                              <div className="flex items-center text-blue-300 text-xs bg-blue-500/20 px-2 py-1 rounded-full">
+                                <Eye className="w-3 h-3 mr-1" />
+                                Click to view ID documents
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         {verification.kycData && (
@@ -1038,7 +1070,8 @@ export default function UnifiedAdminPortal() {
                                         src={`data:image/jpeg;base64,${verification.kycData.documents.front}`}
                                         alt="Document Front"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                           setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.front}`);
                                           setDocumentModalOpen(true);
                                         }}
@@ -1052,7 +1085,8 @@ export default function UnifiedAdminPortal() {
                                         src={`data:image/jpeg;base64,${verification.kycData.documents.back}`}
                                         alt="Document Back"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                           setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.back}`);
                                           setDocumentModalOpen(true);
                                         }}
@@ -1066,7 +1100,8 @@ export default function UnifiedAdminPortal() {
                                         src={`data:image/jpeg;base64,${verification.kycData.documents.single}`}
                                         alt="Document"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                           setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.single}`);
                                           setDocumentModalOpen(true);
                                         }}
@@ -1086,7 +1121,8 @@ export default function UnifiedAdminPortal() {
                               size="sm"
                               variant="outline"
                               className="w-full border-blue-500/30 text-blue-300 hover:bg-blue-500/20 mb-3"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 // Collect all available documents
                                 const documents = verification.kycData.documents;
                                 const availableDocs: string[] = [];
@@ -1119,7 +1155,10 @@ export default function UnifiedAdminPortal() {
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white flex-1"
-                            onClick={() => approveKycMutation.mutate({ userId: verification._id, status: 'verified' })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              approveKycMutation.mutate({ userId: verification._id, status: 'verified' });
+                            }}
                             disabled={approveKycMutation.isPending}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -1129,7 +1168,8 @@ export default function UnifiedAdminPortal() {
                             size="sm"
                             variant="outline"
                             className="border-red-500/30 text-red-300 hover:bg-red-500/20 flex-1"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const reason = prompt("Enter rejection reason (optional):");
                               approveKycMutation.mutate({ userId: verification._id, status: 'rejected', reason: reason || undefined });
                             }}
