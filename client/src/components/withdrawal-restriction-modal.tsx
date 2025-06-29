@@ -9,6 +9,7 @@ interface WithdrawalRestrictionModalProps {
   minimumRequired: number;
   totalDeposited: number;
   shortfall: number;
+  onMakeDeposit: () => void;
 }
 
 export function WithdrawalRestrictionModal({
@@ -16,7 +17,8 @@ export function WithdrawalRestrictionModal({
   onOpenChange,
   minimumRequired,
   totalDeposited,
-  shortfall
+  shortfall,
+  onMakeDeposit
 }: WithdrawalRestrictionModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,8 +53,7 @@ export function WithdrawalRestrictionModal({
           <Button
             onClick={() => {
               onOpenChange(false);
-              // Navigate to deposit (parent component should handle this)
-              window.location.href = '#deposit';
+              onMakeDeposit();
             }}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
           >

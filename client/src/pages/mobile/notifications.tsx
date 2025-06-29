@@ -7,9 +7,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useHaptics } from '@/hooks/use-haptics';
+import { NotificationMessageModal } from '@/components/notification-message-modal';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { medium } = useHaptics();
@@ -237,9 +240,25 @@ export default function MobileNotifications() {
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 text-[9px] capitalize">
-                      {notification.type === 'deposit' ? 'System Notification' : notification.type}
+                      {notification.type === 'deposit' ? 'System Notification' : 
+                       notification.type === 'message' ? 'Admin Message' : notification.type}
                     </span>
-                    {(notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') && notification.data && (
+                    {notification.type === 'message' ? (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            markAsReadMutation.mutate(notification._id);
+                          }
+                          setSelectedNotification(notification);
+                          setMessageModalOpen(true);
+                        }}
+                      >
+                        Read Message →
+                      </Button>
+                    ) : (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') && notification.data && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -266,6 +285,18 @@ export default function MobileNotifications() {
           </div>
         )}
       </div>
+
+      {/* Notification Message Modal */}
+      {selectedNotification && (
+        <NotificationMessageModal
+          isOpen={messageModalOpen}
+          onClose={() => {
+            setMessageModalOpen(false);
+            setSelectedNotification(null);
+          }}
+          notification={selectedNotification}
+        />
+      )}
     </div>
   );
 }

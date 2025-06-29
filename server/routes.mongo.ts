@@ -2533,6 +2533,28 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       
       await userSettings.save();
       
+      // Broadcast real-time withdrawal settings update
+      const wss = app.get('wss');
+      if (wss) {
+        const updateData = {
+          type: 'withdrawal_settings_update',
+          data: { 
+            userId,
+            minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
+            totalDeposited: userSettings.totalDeposited,
+            canWithdraw: userSettings.canWithdraw
+          }
+        };
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify(updateData));
+          }
+        });
+        
+        console.log(`📡 Real-time withdrawal settings update sent to user ${userId}`);
+      }
+      
       console.log(`✓ Admin updated withdrawal requirements for user ${userId}: $${minimumDepositForWithdrawal}`);
       
       res.json({ 

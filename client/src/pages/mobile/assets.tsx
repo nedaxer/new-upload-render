@@ -166,21 +166,51 @@ export default function MobileAssets() {
 
   // Get BTC price for USD to BTC conversion
   const getBTCPrice = () => {
-    if (!priceData?.data || !Array.isArray(priceData.data)) return 0;
-    const btcTicker = priceData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
+    if (!(priceData as any)?.data || !Array.isArray((priceData as any).data)) return 0;
+    const btcTicker = (priceData as any).data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
     return btcTicker ? parseFloat(btcTicker.price) : 45000; // Fallback to 45k if not found
   };
 
   // Get user's USD balance
   const getUserUSDBalance = () => {
-    return walletData?.data?.usdBalance || 0;
+    return (walletData as any)?.data?.usdBalance || 0;
   };
 
   // Check withdrawal eligibility
   const { data: withdrawalEligibility } = useQuery({
     queryKey: ["/api/withdrawals/eligibility"],
     enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
+
+  // WebSocket for real-time withdrawal eligibility updates
+  useEffect(() => {
+    if (!user) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}`);
+    
+    ws.onopen = () => {
+      console.log('WebSocket connected for real-time assets page updates');
+      ws.send(JSON.stringify({ type: 'subscribe_withdrawals' }));
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'withdrawal_settings_update' && data.data.userId === (user as any)?._id) {
+        // Invalidate withdrawal eligibility query to refetch with new settings
+        queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected, attempting to reconnect...');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [user, queryClient]);
 
   // Convert USD to BTC
   const convertUSDToBTC = (usdAmount: number) => {
@@ -733,6 +763,7 @@ export default function MobileAssets() {
         minimumRequired={(withdrawalEligibility as any)?.data?.minimumRequired || 500}
         totalDeposited={(withdrawalEligibility as any)?.data?.totalDeposited || 0}
         shortfall={(withdrawalEligibility as any)?.data?.shortfall || 500}
+        onMakeDeposit={() => setDepositModalOpen(true)}
       />
       </PullToRefresh>
     </MobileLayout>
