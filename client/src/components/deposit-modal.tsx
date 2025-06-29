@@ -17,19 +17,45 @@ export function DepositModal({ isOpen, onClose, onSelectMethod }: DepositModalPr
 
   useEffect(() => {
     const bottomNav = document.querySelector('[data-navigation="bottom"]') as HTMLElement;
+    const mobileLayout = document.querySelector('[data-layout="mobile"]') as HTMLElement;
     
-    if (isOpen && bottomNav) {
-      bottomNav.style.filter = 'blur(4px)';
-      bottomNav.style.transition = 'filter 0.3s ease-out';
-    } else if (bottomNav) {
-      bottomNav.style.filter = 'none';
+    if (isOpen) {
+      // Blur bottom navigation
+      if (bottomNav) {
+        bottomNav.style.filter = 'blur(4px)';
+        bottomNav.style.transition = 'filter 0.3s ease-out';
+      }
+      
+      // Blur main content
+      if (mobileLayout) {
+        mobileLayout.style.filter = 'blur(2px)';
+        mobileLayout.style.transition = 'filter 0.3s ease-out';
+      }
+      
+      // Prevent background scrolling
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Remove blur effects
+      if (bottomNav) {
+        bottomNav.style.filter = 'none';
+      }
+      if (mobileLayout) {
+        mobileLayout.style.filter = 'none';
+      }
+      
+      // Restore scrolling
+      document.body.style.overflow = 'auto';
     }
 
-    // Cleanup function to remove blur when component unmounts
+    // Cleanup function
     return () => {
       if (bottomNav) {
         bottomNav.style.filter = 'none';
       }
+      if (mobileLayout) {
+        mobileLayout.style.filter = 'none';
+      }
+      document.body.style.overflow = 'auto';
     };
   }, [isOpen]);
 

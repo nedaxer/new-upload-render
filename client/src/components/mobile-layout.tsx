@@ -27,7 +27,7 @@ export default function MobileLayout({ children, className = '', hideBottomNav =
 
   return (
     <div className={`min-h-screen ${getBackgroundClass()} ${getTextClass()}`}>
-      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`}>
+      <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`} data-layout="mobile">
         {children}
       </div>
       {!shouldHideBottomNav && <BottomNavigation />}

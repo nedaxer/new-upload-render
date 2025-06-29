@@ -121,15 +121,13 @@ export const Step3Questionnaire: React.FC<Step3QuestionnaireProps> = ({
 
   return (
     <MobileLayout hideBottomNav>
-      {/* Header - With X button */}
+      {/* Header - With Questionnaire title */}
       <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-white p-0">
           <ArrowLeft className="w-6 h-6" />
         </Button>
+        <h1 className="text-white text-lg font-semibold">Questionnaire</h1>
         <div className="w-6 h-6"></div> {/* Spacer for centering */}
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-white p-0">
-          <X className="w-6 h-6" />
-        </Button>
       </div>
 
       {/* Progress Bar - Orange color, smaller */}

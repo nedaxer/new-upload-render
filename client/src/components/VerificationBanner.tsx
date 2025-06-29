@@ -20,45 +20,41 @@ export const VerificationBanner: React.FC<VerificationBannerProps> = ({
     return null;
   }
   return (
-    <div className="mx-4 mb-4 p-4 bg-orange-500 rounded-lg shadow-lg">
-      {/* Progress indicators */}
-      <div className="flex items-center justify-center mb-4 space-x-4">
-        {/* Step 1 - Questions (always completed when shown) */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#0a0a2e]">
-          <Check className="w-6 h-6 text-green-500" />
+    <div className="mx-4 mb-3 p-3 bg-orange-500 rounded-lg shadow-lg">
+      {/* Progress indicators - smaller */}
+      <div className="flex items-center justify-center mb-3 space-x-3">
+        {/* Step 1 - All steps show with app background color and orange tick */}
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#0a0a2e]">
+          <Check className="w-4 h-4 text-orange-500" />
         </div>
         
-        <div className="w-8 h-1 bg-gray-300 rounded"></div>
+        <div className="w-6 h-1 bg-gray-300 rounded"></div>
         
-        {/* Step 2 - Documents */}
-        <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
-          questionsCompleted 
-            ? 'bg-orange-500 border-orange-500 text-white' 
-            : 'border-gray-300 text-gray-300'
-        }`}>
-          <span className="text-lg font-semibold">2</span>
+        {/* Step 2 - App background with orange tick */}
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#0a0a2e]">
+          <Check className="w-4 h-4 text-orange-500" />
         </div>
         
-        <div className="w-8 h-1 bg-gray-300 rounded"></div>
+        <div className="w-6 h-1 bg-gray-300 rounded"></div>
         
-        {/* Step 3 - Review */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 text-gray-300">
-          <span className="text-lg font-semibold">3</span>
+        {/* Step 3 - App background with orange tick */}
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#0a0a2e]">
+          <Check className="w-4 h-4 text-orange-500" />
         </div>
       </div>
 
-      <div className="mb-4">
-        <h3 className="text-white font-semibold text-lg mb-2">
+      <div className="mb-3">
+        <h3 className="text-white font-semibold text-base mb-1">
           {userName}, is it really you?
         </h3>
-        <p className="text-orange-100 text-sm">
+        <p className="text-orange-100 text-xs">
           Verifying your identity helps us prevent someone else from creating an account in your name.
         </p>
       </div>
       
       <Button 
         onClick={onVerifyClick}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 text-sm rounded-full"
       >
         Verify Your Account
       </Button>

@@ -273,7 +273,7 @@ export default function MobileProfile() {
                   ? `${user.firstName} ${user.lastName}` 
                   : user?.username || 'User'}
               </h2>
-              <ChevronRight className="w-3 h-3 text-gray-400" />
+              {(kycStatus as any)?.data?.kycStatus === 'verified' && <VerificationBadge />}
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-gray-400 text-xs">

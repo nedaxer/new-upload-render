@@ -93,15 +93,16 @@ export default function UnifiedAdminPortal() {
     
     const viewport = document.querySelector('meta[name=viewport]');
     if (viewport) {
-      viewport.setAttribute('content', 'width=1200, initial-scale=1.0');
+      viewport.setAttribute('content', 'width=device-width, initial-scale=0.8, user-scalable=yes');
     } else {
       const metaViewport = document.createElement('meta');
       metaViewport.name = 'viewport';
-      metaViewport.content = 'width=1200, initial-scale=1.0';
+      metaViewport.content = 'width=device-width, initial-scale=0.8, user-scalable=yes';
       document.head.appendChild(metaViewport);
     }
 
-    document.body.style.minWidth = '1200px';
+    // Allow mobile responsive behavior
+    document.body.style.minWidth = '';
     document.body.style.overflow = 'auto';
 
     return () => {
@@ -564,45 +565,45 @@ export default function UnifiedAdminPortal() {
   // Main dashboard
   return (
     <AdminPullToRefresh onRefresh={handleAdminRefresh}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-3">
-        {/* Enhanced Header */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-2">
+        {/* Enhanced Header - Mobile Optimized */}
+        <div className="mb-4">
+          <div className="flex flex-col items-start justify-between mb-4 space-y-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <Shield className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Unified Admin Portal</h1>
-                <p className="text-blue-200">Complete Platform Management</p>
+                <h1 className="text-lg font-bold text-white">Admin Portal</h1>
+                <p className="text-blue-200 text-xs">Platform Management</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap items-center gap-2">
               <Button 
                 onClick={() => setShowUsersList(!showUsersList)}
                 variant="outline" 
                 size="sm"
-                className="border-white/30 text-white hover:bg-white/20"
+                className="border-white/30 text-white hover:bg-white/20 text-xs px-2 py-1"
               >
-                <Users className="w-4 h-4 mr-1" />
+                <Users className="w-3 h-3 mr-1" />
                 Users ({Array.isArray(allUsers) ? allUsers.length : 0})
               </Button>
               <Button 
                 onClick={() => setShowKycPanel(!showKycPanel)}
                 variant="outline" 
                 size="sm"
-                className="border-white/30 text-white hover:bg-white/20"
+                className="border-white/30 text-white hover:bg-white/20 text-xs px-2 py-1"
               >
-                <UserCheck className="w-4 h-4 mr-1" />
+                <UserCheck className="w-3 h-3 mr-1" />
                 KYC ({(pendingKyc as any)?.length || 0})
               </Button>
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
                 size="sm"
-                className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                className="border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs px-2 py-1"
               >
-                <LogOut className="w-4 h-4 mr-1" />
+                <LogOut className="w-3 h-3 mr-1" />
                 Logout
               </Button>
             </div>
@@ -610,42 +611,42 @@ export default function UnifiedAdminPortal() {
 
           {/* Analytics Overview */}
           {analyticsData?.analytics && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-2 mb-4">
               <Card className="bg-white/10 backdrop-blur border-white/20">
-                <CardContent className="p-4">
+                <CardContent className="p-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-blue-200 text-sm">Total Users</p>
-                      <p className="text-white text-2xl font-bold">{analyticsData.analytics.totalUsers}</p>
+                      <p className="text-blue-200 text-xs">Total Users</p>
+                      <p className="text-white text-lg font-bold">{analyticsData.analytics.totalUsers}</p>
                     </div>
-                    <Users className="w-8 h-8 text-blue-400" />
+                    <Users className="w-5 h-5 text-blue-400" />
                   </div>
                 </CardContent>
               </Card>
               
               <Card className="bg-white/10 backdrop-blur border-white/20">
-                <CardContent className="p-4">
+                <CardContent className="p-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-green-200 text-sm">Online Now</p>
-                      <p className="text-white text-2xl font-bold">{analyticsData.analytics.onlineUsers}</p>
+                      <p className="text-green-200 text-xs">Online Now</p>
+                      <p className="text-white text-lg font-bold">{analyticsData.analytics.onlineUsers}</p>
                     </div>
                     <div className="flex items-center">
-                      <Wifi className="w-8 h-8 text-green-400" />
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse ml-1"></div>
+                      <Wifi className="w-5 h-5 text-green-400" />
+                      <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse ml-1"></div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
               <Card className="bg-white/10 backdrop-blur border-white/20">
-                <CardContent className="p-4">
+                <CardContent className="p-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-yellow-200 text-sm">Active 24h</p>
-                      <p className="text-white text-2xl font-bold">{analyticsData.analytics.activeUsers24h}</p>
+                      <p className="text-yellow-200 text-xs">Active 24h</p>
+                      <p className="text-white text-lg font-bold">{analyticsData.analytics.activeUsers24h}</p>
                     </div>
-                    <Activity className="w-8 h-8 text-yellow-400" />
+                    <Activity className="w-5 h-5 text-yellow-400" />
                   </div>
                 </CardContent>
               </Card>
@@ -685,16 +686,16 @@ export default function UnifiedAdminPortal() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {Array.isArray(allUsers) && allUsers.slice(0, 12).map((user: AdminUser) => (
+                <div className="grid grid-cols-1 gap-2">
+                  {Array.isArray(allUsers) && allUsers.slice(0, 8).map((user: AdminUser) => (
                     <div
                       key={user._id}
-                      className="p-3 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"
+                      className="p-2 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"
                       onClick={() => setSelectedUser(user)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-2 flex-1 min-w-0">
-                          <Avatar className="w-8 h-8 flex-shrink-0">
+                          <Avatar className="w-6 h-6 flex-shrink-0">
                             {user.profilePicture ? (
                               <AvatarImage src={user.profilePicture} alt={user.username} />
                             ) : (
@@ -705,14 +706,14 @@ export default function UnifiedAdminPortal() {
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center space-x-1">
-                              <p className="text-sm font-medium text-white truncate">
+                              <p className="text-xs font-medium text-white truncate">
                                 {user.firstName && user.lastName 
                                   ? `${user.firstName} ${user.lastName}` 
                                   : user.username
                                 }
                               </p>
                               {user.isOnline && (
-                                <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                                <div className="w-1 h-1 bg-green-400 rounded-full flex-shrink-0"></div>
                               )}
                             </div>
                             <p className="text-xs text-blue-200 truncate">
@@ -873,19 +874,19 @@ export default function UnifiedAdminPortal() {
           )}
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white/10 border-white/20">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20">
-              <BarChart3 className="w-4 h-4 mr-2" />
+        {/* Main Content Tabs - Mobile Optimized */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="bg-white/10 border-white/20 w-full">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 text-xs">
+              <BarChart3 className="w-3 h-3 mr-1" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-white/20">
-              <Users className="w-4 h-4 mr-2" />
-              User Management
+            <TabsTrigger value="users" className="data-[state=active]:bg-white/20 text-xs">
+              <Users className="w-3 h-3 mr-1" />
+              Users
             </TabsTrigger>
-            <TabsTrigger value="deposits" className="data-[state=active]:bg-white/20">
-              <DollarSign className="w-4 h-4 mr-2" />
+            <TabsTrigger value="deposits" className="data-[state=active]:bg-white/20 text-xs">
+              <DollarSign className="w-3 h-3 mr-1" />
               Deposits
             </TabsTrigger>
           </TabsList>
@@ -943,10 +944,10 @@ export default function UnifiedAdminPortal() {
                   Advanced User Search
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Search by Email</label>
+                    <label className="text-xs font-medium text-white">Search by Email</label>
                     <div className="relative">
                       <Input
                         placeholder="Enter email address..."
