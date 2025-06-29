@@ -8,10 +8,12 @@ import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useHaptics } from '@/hooks/use-haptics';
 import { NotificationMessageModal } from '@/components/notification-message-modal';
+import { ConnectionRequestModal } from '@/components/connection-request-modal';
 
 export default function MobileNotifications() {
   const [activeTab, setActiveTab] = useState('All');
   const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [connectionRequestModalOpen, setConnectionRequestModalOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const queryClient = useQueryClient();
   const { t } = useLanguage();
@@ -247,6 +249,7 @@ export default function MobileNotifications() {
                     <span className="text-gray-500 text-[9px] capitalize">
                       {notification.type === 'deposit' ? 'System Notification' : 
                        notification.type === 'message' ? 'Support Message' : 
+                       notification.type === 'connection_request' ? 'Connection Request' :
                        notification.type === 'kyc_approved' ? 'KYC Approved' :
                        notification.type === 'kyc_rejected' ? 'KYC Review' :
                        notification.type === 'system' && notification.data?.notificationType === 'message' ? 'Support Message' :
@@ -266,6 +269,21 @@ export default function MobileNotifications() {
                         }}
                       >
                         Read Message →
+                      </Button>
+                    ) : notification.type === 'connection_request' ? (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            markAsReadMutation.mutate(notification._id);
+                          }
+                          setSelectedNotification(notification);
+                          setConnectionRequestModalOpen(true);
+                        }}
+                      >
+                        Respond →
                       </Button>
                     ) : notification.type === 'kyc_approved' || notification.type === 'kyc_rejected' ? (
                       <Button 
@@ -316,6 +334,18 @@ export default function MobileNotifications() {
           isOpen={messageModalOpen}
           onClose={() => {
             setMessageModalOpen(false);
+            setSelectedNotification(null);
+          }}
+          notification={selectedNotification}
+        />
+      )}
+
+      {/* Connection Request Modal */}
+      {selectedNotification && (
+        <ConnectionRequestModal
+          isOpen={connectionRequestModalOpen}
+          onClose={() => {
+            setConnectionRequestModalOpen(false);
             setSelectedNotification(null);
           }}
           notification={selectedNotification}

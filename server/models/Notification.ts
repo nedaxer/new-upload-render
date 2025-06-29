@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface INotification extends Document {
   _id: string;
   userId: string;
-  type: 'deposit' | 'withdrawal' | 'transfer_sent' | 'transfer_received' | 'system' | 'trade' | 'announcement' | 'kyc_approved' | 'kyc_rejected' | 'message';
+  type: 'deposit' | 'withdrawal' | 'transfer_sent' | 'transfer_received' | 'system' | 'trade' | 'announcement' | 'kyc_approved' | 'kyc_rejected' | 'message' | 'connection_request';
   title: string;
   message: string;
   data?: any;
@@ -14,7 +14,7 @@ export interface INotification extends Document {
 
 const NotificationSchema = new Schema<INotification>({
   userId: { type: String, required: true, index: true },
-  type: { type: String, enum: ['deposit', 'withdrawal', 'transfer_sent', 'transfer_received', 'system', 'trade', 'announcement', 'kyc_approved', 'kyc_rejected', 'message'], required: true },
+  type: { type: String, enum: ['deposit', 'withdrawal', 'transfer_sent', 'transfer_received', 'system', 'trade', 'announcement', 'kyc_approved', 'kyc_rejected', 'message', 'connection_request'], required: true },
   title: { type: String, required: true },
   message: { type: String, required: true },
   data: { type: Schema.Types.Mixed },

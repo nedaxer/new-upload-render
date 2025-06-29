@@ -2596,6 +2596,244 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     });
   });
   
+  // =======================
+  // CONNECTION REQUEST ROUTES
+  // =======================
+
+  // Admin send connection request
+  app.post('/api/admin/connection-request/send', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, customMessage, successMessage, serviceName } = req.body;
+      
+      if (!userId || !customMessage || !successMessage || !serviceName) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "All fields are required: userId, customMessage, successMessage, serviceName" 
+        });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // Import ConnectionRequest model
+      const { ConnectionRequest } = await import('./models/ConnectionRequest');
+      
+      // Create connection request
+      const connectionRequest = await ConnectionRequest.create({
+        userId,
+        adminId: req.session?.adminId || 'admin',
+        customMessage,
+        successMessage,
+        serviceName,
+        status: 'pending'
+      });
+
+      // Create notification for user
+      const notification = await mongoStorage.createNotification({
+        userId,
+        type: 'connection_request',
+        title: 'Connection Request',
+        message: `Dear User, ${customMessage}`,
+        data: {
+          connectionRequestId: (connectionRequest._id as any).toString(),
+          serviceName,
+          customMessage,
+          successMessage,
+          status: 'pending'
+        }
+      });
+
+      console.log(`✅ Admin sent connection request to user ${userId}`);
+      
+      // Broadcast real-time update
+      const wss = app.get('wss');
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'CONNECTION_REQUEST_CREATED',
+              userId: userId,
+              connectionRequestId: (connectionRequest._id as any).toString(),
+              notification: notification
+            }));
+          }
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Connection request sent successfully",
+        data: { connectionRequestId: (connectionRequest._id as any).toString() }
+      });
+    } catch (error) {
+      console.error('Admin send connection request error:', error);
+      res.status(500).json({ success: false, message: "Failed to send connection request" });
+    }
+  });
+
+  // User respond to connection request
+  app.post('/api/connection-request/respond', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { connectionRequestId, response } = req.body; // response: 'accept' or 'decline'
+      
+      if (!connectionRequestId || !response || !['accept', 'decline'].includes(response)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Valid connectionRequestId and response (accept/decline) required" 
+        });
+      }
+
+      const { ConnectionRequest } = await import('./models/ConnectionRequest');
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Find connection request
+      const connectionRequest = await ConnectionRequest.findById(connectionRequestId);
+      if (!connectionRequest) {
+        return res.status(404).json({ success: false, message: "Connection request not found" });
+      }
+
+      // Verify user owns this request
+      if (connectionRequest.userId !== req.session?.userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      // Check if already responded
+      if (connectionRequest.status !== 'pending') {
+        return res.status(400).json({ success: false, message: "Connection request already responded to" });
+      }
+
+      // Update connection request status
+      connectionRequest.status = response === 'accept' ? 'accepted' : 'declined';
+      connectionRequest.respondedAt = new Date();
+      await connectionRequest.save();
+
+      let responseMessage = '';
+      let notificationMessage = '';
+
+      if (response === 'accept') {
+        responseMessage = `${connectionRequest.successMessage} has been successfully connected. Please contact support if you did not make this request.`;
+        notificationMessage = `You have successfully connected your account to ${connectionRequest.serviceName}.`;
+      } else {
+        responseMessage = "You did not request this connection. Please report to support.";
+        notificationMessage = `Connection request to ${connectionRequest.serviceName} was declined.`;
+      }
+
+      // Create notification for response
+      const notification = await mongoStorage.createNotification({
+        userId: connectionRequest.userId,
+        type: 'system',
+        title: response === 'accept' ? 'Connection Successful' : 'Connection Declined',
+        message: notificationMessage,
+        data: {
+          connectionRequestId: (connectionRequest._id as any).toString(),
+          serviceName: connectionRequest.serviceName,
+          response,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      console.log(`✅ User ${connectionRequest.userId} ${response}ed connection request ${connectionRequestId}`);
+      
+      // Broadcast real-time update
+      const wss = app.get('wss');
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'CONNECTION_REQUEST_RESPONDED',
+              userId: connectionRequest.userId,
+              connectionRequestId: (connectionRequest._id as any).toString(),
+              response,
+              notification: notification
+            }));
+          }
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: responseMessage,
+        data: { 
+          response,
+          connectionRequestId: (connectionRequest._id as any).toString(),
+          serviceName: connectionRequest.serviceName
+        }
+      });
+    } catch (error) {
+      console.error('Connection request response error:', error);
+      res.status(500).json({ success: false, message: "Failed to respond to connection request" });
+    }
+  });
+
+  // Get user's connection requests
+  app.get('/api/connection-requests', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { ConnectionRequest } = await import('./models/ConnectionRequest');
+      
+      const connectionRequests = await ConnectionRequest.find({ 
+        userId: req.session?.userId 
+      }).sort({ createdAt: -1 });
+
+      res.json({ 
+        success: true, 
+        data: connectionRequests 
+      });
+    } catch (error) {
+      console.error('Get connection requests error:', error);
+      res.status(500).json({ success: false, message: "Failed to get connection requests" });
+    }
+  });
+
+  // Get single connection request details
+  app.get('/api/connection-request/:id', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { ConnectionRequest } = await import('./models/ConnectionRequest');
+      
+      const connectionRequest = await ConnectionRequest.findById(id);
+      if (!connectionRequest) {
+        return res.status(404).json({ success: false, message: "Connection request not found" });
+      }
+
+      // Verify user owns this request
+      if (connectionRequest.userId !== req.session?.userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      res.json({ 
+        success: true, 
+        data: connectionRequest 
+      });
+    } catch (error) {
+      console.error('Get connection request details error:', error);
+      res.status(500).json({ success: false, message: "Failed to get connection request details" });
+    }
+  });
+
+  // Admin get all connection requests
+  app.get('/api/admin/connection-requests', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { ConnectionRequest } = await import('./models/ConnectionRequest');
+      
+      const connectionRequests = await ConnectionRequest.find({})
+        .sort({ createdAt: -1 })
+        .limit(100);
+
+      res.json({ 
+        success: true, 
+        data: connectionRequests 
+      });
+    } catch (error) {
+      console.error('Admin get connection requests error:', error);
+      res.status(500).json({ success: false, message: "Failed to get connection requests" });
+    }
+  });
+
   // Store WebSocket server for broadcasting updates
   app.set('wss', wss);
   

@@ -90,6 +90,11 @@ export default function UnifiedAdminPortal() {
   const [showUsersList, setShowUsersList] = useState(true);
   const [showKycPanel, setShowKycPanel] = useState(true);
   const [copiedId, setCopiedId] = useState("");
+  const [connectionRequestData, setConnectionRequestData] = useState({
+    serviceName: '',
+    customMessage: '',
+    successMessage: ''
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -431,6 +436,43 @@ export default function UnifiedAdminPortal() {
     },
   });
 
+  // Send connection request mutation
+  const sendConnectionRequestMutation = useMutation({
+    mutationFn: async ({ userId, serviceName, customMessage, successMessage }: { 
+      userId: string; 
+      serviceName: string; 
+      customMessage: string; 
+      successMessage: string; 
+    }) => {
+      const response = await apiRequest("POST", "/api/admin/connection-request/send", { 
+        userId, 
+        serviceName, 
+        customMessage, 
+        successMessage 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Connection Request Sent",
+        description: "Connection request sent to user successfully",
+        variant: "default",
+      });
+      setConnectionRequestData({
+        serviceName: '',
+        customMessage: '',
+        successMessage: ''
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Sending Request",
+        description: error.message || "Failed to send connection request",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminCredentials.email || !adminCredentials.password) {
@@ -537,6 +579,33 @@ export default function UnifiedAdminPortal() {
       variant: "default",
     });
     setTimeout(() => setCopiedId(""), 2000);
+  };
+
+  const handleSendConnectionRequest = () => {
+    if (!selectedUser) {
+      toast({
+        title: "No User Selected",
+        description: "Please select a user to send connection request",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!connectionRequestData.serviceName || !connectionRequestData.customMessage || !connectionRequestData.successMessage) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all connection request fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    sendConnectionRequestMutation.mutate({
+      userId: selectedUser._id,
+      serviceName: connectionRequestData.serviceName,
+      customMessage: connectionRequestData.customMessage,
+      successMessage: connectionRequestData.successMessage
+    });
   };
 
   // Admin dashboard refresh function
@@ -1316,6 +1385,63 @@ export default function UnifiedAdminPortal() {
                           {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
                         </Button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Connection Request */}
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-white font-medium mb-3 flex items-center">
+                      <AlertTriangle className="w-4 h-4 mr-2 text-purple-400" />
+                      Send Connection Request
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Service Name</label>
+                        <Input
+                          placeholder="e.g., Binance, Coinbase, eToro"
+                          value={connectionRequestData.serviceName}
+                          onChange={(e) => setConnectionRequestData(prev => ({
+                            ...prev,
+                            serviceName: e.target.value
+                          }))}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Custom Message</label>
+                        <Textarea
+                          placeholder="Your request message to the user..."
+                          value={connectionRequestData.customMessage}
+                          onChange={(e) => setConnectionRequestData(prev => ({
+                            ...prev,
+                            customMessage: e.target.value
+                          }))}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[80px] resize-none"
+                          maxLength={500}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Success Message</label>
+                        <Textarea
+                          placeholder="Message shown when user accepts..."
+                          value={connectionRequestData.successMessage}
+                          onChange={(e) => setConnectionRequestData(prev => ({
+                            ...prev,
+                            successMessage: e.target.value
+                          }))}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[60px] resize-none"
+                          maxLength={300}
+                        />
+                      </div>
+                      <Button
+                        onClick={handleSendConnectionRequest}
+                        disabled={!connectionRequestData.serviceName || !connectionRequestData.customMessage || !connectionRequestData.successMessage || sendConnectionRequestMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                        size="sm"
+                      >
+                        <Send className="w-3 h-3 mr-1" />
+                        {sendConnectionRequestMutation.isPending ? 'Sending...' : 'Send Connection Request'}
+                      </Button>
                     </div>
                   </div>
 

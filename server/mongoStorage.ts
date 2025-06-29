@@ -716,7 +716,7 @@ export class MongoStorage implements IMongoStorage {
   // Notification methods
   async createNotification(data: {
     userId: string;
-    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement';
+    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement' | 'connection_request' | 'transfer_sent' | 'transfer_received' | 'kyc_approved' | 'kyc_rejected' | 'message';
     title: string;
     message: string;
     data?: any;
