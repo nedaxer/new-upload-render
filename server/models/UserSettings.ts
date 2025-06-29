@@ -5,6 +5,7 @@ export interface IUserSettings extends Document {
   minimumDepositForWithdrawal: number;
   totalDeposited: number;
   canWithdraw: boolean;
+  withdrawalMessage: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,10 @@ const UserSettingsSchema = new Schema({
   canWithdraw: {
     type: Boolean,
     default: false
+  },
+  withdrawalMessage: {
+    type: String,
+    default: "You need to make a first deposit of ${amount} to unlock withdrawal features."
   },
   createdAt: {
     type: Date,

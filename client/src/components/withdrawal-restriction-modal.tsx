@@ -9,6 +9,7 @@ interface WithdrawalRestrictionModalProps {
   minimumRequired: number;
   totalDeposited: number;
   shortfall: number;
+  withdrawalMessage?: string;
   onMakeDeposit: () => void;
 }
 
@@ -18,8 +19,13 @@ export function WithdrawalRestrictionModal({
   minimumRequired,
   totalDeposited,
   shortfall,
+  withdrawalMessage,
   onMakeDeposit
 }: WithdrawalRestrictionModalProps) {
+  // Process the withdrawal message to replace ${amount} with actual amount
+  const displayMessage = withdrawalMessage 
+    ? withdrawalMessage.replace('${amount}', `$${minimumRequired.toLocaleString()}`)
+    : `You need to make a first deposit of $${minimumRequired.toLocaleString()}`;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-[#1a1a40] border border-orange-500/30 text-white">
@@ -34,7 +40,7 @@ export function WithdrawalRestrictionModal({
         
         <div className="space-y-4 text-center">
           <p className="text-gray-300 text-base leading-relaxed">
-            You need to make a first deposit of ${minimumRequired.toLocaleString()}
+            {displayMessage}
           </p>
           
           <p className="text-xs text-gray-500">

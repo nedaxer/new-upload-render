@@ -87,6 +87,7 @@ export default function UnifiedAdminPortal() {
   const [showPassword, setShowPassword] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [withdrawalAmount, setWithdrawalAmount] = useState('500');
+  const [withdrawalMessage, setWithdrawalMessage] = useState('You need to make a first deposit of ${amount} to unlock withdrawal features.');
   const [userPassword, setUserPassword] = useState("");
   const [hasActualPassword, setHasActualPassword] = useState(true);
   const [newPasswordForReset, setNewPasswordForReset] = useState("");
@@ -226,6 +227,35 @@ export default function UnifiedAdminPortal() {
     
     checkAuth();
   }, []);
+
+  // Load user withdrawal settings when user is selected
+  useEffect(() => {
+    const loadWithdrawalSettings = async () => {
+      if (!selectedUser?._id) return;
+      
+      try {
+        const response = await fetch(`/api/admin/users/${selectedUser._id}/withdrawal-settings`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setWithdrawalAmount(data.data.minimumRequired.toString());
+            setWithdrawalMessage(data.data.withdrawalMessage || 'You need to make a first deposit of ${amount} to unlock withdrawal features.');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading withdrawal settings:', error);
+      }
+    };
+    
+    loadWithdrawalSettings();
+  }, [selectedUser?._id]);
 
   // Admin authentication
   const adminLoginMutation = useMutation({
@@ -540,8 +570,16 @@ export default function UnifiedAdminPortal() {
 
   // Update withdrawal settings mutation
   const updateWithdrawalSettingsMutation = useMutation({
-    mutationFn: async ({ userId, minimumDepositForWithdrawal }: { userId: string; minimumDepositForWithdrawal: number }) => {
-      const response = await apiRequest("POST", "/api/admin/users/withdrawal-settings", { userId, minimumDepositForWithdrawal });
+    mutationFn: async ({ userId, minimumDepositForWithdrawal, withdrawalMessage }: { 
+      userId: string; 
+      minimumDepositForWithdrawal: number;
+      withdrawalMessage?: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/admin/users/withdrawal-settings", { 
+        userId, 
+        minimumDepositForWithdrawal, 
+        withdrawalMessage 
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -1724,18 +1762,34 @@ export default function UnifiedAdminPortal() {
                             step="50"
                           />
                         </div>
-                        <Button
-                          onClick={() => updateWithdrawalSettingsMutation.mutate({ 
-                            userId: selectedUser._id, 
-                            minimumDepositForWithdrawal: parseFloat(withdrawalAmount) || 500 
-                          })}
-                          disabled={updateWithdrawalSettingsMutation.isPending}
-                          className="bg-orange-600 hover:bg-orange-700 text-white"
-                          size="sm"
-                        >
-                          {updateWithdrawalSettingsMutation.isPending ? 'Updating...' : 'Update'}
-                        </Button>
                       </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400">Custom Withdrawal Message:</label>
+                        <textarea
+                          value={withdrawalMessage}
+                          onChange={(e) => setWithdrawalMessage(e.target.value)}
+                          className="w-full h-20 bg-white/10 border border-white/20 text-white text-sm rounded-lg p-2 resize-none"
+                          placeholder="Enter custom message. Use ${amount} to display the deposit amount."
+                        />
+                        <p className="text-xs text-gray-400">
+                          Use ${'{amount}'} in your message to show the actual deposit amount to users.
+                        </p>
+                      </div>
+                      
+                      <Button
+                        onClick={() => updateWithdrawalSettingsMutation.mutate({ 
+                          userId: selectedUser._id, 
+                          minimumDepositForWithdrawal: parseFloat(withdrawalAmount) || 500,
+                          withdrawalMessage: withdrawalMessage
+                        })}
+                        disabled={updateWithdrawalSettingsMutation.isPending}
+                        className="bg-orange-600 hover:bg-orange-700 text-white w-full"
+                        size="sm"
+                      >
+                        {updateWithdrawalSettingsMutation.isPending ? 'Updating...' : 'Update Withdrawal Settings'}
+                      </Button>
+                      
                       <p className="text-xs text-gray-500">
                         Users must deposit at least this amount before they can withdraw funds.
                       </p>

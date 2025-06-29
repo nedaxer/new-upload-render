@@ -2609,6 +2609,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
           canWithdraw: userSettings.canWithdraw,
           totalDeposited: userSettings.totalDeposited,
           minimumRequired: userSettings.minimumDepositForWithdrawal,
+          withdrawalMessage: userSettings.withdrawalMessage || "You need to make a first deposit of ${amount} to unlock withdrawal features.",
           shortfall: Math.max(0, userSettings.minimumDepositForWithdrawal - userSettings.totalDeposited)
         }
       });
@@ -2695,10 +2696,65 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
+  // Admin get user withdrawal settings
+  app.get('/api/admin/users/:userId/withdrawal-settings', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      if (!userId) {
+        return res.status(400).json({ success: false, message: "User ID required" });
+      }
+
+      const { UserSettings } = await import('./models/UserSettings');
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      
+      // Get or create user settings
+      let userSettings = await UserSettings.findOne({ userId });
+      if (!userSettings) {
+        userSettings = new UserSettings({ 
+          userId,
+          minimumDepositForWithdrawal: 500,
+          totalDeposited: 0,
+          canWithdraw: false
+        });
+        await userSettings.save();
+      }
+      
+      // Calculate total deposits from transaction history
+      const deposits = await mongoStorage.getUserDepositTransactions(userId);
+      const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
+      
+      // Update user settings with current total
+      userSettings.totalDeposited = totalDeposited;
+      userSettings.canWithdraw = totalDeposited >= userSettings.minimumDepositForWithdrawal;
+      await userSettings.save();
+      
+      res.json({
+        success: true,
+        data: {
+          canWithdraw: userSettings.canWithdraw,
+          totalDeposited: userSettings.totalDeposited,
+          minimumRequired: userSettings.minimumDepositForWithdrawal,
+          withdrawalMessage: userSettings.withdrawalMessage || "You need to make a first deposit of ${amount} to unlock withdrawal features.",
+          shortfall: Math.max(0, userSettings.minimumDepositForWithdrawal - userSettings.totalDeposited)
+        }
+      });
+    } catch (error) {
+      console.error('Get user withdrawal settings error:', error);
+      res.status(500).json({ success: false, message: "Failed to get withdrawal settings" });
+    }
+  });
+
   // Admin update user withdrawal requirements
   app.post('/api/admin/users/withdrawal-settings', requireAdminAuth, async (req: Request, res: Response) => {
     try {
-      const { userId, minimumDepositForWithdrawal } = req.body;
+      const { userId, minimumDepositForWithdrawal, withdrawalMessage } = req.body;
       
       if (!userId || minimumDepositForWithdrawal === undefined || minimumDepositForWithdrawal < 0) {
         return res.status(400).json({ success: false, message: "Valid user ID and minimum deposit amount required" });
@@ -2720,6 +2776,9 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       }
       
       userSettings.minimumDepositForWithdrawal = minimumDepositForWithdrawal;
+      if (withdrawalMessage) {
+        userSettings.withdrawalMessage = withdrawalMessage;
+      }
       
       // Recalculate withdrawal eligibility
       const deposits = await mongoStorage.getUserDepositTransactions(userId);
@@ -2738,6 +2797,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
           type: 'WITHDRAWAL_SETTINGS_UPDATE',
           userId,
           minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
+          withdrawalMessage: userSettings.withdrawalMessage,
           totalDeposited: userSettings.totalDeposited,
           canWithdraw: userSettings.canWithdraw
         };

@@ -589,6 +589,7 @@ export default function MobileAssets() {
         minimumRequired={(withdrawalEligibility as any)?.data?.minimumRequired || 500}
         totalDeposited={(withdrawalEligibility as any)?.data?.totalDeposited || 0}
         shortfall={(withdrawalEligibility as any)?.data?.shortfall || 500}
+        withdrawalMessage={(withdrawalEligibility as any)?.data?.withdrawalMessage}
         onMakeDeposit={() => setDepositModalOpen(true)}
       />
 
