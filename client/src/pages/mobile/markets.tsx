@@ -127,8 +127,8 @@ export default function MobileMarkets() {
 
   // Process comprehensive crypto pairs with live price data
   const processedMarkets = CRYPTO_PAIRS.map((pair: CryptoPair) => {
-    // Find matching ticker data from API
-    const ticker = marketData?.data?.find((t: CryptoTicker) => t.symbol === pair.symbol);
+    // Find matching ticker data from API by base asset (e.g., BTC for BTCUSDT)
+    const ticker = marketData?.data?.find((t: CryptoTicker) => t.symbol === pair.baseAsset);
     
     if (ticker) {
       const price = ticker.price;

@@ -58,6 +58,7 @@ export default function MobileSettings() {
   // Fetch KYC status
   const { data: kycData } = useQuery({
     queryKey: ['/api/verification/status'],
+    queryFn: () => apiRequest('/api/verification/status'),
     enabled: !!user,
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
