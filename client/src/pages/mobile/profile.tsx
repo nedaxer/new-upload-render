@@ -169,7 +169,7 @@ export default function MobileProfile() {
       icon: Users,
       label: t('inviteFriends'),
       href: '/mobile/invite-friends',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
+      rightElement: <ChevronRight className="w-4 h-4 text-gray-400" />
     },
     {
       icon: Shield,
@@ -177,7 +177,7 @@ export default function MobileProfile() {
       href: '/mobile/kyc-status',
       rightElement: (
         <div className="flex items-center space-x-2">
-          <span className={`text-sm ${
+          <span className={`text-xs ${
             (kycStatus as any)?.data?.kycStatus === 'verified' 
               ? 'text-green-500' 
               : (kycStatus as any)?.data?.kycStatus === 'pending'
@@ -191,7 +191,7 @@ export default function MobileProfile() {
                 : t('not_verified')
             }
           </span>
-          <ChevronRight className="w-5 h-5 text-gray-400" />
+          <ChevronRight className="w-4 h-4 text-gray-400" />
         </div>
       )
     },
@@ -199,25 +199,25 @@ export default function MobileProfile() {
       icon: Settings,
       label: t('security'),
       href: '/mobile/security',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
+      rightElement: <ChevronRight className="w-4 h-4 text-gray-400" />
     },
     {
       icon: Bell,
       label: t('notificationCenter'),
       href: '/mobile/notifications',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
+      rightElement: <ChevronRight className="w-4 h-4 text-gray-400" />
     },
     {
       icon: Headphones,
       label: t('helpContact'),
       href: '/company/contact',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
+      rightElement: <ChevronRight className="w-4 h-4 text-gray-400" />
     },
     {
       icon: Info,
       label: t('aboutUs'),
       href: '/company/about',
-      rightElement: <ChevronRight className="w-5 h-5 text-gray-400" />
+      rightElement: <ChevronRight className="w-4 h-4 text-gray-400" />
     }
   ];
 
@@ -240,9 +240,9 @@ export default function MobileProfile() {
 
       {/* Profile Header */}
       <div className="px-4 pb-6">
-        <div className="flex items-center space-x-4 mb-4">
+        <div className="flex items-start space-x-4 mb-4">
           <div 
-            className="relative w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors"
+            className="relative w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
             {user?.profilePicture ? (
@@ -252,7 +252,7 @@ export default function MobileProfile() {
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <User className="w-8 h-8 text-gray-300" />
+              <User className="w-10 h-10 text-gray-300" />
             )}
             <div className="absolute -bottom-1 -right-1 bg-orange-500 rounded-full p-1">
               <Camera className="w-3 h-3 text-white" />
@@ -265,26 +265,20 @@ export default function MobileProfile() {
             onChange={handleProfilePictureUpload}
             className="hidden"
           />
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <h2 className="text-white text-xl font-bold">
+          <div className="flex-1 pt-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <h2 className="text-white text-lg font-semibold">
                 {user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}` 
                   : user?.username || 'User'}
               </h2>
               {(kycStatus as any)?.data?.kycStatus === 'verified' && <VerificationBadge />}
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-gray-400" />
             </div>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium">
-                Main Account
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-400 text-sm">
+                UID: {userUID}
               </span>
-              <div className="flex items-center space-x-1">
-                <span className="text-gray-400 text-sm">
-                  UID: {userUID}
-                </span>
-                {(kycStatus as any)?.data?.kycStatus === 'verified' && <VerificationBadge />}
-              </div>
               <Copy 
                 className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white"
                 onClick={() => {
@@ -298,17 +292,37 @@ export default function MobileProfile() {
             </div>
           </div>
         </div>
+        
+        {/* Status Cards */}
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="bg-gray-800 rounded-lg p-3 flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">0</span>
+            </div>
+            <span className="text-white text-sm font-medium">Non-VIP</span>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-3 flex items-center space-x-2">
+            <Users className="w-5 h-5 text-orange-500" />
+            <span className="text-white text-sm font-medium">Main Account</span>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-3 flex items-center space-x-2">
+            <Shield className={`w-5 h-5 ${(kycStatus as any)?.data?.kycStatus === 'verified' ? 'text-green-500' : 'text-gray-400'}`} />
+            <span className="text-white text-sm font-medium">
+              {(kycStatus as any)?.data?.kycStatus === 'verified' ? 'Verified ID' : 'Not Verified'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Menu Items */}
-      <div className="px-4 space-y-1">
+      <div className="px-4 space-y-2">
         {menuItems.map((item, index) => (
           <Link key={index} href={item.href}>
-            <Card className="bg-blue-900 border-blue-700 p-4 hover:bg-blue-800 transition-colors">
+            <Card className="bg-gray-800 border-gray-700 p-3 hover:bg-gray-700 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <item.icon className="w-6 h-6 text-orange-500" />
-                  <span className="text-white font-medium">{item.label}</span>
+                  <item.icon className="w-5 h-5 text-orange-500" />
+                  <span className="text-white text-sm font-medium">{item.label}</span>
                 </div>
                 {item.rightElement}
               </div>
@@ -318,17 +332,17 @@ export default function MobileProfile() {
       </div>
 
       {/* Account Actions */}
-      <div className="px-4 py-6 space-y-3">
+      <div className="px-4 py-4 space-y-3">
         <Button 
           variant="outline" 
-          className="w-full bg-blue-900 border-gray-600 text-white hover:bg-blue-800"
+          className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700 text-sm py-2"
         >
           Switch/Create Account
         </Button>
 
         <Button 
           variant="destructive" 
-          className="w-full bg-red-900 hover:bg-red-800 text-white"
+          className="w-full bg-red-900 hover:bg-red-800 text-white text-sm py-2"
           onClick={async () => {
             try {
               // Auto-backup user data before logout
