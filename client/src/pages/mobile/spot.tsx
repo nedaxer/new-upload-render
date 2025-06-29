@@ -1,7 +1,8 @@
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import DepositRequiredModal from '@/components/deposit-required-modal';
 import { 
   ChevronDown,
   Info,
@@ -21,6 +22,8 @@ export default function MobileSpot() {
   const [maxBuy, setMaxBuy] = useState('0.00000 ETH');
   const [tpSlEnabled, setTpSlEnabled] = useState(false);
   const [postOnlyEnabled, setPostOnlyEnabled] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositModalAction, setDepositModalAction] = useState<'buy' | 'sell'>('buy');
 
   const orderbook = [
     { price: '2,573.80', quantity: '0.1314' },
@@ -214,7 +217,13 @@ export default function MobileSpot() {
           </div>
 
           {/* Buy Button */}
-          <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold mb-6">
+          <Button 
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold mb-6"
+            onClick={() => {
+              setDepositModalAction('buy');
+              setShowDepositModal(true);
+            }}
+          >
             {t('buy')}
           </Button>
 
@@ -313,6 +322,14 @@ export default function MobileSpot() {
           </button>
         </div>
       </div>
+
+      {/* Deposit Required Modal */}
+      <DepositRequiredModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        tradingType="spot"
+        action={depositModalAction}
+      />
     </div>
   );
 }

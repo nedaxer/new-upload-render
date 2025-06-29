@@ -1,7 +1,8 @@
-import { MobileLayout } from '@/components/mobile-layout';
+import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import DepositRequiredModal from '@/components/deposit-required-modal';
 import { 
   ChevronDown,
   Info,
@@ -22,6 +23,8 @@ export default function MobileFutures() {
   const [tpSlEnabled, setTpSlEnabled] = useState(false);
   const [postOnlyEnabled, setPostOnlyEnabled] = useState(false);
   const [reduceOnlyEnabled, setReduceOnlyEnabled] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositModalAction, setDepositModalAction] = useState<'long' | 'short'>('long');
 
   const orderbook = [
     { price: '105,818.30', quantity: '0.003' },
@@ -200,10 +203,22 @@ export default function MobileFutures() {
 
           {/* Trading Buttons */}
           <div className="space-y-3">
-            <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold">
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
+              onClick={() => {
+                setDepositModalAction('long');
+                setShowDepositModal(true);
+              }}
+            >
               {t('long')}
             </Button>
-            <Button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-semibold">
+            <Button 
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-semibold"
+              onClick={() => {
+                setDepositModalAction('short');
+                setShowDepositModal(true);
+              }}
+            >
               {t('short')}
             </Button>
           </div>
@@ -274,6 +289,14 @@ export default function MobileFutures() {
           </button>
         </div>
       </div>
+
+      {/* Deposit Required Modal */}
+      <DepositRequiredModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        tradingType="futures"
+        action={depositModalAction}
+      />
     </div>
   );
 }

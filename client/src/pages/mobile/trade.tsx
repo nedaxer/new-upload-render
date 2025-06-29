@@ -29,6 +29,7 @@ import TradingViewWidget from '@/components/tradingview-widget';
 import CryptoPriceTicker from '@/components/crypto-price-ticker';
 import CryptoPairSelector from '@/components/crypto-pair-selector';
 import CryptoPairSelectorModal from '@/components/crypto-pair-selector-modal';
+import DepositRequiredModal from '@/components/deposit-required-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { CRYPTO_PAIRS, CryptoPair, findPairBySymbol, getPairDisplayName, getPairTradingViewSymbol } from '@/lib/crypto-pairs';
@@ -48,6 +49,8 @@ export default function MobileTrade() {
   const [showTools, setShowTools] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositModalAction, setDepositModalAction] = useState<'buy' | 'sell' | 'long' | 'short'>('buy');
   const [tradeMode, setTradeMode] = useState('Buy'); // 'Buy' or 'Sell'
   const [quantity, setQuantity] = useState(0);
   const [amount, setAmount] = useState(0);
@@ -914,13 +917,15 @@ export default function MobileTrade() {
   };
 
   const handleBuyClick = () => {
-    setTradeMode('Buy');
-    setSelectedTab('Trade');
+    const action = selectedTradingType === 'Futures' ? 'long' : 'buy';
+    setDepositModalAction(action);
+    setShowDepositModal(true);
   };
 
   const handleSellClick = () => {
-    setTradeMode('Sell');
-    setSelectedTab('Trade');
+    const action = selectedTradingType === 'Futures' ? 'short' : 'sell';
+    setDepositModalAction(action);
+    setShowDepositModal(true);
   };
 
   const handleQuantityChange = (value: number) => {
@@ -1161,7 +1166,10 @@ export default function MobileTrade() {
                         ? 'bg-green-600 text-white' 
                         : 'text-gray-400 hover:text-white'
                     }`}
-                    onClick={() => setTradeMode('Buy')}
+                    onClick={() => {
+                      setDepositModalAction('buy');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {t('buy')} {selectedPair.symbol}
                   </button>
@@ -1171,7 +1179,10 @@ export default function MobileTrade() {
                         ? 'bg-red-600 text-white' 
                         : 'text-gray-400 hover:text-white'
                     }`}
-                    onClick={() => setTradeMode('Sell')}
+                    onClick={() => {
+                      setDepositModalAction('sell');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {t('sell')} {selectedPair.symbol}
                   </button>
@@ -1270,6 +1281,10 @@ export default function MobileTrade() {
                         ? 'bg-green-600 hover:bg-green-700 text-white' 
                         : 'bg-red-600 hover:bg-red-700 text-white'
                     }`}
+                    onClick={() => {
+                      setDepositModalAction(tradeMode === 'Buy' ? 'buy' : 'sell');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {tradeMode} {selectedPair.symbol}
                   </button>
@@ -1322,7 +1337,10 @@ export default function MobileTrade() {
                         ? 'bg-green-600 text-white' 
                         : 'text-gray-400 hover:text-white'
                     }`}
-                    onClick={() => setTradeMode('Buy')}
+                    onClick={() => {
+                      setDepositModalAction('long');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {t('long')} {selectedPair.symbol}
                   </button>
@@ -1332,7 +1350,10 @@ export default function MobileTrade() {
                         ? 'bg-red-600 text-white' 
                         : 'text-gray-400 hover:text-white'
                     }`}
-                    onClick={() => setTradeMode('Sell')}
+                    onClick={() => {
+                      setDepositModalAction('short');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {t('short')} {selectedPair.symbol}
                   </button>
@@ -1439,6 +1460,10 @@ export default function MobileTrade() {
                         ? 'bg-green-600 hover:bg-green-700 text-white' 
                         : 'bg-red-600 hover:bg-red-700 text-white'
                     }`}
+                    onClick={() => {
+                      setDepositModalAction(tradeMode === 'Buy' ? 'long' : 'short');
+                      setShowDepositModal(true);
+                    }}
                   >
                     {tradeMode === 'Buy' ? 'Open Long' : 'Open Short'} Position
                   </button>
@@ -1598,6 +1623,14 @@ export default function MobileTrade() {
           </div>
         </div>
       )}
+
+      {/* Deposit Required Modal */}
+      <DepositRequiredModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        tradingType={selectedTradingType === 'Spot' ? 'spot' : 'futures'}
+        action={depositModalAction}
+      />
     </MobileLayout>
   );
 }
