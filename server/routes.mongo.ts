@@ -2460,12 +2460,13 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       // Create notification for user
       const notification = await mongoStorage.createNotification({
         userId,
-        type: 'message',
-        title: 'Message from Support',
+        type: 'system',
+        title: 'Support Message',
         message: message.trim(),
         data: {
-          messageId: adminMessage._id.toString(),
-          from: 'support'
+          messageId: (adminMessage._id as any).toString(),
+          from: 'support',
+          notificationType: 'message'
         }
       });
 

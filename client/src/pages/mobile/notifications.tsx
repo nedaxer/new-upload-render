@@ -47,14 +47,19 @@ export default function MobileNotifications() {
           const data = JSON.parse(event.data);
           console.log('Real-time notification update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED' || data.type === 'notification_update' || data.type === 'kyc_status_update') {
             // Force immediate refresh of all notification-related data
             queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
             queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
             queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
             
-            console.log('Notification data refreshed due to deposit/transfer creation');
+            if (data.type === 'kyc_status_update') {
+              // Also refresh verification status
+              queryClient.invalidateQueries({ queryKey: ['/api/verification/status'] });
+            }
+            
+            console.log('Notification data refreshed due to real-time update:', data.type);
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -241,9 +246,13 @@ export default function MobileNotifications() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 text-[9px] capitalize">
                       {notification.type === 'deposit' ? 'System Notification' : 
-                       notification.type === 'message' ? 'Admin Message' : notification.type}
+                       notification.type === 'message' ? 'Support Message' : 
+                       notification.type === 'kyc_approved' ? 'KYC Approved' :
+                       notification.type === 'kyc_rejected' ? 'KYC Review' :
+                       notification.type === 'system' && notification.data?.notificationType === 'message' ? 'Support Message' :
+                       notification.type}
                     </span>
-                    {notification.type === 'message' ? (
+                    {(notification.type === 'message' || (notification.type === 'system' && notification.data?.notificationType === 'message')) ? (
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -257,6 +266,21 @@ export default function MobileNotifications() {
                         }}
                       >
                         Read Message →
+                      </Button>
+                    ) : notification.type === 'kyc_approved' || notification.type === 'kyc_rejected' ? (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-orange-500 text-[10px] p-0 h-auto hover:text-orange-400"
+                        onClick={() => {
+                          if (!notification.isRead) {
+                            markAsReadMutation.mutate(notification._id);
+                          }
+                          // Navigate to KYC status page
+                          window.location.hash = '#/mobile/kyc-status';
+                        }}
+                      >
+                        View Status →
                       </Button>
                     ) : (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') && notification.data && (
                       <Button 
