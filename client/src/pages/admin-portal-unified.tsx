@@ -40,7 +40,9 @@ import {
   BarChart3,
   Wifi,
   WifiOff,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 interface AdminUser {
@@ -98,6 +100,8 @@ export default function UnifiedAdminPortal() {
   });
   const [selectedDocumentImage, setSelectedDocumentImage] = useState<string | null>(null);
   const [documentModalOpen, setDocumentModalOpen] = useState(false);
+  const [allDocuments, setAllDocuments] = useState<string[]>([]);
+  const [currentDocumentIndex, setCurrentDocumentIndex] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -1075,6 +1079,42 @@ export default function UnifiedAdminPortal() {
                           </div>
                         )}
                         
+                        {/* View Documents Button */}
+                        {verification.kycData?.documents && (
+                          <div className="pt-3 border-t border-white/10">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full border-blue-500/30 text-blue-300 hover:bg-blue-500/20 mb-3"
+                              onClick={() => {
+                                // Collect all available documents
+                                const documents = verification.kycData.documents;
+                                const availableDocs: string[] = [];
+                                
+                                if (documents.front) {
+                                  availableDocs.push(`data:image/jpeg;base64,${documents.front}`);
+                                }
+                                if (documents.back) {
+                                  availableDocs.push(`data:image/jpeg;base64,${documents.back}`);
+                                }
+                                if (documents.single) {
+                                  availableDocs.push(`data:image/jpeg;base64,${documents.single}`);
+                                }
+                                
+                                if (availableDocs.length > 0) {
+                                  setAllDocuments(availableDocs);
+                                  setCurrentDocumentIndex(0);
+                                  setSelectedDocumentImage(availableDocs[0]);
+                                  setDocumentModalOpen(true);
+                                }
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Submitted Documents
+                            </Button>
+                          </div>
+                        )}
+
                         <div className="flex items-center space-x-2 pt-3 border-t border-white/10">
                           <Button
                             size="sm"
@@ -1633,24 +1673,71 @@ export default function UnifiedAdminPortal() {
         </Tabs>
       </div>
 
-      {/* Document Modal for KYC Photo Viewing */}
+      {/* Enhanced Document Modal for KYC Photo Viewing */}
       {documentModalOpen && selectedDocumentImage && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[999999] p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <img 
-              src={selectedDocumentImage} 
-              alt="KYC Document" 
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-            <Button
-              onClick={() => {
-                setDocumentModalOpen(false);
-                setSelectedDocumentImage(null);
-              }}
-              className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 p-0"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[999999] p-4">
+          <div className="relative max-w-5xl max-h-full flex flex-col">
+            {/* Document Counter and Navigation */}
+            <div className="flex items-center justify-between mb-4 px-4">
+              <div className="text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+                Document {currentDocumentIndex + 1} of {allDocuments.length}
+              </div>
+              <div className="flex items-center space-x-2">
+                {allDocuments.length > 1 && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        const newIndex = currentDocumentIndex > 0 ? currentDocumentIndex - 1 : allDocuments.length - 1;
+                        setCurrentDocumentIndex(newIndex);
+                        setSelectedDocumentImage(allDocuments[newIndex]);
+                      }}
+                      className="bg-white/20 hover:bg-white/30 text-white rounded-full w-10 h-10 p-0"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        const newIndex = currentDocumentIndex < allDocuments.length - 1 ? currentDocumentIndex + 1 : 0;
+                        setCurrentDocumentIndex(newIndex);
+                        setSelectedDocumentImage(allDocuments[newIndex]);
+                      }}
+                      className="bg-white/20 hover:bg-white/30 text-white rounded-full w-10 h-10 p-0"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </>
+                )}
+                <Button
+                  onClick={() => {
+                    setDocumentModalOpen(false);
+                    setSelectedDocumentImage(null);
+                    setAllDocuments([]);
+                    setCurrentDocumentIndex(0);
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 p-0"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Document Image */}
+            <div className="flex-1 flex items-center justify-center">
+              <img 
+                src={selectedDocumentImage} 
+                alt="KYC Document" 
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              />
+            </div>
+            
+            {/* Document Type Label */}
+            <div className="text-center mt-4">
+              <span className="text-white/70 text-sm bg-black/50 px-3 py-1 rounded-full">
+                {currentDocumentIndex === 0 && allDocuments.length > 1 ? 'Front Side' : 
+                 currentDocumentIndex === 1 && allDocuments.length > 1 ? 'Back Side' : 
+                 'Identity Document'}
+              </span>
+            </div>
           </div>
         </div>
       )}
