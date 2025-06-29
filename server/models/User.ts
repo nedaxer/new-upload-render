@@ -94,7 +94,7 @@ const UserSchema = new mongoose.Schema({
     documents: {
       front: String,
       back: String,
-      selfie: String
+      single: String
     }
   }
 }, {
