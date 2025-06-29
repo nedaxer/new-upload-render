@@ -46,7 +46,7 @@ export interface IUser {
     documents?: {
       front?: string;
       back?: string;
-      selfie?: string;
+      single?: string;
     };
   };
 }

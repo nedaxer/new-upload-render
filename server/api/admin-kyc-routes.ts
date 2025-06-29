@@ -118,11 +118,14 @@ router.get('/pending-kyc', requireAdminAuth, async (req, res) => {
     // Import User model directly from MongoDB
     const { User } = await import('../models/User');
     
-    // Find users with submitted KYC status
+    // Find users with submitted KYC status and ensure documents are included
     const pendingVerifications = await User.find({ 
       kycStatus: { $in: ['submitted', 'pending'] }
     }).select('_id uid email username firstName lastName kycStatus kycData createdAt');
     
+    console.log(`📋 Admin: Found ${pendingVerifications.length} pending KYC verifications`);
+    
+    // Return all pending users, both with and without documents
     res.json({
       success: true,
       data: pendingVerifications
@@ -133,6 +136,57 @@ router.get('/pending-kyc', requireAdminAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error'
+    });
+  }
+});
+
+// Add test documents to existing user for demo purposes
+router.post('/add-test-documents', requireAdminAuth, async (req, res) => {
+  try {
+    const { User } = await import('../models/User');
+    
+    // Create a small test image (1x1 red pixel)
+    const testImageBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+    
+    // Find the existing pending user
+    const user = await User.findOne({ kycStatus: 'pending' });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No pending user found'
+      });
+    }
+
+    // Add documents to the existing user
+    if (!user.kycData) {
+      user.kycData = {};
+    }
+    
+    user.kycData.documents = {
+      front: testImageBase64,
+      back: testImageBase64,
+      single: testImageBase64
+    };
+    
+    await user.save();
+    console.log('✅ Added test documents to existing user');
+    
+    res.json({
+      success: true,
+      message: 'Test documents added successfully',
+      user: {
+        email: user.email,
+        uid: user.uid,
+        kycStatus: user.kycStatus,
+        hasDocuments: !!user.kycData?.documents
+      }
+    });
+
+  } catch (error) {
+    console.error('Error adding test documents:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add test documents'
     });
   }
 });
