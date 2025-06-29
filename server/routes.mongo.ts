@@ -1223,7 +1223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // HARDCODED ADMIN LOGIN - bypasses MongoDB completely
       const adminEmail = 'nedaxer.us@gmail.com';
-      const adminPassword = 'Nedaxer.us';
+      const adminPassword = 'SMART456';
       
       console.log('Checking admin login:', { 
         inputEmail: username.toLowerCase(), 
@@ -1645,7 +1645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, password } = req.body;
       console.log('Admin login attempt for:', email);
       
-      if (email === 'admin@nedaxer.com' && password === 'NedaxerAdmin2025') {
+      if (email === 'admin@nedaxer.com' && password === 'SMART456') {
         req.session.adminAuthenticated = true;
         req.session.adminId = 'admin';
         console.log('Setting admin session, ID:', req.sessionID);
