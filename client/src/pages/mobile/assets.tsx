@@ -471,7 +471,7 @@ export default function MobileAssets() {
             </div>
           </button>
           
-          <button onClick={() => setDepositActivationOpen(true)}>
+          <button onClick={handleWithdrawClick}>
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowUp className="w-7 h-7 text-orange-500" />
