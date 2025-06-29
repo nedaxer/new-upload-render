@@ -512,13 +512,7 @@ export default function MobileAssets() {
               <div className="text-center">
                 <Wallet className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                 <div className="text-lg font-semibold text-gray-400 mb-2">Empty Portfolio</div>
-                <div className="text-sm text-gray-500 mb-4">Make a deposit to start building your portfolio</div>
-                <Button 
-                  onClick={handleDepositClick}
-                  className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-6 py-2"
-                >
-                  Make Deposit
-                </Button>
+                <div className="text-sm text-gray-500">Your portfolio will appear here once you start trading</div>
               </div>
             </div>
           </div>
