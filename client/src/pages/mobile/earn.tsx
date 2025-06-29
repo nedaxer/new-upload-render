@@ -1,6 +1,8 @@
 import MobileLayout from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { DepositActivationModal } from '@/components/deposit-activation-modal';
+import { DepositModal } from '@/components/deposit-modal';
 import { 
   Gift,
   TrendingUp,
@@ -11,95 +13,67 @@ import {
   Users,
   Coins,
   Target,
-  Calendar
+  Calendar,
+  Wallet
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useLanguage } from '@/contexts/language-context';
+import { useState } from 'react';
 
 export default function MobileEarn() {
   const { t } = useLanguage();
+  const [depositActivationOpen, setDepositActivationOpen] = useState(false);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+
+  const handleFeatureClick = () => {
+    setDepositActivationOpen(true);
+  };
+
+  const handlePaymentMethodSelect = (method: string) => {
+    setDepositModalOpen(false);
+    // Handle payment method selection
+  };
+
   const earnProducts = [
     {
       title: t('flexibleSavings'),
       subtitle: t('startEarningAnytime'),
-      apy: '5.2%',
+      apy: '0.0%',
       icon: Percent,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10'
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10'
     },
     {
       title: t('fixedSavings'),
       subtitle: t('higherReturnsLocked'),
-      apy: '8.5%',
+      apy: '0.0%',
       icon: Clock,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10'
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10'
     },
     {
       title: t('staking'),
       subtitle: t('stakeEarnRewards'),
-      apy: '12.3%',
+      apy: '0.0%',
       icon: Coins,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10'
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10'
     },
     {
       title: t('defiMining'),
       subtitle: t('liquidityMiningRewards'),
-      apy: '15.7%',
+      apy: '0.0%',
       icon: Target,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10'
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10'
     }
   ];
 
-  const popularCoins = [
-    {
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      apy: '4.5%',
-      minAmount: '0.001',
-      duration: t('flexible')
-    },
-    {
-      symbol: 'ETH',
-      name: 'Ethereum',
-      apy: '5.2%',
-      minAmount: '0.01',
-      duration: t('flexible')
-    },
-    {
-      symbol: 'USDT',
-      name: 'Tether',
-      apy: '8.0%',
-      minAmount: '10',
-      duration: `30 ${t('days')}`
-    },
-    {
-      symbol: 'BNB',
-      name: 'BNB',
-      apy: '6.8%',
-      minAmount: '0.1',
-      duration: t('flexible')
-    }
-  ];
+  // Empty popular coins array to show zero records
+  const popularCoins: any[] = [];
 
-  const events = [
-    {
-      title: t('welcome_bonus'),
-      description: t('get_50_usdt_new'),
-      reward: '50 USDT',
-      endDate: `7 ${t('days_left')}`,
-      bgGradient: 'from-orange-500 to-red-500'
-    },
-    {
-      title: t('staking_challenge'),
-      description: t('stake_any_amount_win'),
-      reward: '1000 USDT',
-      endDate: `12 ${t('days_left')}`,
-      bgGradient: 'from-blue-500 to-purple-500'
-    }
-  ];
+  // Empty events array to show zero records
+  const events: any[] = [];
 
   return (
     <MobileLayout>
@@ -114,17 +88,21 @@ export default function MobileEarn() {
 
       {/* Total Earnings */}
       <div className="px-4 pb-6">
-        <Card className="bg-gradient-to-r from-orange-500 to-yellow-500 p-6 text-white">
+        <Card className="bg-gradient-to-r from-gray-600 to-gray-700 p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-sm opacity-90">{t('total_earnings')}</div>
-              <div className="text-2xl font-bold">$127.45</div>
+              <div className="text-2xl font-bold">$0.00</div>
             </div>
             <TrendingUp className="w-8 h-8 opacity-80" />
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span>{t('yesterday')}: +$2.34</span>
-            <Button size="sm" className="bg-white/20 hover:bg-white/30 backdrop-blur">
+            <span>{t('yesterday')}: +$0.00</span>
+            <Button 
+              size="sm" 
+              className="bg-white/20 hover:bg-white/30 backdrop-blur"
+              onClick={handleFeatureClick}
+            >
               {t('view_details')}
             </Button>
           </div>
@@ -135,7 +113,11 @@ export default function MobileEarn() {
       <div className="px-4 pb-6">
         <div className="grid grid-cols-2 gap-4">
           {earnProducts.map((product, index) => (
-            <Card key={index} className="bg-blue-900 border-blue-700 p-4">
+            <Card 
+              key={index} 
+              className="bg-blue-900 border-blue-700 p-4 cursor-pointer"
+              onClick={handleFeatureClick}
+            >
               <div className={`w-12 h-12 ${product.bgColor} rounded-lg flex items-center justify-center mb-3`}>
                 <product.icon className={`w-6 h-6 ${product.color}`} />
               </div>
@@ -158,38 +140,17 @@ export default function MobileEarn() {
       <div className="px-4 pb-6">
         <h3 className="text-white font-medium mb-4">{t('popular_savings')}</h3>
         
-        <div className="space-y-3">
-          {popularCoins.map((coin, index) => (
-            <Card key={index} className="bg-blue-900 border-blue-700 p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">
-                      {coin.symbol.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-white font-medium">{coin.symbol}</div>
-                    <div className="text-gray-400 text-sm">{coin.name}</div>
-                  </div>
-                </div>
-                
-                <div className="text-right">
-                  <div className="text-green-500 font-bold">{t('apy')} {coin.apy}</div>
-                  <div className="text-gray-400 text-sm">{t('min')}: {coin.minAmount}</div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <div className="text-right">
-                    <div className="text-white text-sm">{coin.duration}</div>
-                    <div className="text-gray-400 text-xs">{t('duration')}</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="bg-blue-900 border-blue-700 p-8 text-center">
+          <Wallet className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+          <div className="text-lg font-semibold text-gray-400 mb-2">No Savings Available</div>
+          <div className="text-sm text-gray-500 mb-4">Make a deposit to unlock earning opportunities</div>
+          <Button 
+            onClick={handleFeatureClick}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            Make Deposit
+          </Button>
+        </Card>
       </div>
 
       
@@ -198,19 +159,35 @@ export default function MobileEarn() {
       <div className="px-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-white font-medium">{t('my_products')}</h3>
-          <Link href="/mobile/my-earnings">
+          <button onClick={handleFeatureClick}>
             <span className="text-orange-500 text-sm">{t('view_all')}</span>
-          </Link>
+          </button>
         </div>
         
         <Card className="bg-blue-900 border-blue-700 p-4 text-center">
           <div className="text-gray-400 mb-2">{t('no_active_products')}</div>
           <div className="text-gray-500 text-sm mb-4">{t('start_earning_flexible')}</div>
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+          <Button 
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+            onClick={handleFeatureClick}
+          >
             {t('start_earning')}
           </Button>
         </Card>
       </div>
+
+      {/* Modals */}
+      <DepositActivationModal
+        isOpen={depositActivationOpen}
+        onClose={() => setDepositActivationOpen(false)}
+        onMakeDeposit={() => setDepositModalOpen(true)}
+      />
+
+      <DepositModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        onSelectMethod={handlePaymentMethodSelect}
+      />
     </MobileLayout>
   );
 }
