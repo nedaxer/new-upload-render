@@ -917,11 +917,13 @@ export default function MobileTrade() {
   };
 
   const handleBuyClick = () => {
-    navigate('/mobile/spot');
+    setSelectedTab('Trade');
+    setTradeMode('Buy');
   };
 
   const handleSellClick = () => {
-    navigate('/mobile/spot');
+    setSelectedTab('Trade');
+    setTradeMode('Sell');
   };
 
   const handleQuantityChange = (value: number) => {
