@@ -39,7 +39,8 @@ import {
   Hash,
   BarChart3,
   Wifi,
-  WifiOff
+  WifiOff,
+  X
 } from "lucide-react";
 
 interface AdminUser {
@@ -95,6 +96,8 @@ export default function UnifiedAdminPortal() {
     customMessage: '',
     successMessage: ''
   });
+  const [selectedDocumentImage, setSelectedDocumentImage] = useState<string | null>(null);
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -1032,15 +1035,8 @@ export default function UnifiedAdminPortal() {
                                         alt="Document Front"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
                                         onClick={() => {
-                                          const modal = document.createElement('div');
-                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
-                                          modal.innerHTML = `
-                                            <div class="relative max-w-4xl max-h-full">
-                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.front}" class="max-w-full max-h-full object-contain rounded-lg" />
-                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
-                                            </div>
-                                          `;
-                                          document.body.appendChild(modal);
+                                          setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.front}`);
+                                          setDocumentModalOpen(true);
                                         }}
                                       />
                                     </div>
@@ -1053,15 +1049,8 @@ export default function UnifiedAdminPortal() {
                                         alt="Document Back"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
                                         onClick={() => {
-                                          const modal = document.createElement('div');
-                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
-                                          modal.innerHTML = `
-                                            <div class="relative max-w-4xl max-h-full">
-                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.back}" class="max-w-full max-h-full object-contain rounded-lg" />
-                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
-                                            </div>
-                                          `;
-                                          document.body.appendChild(modal);
+                                          setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.back}`);
+                                          setDocumentModalOpen(true);
                                         }}
                                       />
                                     </div>
@@ -1074,15 +1063,8 @@ export default function UnifiedAdminPortal() {
                                         alt="Document"
                                         className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
                                         onClick={() => {
-                                          const modal = document.createElement('div');
-                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
-                                          modal.innerHTML = `
-                                            <div class="relative max-w-4xl max-h-full">
-                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.single}" class="max-w-full max-h-full object-contain rounded-lg" />
-                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
-                                            </div>
-                                          `;
-                                          document.body.appendChild(modal);
+                                          setSelectedDocumentImage(`data:image/jpeg;base64,${verification.kycData.documents.single}`);
+                                          setDocumentModalOpen(true);
                                         }}
                                       />
                                     </div>
@@ -1650,6 +1632,28 @@ export default function UnifiedAdminPortal() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Document Modal for KYC Photo Viewing */}
+      {documentModalOpen && selectedDocumentImage && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[999999] p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <img 
+              src={selectedDocumentImage} 
+              alt="KYC Document" 
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <Button
+              onClick={() => {
+                setDocumentModalOpen(false);
+                setSelectedDocumentImage(null);
+              }}
+              className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 p-0"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </AdminPullToRefresh>
   );
 }

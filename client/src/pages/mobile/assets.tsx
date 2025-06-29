@@ -480,23 +480,23 @@ export default function MobileAssets() {
             </div>
           </button>
           
-          <button onClick={() => setDepositActivationOpen(true)}>
+          <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Transfer</span>
             </div>
-          </button>
+          </Link>
           
-          <button onClick={() => setDepositActivationOpen(true)}>
+          <Link href="/mobile/assets-history">
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <CreditCard className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">History</span>
             </div>
-          </button>
+          </Link>
         </div>
       </div>
 
