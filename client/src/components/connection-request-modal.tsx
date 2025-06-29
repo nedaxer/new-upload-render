@@ -38,7 +38,32 @@ export function ConnectionRequestModal({ isOpen, onClose, notification }: Connec
       setResponseMessage(data.message);
       setHasResponded(true);
       
-      // Refresh notifications
+      // Update the notifications cache to mark this notification as read and responded
+      queryClient.setQueryData(['/api/notifications'], (oldData: any) => {
+        if (!oldData?.data) return oldData;
+        
+        const updatedNotifications = oldData.data.map((notif: any) => {
+          if (notif.type === 'connection_request' && notif.data?.connectionRequestId === connectionRequestData?.connectionRequestId) {
+            return {
+              ...notif,
+              isRead: true,
+              data: {
+                ...notif.data,
+                status: response === 'accept' ? 'accepted' : 'declined',
+                responded: true
+              }
+            };
+          }
+          return notif;
+        });
+        
+        return {
+          ...oldData,
+          data: updatedNotifications
+        };
+      });
+      
+      // Refresh notifications and unread count
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
       
@@ -49,6 +74,11 @@ export function ConnectionRequestModal({ isOpen, onClose, notification }: Connec
       });
       
       light();
+      
+      // Close modal after a short delay to show the response
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     },
     onError: (error: any) => {
       toast({
