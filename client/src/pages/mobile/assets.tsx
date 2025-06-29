@@ -194,13 +194,8 @@ export default function MobileAssets() {
   };
 
   const handleWithdrawClick = () => {
-    if (withdrawalEligibility?.success && withdrawalEligibility?.data?.canWithdraw) {
-      // User can withdraw, navigate to withdraw page
-      window.location.href = '/mobile/withdraw';
-    } else {
-      // Show restriction modal
-      setWithdrawalRestrictionOpen(true);
-    }
+    // Always show restriction modal first to check eligibility
+    setWithdrawalRestrictionOpen(true);
   };
 
   const handlePaymentMethodSelect = (method: string) => {

@@ -87,7 +87,7 @@ export default function UnifiedAdminPortal() {
   const [userPassword, setUserPassword] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
-  const [showUsersList, setShowUsersList] = useState(false);
+  const [showUsersList, setShowUsersList] = useState(true);
   const [showKycPanel, setShowKycPanel] = useState(true);
   const [copiedId, setCopiedId] = useState("");
   const { toast } = useToast();
