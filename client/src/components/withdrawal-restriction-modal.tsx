@@ -31,40 +31,9 @@ export function WithdrawalRestrictionModal({
         </DialogHeader>
         
         <div className="space-y-4 text-center">
-          <p className="text-gray-300 text-sm leading-relaxed">
-            You need to make your first deposit before you can withdraw funds from your account.
+          <p className="text-gray-300 text-base leading-relaxed">
+            You need to make a first deposit of ${minimumRequired.toLocaleString()}
           </p>
-          
-          <div className="bg-[#0a0a2e] rounded-lg p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">Minimum Required:</span>
-              <div className="flex items-center">
-                <DollarSign className="w-4 h-4 text-green-400 mr-1" />
-                <span className="text-green-400 font-semibold">
-                  ${minimumRequired.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">Your Deposits:</span>
-              <div className="flex items-center">
-                <TrendingUp className="w-4 h-4 text-blue-400 mr-1" />
-                <span className="text-blue-400 font-semibold">
-                  ${totalDeposited.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            
-            {shortfall > 0 && (
-              <div className="flex items-center justify-between border-t border-gray-600 pt-3">
-                <span className="text-gray-400 text-sm">Still Needed:</span>
-                <span className="text-orange-400 font-semibold">
-                  ${shortfall.toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
           
           <p className="text-xs text-gray-500">
             This requirement helps protect your account and ensures compliance with financial regulations.
