@@ -336,13 +336,13 @@ export default function MobileSettings() {
               ) : (
                 <>
                   <span className="text-gray-400 text-sm">
-                    {settings.nickname || user?.username || 'Not set'}
+                    {settings.nickname || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || 'Tap to change name'}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setTempNickname(settings.nickname || user?.username || '');
+                      setTempNickname(settings.nickname || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || '');
                       setIsEditingNickname(true);
                     }}
                     className="text-gray-400 hover:text-white"
