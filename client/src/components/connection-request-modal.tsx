@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Users, MessageCircle, CheckCircle, X } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -15,8 +15,9 @@ interface ConnectionRequestModalProps {
 }
 
 export function ConnectionRequestModal({ isOpen, onClose, notification }: ConnectionRequestModalProps) {
-  const [hasResponded, setHasResponded] = useState(false);
+  const [isResponding, setIsResponding] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
+  const [hasResponded, setHasResponded] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { light } = useHaptics();
@@ -37,32 +38,7 @@ export function ConnectionRequestModal({ isOpen, onClose, notification }: Connec
       setResponseMessage(data.message);
       setHasResponded(true);
       
-      // Update the notifications cache to mark this notification as read and responded
-      queryClient.setQueryData(['/api/notifications'], (oldData: any) => {
-        if (!oldData?.data) return oldData;
-        
-        const updatedNotifications = oldData.data.map((notif: any) => {
-          if (notif.type === 'connection_request' && notif.data?.connectionRequestId === connectionRequestData?.connectionRequestId) {
-            return {
-              ...notif,
-              isRead: true,
-              data: {
-                ...notif.data,
-                status: response === 'accept' ? 'accepted' : 'declined',
-                responded: true
-              }
-            };
-          }
-          return notif;
-        });
-        
-        return {
-          ...oldData,
-          data: updatedNotifications
-        };
-      });
-      
-      // Refresh notifications and unread count
+      // Refresh notifications
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
       
@@ -73,93 +49,136 @@ export function ConnectionRequestModal({ isOpen, onClose, notification }: Connec
       });
       
       light();
-      
-      // Close modal after a short delay to show the response
-      setTimeout(() => {
-        onClose();
-      }, 2000);
     },
-    onError: (error) => {
-      console.error('Connection request response error:', error);
+    onError: (error: any) => {
       toast({
         title: 'Error',
-        description: 'Failed to respond to connection request',
+        description: error.message || 'Failed to respond to connection request',
         variant: 'destructive',
       });
+    },
+    onSettled: () => {
+      setIsResponding(false);
     }
   });
 
-  if (!connectionRequestData) {
-    return null;
-  }
+  const handleResponse = async (response: 'accept' | 'decline') => {
+    setIsResponding(true);
+    light();
+    await respondMutation.mutateAsync({ response });
+  };
+
+  const handleClose = () => {
+    onClose();
+    // Reset state when modal closes
+    setTimeout(() => {
+      setHasResponded(false);
+      setResponseMessage('');
+    }, 300);
+  };
+
+  if (!connectionRequestData) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0a0a2e] border-[#2a2a50] text-white max-w-sm mx-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="w-[95%] max-w-md bg-[#0a0a2e] border-[#1a1a40] text-white">
         <DialogHeader>
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-blue-500/20 p-3 rounded-full">
-              <Users className="w-8 h-8 text-blue-500" />
-            </div>
-          </div>
           <DialogTitle className="text-center text-lg font-semibold text-white">
             Connection Request
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-300 text-sm">
-            {connectionRequestData.adminName} wants to connect with you
-          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="bg-[#1a1a40] p-4 rounded-lg border border-[#2a2a50]">
-            <div className="flex items-center space-x-3 mb-3">
-              <MessageCircle className="w-5 h-5 text-blue-500" />
-              <span className="font-medium text-white">Message</span>
-            </div>
-            <p className="text-sm text-gray-300">{connectionRequestData.message}</p>
-          </div>
+        <div className="space-y-4">
+          {!hasResponded ? (
+            <>
+              {/* Connection Request Message */}
+              <Card className="bg-[#1a1a40] border-[#2a2a50] p-4">
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm text-gray-300 leading-relaxed">
+                        {notification.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
 
-          <div className="flex items-center justify-center space-x-2">
-            <Badge variant="secondary" className="bg-blue-500/20 text-blue-200">
-              Admin Request
-            </Badge>
-          </div>
+              {/* Service Info */}
+              <div className="bg-[#1a1a40] rounded-lg p-3 border border-[#2a2a50]">
+                <p className="text-xs text-gray-400 mb-1">Service/Account</p>
+                <p className="text-sm font-medium text-white">
+                  {connectionRequestData.serviceName}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-2">
+                <Button
+                  onClick={() => handleResponse('accept')}
+                  disabled={isResponding}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 font-medium"
+                >
+                  {isResponding ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Accept</span>
+                    </div>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={() => handleResponse('decline')}
+                  disabled={isResponding}
+                  variant="outline"
+                  className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-12 font-medium"
+                >
+                  {isResponding ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <XCircle className="w-4 h-4" />
+                      <span>Decline</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Response Message */}
+              <Card className="bg-[#1a1a40] border-[#2a2a50] p-4">
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm text-gray-300 leading-relaxed">
+                        {responseMessage}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Close Button */}
+              <Button
+                onClick={handleClose}
+                className="w-full bg-[#2a2a50] hover:bg-[#3a3a60] text-white h-12 font-medium"
+              >
+                Close
+              </Button>
+            </>
+          )}
         </div>
-
-        {hasResponded ? (
-          <div className="flex flex-col items-center space-y-3 pt-4">
-            <div className="bg-green-500/20 p-3 rounded-full">
-              <CheckCircle className="w-8 h-8 text-green-500" />
-            </div>
-            <p className="text-center text-sm text-green-400">{responseMessage}</p>
-          </div>
-        ) : (
-          <div className="flex flex-col space-y-2 pt-4">
-            <Button 
-              onClick={() => respondMutation.mutate({ response: 'accept' })}
-              disabled={respondMutation.isPending}
-              className="bg-green-500 hover:bg-green-600 text-white font-medium"
-            >
-              {respondMutation.isPending ? 'Responding...' : 'Accept Connection'}
-            </Button>
-            <Button 
-              onClick={() => respondMutation.mutate({ response: 'decline' })}
-              disabled={respondMutation.isPending}
-              variant="outline"
-              className="border-red-500 text-red-500 hover:bg-red-500/10"
-            >
-              {respondMutation.isPending ? 'Responding...' : 'Decline'}
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={onClose}
-              disabled={respondMutation.isPending}
-              className="text-gray-400 hover:text-white hover:bg-[#1a1a40]"
-            >
-              Cancel
-            </Button>
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );

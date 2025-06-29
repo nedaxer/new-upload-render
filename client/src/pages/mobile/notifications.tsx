@@ -213,19 +213,14 @@ export default function MobileNotifications() {
         ) : (
           <div className="px-4 space-y-2 pb-4">
             {notificationData
-              .filter((notification: any) => {
-                // Filter out connection requests that have been responded to
-                if (notification.type === 'connection_request' && notification.data?.status !== 'pending') {
-                  return false;
-                }
-                
-                return activeTab === 'All' ||
-                  notification.type === activeTab.toLowerCase() ||
-                  (activeTab === t('system_notification') && notification.type === 'system') ||
-                  (activeTab === t('latest_events') && (notification.type === 'deposit' || notification.type === 'transfer_sent' || notification.type === 'transfer_received')) ||
-                  (activeTab === t('announcement') && notification.type === 'announcement') ||
-                  (activeTab === t('rewards') && notification.type === 'rewards');
-              })
+              .filter((notification: any) => 
+                activeTab === 'All' ||
+                notification.type === activeTab.toLowerCase() ||
+                (activeTab === t('system_notification') && notification.type === 'system') ||
+                (activeTab === t('latest_events') && (notification.type === 'deposit' || notification.type === 'transfer_sent' || notification.type === 'transfer_received')) ||
+                (activeTab === t('announcement') && notification.type === 'announcement') ||
+                (activeTab === t('rewards') && notification.type === 'rewards')
+              )
               .map((notification: any) => (
                 <Card 
                   key={notification._id} 

@@ -696,26 +696,6 @@ export default function UnifiedAdminPortal() {
                 <p className="text-blue-200 text-xs">Platform Management</p>
               </div>
             </div>
-            
-            {/* Search Bar in Header */}
-            <div className="w-full space-y-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search users by email or UID..."
-                  value={generalSearchQuery}
-                  onChange={(e) => setGeneralSearchQuery(e.target.value)}
-                  className="pl-10 bg-white/10 border-white/20 text-white placeholder-gray-400 text-sm"
-                />
-              </div>
-              {generalSearchQuery && (
-                <div className="text-xs text-gray-400">
-                  Found {generalSearchResults.length} user{generalSearchResults.length !== 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-            
             <div className="flex flex-wrap items-center gap-2">
               <Button 
                 onClick={() => setShowUsersList(!showUsersList)}
@@ -814,10 +794,7 @@ export default function UnifiedAdminPortal() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Badge variant="secondary" className="bg-blue-500/20 text-blue-200">
-                      {generalSearchQuery.length > 0 ? 
-                        `${generalSearchResults.length} Found` : 
-                        `${Array.isArray(allUsers) ? allUsers.length : 0} Total Users`
-                      }
+                      {Array.isArray(allUsers) ? allUsers.length : 0} Total Users
                     </Badge>
                     <div className="flex items-center space-x-1">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -828,8 +805,7 @@ export default function UnifiedAdminPortal() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-2">
-                  {/* Show search results if search query exists, otherwise show all users */}
-                  {(generalSearchQuery.length > 0 ? generalSearchResults : allUsers).slice(0, 12).map((user: AdminUser) => (
+                  {Array.isArray(allUsers) && allUsers.slice(0, 8).map((user: AdminUser) => (
                     <div
                       key={user._id}
                       className="p-2 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"

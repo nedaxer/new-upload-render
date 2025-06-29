@@ -2676,28 +2676,6 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
-  // Get pending connection requests for user
-  app.get('/api/connection-requests/pending', requireAuth, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.userId!;
-      
-      const { ConnectionRequest } = await import('./models/ConnectionRequest');
-      
-      const pendingRequests = await ConnectionRequest.find({
-        userId,
-        status: 'pending'
-      }).sort({ createdAt: -1 });
-      
-      res.json({
-        success: true,
-        data: pendingRequests
-      });
-    } catch (error) {
-      console.error('Get pending connection requests error:', error);
-      res.status(500).json({ success: false, message: "Failed to fetch connection requests" });
-    }
-  });
-
   // User respond to connection request
   app.post('/api/connection-request/respond', requireAuth, async (req: Request, res: Response) => {
     try {

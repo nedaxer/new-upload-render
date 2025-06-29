@@ -1,8 +1,7 @@
-import MobileLayout from '@/components/mobile-layout';
+import { MobileLayout } from '@/components/mobile-layout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { TradingRequirementModal } from '@/components/trading-requirement-modal';
 import { 
   ChevronDown,
   Info,
@@ -11,7 +10,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
-import { useQuery } from '@tanstack/react-query';
 
 export default function MobileSpot() {
   const { t } = useLanguage();
@@ -23,31 +21,6 @@ export default function MobileSpot() {
   const [maxBuy, setMaxBuy] = useState('0.00000 ETH');
   const [tpSlEnabled, setTpSlEnabled] = useState(false);
   const [postOnlyEnabled, setPostOnlyEnabled] = useState(false);
-  const [tradingRequirementOpen, setTradingRequirementOpen] = useState(false);
-
-  // Check withdrawal eligibility (reuse same check for trading)
-  const { data: withdrawalEligibility } = useQuery({
-    queryKey: ['/api/withdrawals/eligibility'],
-    queryFn: async () => {
-      const response = await fetch('/api/withdrawals/eligibility', {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to check eligibility');
-      return response.json();
-    },
-    retry: false,
-    refetchOnWindowFocus: false
-  });
-
-  const handleTradingAction = () => {
-    const canTrade = withdrawalEligibility?.data?.canWithdraw;
-    if (!canTrade) {
-      setTradingRequirementOpen(true);
-    } else {
-      // Allow trading - show success or proceed
-      console.log('Trading allowed');
-    }
-  };
 
   const orderbook = [
     { price: '2,573.80', quantity: '0.1314' },
@@ -241,10 +214,7 @@ export default function MobileSpot() {
           </div>
 
           {/* Buy Button */}
-          <Button 
-            onClick={handleTradingAction}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold mb-6"
-          >
+          <Button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold mb-6">
             {t('buy')}
           </Button>
 
@@ -343,12 +313,6 @@ export default function MobileSpot() {
           </button>
         </div>
       </div>
-
-      {/* Trading Requirement Modal */}
-      <TradingRequirementModal
-        isOpen={tradingRequirementOpen}
-        onClose={() => setTradingRequirementOpen(false)}
-      />
     </div>
   );
 }
