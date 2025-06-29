@@ -140,6 +140,20 @@ export default function UnifiedAdminPortal() {
             queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
             queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] });
           }
+          
+          if (data.type === 'PASSWORD_CHANGED') {
+            // Hide password display when user changes password
+            if (selectedUser && selectedUser._id === data.userId) {
+              setShowPassword(false);
+              setUserPassword("");
+              toast({
+                title: "Password Updated",
+                description: "User password was changed - display cleared for security",
+                variant: "default",
+              });
+            }
+            console.log('Password changed for user:', data.userId);
+          }
         } catch (error) {
           console.error('Error parsing admin WebSocket message:', error);
         }
@@ -446,15 +460,15 @@ export default function UnifiedAdminPortal() {
       setUserPassword(data.password);
       setShowPassword(true);
       toast({
-        title: "Password Retrieved",
-        description: "User password has been fetched successfully",
+        title: "Password Key Retrieved",
+        description: "User password key has been fetched for security review",
         variant: "default",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to get user password",
+        description: error.message || "Failed to get user password key",
         variant: "destructive",
       });
     },
@@ -1481,25 +1495,33 @@ export default function UnifiedAdminPortal() {
                           className="w-full border-blue-500/30 text-blue-300 hover:bg-blue-500/20"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
-                          View Password
+                          View Password Key
                         </Button>
                         
                         {showPassword && userPassword && (
                           <div className="p-3 bg-blue-500/20 rounded-lg border border-blue-500/30">
-                            <p className="text-blue-200 text-sm">User Password:</p>
-                            <p className="text-white font-mono break-all">{userPassword}</p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                navigator.clipboard.writeText(userPassword);
-                                toast({ title: "Password Copied", description: "User password copied to clipboard" });
-                              }}
-                              className="mt-2 text-blue-300 hover:text-white"
-                            >
-                              <Copy className="w-3 h-3 mr-1" />
-                              Copy Password
-                            </Button>
+                            <p className="text-blue-200 text-sm">Password Security Key:</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <div className="flex-1 bg-black/30 rounded px-3 py-2 border border-blue-500/40">
+                                <p className="text-orange-300 font-mono text-xs tracking-wider">
+                                  {userPassword.slice(0, 4)}•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••{userPassword.slice(-4)}
+                                </p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(userPassword);
+                                  toast({ title: "Password Key Copied", description: "Full password key copied to clipboard for security review" });
+                                }}
+                                className="text-blue-300 hover:text-white shrink-0"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                            <p className="text-xs text-blue-200/70 mt-2">
+                              ⚠️ Security Key - Full key copied to clipboard when copy button is clicked
+                            </p>
                           </div>
                         )}
 

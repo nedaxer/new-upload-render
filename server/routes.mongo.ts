@@ -310,6 +310,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Change password endpoint
+  app.post('/api/user/change-password', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password and new password are required'
+        });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 6 characters long'
+        });
+      }
+      
+      // Import User model and bcrypt
+      const { User } = await import('./models/User');
+      const bcrypt = await import('bcrypt');
+      
+      // Get user
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+      
+      // Hash new password
+      const saltRounds = 10;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+      
+      // Update password
+      await User.findByIdAndUpdate(userId, {
+        password: hashedNewPassword
+      });
+      
+      console.log(`🔐 Password changed successfully for user ${userId}`);
+      
+      // Broadcast password change event via WebSocket for admin dashboard real-time updates
+      const { getWebSocketServer } = await import('./websocket');
+      const wss = getWebSocketServer();
+      
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'PASSWORD_CHANGED',
+              userId: userId,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Password changed successfully'
+      });
+    } catch (error) {
+      console.error('Password change error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to change password'
+      });
+    }
+  });
   
   // Transfer funds endpoint
   app.post('/api/wallet/transfer', requireAuth, async (req: Request, res: Response) => {
