@@ -2379,6 +2379,177 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   const { default: adminKycRoutes } = await import('./api/admin-kyc-routes');
   app.use('/api/admin', adminKycRoutes);
 
+  // Check withdrawal eligibility
+  app.get('/api/withdrawals/eligibility', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      
+      const { UserSettings } = await import('./models/UserSettings');
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Get or create user settings
+      let userSettings = await UserSettings.findOne({ userId });
+      if (!userSettings) {
+        userSettings = new UserSettings({ 
+          userId,
+          minimumDepositForWithdrawal: 500,
+          totalDeposited: 0,
+          canWithdraw: false
+        });
+        await userSettings.save();
+      }
+      
+      // Calculate total deposits from transaction history
+      const deposits = await mongoStorage.getUserDepositTransactions(userId);
+      const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
+      
+      // Update user settings with current total
+      userSettings.totalDeposited = totalDeposited;
+      userSettings.canWithdraw = totalDeposited >= userSettings.minimumDepositForWithdrawal;
+      await userSettings.save();
+      
+      res.json({
+        success: true,
+        data: {
+          canWithdraw: userSettings.canWithdraw,
+          totalDeposited: userSettings.totalDeposited,
+          minimumRequired: userSettings.minimumDepositForWithdrawal,
+          shortfall: Math.max(0, userSettings.minimumDepositForWithdrawal - userSettings.totalDeposited)
+        }
+      });
+    } catch (error) {
+      console.error('Check withdrawal eligibility error:', error);
+      res.status(500).json({ success: false, message: "Failed to check withdrawal eligibility" });
+    }
+  });
+
+  // Admin send message to user
+  app.post('/api/admin/send-message', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, message } = req.body;
+      
+      if (!userId || !message || message.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "User ID and message are required" });
+      }
+      
+      if (message.length > 2000) {
+        return res.status(400).json({ success: false, message: "Message too long (max 2000 characters)" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      const { AdminMessage } = await import('./models/AdminMessage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      const adminId = req.session?.adminId || 'admin';
+      
+      // Create admin message record
+      const adminMessage = new AdminMessage({
+        userId,
+        adminId,
+        message: message.trim(),
+        type: 'support_message',
+        isRead: false
+      });
+      await adminMessage.save();
+      
+      // Create notification for user
+      const notification = await mongoStorage.createNotification({
+        userId,
+        type: 'message',
+        title: 'Message from Support',
+        message: message.trim(),
+        data: {
+          messageId: adminMessage._id.toString(),
+          from: 'support'
+        }
+      });
+
+      // Broadcast real-time notification update
+      const wss = app.get('wss');
+      if (wss) {
+        const updateData = {
+          type: 'notification_update',
+          data: { userId, notification }
+        };
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify(updateData));
+          }
+        });
+        
+        console.log(`📡 Real-time message notification sent to user ${userId}`);
+      }
+
+      console.log(`✓ Admin sent message to user ${userId}: "${message.substring(0, 50)}..."`);
+      
+      res.json({ 
+        success: true, 
+        message: "Message sent successfully",
+        notification: notification
+      });
+    } catch (error) {
+      console.error('Admin send message error:', error);
+      res.status(500).json({ success: false, message: "Failed to send message" });
+    }
+  });
+
+  // Admin update user withdrawal requirements
+  app.post('/api/admin/users/withdrawal-settings', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, minimumDepositForWithdrawal } = req.body;
+      
+      if (!userId || minimumDepositForWithdrawal === undefined || minimumDepositForWithdrawal < 0) {
+        return res.status(400).json({ success: false, message: "Valid user ID and minimum deposit amount required" });
+      }
+
+      const { UserSettings } = await import('./models/UserSettings');
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      
+      // Get or create user settings
+      let userSettings = await UserSettings.findOne({ userId });
+      if (!userSettings) {
+        userSettings = new UserSettings({ userId });
+      }
+      
+      userSettings.minimumDepositForWithdrawal = minimumDepositForWithdrawal;
+      
+      // Recalculate withdrawal eligibility
+      const deposits = await mongoStorage.getUserDepositTransactions(userId);
+      const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
+      userSettings.totalDeposited = totalDeposited;
+      userSettings.canWithdraw = totalDeposited >= minimumDepositForWithdrawal;
+      
+      await userSettings.save();
+      
+      console.log(`✓ Admin updated withdrawal requirements for user ${userId}: $${minimumDepositForWithdrawal}`);
+      
+      res.json({ 
+        success: true, 
+        message: `Withdrawal requirements updated to $${minimumDepositForWithdrawal}`,
+        settings: {
+          minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
+          totalDeposited: userSettings.totalDeposited,
+          canWithdraw: userSettings.canWithdraw
+        }
+      });
+    } catch (error) {
+      console.error('Admin update withdrawal settings error:', error);
+      res.status(500).json({ success: false, message: "Failed to update withdrawal settings" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // WebSocket server for real-time updates

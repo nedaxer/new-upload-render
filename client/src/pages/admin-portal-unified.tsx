@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,6 +29,9 @@ import {
   CheckCircle,
   Clock,
   UserPlus,
+  MessageSquare,
+  Send,
+  Settings,
   Eye,
   EyeOff,
   Activity,
@@ -78,6 +82,8 @@ export default function UnifiedAdminPortal() {
   const [fundAmount, setFundAmount] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [withdrawalAmount, setWithdrawalAmount] = useState('500');
   const [userPassword, setUserPassword] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" });
@@ -188,7 +194,7 @@ export default function UnifiedAdminPortal() {
     queryKey: ["/api/admin/users/search/email", emailSearchQuery],
     queryFn: async () => {
       if (!emailSearchQuery.trim()) return [];
-      const response = await fetch(`/api/admin/users/search?q=${encodeURIComponent(emailSearchQuery)}`, {
+      const response = await fetch(`/api/admin/users/search/email?q=${encodeURIComponent(emailSearchQuery)}`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Search failed');
@@ -196,7 +202,6 @@ export default function UnifiedAdminPortal() {
       return data || [];
     },
     enabled: emailSearchQuery.length > 0 && isAuthenticated,
-    refetchInterval: 3000,
   });
 
   // Search users by UID
@@ -204,7 +209,7 @@ export default function UnifiedAdminPortal() {
     queryKey: ["/api/admin/users/search/uid", uidSearchQuery],
     queryFn: async () => {
       if (!uidSearchQuery.trim()) return [];
-      const response = await fetch(`/api/admin/users/search?q=${encodeURIComponent(uidSearchQuery)}`, {
+      const response = await fetch(`/api/admin/users/search/uid?q=${encodeURIComponent(uidSearchQuery)}`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Search failed');
@@ -212,7 +217,6 @@ export default function UnifiedAdminPortal() {
       return data || [];
     },
     enabled: uidSearchQuery.length > 0 && isAuthenticated,
-    refetchInterval: 3000,
   });
 
   // General search users
@@ -377,6 +381,51 @@ export default function UnifiedAdminPortal() {
       toast({
         title: "Error",
         description: error.message || "Failed to get user password",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Send message to user mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ userId, message }: { userId: string; message: string }) => {
+      const response = await apiRequest("POST", "/api/admin/send-message", { userId, message });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Message Sent",
+        description: "Message sent to user successfully",
+        variant: "default",
+      });
+      setMessageText('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Sending Message",
+        description: error.message || "Failed to send message",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update withdrawal settings mutation
+  const updateWithdrawalSettingsMutation = useMutation({
+    mutationFn: async ({ userId, minimumDepositForWithdrawal }: { userId: string; minimumDepositForWithdrawal: number }) => {
+      const response = await apiRequest("POST", "/api/admin/users/withdrawal-settings", { userId, minimumDepositForWithdrawal });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Withdrawal Settings Updated",
+        description: "User withdrawal requirements updated successfully",
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Settings",
+        description: error.message || "Failed to update withdrawal settings",
         variant: "destructive",
       });
     },
@@ -1236,6 +1285,75 @@ export default function UnifiedAdminPortal() {
                           <span className="text-white ml-2">{new Date(selectedUser.lastActivity).toLocaleString()}</span>
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Send Message to User */}
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-white font-medium mb-3 flex items-center">
+                      <MessageSquare className="w-4 h-4 mr-2 text-blue-400" />
+                      Send Message to User
+                    </h3>
+                    <div className="space-y-3">
+                      <Textarea
+                        placeholder="Type your message to the user..."
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[80px] resize-none"
+                        maxLength={2000}
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">
+                          {messageText.length}/2000 characters
+                        </span>
+                        <Button
+                          onClick={() => sendMessageMutation.mutate({ userId: selectedUser._id, message: messageText })}
+                          disabled={!messageText.trim() || messageText.length > 2000 || sendMessageMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          size="sm"
+                        >
+                          <Send className="w-3 h-3 mr-1" />
+                          {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Withdrawal Settings */}
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-white font-medium mb-3 flex items-center">
+                      <Settings className="w-4 h-4 mr-2 text-orange-400" />
+                      Withdrawal Requirements
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <label className="text-sm text-gray-400">Minimum Deposit Required:</label>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-white">$</span>
+                          <Input
+                            type="number"
+                            value={withdrawalAmount}
+                            onChange={(e) => setWithdrawalAmount(e.target.value)}
+                            className="bg-white/10 border-white/20 text-white w-24 h-8 text-sm"
+                            min="0"
+                            step="50"
+                          />
+                        </div>
+                        <Button
+                          onClick={() => updateWithdrawalSettingsMutation.mutate({ 
+                            userId: selectedUser._id, 
+                            minimumDepositForWithdrawal: parseFloat(withdrawalAmount) || 500 
+                          })}
+                          disabled={updateWithdrawalSettingsMutation.isPending}
+                          className="bg-orange-600 hover:bg-orange-700 text-white"
+                          size="sm"
+                        >
+                          {updateWithdrawalSettingsMutation.isPending ? 'Updating...' : 'Update'}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Users must deposit at least this amount before they can withdraw funds.
+                      </p>
                     </div>
                   </div>
                 </CardContent>

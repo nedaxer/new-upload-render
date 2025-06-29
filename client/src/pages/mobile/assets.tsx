@@ -7,6 +7,7 @@ import { NetworkSelection } from '@/pages/mobile/network-selection';
 import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
+import { WithdrawalRestrictionModal } from '@/components/withdrawal-restriction-modal';
 import { PullToRefresh } from '@/components/pull-to-refresh';
 import { 
   Eye, 
@@ -42,6 +43,7 @@ export default function MobileAssets() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
+  const [withdrawalRestrictionOpen, setWithdrawalRestrictionOpen] = useState(false);
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
@@ -174,6 +176,12 @@ export default function MobileAssets() {
     return walletData?.data?.usdBalance || 0;
   };
 
+  // Check withdrawal eligibility
+  const { data: withdrawalEligibility } = useQuery({
+    queryKey: ["/api/withdrawals/eligibility"],
+    enabled: !!user,
+  });
+
   // Convert USD to BTC
   const convertUSDToBTC = (usdAmount: number) => {
     const btcPrice = getBTCPrice();
@@ -183,6 +191,16 @@ export default function MobileAssets() {
 
   const handleDepositClick = () => {
     setDepositModalOpen(true);
+  };
+
+  const handleWithdrawClick = () => {
+    if (withdrawalEligibility?.success && withdrawalEligibility?.data?.canWithdraw) {
+      // User can withdraw, navigate to withdraw page
+      window.location.href = '/mobile/withdraw';
+    } else {
+      // Show restriction modal
+      setWithdrawalRestrictionOpen(true);
+    }
   };
 
   const handlePaymentMethodSelect = (method: string) => {
@@ -426,14 +444,14 @@ export default function MobileAssets() {
             </div>
           </button>
           
-          <Link href="/mobile/withdraw">
+          <button onClick={handleWithdrawClick}>
             <div className="flex flex-col items-center space-y-2">
               <div className="w-14 h-14 bg-blue-900 rounded-lg flex items-center justify-center">
                 <ArrowUp className="w-7 h-7 text-orange-500" />
               </div>
               <span className="text-xs text-gray-300 text-center">Withdraw</span>
             </div>
-          </Link>
+          </button>
           
           <Link href="/mobile/transfer">
             <div className="flex flex-col items-center space-y-2">
@@ -712,6 +730,14 @@ export default function MobileAssets() {
         isOpen={comingSoonOpen}
         onClose={() => setComingSoonOpen(false)}
         feature={comingSoonFeature}
+      />
+
+      <WithdrawalRestrictionModal
+        open={withdrawalRestrictionOpen}
+        onOpenChange={setWithdrawalRestrictionOpen}
+        minimumRequired={(withdrawalEligibility as any)?.data?.minimumRequired || 500}
+        totalDeposited={(withdrawalEligibility as any)?.data?.totalDeposited || 0}
+        shortfall={(withdrawalEligibility as any)?.data?.shortfall || 500}
       />
       </PullToRefresh>
     </MobileLayout>
