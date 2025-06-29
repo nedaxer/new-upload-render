@@ -147,7 +147,7 @@ export default function MobileHome() {
   });
 
   // Fetch KYC verification status for verification banner
-  const { data: kycStatus } = useQuery({
+  const { data: kycStatus, isLoading: kycLoading } = useQuery({
     queryKey: ['/api/verification/status'],
     enabled: !!user,
     staleTime: 30000,
@@ -641,7 +641,9 @@ export default function MobileHome() {
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {/* Verification Banner - Only show for unverified users who haven't submitted KYC */}
-        {user && !user.isVerified && (
+        {user && !kycLoading && kycStatus && (
+          kycStatus.data?.kycStatus === 'none' || kycStatus.data?.kycStatus === 'rejected'
+        ) && (
           <VerificationBanner 
             userName={user.firstName || user.username || 'User'}
             onVerifyClick={() => navigate('/mobile/verification')}

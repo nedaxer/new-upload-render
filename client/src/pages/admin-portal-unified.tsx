@@ -999,7 +999,7 @@ export default function UnifiedAdminPortal() {
                         </div>
                         
                         {verification.kycData && (
-                          <div className="mb-4 space-y-2">
+                          <div className="mb-4 space-y-3">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
                                 <span className="text-gray-400">Document Type:</span>
@@ -1018,6 +1018,78 @@ export default function UnifiedAdminPortal() {
                                 <span className="text-white ml-2">{verification.kycData.investmentExperience || 'Not specified'}</span>
                               </div>
                             </div>
+                            
+                            {/* Document Photos Section */}
+                            {verification.kycData.documents && (
+                              <div className="space-y-2">
+                                <span className="text-gray-400 text-sm font-medium">Submitted Documents:</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                  {verification.kycData.documents.front && (
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-gray-400">Front Side</label>
+                                      <img
+                                        src={`data:image/jpeg;base64,${verification.kycData.documents.front}`}
+                                        alt="Document Front"
+                                        className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
+                                        onClick={() => {
+                                          const modal = document.createElement('div');
+                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                                          modal.innerHTML = `
+                                            <div class="relative max-w-4xl max-h-full">
+                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.front}" class="max-w-full max-h-full object-contain rounded-lg" />
+                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
+                                            </div>
+                                          `;
+                                          document.body.appendChild(modal);
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  {verification.kycData.documents.back && (
+                                    <div className="space-y-1">
+                                      <label className="text-xs text-gray-400">Back Side</label>
+                                      <img
+                                        src={`data:image/jpeg;base64,${verification.kycData.documents.back}`}
+                                        alt="Document Back"
+                                        className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
+                                        onClick={() => {
+                                          const modal = document.createElement('div');
+                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                                          modal.innerHTML = `
+                                            <div class="relative max-w-4xl max-h-full">
+                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.back}" class="max-w-full max-h-full object-contain rounded-lg" />
+                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
+                                            </div>
+                                          `;
+                                          document.body.appendChild(modal);
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                  {verification.kycData.documents.single && (
+                                    <div className="space-y-1 col-span-2">
+                                      <label className="text-xs text-gray-400">Document</label>
+                                      <img
+                                        src={`data:image/jpeg;base64,${verification.kycData.documents.single}`}
+                                        alt="Document"
+                                        className="w-full h-32 object-cover rounded-lg border border-white/20 cursor-pointer hover:border-orange-500/50 transition-colors"
+                                        onClick={() => {
+                                          const modal = document.createElement('div');
+                                          modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                                          modal.innerHTML = `
+                                            <div class="relative max-w-4xl max-h-full">
+                                              <img src="data:image/jpeg;base64,${verification.kycData.documents.single}" class="max-w-full max-h-full object-contain rounded-lg" />
+                                              <button class="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600" onclick="document.body.removeChild(this.closest('.fixed'))">×</button>
+                                            </div>
+                                          `;
+                                          document.body.appendChild(modal);
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                         
