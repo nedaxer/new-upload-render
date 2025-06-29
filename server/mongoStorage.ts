@@ -1,6 +1,7 @@
 // MongoDB models and types
 import { User, IUser } from './models/User';
 import { DepositTransaction, IDepositTransaction } from './models/DepositTransaction';
+import { WithdrawalTransaction, IWithdrawalTransaction } from './models/WithdrawalTransaction';
 import { Notification, INotification } from './models/Notification';
 import { InsertUser } from '@shared/schema';
 
@@ -48,6 +49,22 @@ export interface IMongoStorage {
   }): Promise<IDepositTransaction>;
   getUserDepositTransactions(userId: string): Promise<IDepositTransaction[]>;
   getDepositTransaction(transactionId: string): Promise<IDepositTransaction | null>;
+
+  // Withdrawal transaction functions
+  createWithdrawalTransaction(data: {
+    userId: string;
+    adminId: string;
+    cryptoSymbol: string;
+    cryptoName: string;
+    chainType: string;
+    networkName: string;
+    withdrawalAddress: string;
+    usdAmount: number;
+    cryptoAmount: number;
+    cryptoPrice: number;
+  }): Promise<IWithdrawalTransaction>;
+  getUserWithdrawalTransactions(userId: string): Promise<IWithdrawalTransaction[]>;
+  getWithdrawalTransaction(transactionId: string): Promise<IWithdrawalTransaction | null>;
   
   // Notification functions
   createNotification(data: {
@@ -712,6 +729,81 @@ export class MongoStorage implements IMongoStorage {
       return transaction;
     } catch (error) {
       console.error('Error getting deposit transaction:', error);
+      return null;
+    }
+  }
+
+  // Withdrawal transaction methods
+  async createWithdrawalTransaction(data: {
+    userId: string;
+    adminId: string;
+    cryptoSymbol: string;
+    cryptoName: string;
+    chainType: string;
+    networkName: string;
+    withdrawalAddress: string;
+    usdAmount: number;
+    cryptoAmount: number;
+    cryptoPrice: number;
+  }): Promise<IWithdrawalTransaction> {
+    try {
+      const transaction = await WithdrawalTransaction.create({
+        ...data,
+        status: 'confirmed'
+      });
+      
+      console.log('Withdrawal transaction created:', transaction._id);
+      return transaction;
+    } catch (error) {
+      console.error('Error creating withdrawal transaction:', error);
+      throw error;
+    }
+  }
+
+  async getUserWithdrawalTransactions(userId: string): Promise<IWithdrawalTransaction[]> {
+    try {
+      console.log(`📋 mongoStorage: Getting withdrawal transactions for user ${userId}`);
+      
+      const transactions = await WithdrawalTransaction.find({ 
+        $or: [
+          { userId: userId },
+          { userId: userId.toString() }
+        ]
+      }).sort({ createdAt: -1 });
+      
+      console.log(`📋 mongoStorage: Found ${transactions.length} withdrawal transactions`);
+      return transactions;
+    } catch (error) {
+      console.error('❌ mongoStorage: Error getting user withdrawal transactions:', error);
+      return [];
+    }
+  }
+
+  async getWithdrawalTransactionById(transactionId: string): Promise<IWithdrawalTransaction | null> {
+    try {
+      console.log(`📋 mongoStorage: Getting withdrawal transaction by ID ${transactionId}`);
+      
+      const transaction = await WithdrawalTransaction.findById(transactionId);
+      
+      if (transaction) {
+        console.log(`📋 mongoStorage: Found withdrawal transaction: ${transactionId}`);
+      } else {
+        console.log(`📋 mongoStorage: Withdrawal transaction not found: ${transactionId}`);
+      }
+      
+      return transaction;
+    } catch (error) {
+      console.error('❌ mongoStorage: Error getting withdrawal transaction by ID:', error);
+      return null;
+    }
+  }
+
+  async getWithdrawalTransaction(transactionId: string): Promise<IWithdrawalTransaction | null> {
+    try {
+      const transaction = await WithdrawalTransaction.findById(transactionId);
+      return transaction;
+    } catch (error) {
+      console.error('Error getting withdrawal transaction:', error);
       return null;
     }
   }

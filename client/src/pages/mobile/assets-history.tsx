@@ -48,11 +48,23 @@ export default function AssetsHistory() {
     gcTime: 0,
   });
 
+  // Fetch withdrawal transactions for authenticated user only
+  const { data: withdrawalsResponse, isLoading: isLoadingWithdrawals } = useQuery({
+    queryKey: ['/api/withdrawals/history'],
+    enabled: !!user,
+    refetchInterval: 30000,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 0,
+    gcTime: 0,
+  });
+
   const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];
   const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
+  const withdrawals = Array.isArray((withdrawalsResponse as any)?.data) ? (withdrawalsResponse as any).data : [];
   
   // Combine and sort all transactions
-  const allTransactions = [...deposits, ...transfers].sort((a, b) => 
+  const allTransactions = [...deposits, ...transfers, ...withdrawals].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
   
@@ -66,20 +78,21 @@ export default function AssetsHistory() {
       case 'Transfer':
         return transfers;
       case 'Withdraw':
-        return []; // No withdrawals implemented yet
+        return withdrawals;
       default:
         return allTransactions;
     }
   };
   
   const transactions = getFilteredTransactions();
-  const isLoading = isLoadingDeposits || isLoadingTransfers;
+  const isLoading = isLoadingDeposits || isLoadingTransfers || isLoadingWithdrawals;
   
   // Force refresh when user changes
   useEffect(() => {
     if (user) {
       queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
       queryClient.invalidateQueries({ queryKey: ['/api/transfers/history'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/history'] });
     }
   }, [user, queryClient]);
 
@@ -102,11 +115,12 @@ export default function AssetsHistory() {
           const data = JSON.parse(event.data);
           console.log('Real-time transaction update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
-            // Refresh transaction history when new deposits or transfers are created
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED' || data.type === 'WITHDRAWAL_CREATED') {
+            // Refresh transaction history when new deposits, transfers, or withdrawals are created
             queryClient.invalidateQueries({ queryKey: ['/api/deposits/history'] });
             queryClient.invalidateQueries({ queryKey: ['/api/transfers/history'] });
-            console.log('Transaction history refreshed due to new deposit/transfer');
+            queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/history'] });
+            console.log('Transaction history refreshed due to new transaction');
           }
         } catch (error) {
           console.error('WebSocket message error:', error);
@@ -204,8 +218,9 @@ export default function AssetsHistory() {
         ) : (
           // Transaction items
           transactions.map((transaction: any) => {
-            // Check if it's a transfer or deposit
+            // Check if it's a transfer, deposit, or withdrawal
             const isTransfer = transaction.type === 'sent' || transaction.type === 'received';
+            const isWithdrawal = transaction.cryptoSymbol && transaction.withdrawalAddress;
             
             if (isTransfer) {
               const isSent = transaction.type === 'sent';
@@ -238,6 +253,43 @@ export default function AssetsHistory() {
                           </p>
                           <p className="text-gray-400 text-xs">
                             {transaction.status}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            } else if (isWithdrawal) {
+              // Withdrawal transaction
+              return (
+                <Link 
+                  key={transaction._id} 
+                  href={`/mobile/withdrawal-details/${transaction._id}`}
+                >
+                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-xs">
+                          {transaction.cryptoSymbol} Withdrawal
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <div>
+                          <p className="text-red-400 font-medium text-xs">
+                            -{transaction.cryptoAmount.toFixed(6)}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-500" />

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { AdminPullToRefresh } from "@/components/admin-pull-to-refresh";
 import AdminDepositCreator from "@/components/admin-deposit-creator";
+import AdminWithdrawalCreator from "@/components/admin-withdrawal-creator";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Search, 
@@ -1296,6 +1297,10 @@ export default function UnifiedAdminPortal() {
               <DollarSign className="w-3 h-3 mr-1" />
               Deposits
             </TabsTrigger>
+            <TabsTrigger value="withdrawals" className="data-[state=active]:bg-white/20 text-xs">
+              <Minus className="w-3 h-3 mr-1" />
+              Withdrawals
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -1816,6 +1821,34 @@ export default function UnifiedAdminPortal() {
                   <DollarSign className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-white text-xl font-medium mb-2">Create Deposit Transaction</h3>
                   <p className="text-gray-300 mb-4">Select a user from the User Management tab to create a deposit transaction.</p>
+                  <Button
+                    onClick={() => setActiveTab("users")}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Go to User Management
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="withdrawals" className="space-y-6">
+            {selectedUser ? (
+              <AdminWithdrawalCreator 
+                userId={selectedUser._id} 
+                username={selectedUser.username}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+                  refetchUsers();
+                }}
+              />
+            ) : (
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardContent className="p-8 text-center">
+                  <Minus className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                  <h3 className="text-white text-xl font-medium mb-2">Create Withdrawal Transaction</h3>
+                  <p className="text-gray-300 mb-4">Select a user from the User Management tab to create a withdrawal transaction.</p>
                   <Button
                     onClick={() => setActiveTab("users")}
                     className="bg-blue-600 hover:bg-blue-700"

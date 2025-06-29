@@ -104,6 +104,7 @@ import MobileSecurity from '@/pages/mobile/security';
 import LanguageSelection from '@/pages/mobile/language-selection';
 import AssetsHistory from '@/pages/mobile/assets-history';
 import DepositDetails from '@/pages/mobile/deposit-details';
+import WithdrawalDetails from '@/pages/mobile/withdrawal-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
 import { VerificationFlow } from '@/pages/mobile/verification/VerificationFlow';
@@ -282,6 +283,9 @@ export default function App() {
             <Route path="/mobile/assets-history" component={AssetsHistory} />
             <Route path="/mobile/deposit-details/:transactionId">
               {(params) => <DepositDetails {...params} />}
+            </Route>
+            <Route path="/mobile/withdrawal-details/:transactionId">
+              {(params) => <WithdrawalDetails {...params} />}
             </Route>
             <Route path="/mobile/transfer-details/:transactionId">
               {(params) => <TransferDetails {...params} />}

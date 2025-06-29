@@ -2369,6 +2369,119 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     }
   });
 
+  // Admin create withdrawal transaction
+  app.post('/api/admin/withdrawals/create', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { 
+        userId, 
+        cryptoSymbol, 
+        cryptoName, 
+        chainType, 
+        networkName, 
+        withdrawalAddress, 
+        usdAmount, 
+        cryptoPrice 
+      } = req.body;
+
+      if (!userId || !cryptoSymbol || !cryptoName || !chainType || !networkName || !withdrawalAddress || !usdAmount || !cryptoPrice) {
+        return res.status(400).json({ success: false, message: "All fields are required" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      // Check if user exists
+      const user = await mongoStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // Check if user has sufficient balance
+      const userBalance = await mongoStorage.getUserBalance(userId);
+      if (userBalance < usdAmount) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Insufficient balance. User has $${userBalance.toFixed(2)}, trying to withdraw $${usdAmount.toFixed(2)}` 
+        });
+      }
+
+      const cryptoAmount = usdAmount / cryptoPrice;
+      const adminId = req.session?.adminId || 'admin';
+
+      // Create withdrawal transaction
+      const transaction = await mongoStorage.createWithdrawalTransaction({
+        userId,
+        adminId,
+        cryptoSymbol,
+        cryptoName,
+        chainType,
+        networkName,
+        withdrawalAddress,
+        usdAmount,
+        cryptoAmount,
+        cryptoPrice
+      });
+
+      // Remove USD funds from user balance
+      await mongoStorage.removeFundsFromUser(userId, usdAmount);
+
+      // Create notification for user
+      const notificationMessage = `Dear valued Nedaxer trader,
+Your withdrawal has been processed.
+Withdrawal amount: ${cryptoAmount.toFixed(8)} ${cryptoSymbol}
+Withdrawal address: ${withdrawalAddress}
+Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
+
+      const notification = await mongoStorage.createNotification({
+        userId,
+        type: 'withdrawal',
+        title: 'Withdrawal Processed',
+        message: notificationMessage,
+        data: {
+          transactionId: transaction._id,
+          cryptoSymbol,
+          cryptoAmount,
+          usdAmount,
+          withdrawalAddress,
+          chainType,
+          networkName
+        }
+      });
+
+      // Broadcast real-time update via WebSocket
+      const wss = (req.app as any).get('wss');
+      if (wss) {
+        const updateData = {
+          type: 'WITHDRAWAL_CREATED',
+          userId,
+          notification,
+          transaction,
+          balanceUpdate: {
+            userId,
+            deductedAmount: usdAmount
+          }
+        };
+        
+        // Broadcast to all connected WebSocket clients
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify(updateData));
+          }
+        });
+        
+        console.log(`📡 Real-time update broadcasted for user ${userId}: -$${usdAmount}`);
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Withdrawal created successfully. User notified of ${cryptoAmount.toFixed(8)} ${cryptoSymbol} withdrawal.`,
+        transaction: transaction
+      });
+    } catch (error) {
+      console.error('Admin create withdrawal error:', error);
+      res.status(500).json({ success: false, message: error.message || "Failed to create withdrawal" });
+    }
+  });
+
   // Get user deposit transaction history - SECURE user-specific filtering
   app.get('/api/deposits/history', requireAuth, async (req: Request, res: Response) => {
     try {
@@ -2453,6 +2566,93 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
       res.json({ success: true, data: transaction });
     } catch (error) {
       console.error('Get deposit transaction details error:', error);
+      res.status(500).json({ success: false, message: "Failed to get transaction details" });
+    }
+  });
+
+  // Get user withdrawal transaction history - SECURE user-specific filtering
+  app.get('/api/withdrawals/history', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const sessionUserId = req.session?.userId;
+      
+      if (!sessionUserId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+      
+      console.log(`SECURE: Getting withdrawal history for authenticated user: ${sessionUserId}`);
+      
+      // Use mongoStorage for consistent user-specific filtering
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserWithdrawalTransactions(sessionUserId);
+      
+      console.log(`SECURE: Found ${transactions.length} withdrawal transactions for user ${sessionUserId}`);
+      
+      // Verify all returned transactions belong to the authenticated user
+      const secureTransactions = transactions.filter(tx => 
+        tx.userId === sessionUserId || tx.userId === sessionUserId.toString()
+      );
+      
+      if (secureTransactions.length !== transactions.length) {
+        console.error(`SECURITY VIOLATION: Transaction count mismatch. Expected: ${transactions.length}, Secure: ${secureTransactions.length}`);
+        return res.status(500).json({ success: false, message: "Security check failed" });
+      }
+      
+      res.json({ 
+        success: true, 
+        data: secureTransactions
+      });
+    } catch (error) {
+      console.error('Get withdrawal history error:', error);
+      res.status(500).json({ success: false, message: "Failed to get withdrawal history" });
+    }
+  });
+
+  // Get user withdrawal transactions by userId (MUST be after /api/withdrawals/history route)  
+  app.get('/api/withdrawals/:userId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // Ensure user can only access their own transactions or admin can access any
+      const sessionUserId = req.session?.userId;
+      const isAdmin = req.session?.adminAuthenticated;
+      
+      if (!isAdmin && sessionUserId !== userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+
+      const { mongoStorage } = await import('./mongoStorage');
+      const transactions = await mongoStorage.getUserWithdrawalTransactions(userId);
+      
+      res.json({ success: true, data: transactions });
+    } catch (error) {
+      console.error('Get withdrawal transactions error:', error);
+      res.status(500).json({ success: false, message: "Failed to get transactions" });
+    }
+  });
+
+  // Get single withdrawal transaction details
+  app.get('/api/withdrawals/details/:transactionId', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { transactionId } = req.params;
+      
+      const { mongoStorage } = await import('./mongoStorage');
+      const transaction = await mongoStorage.getWithdrawalTransaction(transactionId);
+      
+      if (!transaction) {
+        return res.status(404).json({ success: false, message: "Transaction not found" });
+      }
+
+      // Ensure user can only access their own transactions or admin can access any
+      const sessionUserId = req.session?.userId;
+      const isAdmin = req.session?.adminAuthenticated;
+      
+      if (!isAdmin && sessionUserId !== transaction.userId) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+      }
+      
+      res.json({ success: true, data: transaction });
+    } catch (error) {
+      console.error('Get withdrawal transaction details error:', error);
       res.status(500).json({ success: false, message: "Failed to get transaction details" });
     }
   });
