@@ -9,6 +9,7 @@ import { AddressDisplay } from '@/pages/mobile/address-display';
 import CurrencySelection from '@/pages/mobile/currency-selection';
 import { ComingSoonModal } from '@/components/coming-soon-modal';
 import { PullToRefresh } from '@/components/pull-to-refresh';
+import EligibilityModal from '@/components/eligibility-modal';
 import { 
   Search, 
   Bell, 
@@ -58,6 +59,7 @@ export default function MobileHome() {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
@@ -757,7 +759,10 @@ export default function MobileHome() {
 
 
         {/* Promotional Banner */}
-        <Card className="bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600 p-4 mb-4">
+        <Card 
+          className="bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600 p-4 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => setShowEligibilityModal(true)}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CreditCard className="w-6 h-6 text-orange-500" />
@@ -898,6 +903,12 @@ export default function MobileHome() {
           isOpen={comingSoonOpen}
           onClose={() => setComingSoonOpen(false)}
           feature={comingSoonFeature}
+        />
+
+        {/* Eligibility Modal */}
+        <EligibilityModal
+          isOpen={showEligibilityModal}
+          onClose={() => setShowEligibilityModal(false)}
         />
       </PullToRefresh>
     </MobileLayout>

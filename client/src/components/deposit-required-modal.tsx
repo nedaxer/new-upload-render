@@ -121,7 +121,7 @@ export default function DepositRequiredModal({
           {/* Additional Info */}
           <div className="text-center pt-2">
             <p className="text-xs text-gray-400">
-              Minimum deposit: $10 • Multiple cryptocurrencies accepted
+              Multiple cryptocurrencies accepted
             </p>
           </div>
         </div>

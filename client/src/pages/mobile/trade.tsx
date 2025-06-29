@@ -917,15 +917,11 @@ export default function MobileTrade() {
   };
 
   const handleBuyClick = () => {
-    const action = selectedTradingType === 'Futures' ? 'long' : 'buy';
-    setDepositModalAction(action);
-    setShowDepositModal(true);
+    navigate('/mobile/spot');
   };
 
   const handleSellClick = () => {
-    const action = selectedTradingType === 'Futures' ? 'short' : 'sell';
-    setDepositModalAction(action);
-    setShowDepositModal(true);
+    navigate('/mobile/spot');
   };
 
   const handleQuantityChange = (value: number) => {
