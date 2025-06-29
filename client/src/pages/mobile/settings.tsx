@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ChevronRight, Camera, Copy, Check, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Camera, Copy, Check, Shield, AlertTriangle, User, Mail } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -264,16 +264,19 @@ export default function MobileSettings() {
 
       <div className="p-4 space-y-6">
         {/* Account Info Section */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">{t('account_info')}</h2>
+        <div className="bg-gray-900/40 rounded-xl p-6 backdrop-blur-sm border border-gray-800/50">
+          <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
+            <User className="h-5 w-5 text-orange-500" />
+            {t('account_info')}
+          </h2>
 
           {/* Profile Picture */}
-          <div className="flex items-center justify-between py-3 border-b border-blue-800">
-            <span className="text-gray-300">{t('profile_picture')}</span>
+          <div className="flex items-center justify-between py-4 border-b border-gray-700/50">
+            <span className="text-gray-300 font-medium">{t('profile_picture')}</span>
             <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-12 w-12 ring-2 ring-orange-500/30 ring-offset-2 ring-offset-gray-900">
                 <AvatarImage src={user?.profilePicture || ''} />
-                <AvatarFallback className="bg-orange-500 text-white text-sm">
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white font-semibold">
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
@@ -282,7 +285,7 @@ export default function MobileSettings() {
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPhoto}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg p-2 transition-all"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -303,50 +306,40 @@ export default function MobileSettings() {
             className="hidden"
           />
 
-          {/* Email (Read-only) */}
-          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
-            <span className="text-gray-300">Email</span>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">
-                {user?.email || 'Not available'}
-              </span>
-            </div>
-          </div>
-
-          {/* Username/Nickname */}
-          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
-            <span className="text-gray-300">Name</span>
+          {/* Name Field */}
+          <div className="flex items-center justify-between py-4 border-b border-gray-700/50">
+            <span className="text-gray-300 font-medium">Full Name</span>
             <div className="flex items-center gap-2">
               {isEditingNickname ? (
                 <div className="flex items-center gap-2">
                   <Input
                     value={tempNickname}
                     onChange={(e) => setTempNickname(e.target.value)}
-                    className={`w-32 h-8 ${getCardClass()} ${getBorderClass()} ${getTextClass()} text-sm`}
-                    maxLength={20}
-                    placeholder="Enter username"
+                    className="w-40 h-9 bg-gray-800/50 border-gray-700 text-white text-sm rounded-lg focus:border-orange-500 focus:ring-orange-500/20"
+                    maxLength={30}
+                    placeholder="Enter full name"
                   />
                   <Button
                     size="sm"
                     onClick={handleNicknameSave}
-                    className="h-8 px-2 bg-blue-600 hover:bg-blue-700"
+                    className="h-9 px-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
                   >
-                    <Check className="h-3 w-3" />
+                    <Check className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <>
-                  <span className="text-gray-400 text-sm">
-                    {settings.nickname || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || 'Tap to change name'}
+                  <span className="text-white text-sm font-medium">
+                    {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : settings.nickname || 'Tap to set name'}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setTempNickname(settings.nickname || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || '');
+                      setTempNickname(user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : settings.nickname || '');
                       setIsEditingNickname(true);
                     }}
-                    className="text-gray-400 hover:text-white"
+                    className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg p-2 transition-all"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -355,18 +348,29 @@ export default function MobileSettings() {
             </div>
           </div>
 
-          {/* UID */}
-          <div className={`flex items-center justify-between py-3 border-b ${getBorderClass()}`}>
-            <span className="text-gray-300">UID</span>
+          {/* Email (Read-only) */}
+          <div className="flex items-center justify-between py-4 border-b border-gray-700/50">
+            <span className="text-gray-300 font-medium">Email</span>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">{userUID}</span>
+              <span className="text-gray-400 text-sm">
+                {user?.email || 'Not available'}
+              </span>
+              <Mail className="h-4 w-4 text-gray-500" />
+            </div>
+          </div>
+
+          {/* UID */}
+          <div className="flex items-center justify-between py-4">
+            <span className="text-gray-300 font-medium">User ID</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white text-sm font-mono bg-gray-800/50 px-2 py-1 rounded-lg">{userUID}</span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={copyUserId}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg p-2 transition-all"
               >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           </div>
