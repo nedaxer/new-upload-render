@@ -22,6 +22,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
+import { VerificationBadge } from '@/components/verification-badge';
 
 export default function MobileProfile() {
   const { user, logoutMutation } = useAuth();
@@ -40,14 +41,7 @@ export default function MobileProfile() {
   // Use the actual UID from the database
   const userUID = user?.uid || 'N/A';
 
-  // Orange verification badge component
-  const VerificationBadge = () => (
-    <img 
-      src="/images/verified-badge.png" 
-      alt="Verified" 
-      className="w-5 h-5 ml-2"
-    />
-  );
+
 
   // Profile picture upload mutation
   const updateProfileMutation = useMutation({
