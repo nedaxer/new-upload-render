@@ -1803,9 +1803,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
 
+      const { User } = await import('./models/User');
       const { mongoStorage } = await import('./mongoStorage');
-      const users = await mongoStorage.searchUsers(query);
-      res.json(users);
+      
+      // Search users by email, username, firstName, lastName, or UID
+      const users = await User.find({
+        $or: [
+          { email: { $regex: query, $options: 'i' } },
+          { username: { $regex: query, $options: 'i' } },
+          { firstName: { $regex: query, $options: 'i' } },
+          { lastName: { $regex: query, $options: 'i' } },
+          { uid: { $regex: query, $options: 'i' } }
+        ]
+      })
+      .select('uid username email firstName lastName isVerified isAdmin profilePicture lastActivity onlineTime isOnline sessionStart createdAt')
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+      const usersWithBalance = await Promise.all(
+        users.map(async (user) => {
+          const balance = await mongoStorage.getUserBalance(user._id.toString());
+          return {
+            _id: user._id,
+            uid: user.uid,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            isAdmin: user.isAdmin,
+            balance: balance || 0,
+            lastActivity: user.lastActivity,
+            onlineTime: user.onlineTime || 0,
+            isOnline: user.isOnline || false,
+            sessionStart: user.sessionStart,
+            createdAt: user.createdAt
+          };
+        })
+      );
+
+      res.json(usersWithBalance);
     } catch (error) {
       console.error('Admin user search error:', error);
       res.status(500).json({ success: false, message: "Failed to search users" });
@@ -1847,7 +1885,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
 
-      res.json(usersWithBalance);
+      res.json({ 
+        success: true, 
+        data: usersWithBalance 
+      });
     } catch (error) {
       console.error('Admin get all users error:', error);
       res.status(500).json({ success: false, message: "Failed to fetch users" });
@@ -2722,6 +2763,11 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
         responseMessage = "You did not request this connection. Please report to support.";
         notificationMessage = `Connection request to ${connectionRequest.serviceName} was declined.`;
       }
+
+      // Remove the original connection request notification
+      await mongoStorage.removeNotificationByData(connectionRequest.userId, 'connection_request', {
+        connectionRequestId: (connectionRequest._id as any).toString()
+      });
 
       // Create notification for response
       const notification = await mongoStorage.createNotification({

@@ -470,7 +470,7 @@ export default function MobileHome() {
           const data = JSON.parse(event.data);
           console.log('Real-time home update received:', data);
           
-          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED' || data.type === 'notification_update' || data.type === 'kyc_status_update') {
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED' || data.type === 'notification_update' || data.type === 'kyc_status_update' || data.type === 'CONNECTION_REQUEST_CREATED' || data.type === 'CONNECTION_REQUEST_RESPONDED') {
             // Update notification badge and balance data instantly
             queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
             queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });

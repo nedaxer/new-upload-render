@@ -98,6 +98,68 @@ export default function UnifiedAdminPortal() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    let socket: WebSocket;
+    let reconnectTimeout: NodeJS.Timeout;
+    
+    const connectWebSocket = () => {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      socket = new WebSocket(wsUrl);
+      
+      socket.onopen = () => {
+        console.log('Admin WebSocket connected for real-time updates');
+        socket.send(JSON.stringify({ type: 'subscribe_admin' }));
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Admin real-time update received:', data);
+          
+          if (data.type === 'CONNECTION_REQUEST_CREATED' || data.type === 'CONNECTION_REQUEST_RESPONDED') {
+            // Refresh connection requests and user data
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/connection-requests"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] });
+            console.log('Admin dashboard refreshed due to connection request update');
+          }
+          
+          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
+            // Refresh user balance data
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] });
+          }
+        } catch (error) {
+          console.error('Error parsing admin WebSocket message:', error);
+        }
+      };
+      
+      socket.onclose = () => {
+        console.log('Admin WebSocket disconnected, attempting to reconnect...');
+        reconnectTimeout = setTimeout(connectWebSocket, 5000);
+      };
+      
+      socket.onerror = (error) => {
+        console.error('Admin WebSocket error:', error);
+      };
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
+  }, [isAuthenticated, queryClient]);
+
   // Force desktop view for admin portal
   useEffect(() => {
     sessionStorage.setItem('skipSplashScreen', 'true');

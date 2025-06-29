@@ -52,13 +52,14 @@ export interface IMongoStorage {
   // Notification functions
   createNotification(data: {
     userId: string;
-    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement';
+    type: 'deposit' | 'withdrawal' | 'system' | 'trade' | 'announcement' | 'connection_request' | 'transfer_sent' | 'transfer_received' | 'kyc_approved' | 'kyc_rejected' | 'message';
     title: string;
     message: string;
     data?: any;
   }): Promise<INotification>;
   getUserNotifications(userId: string): Promise<INotification[]>;
   markNotificationAsRead(notificationId: string): Promise<void>;
+  removeNotificationByData(userId: string, type: string, dataMatch: any): Promise<void>;
 }
 
 export class MongoStorage implements IMongoStorage {
@@ -749,6 +750,23 @@ export class MongoStorage implements IMongoStorage {
       console.log('Notification marked as read:', notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  }
+
+  async removeNotificationByData(userId: string, type: string, dataMatch: any): Promise<void> {
+    try {
+      const query: any = { userId, type };
+      
+      // Add data matching criteria
+      for (const [key, value] of Object.entries(dataMatch)) {
+        query[`data.${key}`] = value;
+      }
+      
+      const result = await Notification.deleteOne(query);
+      console.log(`Removed ${result.deletedCount} notification(s) for user ${userId} with type ${type}`);
+    } catch (error) {
+      console.error('Error removing notification:', error);
       throw error;
     }
   }
