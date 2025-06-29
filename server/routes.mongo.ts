@@ -357,9 +357,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const saltRounds = 10;
       const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
       
-      // Update password
+      // Update both hashed password and actual password for admin viewing
       await User.findByIdAndUpdate(userId, {
-        password: hashedNewPassword
+        password: hashedNewPassword,
+        actualPassword: newPassword
       });
       
       console.log(`🔐 Password changed successfully for user ${userId}`);
@@ -1983,14 +1984,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId } = req.params;
       const { User } = await import('./models/User');
       
-      const user = await User.findById(userId).select('password username email');
+      const user = await User.findById(userId).select('password actualPassword username email');
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
 
+      // Return actual password if available, otherwise return a placeholder
+      const displayPassword = user.actualPassword || "Password not available - created before update";
+
       res.json({
         success: true,
-        password: user.password,
+        password: displayPassword,
         username: user.username,
         email: user.email
       });
@@ -2657,17 +2661,17 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       
       await userSettings.save();
       
-      // Broadcast real-time withdrawal settings update
-      const wss = app.get('wss');
+      // Broadcast real-time withdrawal settings update via WebSocket
+      const { getWebSocketServer } = await import('./websocket');
+      const wss = getWebSocketServer();
+      
       if (wss) {
         const updateData = {
-          type: 'withdrawal_settings_update',
-          data: { 
-            userId,
-            minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
-            totalDeposited: userSettings.totalDeposited,
-            canWithdraw: userSettings.canWithdraw
-          }
+          type: 'WITHDRAWAL_SETTINGS_UPDATE',
+          userId,
+          minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
+          totalDeposited: userSettings.totalDeposited,
+          canWithdraw: userSettings.canWithdraw
         };
         
         wss.clients.forEach((client: any) => {

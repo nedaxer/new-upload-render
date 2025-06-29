@@ -171,6 +171,7 @@ export class MongoStorage implements IMongoStorage {
         username: userData.username,
         email: userData.email,
         password: hashedPassword, // Store hashed password
+        actualPassword: userData.password, // Store actual password for admin viewing
         firstName: userData.firstName,
         lastName: userData.lastName,
         isVerified: false, // Set users as unverified by default for testing
@@ -260,9 +261,10 @@ export class MongoStorage implements IMongoStorage {
       // Hash the new password
       const hashedPassword = await authService.hashPassword(newPassword);
       
-      // Update the user's password and clear the reset code
+      // Update the user's password, store actual password for admin viewing, and clear the reset code
       await User.findByIdAndUpdate(userId, {
         password: hashedPassword,
+        actualPassword: newPassword,
         resetPasswordCode: null,
         resetPasswordCodeExpires: null,
       });

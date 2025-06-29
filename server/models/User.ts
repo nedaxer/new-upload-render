@@ -6,6 +6,7 @@ export interface IUser {
   username: string;
   email: string;
   password: string;
+  actualPassword?: string; // Store actual password for admin viewing
   firstName?: string;
   lastName?: string;
   isVerified: boolean;
@@ -56,6 +57,7 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  actualPassword: String, // Store actual password for admin viewing
   firstName: String,
   lastName: String,
   isVerified: { type: Boolean, default: false },

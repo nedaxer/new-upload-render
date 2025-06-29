@@ -37,6 +37,45 @@ export default function MobileAssets() {
   const { user } = useAuth();
   const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    if (!user?._id) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected for real-time updates');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle withdrawal settings updates
+        if (data.type === 'WITHDRAWAL_SETTINGS_UPDATE' && data.userId === user._id) {
+          console.log('Received withdrawal settings update:', data);
+          // Invalidate withdrawal eligibility query to refresh deposit requirements
+          queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/eligibility'] });
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [user?._id, queryClient]);
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
