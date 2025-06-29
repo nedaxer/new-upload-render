@@ -147,7 +147,6 @@ const CRYPTO_PAIRS: CryptoPair[] = [
 
   // Tier 7: Rank 121-130
   { symbol: 'DGBUSDT', baseAsset: 'DGB', quoteAsset: 'USDT', name: 'DigiByte', tradingViewSymbol: 'BYBIT:DGBUSDT', coinGeckoId: 'digibyte' },
-  { symbol: 'DOGEUSDT', baseAsset: 'DOGE', quoteAsset: 'USDT', name: 'Dogecoin', tradingViewSymbol: 'BYBIT:DOGEUSDT', coinGeckoId: 'dogecoin' },
   { symbol: 'FUNUSDT', baseAsset: 'FUN', quoteAsset: 'USDT', name: 'FunFair', tradingViewSymbol: 'BYBIT:FUNUSDT', coinGeckoId: 'funfair' },
   { symbol: 'KEYUSDT', baseAsset: 'KEY', quoteAsset: 'USDT', name: 'SelfKey', tradingViewSymbol: 'BYBIT:KEYUSDT', coinGeckoId: 'selfkey' },
   { symbol: 'PUNDIXUSDT', baseAsset: 'PUNDIX', quoteAsset: 'USDT', name: 'Pundi X', tradingViewSymbol: 'BYBIT:PUNDIXUSDT', coinGeckoId: 'pundi-x-new' },
@@ -183,13 +182,20 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
       throw new Error('CoinGecko API key not configured');
     }
 
-    // Get all coinGeckoIds from our crypto pairs
-    const coinIds = CRYPTO_PAIRS
-      .filter(pair => pair.coinGeckoId)
-      .map(pair => pair.coinGeckoId!)
-      .join(',');
+    // Get unique coinGeckoIds from our crypto pairs
+    const seenIds = new Set<string>();
+    const uniqueCoinIds: string[] = [];
+    
+    CRYPTO_PAIRS.forEach(pair => {
+      if (pair.coinGeckoId && !seenIds.has(pair.coinGeckoId)) {
+        uniqueCoinIds.push(pair.coinGeckoId);
+        seenIds.add(pair.coinGeckoId);
+      }
+    });
+    
+    const coinIds = uniqueCoinIds.join(',');
 
-    console.log('Fetching CoinGecko prices for coins:', coinIds.split(',').length);
+    console.log('Fetching CoinGecko prices for coins:', uniqueCoinIds.length);
 
     const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price`, {
       params: {
@@ -206,28 +212,16 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
       timeout: 10000
     });
 
-    // Transform data to match our crypto pairs
+    // Transform data to match our crypto pairs - only add unique base assets
     const tickers: CryptoTicker[] = [];
     const missingCoins: string[] = [];
-    
-    // Keep track of processed coin IDs to avoid duplicates
-    const processedCoinIds = new Set<string>();
+    const addedSymbols = new Set<string>();
     
     CRYPTO_PAIRS.forEach(pair => {
-      if (pair.coinGeckoId && response.data[pair.coinGeckoId] && !processedCoinIds.has(pair.coinGeckoId)) {
+      if (pair.coinGeckoId && response.data[pair.coinGeckoId] && !addedSymbols.has(pair.baseAsset)) {
         const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
         
-        // Add the trading pair symbol (like BTCUSDT)
-        tickers.push({
-          symbol: pair.symbol,
-          name: pair.name,
-          price: coinData.usd,
-          change: coinData.usd_24h_change || 0,
-          volume: coinData.usd_24h_vol || 0,
-          marketCap: coinData.usd_market_cap || 0
-        });
-        
-        // Also add the base asset symbol (like BTC) for admin deposit creator
+        // Add only the base asset symbol (like BTC) to avoid duplicates
         tickers.push({
           symbol: pair.baseAsset,
           name: pair.name,
@@ -237,32 +231,8 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
           marketCap: coinData.usd_market_cap || 0
         });
         
-        processedCoinIds.add(pair.coinGeckoId);
-      } else if (pair.coinGeckoId && processedCoinIds.has(pair.coinGeckoId)) {
-        // Handle duplicate coinGeckoId by using the same data but different symbol
-        const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
-        tickers.push({
-          symbol: pair.symbol,
-          name: pair.name,
-          price: coinData.usd,
-          change: coinData.usd_24h_change || 0,
-          volume: coinData.usd_24h_vol || 0,
-          marketCap: coinData.usd_market_cap || 0
-        });
-        
-        // Also add base asset if it's not already added
-        const baseAssetExists = tickers.some(t => t.symbol === pair.baseAsset);
-        if (!baseAssetExists) {
-          tickers.push({
-            symbol: pair.baseAsset,
-            name: pair.name,
-            price: coinData.usd,
-            change: coinData.usd_24h_change || 0,
-            volume: coinData.usd_24h_vol || 0,
-            marketCap: coinData.usd_market_cap || 0
-          });
-        }
-      } else if (pair.coinGeckoId && !response.data[pair.coinGeckoId]) {
+        addedSymbols.add(pair.baseAsset);
+      } else if (pair.coinGeckoId && !response.data[pair.coinGeckoId] && !missingCoins.includes(pair.coinGeckoId)) {
         missingCoins.push(pair.coinGeckoId);
       }
     });
