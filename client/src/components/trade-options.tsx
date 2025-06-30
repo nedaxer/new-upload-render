@@ -35,12 +35,12 @@ export const TradeOptions = () => {
                 </div>
               </div>
               <div className="p-6">
-                <p className="mb-4">{option.description}</p>
+                <p className="mb-4 text-gray-800">{option.description}</p>
                 <ul className="mb-6 space-y-2">
                   {option.features.map((feature, featIndex) => (
                     <li key={featIndex} className="flex items-start">
                       <Check className="text-[#ff5900] mt-1 mr-2 h-5 w-5 flex-shrink-0" />
-                      <span>{feature}</span>
+                      <span className="text-gray-800">{feature}</span>
                     </li>
                   ))}
                 </ul>

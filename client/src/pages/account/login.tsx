@@ -141,7 +141,7 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter your email address"
-                  className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                  className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                   required
                   disabled={loginMutation.isPending}
                 />
@@ -165,7 +165,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                  className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                   required
                   disabled={loginMutation.isPending}
                 />

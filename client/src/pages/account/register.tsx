@@ -220,7 +220,7 @@ export default function Register() {
                       value={formData.firstName}
                       onChange={handleChange}
                       placeholder="John"
-                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                       required
                     />
                   </div>
@@ -238,7 +238,7 @@ export default function Register() {
                       value={formData.lastName}
                       onChange={handleChange}
                       placeholder="Doe"
-                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                       required
                     />
                   </div>
@@ -258,7 +258,7 @@ export default function Register() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your.email@example.com"
-                    className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                    className="w-full pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                     required
                   />
                 </div>
@@ -278,7 +278,7 @@ export default function Register() {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Create a password"
-                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                       required
                     />
                     <button
@@ -308,7 +308,7 @@ export default function Register() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Confirm your password"
-                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0]"
+                      className="w-full pl-10 pr-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-[#0033a0] text-gray-900 placeholder:text-gray-500"
                       required
                     />
                     <button
