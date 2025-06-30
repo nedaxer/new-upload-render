@@ -71,7 +71,7 @@ export const HeroSlider = () => {
             className={`w-3 h-3 rounded-full focus:outline-none ${
               index === currentSlide
                 ? "bg-white"
-                : "bg-white bg-opacity-50"
+                : "bg-white bg-opacity-70"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           ></button>

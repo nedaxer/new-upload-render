@@ -14,7 +14,7 @@ export const Footer = () => {
             <div className="mb-6">
               <Logo size="large" />
             </div>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-300 mb-6">
               A regulated exchange offering innovative trading products with limited risk by design.
             </p>
             <div className="flex space-x-4">

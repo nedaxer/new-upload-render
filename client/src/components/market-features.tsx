@@ -61,7 +61,7 @@ export const MarketFeatures = () => {
                 </span>
                 <h3 className="text-xl font-bold">{feature.title}</h3>
               </div>
-              <p className="mb-4 text-[#666666]">{feature.description}</p>
+              <p className="mb-4 text-gray-800">{feature.description}</p>
               <Link
                 href={feature.link.href}
                 className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center text-sm"

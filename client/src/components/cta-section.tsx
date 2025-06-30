@@ -12,7 +12,7 @@ export const CTASection = () => {
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white">
                 Ready to start trading?
               </h2>
-              <p className="text-white opacity-90 mb-6">
+              <p className="text-white mb-6">
                 Open an account today and get access to our full range of products, markets, and educational resources.
               </p>
               <div className="space-y-4 md:space-y-0 md:space-x-4 md:flex">

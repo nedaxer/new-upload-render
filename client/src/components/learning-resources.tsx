@@ -9,7 +9,7 @@ export const LearningResources = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 text-[#0033a0]">
           Learn to Trade
         </h2>
-        <p className="text-center text-[#666666] mb-10 max-w-3xl mx-auto">
+        <p className="text-center text-gray-700 mb-10 max-w-3xl mx-auto">
           Access our comprehensive educational resources designed to help traders of all experience levels succeed.
         </p>
 
@@ -34,7 +34,7 @@ export const LearningResources = () => {
               )}
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-3 text-[#0033a0]">{resource.title}</h3>
-                <p className="mb-4 text-[#666666]">{resource.description}</p>
+                <p className="mb-4 text-gray-800">{resource.description}</p>
                 <Link
                   href={resource.link.href}
                   className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
