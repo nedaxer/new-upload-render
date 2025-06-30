@@ -2360,8 +2360,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       console.log(`📋 Getting withdrawal restriction for user: ${userId}`);
       
-      // Handle admin users differently
-      if (userId === 'ADMIN001' || req.session.adminAuthenticated) {
+      // Handle admin users differently (only check for specific admin ID)
+      if (userId === 'ADMIN001') {
         console.log('✅ Admin user - returning empty restriction message');
         return res.json({
           success: true,
@@ -2387,7 +2387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         data: {
-          hasRestriction: user.requiresDeposit || false,
+          hasRestriction: !!(user.withdrawalRestrictionMessage && user.withdrawalRestrictionMessage.trim().length > 0),
           message: user.withdrawalRestrictionMessage || ""
         }
       });
