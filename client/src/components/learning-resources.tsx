@@ -16,11 +16,22 @@ export const LearningResources = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {learningResources.map((resource, index) => (
             <div key={index} className="bg-[#f5f5f5] rounded-lg overflow-hidden">
-              <img
-                src={resource.image}
-                alt={resource.title}
-                className="w-full h-48 object-cover"
-              />
+              {resource.title === "Crypto Webinars" ? (
+                <video
+                  src="/videos/crypto-webinars-demo.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <img
+                  src={resource.image}
+                  alt={resource.title}
+                  className="w-full h-48 object-cover"
+                />
+              )}
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-3 text-[#0033a0]">{resource.title}</h3>
                 <p className="mb-4 text-[#666666]">{resource.description}</p>
