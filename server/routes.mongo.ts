@@ -645,30 +645,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .populate('toUserId', 'firstName lastName email uid');
       
       // Format transfers for frontend
-      const formattedTransfers = transfers.map(transfer => {
-        const isSender = transfer.fromUserId._id.toString() === userId;
-        return {
-          _id: transfer._id,
-          transactionId: transfer.transactionId,
-          type: isSender ? 'sent' : 'received',
-          amount: transfer.amount,
-          currency: transfer.currency,
-          status: transfer.status,
-          fromUser: {
-            _id: transfer.fromUserId._id,
-            name: `${transfer.fromUserId.firstName} ${transfer.fromUserId.lastName}`,
-            email: transfer.fromUserId.email,
-            uid: transfer.fromUserId.uid
-          },
-          toUser: {
-            _id: transfer.toUserId._id,
-            name: `${transfer.toUserId.firstName} ${transfer.toUserId.lastName}`,
-            email: transfer.toUserId.email,
-            uid: transfer.toUserId.uid
-          },
-          createdAt: transfer.createdAt
-        };
-      });
+      const formattedTransfers = transfers
+        .filter(transfer => transfer.fromUserId && transfer.toUserId) // Only include transfers with valid users
+        .map(transfer => {
+          const isSender = transfer.fromUserId._id.toString() === userId;
+          return {
+            _id: transfer._id,
+            transactionId: transfer.transactionId,
+            type: isSender ? 'sent' : 'received',
+            amount: transfer.amount,
+            currency: transfer.currency,
+            status: transfer.status,
+            fromUser: {
+              _id: transfer.fromUserId._id,
+              name: `${transfer.fromUserId.firstName || ''} ${transfer.fromUserId.lastName || ''}`.trim() || transfer.fromUserId.email,
+              email: transfer.fromUserId.email,
+              uid: transfer.fromUserId.uid
+            },
+            toUser: {
+              _id: transfer.toUserId._id,
+              name: `${transfer.toUserId.firstName || ''} ${transfer.toUserId.lastName || ''}`.trim() || transfer.toUserId.email,
+              email: transfer.toUserId.email,
+              uid: transfer.toUserId.uid
+            },
+            createdAt: transfer.createdAt
+          };
+        });
       
       res.json({
         success: true,
@@ -2961,38 +2963,31 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     try {
       const userId = req.session.userId!;
       
-      const { UserSettings } = await import('./models/UserSettings');
+      const { User } = await import('./models/User');
       const { mongoStorage } = await import('./mongoStorage');
       
-      // Get or create user settings
-      let userSettings = await UserSettings.findOne({ userId });
-      if (!userSettings) {
-        userSettings = new UserSettings({ 
-          userId,
-          minimumDepositForWithdrawal: 500,
-          totalDeposited: 0,
-          canWithdraw: false
-        });
-        await userSettings.save();
+      // Get user data including withdrawal restriction message
+      const user = await User.findById(userId).select('withdrawalRestrictionMessage');
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
       }
       
       // Calculate total deposits from transaction history
       const deposits = await mongoStorage.getUserDepositTransactions(userId);
       const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
       
-      // Update user settings with current total
-      userSettings.totalDeposited = totalDeposited;
-      userSettings.canWithdraw = totalDeposited >= userSettings.minimumDepositForWithdrawal;
-      await userSettings.save();
+      // Default minimum required amount (can be made configurable per user later)
+      const minimumRequired = 500;
+      const canWithdraw = totalDeposited >= minimumRequired;
       
       res.json({
         success: true,
         data: {
-          canWithdraw: userSettings.canWithdraw,
-          totalDeposited: userSettings.totalDeposited,
-          minimumRequired: userSettings.minimumDepositForWithdrawal,
-          withdrawalMessage: userSettings.withdrawalMessage || "You need to make a first deposit of ${amount} to unlock withdrawal features.",
-          shortfall: Math.max(0, userSettings.minimumDepositForWithdrawal - userSettings.totalDeposited)
+          canWithdraw,
+          totalDeposited,
+          minimumRequired,
+          withdrawalMessage: user.withdrawalRestrictionMessage || "You need to make a first deposit of $500 to unlock withdrawal features.",
+          shortfall: Math.max(0, minimumRequired - totalDeposited)
         }
       });
     } catch (error) {
@@ -3136,39 +3131,24 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   // Admin update user withdrawal requirements
   app.post('/api/admin/users/withdrawal-settings', requireAdminAuth, async (req: Request, res: Response) => {
     try {
-      const { userId, minimumDepositForWithdrawal, withdrawalMessage } = req.body;
+      const { userId, withdrawalRestrictionMessage } = req.body;
       
-      if (!userId || minimumDepositForWithdrawal === undefined || minimumDepositForWithdrawal < 0) {
-        return res.status(400).json({ success: false, message: "Valid user ID and minimum deposit amount required" });
+      if (!userId) {
+        return res.status(400).json({ success: false, message: "User ID required" });
       }
 
-      const { UserSettings } = await import('./models/UserSettings');
-      const { mongoStorage } = await import('./mongoStorage');
+      const { User } = await import('./models/User');
       
-      // Check if user exists
-      const user = await mongoStorage.getUser(userId);
+      // Update user's withdrawal restriction message
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { withdrawalRestrictionMessage: withdrawalRestrictionMessage || '' },
+        { new: true }
+      );
+      
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
-      
-      // Get or create user settings
-      let userSettings = await UserSettings.findOne({ userId });
-      if (!userSettings) {
-        userSettings = new UserSettings({ userId });
-      }
-      
-      userSettings.minimumDepositForWithdrawal = minimumDepositForWithdrawal;
-      if (withdrawalMessage) {
-        userSettings.withdrawalMessage = withdrawalMessage;
-      }
-      
-      // Recalculate withdrawal eligibility
-      const deposits = await mongoStorage.getUserDepositTransactions(userId);
-      const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
-      userSettings.totalDeposited = totalDeposited;
-      userSettings.canWithdraw = totalDeposited >= minimumDepositForWithdrawal;
-      
-      await userSettings.save();
       
       // Broadcast real-time withdrawal settings update via WebSocket
       const { getWebSocketServer } = await import('./websocket');
@@ -3178,10 +3158,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
         const updateData = {
           type: 'WITHDRAWAL_SETTINGS_UPDATE',
           userId,
-          minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
-          withdrawalMessage: userSettings.withdrawalMessage,
-          totalDeposited: userSettings.totalDeposited,
-          canWithdraw: userSettings.canWithdraw
+          withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
         };
         
         wss.clients.forEach((client: any) => {
@@ -3193,15 +3170,14 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
         console.log(`📡 Real-time withdrawal settings update sent to user ${userId}`);
       }
       
-      console.log(`✓ Admin updated withdrawal requirements for user ${userId}: $${minimumDepositForWithdrawal}`);
+      console.log(`✓ Admin updated withdrawal restriction message for user ${userId}`);
       
       res.json({ 
         success: true, 
-        message: `Withdrawal requirements updated to $${minimumDepositForWithdrawal}`,
-        settings: {
-          minimumDepositForWithdrawal: userSettings.minimumDepositForWithdrawal,
-          totalDeposited: userSettings.totalDeposited,
-          canWithdraw: userSettings.canWithdraw
+        message: "Withdrawal restriction message updated successfully",
+        user: {
+          _id: user._id,
+          withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
         }
       });
     } catch (error) {

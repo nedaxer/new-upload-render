@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import { X, Wallet, Shield, ArrowRight, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 
 interface TransferDepositRequiredModalProps {
   isOpen: boolean;
@@ -19,6 +20,12 @@ export function TransferDepositRequiredModal({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch user's withdrawal restriction message
+  const { data: withdrawalRestrictionData } = useQuery({
+    queryKey: ['/api/user/withdrawal-restriction'],
+    enabled: isOpen,
+  });
 
   useEffect(() => {
     const bottomNav = document.querySelector('[data-navigation="bottom"]') as HTMLElement;
@@ -119,7 +126,8 @@ export function TransferDepositRequiredModal({
               Make a Deposit to Unlock All Features
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              You need to make a deposit to unlock all account features including sending funds to other users. This helps secure your account and enable full trading capabilities.
+              {(withdrawalRestrictionData as any)?.withdrawalRestrictionMessage || 
+               "You need to make a deposit to unlock all account features including sending funds to other users. This helps secure your account and enable full trading capabilities."}
             </p>
           </div>
 
