@@ -14,12 +14,23 @@ export const TradeOptions = () => {
           {tradeOptions.map((option, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="h-48 bg-[#0033a0] relative">
-                <img
-                  src={option.image}
-                  alt={option.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-[#0033a0] bg-opacity-70 flex items-center justify-center">
+                {option.title === "Call Spreads" ? (
+                  <video
+                    src="/videos/call-spread-demo.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src={option.image}
+                    alt={option.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-[#0033a0] bg-opacity-50 flex items-center justify-center">
                   <h3 className="text-white text-2xl font-bold">{option.title}</h3>
                 </div>
               </div>
