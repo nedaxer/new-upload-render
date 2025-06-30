@@ -3756,7 +3756,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       // Create notification for the user
       const notification = new Notification({
         userId: message.userId,
-        type: 'support_message',
+        type: 'message',
         title: `Reply to: ${message.subject}`,
         message: reply.trim(),
         data: {

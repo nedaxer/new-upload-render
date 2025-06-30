@@ -40,17 +40,24 @@ export default function MessagesPage() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
   // Fetch user's contact messages
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messagesResponse, isLoading } = useQuery<{ success: boolean; data: ContactMessage[] }>({
     queryKey: ['/api/user/contact-messages'],
     enabled: !!user,
   });
 
+  const messages = messagesResponse?.data || [];
+
   // Mark message as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: string) => {
-      return apiRequest(`/api/user/contact-messages/${messageId}/read`, {
+      const response = await fetch(`/api/user/contact-messages/${messageId}/read`, {
         method: 'PATCH',
+        credentials: 'include',
       });
+      if (!response.ok) {
+        throw new Error('Failed to mark message as read');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/contact-messages'] });
