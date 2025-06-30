@@ -112,14 +112,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/auth/login", credentials);
-      const data = await res.json();
+      try {
+        const res = await apiRequest("POST", "/api/auth/login", credentials);
+        const data = await res.json();
 
-      if (!data.success) {
-        throw new Error(data.message || "Login failed");
+        if (!data.success) {
+          // Create a more specific error message for incorrect credentials
+          if (res.status === 401) {
+            throw new Error("Incorrect email or password. Please check your credentials and try again.");
+          } else if (res.status === 400) {
+            throw new Error("Please enter both email and password.");
+          } else {
+            throw new Error(data.message || "Login failed. Please try again.");
+          }
+        }
+
+        return data;
+      } catch (error) {
+        // Prevent raw error propagation that causes red browser errors
+        if (error instanceof Error) {
+          throw error; // Re-throw our custom errors
+        } else {
+          // Handle network errors or other unexpected errors
+          throw new Error("Unable to connect to the server. Please check your internet connection and try again.");
+        }
       }
-
-      return data;
     },
     onSuccess: async (data) => {
       console.log("Login successful, updating cache with user:", data.user);

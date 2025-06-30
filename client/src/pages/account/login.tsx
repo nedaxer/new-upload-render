@@ -41,74 +41,57 @@ export default function Login() {
     }
   }, [user, lastUsername, setLocation, toast]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check if username and password are provided
     if (!username || !password) {
       toast({
-        title: "Login failed",
-        description: "Please enter both username and password.",
+        title: "Login Failed",
+        description: "Please enter both email and password.",
         variant: "destructive",
       });
       return;
     }
     
-    try {
-      await loginMutation.mutateAsync({ username, password });
-      
-      // Save user data to localStorage if needed
-      if (rememberMe) {
-        localStorage.setItem('rememberLogin', 'true');
-      }
-      
-      // Invalidate auth query to refresh user state immediately
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      
-      // Force refetch auth data to ensure user state is current
-      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
-      
-      // Small delay to ensure auth state is synced
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Show success message
-      toast({
-        title: "Logged in successfully",
-        description: "Welcome back to Nedaxer cryptocurrency trading platform.",
-      });
-      
-      // Redirect to mobile app instead of dashboard
-      console.log('Login successful, redirecting to mobile app');
-      setLocation('/mobile');
-      
-    } catch (error: any) {
-      console.error('Login error:', error);
-      
-      let errorMessage = error.message || "An unexpected error occurred. Please try again.";
-      let errorDetail = "";
-      
-      if (error.message?.includes('401')) {
-        errorDetail = "Please check your credentials carefully and try again. If you've forgotten your password, use the 'Forgot Password' link below.";
-      } else if (error.message?.includes('400')) {
-        errorDetail = "Please make sure you've entered both your username and password correctly.";
-      }
-      
-      toast({
-        title: "Login failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      // Show additional guidance if available
-      if (errorDetail) {
-        setTimeout(() => {
+    // Use mutation.mutate instead of mutateAsync to prevent unhandled promise rejections
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: async () => {
+          // Save user data to localStorage if needed
+          if (rememberMe) {
+            localStorage.setItem('rememberLogin', 'true');
+          }
+          
+          // Invalidate auth query to refresh user state immediately
+          await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+          
+          // Show success message
           toast({
-            title: "Help",
-            description: errorDetail,
+            title: "Welcome Back!",
+            description: "You have successfully logged in to your Nedaxer account.",
           });
-        }, 500);
+          
+          // Small delay to ensure auth state is synced before redirect
+          setTimeout(() => {
+            console.log('Login successful, redirecting to mobile app');
+            setLocation('/mobile');
+          }, 500);
+        },
+        onError: (error: Error) => {
+          // This prevents red browser errors by handling errors properly
+          console.log('Login error handled:', error.message);
+          
+          // Show user-friendly error message
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       }
-    }
+    );
   };
 
 
