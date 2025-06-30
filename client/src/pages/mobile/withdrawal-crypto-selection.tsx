@@ -3,6 +3,11 @@ import { Link, useLocation } from 'wouter';
 import { ArrowLeft } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
 
+const btcLogo = '/logos/btc-logo.svg';
+const ethLogo = '/logos/eth-logo.svg';
+const usdtLogo = '/logos/usdt-logo.svg';
+const bnbLogo = '/logos/bnb-logo.svg';
+
 interface CryptoOption {
   symbol: string;
   name: string;
@@ -14,19 +19,19 @@ const cryptoOptions: CryptoOption[] = [
   {
     symbol: 'BTC',
     name: 'Bitcoin',
-    icon: '₿',
+    icon: btcLogo,
     networks: ['Bitcoin Network']
   },
   {
     symbol: 'ETH',
     name: 'Ethereum',
-    icon: 'Ξ',
+    icon: ethLogo,
     networks: ['Ethereum (ERC20)']
   },
   {
     symbol: 'USDT',
     name: 'Tether',
-    icon: '₮',
+    icon: usdtLogo,
     networks: ['Ethereum (ERC20)', 'TRON (TRC20)', 'BNB Smart Chain (BEP20)']
   }
 ];
@@ -96,9 +101,20 @@ export default function WithdrawalCryptoSelection({ onBack, onSelectCrypto }: Wi
               className="w-full bg-[#1a1a40] hover:bg-[#2a2a50] rounded-lg p-4 transition-colors border border-[#2a2a50]"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">{crypto.icon}</span>
-                </div>
+                <img
+                  src={crypto.icon}
+                  alt={crypto.symbol}
+                  className="w-10 h-10 rounded-full"
+                  onError={(e) => {
+                    // Fallback to text icon if image fails
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center';
+                    fallback.innerHTML = `<span class="text-white font-bold text-lg">${crypto.symbol.charAt(0)}</span>`;
+                    target.parentElement?.replaceChild(fallback, target);
+                  }}
+                />
                 <div className="flex-1 text-left">
                   <div className="flex items-center space-x-2">
                     <span className="text-white font-semibold text-base">{crypto.symbol}</span>

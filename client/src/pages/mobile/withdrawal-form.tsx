@@ -212,10 +212,28 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
     const cryptoAmountNum = parseFloat(cryptoAmount);
     const usdAmountNum = parseFloat(usdAmount);
     
+    console.log('Withdrawal validation:', {
+      cryptoAmount,
+      usdAmount,
+      cryptoAmountNum,
+      usdAmountNum,
+      selectedNetwork,
+      withdrawalAddress
+    });
+    
     if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
       toast({
         title: "Invalid Amount",
         description: "Please enter a valid withdrawal amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isNaN(usdAmountNum) || usdAmountNum <= 0) {
+      toast({
+        title: "Invalid USD Amount",
+        description: "Please enter a valid USD amount.",
         variant: "destructive",
       });
       return;
@@ -329,15 +347,26 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
               </button>
             </div>
             <div className="relative">
-              <textarea
+              <Input
+                type="text"
                 value={withdrawalAddress}
                 onChange={(e) => setWithdrawalAddress(e.target.value)}
                 placeholder="Input or press and hold to paste the withdrawal address"
-                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-4 text-white placeholder:text-gray-500 min-h-[80px] resize-none"
+                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-12 h-12"
               />
-              <button className="absolute top-3 right-3 p-2 hover:bg-[#2a2a50] rounded">
-                <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+              <button 
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
+                onClick={() => {
+                  // QR scan functionality - placeholder for now
+                  toast({
+                    title: "QR Scanner",
+                    description: "QR code scanning coming soon",
+                  });
+                }}
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3v-10c0-2-1-3-3-3h-10c-2 0-3 1-3 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 11l2 2 4-4" />
                 </svg>
               </button>
             </div>
@@ -380,7 +409,7 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
           {/* Amount Input */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-white font-medium text-sm">Amount</label>
+              <label className="text-white font-medium text-sm">Amount <span className="text-gray-400 font-normal">(Raise Amount)</span></label>
               <div className="flex items-center space-x-1">
                 <span className="text-orange-500 text-sm">0</span>
                 <HelpCircle className="w-4 h-4 text-gray-400" />
@@ -392,17 +421,35 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
                 value={cryptoAmount}
                 onChange={(e) => setCryptoAmount(e.target.value)}
                 placeholder={selectedNetwork ? `Min. Withdrawal Amount: ${selectedNetwork.minWithdrawal}` : '0.00'}
-                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-20"
+                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-20 h-12"
                 step="0.00000001"
                 min="0"
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
                 <span className="text-orange-500 font-medium">{selectedCrypto.symbol}</span>
-                <button className="text-orange-500 text-sm hover:text-orange-400">
+                <button 
+                  className="text-orange-500 text-sm hover:text-orange-400"
+                  onClick={() => {
+                    // Calculate max amount based on balance
+                    if (priceData) {
+                      const price = (priceData as any)?.[selectedCrypto.symbol.toLowerCase()];
+                      if (price && price > 0) {
+                        const maxCrypto = (userBalance / price).toFixed(8);
+                        setCryptoAmount(maxCrypto);
+                      }
+                    }
+                  }}
+                >
                   Max
                 </button>
               </div>
             </div>
+            {/* USD Value Display */}
+            {usdAmount && parseFloat(usdAmount) > 0 && (
+              <div className="mt-2 text-gray-400 text-sm">
+                ≈ ${parseFloat(usdAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+              </div>
+            )}
           </div>
 
           {/* Funding Account */}
