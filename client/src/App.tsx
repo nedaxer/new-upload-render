@@ -9,6 +9,8 @@ import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
+import { OfflineFallback } from '@/components/offline-fallback';
+import { useOffline } from '@/hooks/use-offline';
 import { LanguageProvider } from '@/contexts/language-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { WithdrawalProvider } from '@/contexts/withdrawal-context';
@@ -135,8 +137,33 @@ function LoadingIndicator() {
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [appCrashed, setAppCrashed] = useState(false);
+  const { isOffline } = useOffline();
 
   useEffect(() => {
+    // Error boundary to catch app crashes
+    const handleError = (error: ErrorEvent) => {
+      console.error('App crashed:', error);
+      setAppCrashed(true);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      // Don't crash the app for network errors when offline
+      if (isOffline && (
+        event.reason?.message?.includes('fetch') ||
+        event.reason?.message?.includes('network') ||
+        event.reason?.message?.includes('Failed to fetch')
+      )) {
+        event.preventDefault();
+        return;
+      }
+      setAppCrashed(true);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
     // Always show splash screen for testing the optimizations
     // Comment out the cache check temporarily to test the improvements
     // const lastSplashTime = localStorage.getItem('lastSplashTime');
@@ -151,8 +178,12 @@ export default function App() {
       setIsLoading(false);
     }, 300);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, [isOffline]);
 
   const handleSplashComplete = () => {
     localStorage.setItem('lastSplashTime', Date.now().toString());
@@ -167,6 +198,14 @@ export default function App() {
   // Show loading indicator while routes are being set up
   if (isLoading) {
     return <LoadingIndicator />;
+  }
+
+  // Show offline fallback if app crashed or critical offline issues
+  if (appCrashed) {
+    return <OfflineFallback onRetry={() => {
+      setAppCrashed(false);
+      window.location.reload();
+    }} />;
   }
 
   return (

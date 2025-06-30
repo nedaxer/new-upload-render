@@ -1,6 +1,6 @@
 // Service worker for Nedaxer PWA
 
-const CACHE_NAME = 'nedaxer-cache-v3';
+const CACHE_NAME = 'nedaxer-cache-v4';
 
 // Add cache bust parameter to URLs to prevent caching issues
 function addCacheBuster(url) {
@@ -15,6 +15,9 @@ const PRECACHE_ASSETS = [
   '/index.html',
   '/logo.png',
   '/manifest.json',
+  // Core app files needed for offline functionality
+  '/src/main.tsx',
+  '/src/index.css',
   // Splash screen assets for offline availability
   '/splash-assets/background.png', // Background
   '/splash-assets/letter-n.png', // N letter
@@ -166,26 +169,61 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For page navigations, use a network-first strategy
+  // For page navigations, always serve the index.html for SPA routing
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(error => {
-        console.log('[ServiceWorker] Navigation fetch failed, serving from cache');
-        return caches.match(event.request) || caches.match('/');
-      })
+      fetch(event.request)
+        .then(response => {
+          // Cache successful navigation responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          console.log('[ServiceWorker] Navigation fetch failed, serving cached index.html');
+          // Always serve index.html for SPA routing when offline
+          return caches.match('/index.html') || caches.match('/');
+        })
     );
     return;
   }
   
-  // CSS and JS files - stale while revalidate strategy
+  // CSS, JS files, and modules - cache first for offline reliability
   if (event.request.destination === 'style' || 
       event.request.destination === 'script' ||
       url.pathname.endsWith('.css') ||
-      url.pathname.endsWith('.js')) {
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.tsx') ||
+      url.pathname.endsWith('.ts') ||
+      url.pathname.includes('/src/') ||
+      url.pathname.includes('/@') ||
+      url.pathname.includes('?')) {
     event.respondWith(
       caches.match(event.request)
         .then(response => {
-          const fetchPromise = fetch(event.request)
+          if (response) {
+            console.log('[ServiceWorker] Serving cached script/style:', url.pathname);
+            // Update in background for next time
+            fetch(event.request)
+              .then(fetchResponse => {
+                if (fetchResponse && fetchResponse.status === 200) {
+                  const responseToCache = fetchResponse.clone();
+                  caches.open(CACHE_NAME)
+                    .then(cache => {
+                      cache.put(event.request, responseToCache);
+                    });
+                }
+              })
+              .catch(() => {}); // Suppress background update errors
+            return response;
+          }
+          
+          console.log('[ServiceWorker] Fetching script/style:', url.pathname);
+          return fetch(event.request)
             .then(fetchResponse => {
               if (fetchResponse && fetchResponse.status === 200) {
                 const responseToCache = fetchResponse.clone();
@@ -196,17 +234,23 @@ self.addEventListener('fetch', event => {
               }
               return fetchResponse;
             })
-            .catch(() => {
-              console.log('[ServiceWorker] Script/Style fetch failed');
+            .catch(error => {
+              console.log('[ServiceWorker] Script/Style fetch failed:', url.pathname, error);
+              // Return a basic response to prevent app breaking
+              if (url.pathname.endsWith('.js') || url.pathname.endsWith('.tsx')) {
+                return new Response('console.log("Offline - script not available");', {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/javascript' }
+                });
+              }
+              if (url.pathname.endsWith('.css')) {
+                return new Response('/* Offline - stylesheet not available */', {
+                  status: 200,
+                  headers: { 'Content-Type': 'text/css' }
+                });
+              }
+              throw error;
             });
-
-          // Return cached version immediately, update in background
-          if (response) {
-            fetchPromise.catch(() => {}); // Suppress errors for background updates
-            return response;
-          }
-          
-          return fetchPromise;
         })
     );
     return;
