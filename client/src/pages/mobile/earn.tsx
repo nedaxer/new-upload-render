@@ -138,7 +138,7 @@ export default function MobileEarn() {
 
       {/* Popular Savings */}
       <div className="px-4 pb-6">
-        <h3 className="text-white font-medium mb-4">{t('popular_savings')}</h3>
+        <h3 className="text-white font-medium mb-4">Popular Savings</h3>
         
         <Card className="bg-blue-900 border-blue-700 p-8 text-center">
           <Wallet className="w-12 h-12 text-gray-500 mx-auto mb-4" />
@@ -158,9 +158,9 @@ export default function MobileEarn() {
       {/* My Products */}
       <div className="px-4 pb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-medium">{t('my_products')}</h3>
+          <h3 className="text-white font-medium">My Products</h3>
           <button onClick={handleFeatureClick}>
-            <span className="text-orange-500 text-sm">{t('view_all')}</span>
+            <span className="text-orange-500 text-sm">View All</span>
           </button>
         </div>
         
