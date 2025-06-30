@@ -217,7 +217,7 @@ export default function MobileNotifications() {
                 activeTab === 'All' ||
                 notification.type === activeTab.toLowerCase() ||
                 (activeTab === t('system_notification') && notification.type === 'system') ||
-                (activeTab === t('latest_events') && (notification.type === 'deposit' || notification.type === 'transfer_sent' || notification.type === 'transfer_received')) ||
+                (activeTab === t('latest_events') && (notification.type === 'deposit' || notification.type === 'transfer_sent' || notification.type === 'transfer_received' || notification.type === 'withdrawal')) ||
                 (activeTab === t('announcement') && notification.type === 'announcement') ||
                 (activeTab === t('rewards') && notification.type === 'rewards')
               )
@@ -300,7 +300,7 @@ export default function MobileNotifications() {
                       >
                         View Status →
                       </Button>
-                    ) : (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') && notification.data && (
+                    ) : (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent' || notification.type === 'withdrawal') && notification.data && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -310,7 +310,7 @@ export default function MobileNotifications() {
                             markAsReadMutation.mutate(notification._id);
                           }
                           
-                          if (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent') {
+                          if (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent' || notification.type === 'withdrawal') {
                             // Set referrer for smart back navigation
                             localStorage.setItem('assetsHistoryReferrer', 'notifications');
                             // Navigate to asset history
