@@ -1945,7 +1945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin user search (legacy endpoint - now searches both email and UID)
+  // Admin user search (legacy endpoint - now searches both email and UID) - OPTIMIZED
   app.get('/api/admin/users/search', requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const query = req.query.q as string;
@@ -1954,44 +1954,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { User } = await import('./models/User');
-      const { mongoStorage } = await import('./mongoStorage');
       
-      // Search users by email, username, firstName, lastName, or UID
-      const users = await User.find({
-        $or: [
-          { email: { $regex: query, $options: 'i' } },
-          { username: { $regex: query, $options: 'i' } },
-          { firstName: { $regex: query, $options: 'i' } },
-          { lastName: { $regex: query, $options: 'i' } },
-          { uid: { $regex: query, $options: 'i' } }
-        ]
-      })
-      .select('uid username email firstName lastName isVerified isAdmin profilePicture lastActivity onlineTime isOnline sessionStart createdAt')
-      .sort({ createdAt: -1 })
-      .limit(20);
-
-      const usersWithBalance = await Promise.all(
-        users.map(async (user) => {
-          const balance = await mongoStorage.getUserBalance(user._id.toString());
-          return {
-            _id: user._id,
-            uid: user.uid,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicture: user.profilePicture,
-            isVerified: user.isVerified,
-            isAdmin: user.isAdmin,
-            balance: balance || 0,
-            lastActivity: user.lastActivity,
-            onlineTime: user.onlineTime || 0,
-            isOnline: user.isOnline || false,
-            sessionStart: user.sessionStart,
-            createdAt: user.createdAt
-          };
-        })
-      );
+      // OPTIMIZED: Use aggregation pipeline for single database query
+      const usersWithBalance = await User.aggregate([
+        {
+          $match: {
+            $or: [
+              { email: { $regex: query, $options: 'i' } },
+              { username: { $regex: query, $options: 'i' } },
+              { firstName: { $regex: query, $options: 'i' } },
+              { lastName: { $regex: query, $options: 'i' } },
+              { uid: { $regex: query, $options: 'i' } }
+            ]
+          }
+        },
+        {
+          $sort: { createdAt: -1 }
+        },
+        {
+          $limit: 20
+        },
+        {
+          $lookup: {
+            from: 'userbalances',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'balanceInfo'
+          }
+        },
+        {
+          $addFields: {
+            balance: {
+              $ifNull: [
+                { $arrayElemAt: ['$balanceInfo.usdBalance', 0] },
+                0
+              ]
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            uid: 1,
+            username: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            profilePicture: 1,
+            isVerified: 1,
+            isAdmin: 1,
+            balance: 1,
+            lastActivity: 1,
+            onlineTime: { $ifNull: ['$onlineTime', 0] },
+            isOnline: { $ifNull: ['$isOnline', false] },
+            sessionStart: 1,
+            createdAt: 1,
+            requiresDeposit: { $ifNull: ['$requiresDeposit', false] },
+            withdrawalAccess: { $ifNull: ['$withdrawalAccess', false] },
+            withdrawalRestrictionMessage: 1
+          }
+        }
+      ]);
 
       res.json(usersWithBalance);
     } catch (error) {
@@ -2003,37 +2026,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all users for admin overview
   app.get('/api/admin/users/all', requireAdminAuth, async (req: Request, res: Response) => {
     try {
-      const { mongoStorage } = await import('./mongoStorage');
       const { User } = await import('./models/User');
       
-      // Get all users with balance info and activity tracking
-      const users = await User.find({})
-        .select('uid username email firstName lastName isVerified isAdmin profilePicture lastActivity onlineTime isOnline sessionStart createdAt')
-        .sort({ createdAt: -1 })
-        .limit(50);
-
-      const usersWithBalance = await Promise.all(
-        users.map(async (user) => {
-          const balance = await mongoStorage.getUserBalance(user._id.toString());
-          return {
-            _id: user._id,
-            uid: user.uid,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicture: user.profilePicture,
-            isVerified: user.isVerified,
-            isAdmin: user.isAdmin,
-            balance: balance || 0,
-            lastActivity: user.lastActivity,
-            onlineTime: user.onlineTime || 0,
-            isOnline: user.isOnline || false,
-            sessionStart: user.sessionStart,
-            createdAt: user.createdAt
-          };
-        })
-      );
+      // OPTIMIZED: Use aggregation pipeline for single database query
+      const usersWithBalance = await User.aggregate([
+        {
+          $sort: { createdAt: -1 }
+        },
+        {
+          $limit: 50
+        },
+        {
+          $lookup: {
+            from: 'userbalances',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'balanceInfo'
+          }
+        },
+        {
+          $addFields: {
+            balance: {
+              $ifNull: [
+                { $arrayElemAt: ['$balanceInfo.usdBalance', 0] },
+                0
+              ]
+            }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            uid: 1,
+            username: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            profilePicture: 1,
+            isVerified: 1,
+            isAdmin: 1,
+            balance: 1,
+            lastActivity: 1,
+            onlineTime: { $ifNull: ['$onlineTime', 0] },
+            isOnline: { $ifNull: ['$isOnline', false] },
+            sessionStart: 1,
+            createdAt: 1,
+            requiresDeposit: { $ifNull: ['$requiresDeposit', false] },
+            withdrawalAccess: { $ifNull: ['$withdrawalAccess', false] },
+            withdrawalRestrictionMessage: 1
+          }
+        }
+      ]);
 
       res.json({ 
         success: true, 
