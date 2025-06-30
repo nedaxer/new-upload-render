@@ -70,15 +70,7 @@ export default function WithdrawalCryptoSelection({ onBack, onSelectCrypto }: Wi
         <div className="w-6 h-6" />
       </div>
 
-      {/* Crypto Withdrawal Header */}
-      <div className="border-b border-[#1a1a40] bg-[#0a0a2e] px-4 py-3">
-        <h2 className="text-center font-medium text-orange-500 text-sm">
-          Select Crypto Gateway
-        </h2>
-        <p className="text-center text-xs text-gray-400 mt-1">
-          Choose cryptocurrency for USD withdrawal
-        </p>
-      </div>
+      
 
       {/* Crypto List */}
       <div className="flex-1 bg-[#0a0a2e] p-4">
