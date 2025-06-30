@@ -9,8 +9,7 @@ import { AuthRedirect } from '@/components/auth-redirect';
 import { Toaster } from '@/components/ui/toaster';
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
-import { OfflineFallback } from '@/components/offline-fallback';
-import { useOffline } from '@/hooks/use-offline';
+
 import { LanguageProvider } from '@/contexts/language-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { WithdrawalProvider } from '@/contexts/withdrawal-context';
@@ -139,7 +138,6 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [appCrashed, setAppCrashed] = useState(false);
-  const { isOffline } = useOffline();
 
   useEffect(() => {
     // Error boundary to catch app crashes
@@ -150,15 +148,6 @@ export default function App() {
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error('Unhandled promise rejection:', event.reason);
-      // Don't crash the app for network errors when offline
-      if (isOffline && (
-        event.reason?.message?.includes('fetch') ||
-        event.reason?.message?.includes('network') ||
-        event.reason?.message?.includes('Failed to fetch')
-      )) {
-        event.preventDefault();
-        return;
-      }
       setAppCrashed(true);
     };
 
@@ -184,7 +173,7 @@ export default function App() {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
-  }, [isOffline]);
+  }, []);
 
   const handleSplashComplete = () => {
     localStorage.setItem('lastSplashTime', Date.now().toString());
@@ -201,12 +190,25 @@ export default function App() {
     return <LoadingIndicator />;
   }
 
-  // Show offline fallback if app crashed or critical offline issues
+  // Show error fallback if app crashed
   if (appCrashed) {
-    return <OfflineFallback onRetry={() => {
-      setAppCrashed(false);
-      window.location.reload();
-    }} />;
+    return (
+      <div className="min-h-screen bg-[#0a0a2e] flex items-center justify-center p-4">
+        <div className="text-center max-w-sm mx-auto">
+          <h1 className="text-2xl font-bold text-white mb-4">Something went wrong</h1>
+          <p className="text-gray-400 mb-8">The app encountered an error. Please try again.</p>
+          <button 
+            onClick={() => {
+              setAppCrashed(false);
+              window.location.reload();
+            }}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg"
+          >
+            Reload App
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

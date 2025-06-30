@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage } from './optimized-image';
-import { OfflineSplashScreen } from './offline-splash-screen';
+
 import nLetter from '@assets/20250618_001640_1750207793691.png';
 import eLetter1 from '@assets/20250618_001710_1750207793694.png';
 import dLetter from '@assets/20250618_001748_1750207793698.png';
@@ -22,57 +22,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [hideOriginals, setHideOriginals] = useState(false);
   const [showNedaxerLogo, setShowNedaxerLogo] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 1920, height: 1080 });
-  const [isOffline, setIsOffline] = useState(false);
-  const [useOfflineVersion, setUseOfflineVersion] = useState(false);
 
-  // Check network status and asset availability
-  useEffect(() => {
-    const checkOfflineStatus = () => {
-      // Check if we're offline or if assets fail to load
-      if (!navigator.onLine) {
-        setIsOffline(true);
-        setUseOfflineVersion(true);
-        return;
-      }
-
-      // Try to load a test asset to verify network connectivity
-      const testImage = new Image();
-      testImage.onload = () => {
-        setIsOffline(false);
-        setUseOfflineVersion(false);
-      };
-      testImage.onerror = () => {
-        setIsOffline(true);
-        setUseOfflineVersion(true);
-      };
-      testImage.src = nLetter;
-    };
-
-    checkOfflineStatus();
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      setIsOffline(false);
-      setUseOfflineVersion(false);
-    };
-    const handleOffline = () => {
-      setIsOffline(true);
-      setUseOfflineVersion(true);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // If offline or assets fail, use the offline version
-  if (useOfflineVersion) {
-    return <OfflineSplashScreen onComplete={onComplete} />;
-  }
 
   // Images will be preloaded automatically by OptimizedImage component
 
