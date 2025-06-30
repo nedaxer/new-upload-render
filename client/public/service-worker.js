@@ -1,6 +1,6 @@
 // Service worker for Nedaxer PWA
 
-const CACHE_NAME = 'nedaxer-cache-v1';
+const CACHE_NAME = 'nedaxer-cache-v2';
 
 // Add cache bust parameter to URLs to prevent caching issues
 function addCacheBuster(url) {
@@ -14,7 +14,18 @@ const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/logo.png',
-  '/manifest.json'
+  '/manifest.json',
+  // Splash screen assets for offline availability
+  '/splash-assets/background.png', // Background
+  '/splash-assets/letter-n.png', // N letter
+  '/splash-assets/letter-e1.png', // E letter 1
+  '/splash-assets/letter-d.png', // D letter
+  '/splash-assets/letter-a.png', // A letter
+  '/splash-assets/letter-x.png', // X letter
+  '/splash-assets/letter-e2.png', // E letter 2
+  '/splash-assets/letter-r.png', // R letter
+  '/splash-assets/nedaxer-logo.png', // Nedaxer logo
+  '/splash-assets/nedaxer-icon.png' // Nedaxer icon for landing page
 ];
 
 // Install event - precache key assets
