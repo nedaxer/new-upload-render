@@ -38,7 +38,7 @@ export default function MobileAssets() {
   const { user } = useAuth();
   const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
-  const { withdrawalData, isModalOpen, openModal, closeModal } = useWithdrawal();
+  const { withdrawalData, isModalOpen, openModal, closeModal, refreshData } = useWithdrawal();
 
   // WebSocket connection for balance updates only (withdrawal handled by context)
   useEffect(() => {
@@ -304,8 +304,14 @@ export default function MobileAssets() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] }),
         queryClient.invalidateQueries({ queryKey: ['/api/crypto/realtime-prices'] }),
-        queryClient.invalidateQueries({ queryKey: ['/api/balances'] })
+        queryClient.invalidateQueries({ queryKey: ['/api/balances'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/user/withdrawal-restriction'] })
       ]);
+      
+      // Also refresh withdrawal context data
+      if (typeof refreshData === 'function') {
+        refreshData();
+      }
     } catch (error) {
       console.error('Refresh failed:', error);
     }

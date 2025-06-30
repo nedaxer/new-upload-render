@@ -70,25 +70,6 @@ export function WithdrawalRestrictionModal({
             {displayMessage}
           </p>
           
-          {withdrawalData.totalDeposited !== undefined && withdrawalData.minimumRequired !== undefined && (
-            <div className="bg-white/5 rounded-lg p-3 space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Total Deposited:</span>
-                <span className="text-green-400">${withdrawalData.totalDeposited.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Required Amount:</span>
-                <span className="text-orange-400">${withdrawalData.minimumRequired.toLocaleString()}</span>
-              </div>
-              {withdrawalData.shortfall && withdrawalData.shortfall > 0 && (
-                <div className="flex justify-between items-center text-sm font-medium">
-                  <span className="text-gray-400">Still Needed:</span>
-                  <span className="text-red-400">${withdrawalData.shortfall.toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-          )}
-          
           <p className="text-xs text-gray-500">
             This requirement helps protect your account and ensures compliance with financial regulations.
           </p>
