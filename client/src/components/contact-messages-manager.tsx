@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   MessageSquare, 
@@ -15,7 +17,9 @@ import {
   Filter,
   AlertCircle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Reply,
+  Send
 } from "lucide-react";
 
 interface ContactMessage {
@@ -29,6 +33,9 @@ interface ContactMessage {
   category: 'general' | 'support' | 'security' | 'technical';
   priority: 'low' | 'medium' | 'high';
   isRead: boolean;
+  adminReply?: string;
+  adminReplyAt?: string;
+  hasReply: boolean;
   createdAt: string;
   updatedAt: string;
   user?: {
@@ -56,6 +63,8 @@ interface ContactMessagesResponse {
 export default function ContactMessagesManager() {
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -130,6 +139,45 @@ export default function ContactMessagesManager() {
       });
     },
   });
+
+  // Reply to message mutation
+  const replyMutation = useMutation({
+    mutationFn: async ({ messageId, reply }: { messageId: string; reply: string }) => {
+      const response = await fetch(`/api/admin/contact-messages/${messageId}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ reply }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to send reply');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
+      setShowReplyDialog(false);
+      setReplyText('');
+      toast({
+        title: "Reply Sent",
+        description: "Your reply has been sent to the user successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendReply = () => {
+    if (!selectedMessage || !replyText.trim()) return;
+    replyMutation.mutate({ messageId: selectedMessage._id, reply: replyText.trim() });
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString();
@@ -418,6 +466,71 @@ export default function ContactMessagesManager() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reply Dialog */}
+      <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
+        <DialogContent className="max-w-md bg-gradient-to-br from-[#0a0a2e] to-[#1a1a40] border-white/20">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Reply className="h-5 w-5" />
+              Send Reply
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedMessage && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="text-gray-300 text-sm">Replying to:</div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <div className="text-white font-medium text-sm">{selectedMessage.subject}</div>
+                  <div className="text-gray-400 text-xs mt-1">
+                    From: {selectedMessage.firstName} {selectedMessage.lastName}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="text-gray-300 text-sm">Your Reply:</div>
+                <Textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Type your reply here..."
+                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px] resize-none"
+                  maxLength={5000}
+                />
+                <div className="text-xs text-gray-400 text-right">
+                  {replyText.length}/5000
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowReplyDialog(false);
+                    setReplyText('');
+                  }}
+                  className="text-white border-white/20 hover:bg-white/10"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSendReply}
+                  disabled={replyMutation.isPending || !replyText.trim()}
+                  className="bg-orange-500 hover:bg-orange-600"
+                >
+                  {replyMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Send Reply
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

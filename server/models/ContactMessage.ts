@@ -10,6 +10,9 @@ export interface IContactMessage extends Document {
   isRead: boolean;
   priority: 'low' | 'medium' | 'high';
   category: 'general' | 'support' | 'security' | 'technical';
+  adminReply?: string;
+  adminReplyAt?: Date;
+  hasReply: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -64,6 +67,18 @@ const ContactMessageSchema = new Schema({
     type: String,
     enum: ['general', 'support', 'security', 'technical'],
     default: 'general'
+  },
+  adminReply: {
+    type: String,
+    trim: true,
+    maxlength: 5000
+  },
+  adminReplyAt: {
+    type: Date
+  },
+  hasReply: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,

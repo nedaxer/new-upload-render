@@ -39,6 +39,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { VerificationBanner } from '@/components/VerificationBanner';
+import UserMessageBox from '@/components/user-message-box';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -670,6 +671,7 @@ export default function MobileHome() {
           </Link>
         </div>
         <div className="flex items-center space-x-3">
+          <UserMessageBox className="flex-shrink-0" />
           <div className="relative">
             <div onClick={handleHelperClick}>
               <Link href="/mobile/chatbot">

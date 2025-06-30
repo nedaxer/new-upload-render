@@ -3725,6 +3725,99 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
+  // Admin reply to contact message
+  app.post('/api/admin/contact-messages/:messageId/reply', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const { reply } = req.body;
+      const { ContactMessage } = await import('./models/ContactMessage');
+      const { Notification } = await import('./models/Notification');
+
+      if (!reply || reply.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "Reply message is required" });
+      }
+
+      // Update the contact message with admin reply
+      const message = await ContactMessage.findByIdAndUpdate(
+        messageId,
+        {
+          adminReply: reply.trim(),
+          adminReplyAt: new Date(),
+          hasReply: true,
+          isRead: true
+        },
+        { new: true }
+      );
+
+      if (!message) {
+        return res.status(404).json({ success: false, message: "Message not found" });
+      }
+
+      // Create notification for the user
+      const notification = new Notification({
+        userId: message.userId,
+        type: 'support_message',
+        title: `Reply to: ${message.subject}`,
+        message: reply.trim(),
+        data: {
+          messageId: message._id,
+          originalSubject: message.subject
+        }
+      });
+
+      await notification.save();
+
+      // Broadcast notification via WebSocket
+      if (global.wss) {
+        const notificationData = {
+          type: 'new_notification',
+          notification: {
+            _id: notification._id,
+            userId: notification.userId,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            isRead: notification.isRead,
+            createdAt: notification.createdAt,
+            data: notification.data
+          }
+        };
+
+        global.wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
+
+      res.json({ success: true, message: "Reply sent successfully", data: message });
+    } catch (error) {
+      console.error('Error sending admin reply:', error);
+      res.status(500).json({ success: false, message: "Failed to send reply" });
+    }
+  });
+
+  // Get user's contact messages and replies
+  app.get('/api/user/contact-messages', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.userId;
+      const { ContactMessage } = await import('./models/ContactMessage');
+      
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      const messages = await ContactMessage.find({ userId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      res.json({ success: true, data: messages });
+    } catch (error) {
+      console.error('Error fetching user contact messages:', error);
+      res.status(500).json({ success: false, message: "Failed to fetch messages" });
+    }
+  });
+
   // Store WebSocket server for broadcasting updates
   app.set('wss', wss);
   
