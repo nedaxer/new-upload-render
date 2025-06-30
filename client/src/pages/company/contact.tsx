@@ -1,7 +1,7 @@
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Phone, Mail, MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap } from "lucide-react";
+import { MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap } from "lucide-react";
 
 export default function Contact() {
   const contactOptions = [
@@ -9,37 +9,21 @@ export default function Contact() {
       title: "General Inquiries",
       description: "Questions about our platform, our products, or how to get started?",
       icon: <HelpCircle className="h-10 w-10 text-[#0033a0]" />,
-      contact: {
-        email: "info@cryptotrading.com",
-        phone: "Contact via email or form",
-      },
     },
     {
       title: "Customer Support",
       description: "Account-related questions, technical issues, or trading assistance.",
       icon: <MessageSquare className="h-10 w-10 text-[#0033a0]" />,
-      contact: {
-        email: "support@cryptotrading.com",
-        phone: "Contact via email or form",
-      },
     },
     {
       title: "Security & Compliance",
       description: "Questions about KYC, account security, or regulatory matters.",
       icon: <Shield className="h-10 w-10 text-[#0033a0]" />,
-      contact: {
-        email: "security@cryptotrading.com",
-        phone: "Contact via email or form",
-      },
     },
     {
       title: "Technical Analysis Team",
       description: "Help with chart analysis, indicators, or trading strategies.",
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
-      contact: {
-        email: "analysis@cryptotrading.com",
-        phone: "Contact via email or form",
-      },
     },
   ];
 
@@ -52,8 +36,6 @@ export default function Contact() {
         "San Francisco, CA 94105",
         "USA",
       ],
-      phone: "Contact via email or form",
-      email: "info@cryptotrading.com",
       hours: "Monday - Friday: 8:00 AM - 5:00 PM PT",
     },
     {
@@ -63,8 +45,6 @@ export default function Contact() {
         "#20-01 Tower 2",
         "Singapore 048616",
       ],
-      phone: "Contact via email or form",
-      email: "asia@cryptotrading.com",
       hours: "Monday - Friday: 9:00 AM - 6:00 PM SGT",
     },
   ];
@@ -127,22 +107,9 @@ export default function Contact() {
                     <p className="text-gray-700">{option.description}</p>
                   </div>
                 </div>
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center">
-                    <Phone className="h-5 w-5 text-[#0033a0] mr-2" />
-                    <span>{option.contact.phone}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="h-5 w-5 text-[#0033a0] mr-2" />
-                    <span>{option.contact.email}</span>
-                  </div>
-                </div>
-                <Button
-                  asChild
-                  className="w-full bg-[#0033a0] hover:bg-opacity-90 text-white"
-                >
-                  <Link href={`mailto:${option.contact.email}`}>Email Us</Link>
-                </Button>
+                <p className="text-sm text-gray-600 mb-4">
+                  Please use the contact form below to reach out to our team.
+                </p>
               </div>
             ))}
           </div>
@@ -278,15 +245,7 @@ export default function Contact() {
                   </div>
                 </div>
                 
-                <div className="flex items-center mb-3">
-                  <Phone className="h-5 w-5 text-[#0033a0] mr-2" />
-                  <span>{office.phone}</span>
-                </div>
-                
-                <div className="flex items-center mb-3">
-                  <Mail className="h-5 w-5 text-[#0033a0] mr-2" />
-                  <span>{office.email}</span>
-                </div>
+
                 
                 <div className="flex items-center">
                   <Clock className="h-5 w-5 text-[#0033a0] mr-2" />

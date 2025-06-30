@@ -147,13 +147,11 @@ The date the Privacy Policy was last revised is identified at the top of the pag
     {
       id: "contact",
       title: "Contact Information",
-      content: `If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
+      content: `If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please use the contact form on our website.
 
-Nadex Privacy Office
+Nedaxer Privacy Office
 200 W Jackson Blvd, Suite 1400
-Chicago, IL 60606
-Email: privacy@nadex.com
-Phone: +1 (888) 555-7777`
+Chicago, IL 60606`
     },
   ];
 

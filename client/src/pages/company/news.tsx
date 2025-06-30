@@ -73,18 +73,7 @@ export default function News() {
     },
   ];
 
-  const mediaContacts = {
-    press: {
-      name: "Media Relations Team",
-      email: "press@nedaxer.com",
-      phone: "+1 (888) 555-6666",
-    },
-    generalInquiries: {
-      name: "Customer Support",
-      email: "support@nedaxer.com",
-      phone: "+1 (888) 555-7777",
-    },
-  };
+
 
   return (
     <PageLayout 
@@ -258,31 +247,7 @@ export default function News() {
           </div>
         </div>
         
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Media Contacts</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[#f5f5f5] p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3 text-[#0033a0]">Press Inquiries</h3>
-              <p className="mb-4">For crypto media inquiries, interview requests, and press materials:</p>
-              <ul className="space-y-2">
-                <li><span className="font-semibold">Contact:</span> {mediaContacts.press.name}</li>
-                <li><span className="font-semibold">Email:</span> {mediaContacts.press.email}</li>
-                <li><span className="font-semibold">Phone:</span> {mediaContacts.press.phone}</li>
-              </ul>
-            </div>
-            
-            <div className="bg-[#f5f5f5] p-6 rounded-lg">
-              <h3 className="text-xl font-bold mb-3 text-[#0033a0]">General Inquiries</h3>
-              <p className="mb-4">For general questions about Nedaxer cryptocurrency trading:</p>
-              <ul className="space-y-2">
-                <li><span className="font-semibold">Contact:</span> {mediaContacts.generalInquiries.name}</li>
-                <li><span className="font-semibold">Email:</span> {mediaContacts.generalInquiries.email}</li>
-                <li><span className="font-semibold">Phone:</span> {mediaContacts.generalInquiries.phone}</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+
 
         <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Stay Updated with Crypto Market Insights</h2>
