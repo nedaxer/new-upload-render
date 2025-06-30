@@ -462,6 +462,40 @@ export default function UnifiedAdminPortal() {
     },
   });
 
+  // Toggle withdrawal access mutation
+  const toggleWithdrawalAccessMutation = useMutation({
+    mutationFn: async ({ userId, withdrawalAccess }: { userId: string; withdrawalAccess: boolean }) => {
+      const response = await apiRequest("POST", "/api/admin/users/toggle-withdrawal-access", { userId, withdrawalAccess });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Update the selected user state immediately
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          withdrawalAccess: data.data.withdrawalAccess
+        } as any);
+      }
+      
+      toast({
+        title: "Withdrawal Access Updated",
+        description: data.message,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchGeneralSearch();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Withdrawal Access",
+        description: error.message || "Failed to update withdrawal access",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -1650,6 +1684,34 @@ export default function UnifiedAdminPortal() {
                               } text-white px-3 py-1`}
                             >
                               {(selectedUser as any).requiresDeposit ? 'ENABLED' : 'DISABLED'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Withdrawal Access Toggle */}
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white text-sm font-medium">Withdrawal Access</p>
+                              <p className="text-gray-400 text-xs">Allow user to make withdrawals directly</p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                const newAccess = !(selectedUser as any).withdrawalAccess;
+                                toggleWithdrawalAccessMutation.mutate({
+                                  userId: selectedUser._id,
+                                  withdrawalAccess: newAccess
+                                });
+                              }}
+                              disabled={toggleWithdrawalAccessMutation.isPending}
+                              size="sm"
+                              className={`${
+                                (selectedUser as any).withdrawalAccess 
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-gray-600 hover:bg-gray-700'
+                              } text-white px-3 py-1`}
+                            >
+                              {(selectedUser as any).withdrawalAccess ? 'ENABLED' : 'DISABLED'}
                             </Button>
                           </div>
                         </div>

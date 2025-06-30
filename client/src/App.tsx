@@ -110,6 +110,7 @@ import DepositDetails from '@/pages/mobile/deposit-details';
 import WithdrawalDetails from '@/pages/mobile/withdrawal-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
+import MobileWithdrawal from '@/pages/mobile/withdrawal';
 import MessagesPage from '@/pages/mobile/messages';
 import { VerificationFlow } from '@/pages/mobile/verification/VerificationFlow';
 import MobileKYCStatus from '@/pages/mobile/kyc-status';
@@ -337,6 +338,7 @@ export default function App() {
               {() => <div>Currency Selection</div>}
             </Route>
             <Route path="/mobile/transfer" component={Transfer} />
+            <Route path="/mobile/withdrawal" component={MobileWithdrawal} />
             <ProtectedRoute path="/mobile/verification" component={VerificationFlow} />
             <ProtectedRoute path="/mobile/kyc-status" component={MobileKYCStatus} />
             <ProtectedRoute path="/mobile/verification-submitted" component={VerificationSubmitted} />

@@ -24,7 +24,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
@@ -39,6 +39,7 @@ export default function MobileAssets() {
   const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
   const { withdrawalData, isModalOpen, openModal, closeModal, refreshData } = useWithdrawal();
+  const [location, navigate] = useLocation();
 
   // WebSocket connection for balance updates only (withdrawal handled by context)
   useEffect(() => {
@@ -248,8 +249,28 @@ export default function MobileAssets() {
   };
 
   const handleWithdrawClick = () => {
-    // Always show restriction modal first to check eligibility
-    openModal();
+    // Check withdrawal access first
+    checkWithdrawalAccess();
+  };
+
+  // Fetch withdrawal eligibility
+  const { data: withdrawalEligibility } = useQuery({
+    queryKey: ['/api/withdrawals/eligibility'],
+    enabled: !!user,
+    refetchInterval: 30000,
+    staleTime: 25000,
+  });
+
+  const checkWithdrawalAccess = () => {
+    const eligibility = (withdrawalEligibility as any)?.data;
+    
+    if (eligibility?.canWithdraw && eligibility?.hasAccess) {
+      // User has withdrawal access, navigate to withdrawal page
+      navigate('/mobile/withdrawal');
+    } else {
+      // Show restriction modal
+      openModal();
+    }
   };
 
   const handlePaymentMethodSelect = (method: string) => {

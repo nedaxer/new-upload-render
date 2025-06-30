@@ -659,13 +659,44 @@ export class MongoStorage implements IMongoStorage {
     }
   }
 
-  async getUserBalance(userId: string): Promise<number> {
+  async getUserBalance(userId: string, currency: string = 'USD'): Promise<{ balance: number } | null> {
     try {
       const user = await User.findById(userId).select('balance');
-      return user?.balance || 0;
+      if (user && user.balance !== undefined) {
+        return { balance: user.balance };
+      } else {
+        return { balance: 0 };
+      }
     } catch (error) {
       console.error('Error getting user balance:', error);
-      return 0;
+      return null;
+    }
+  }
+
+  async updateUserBalance(userId: string, currency: string, amount: number): Promise<boolean> {
+    try {
+      console.log(`💰 mongoStorage: Updating balance for user ${userId}: ${amount} ${currency}`);
+      
+      const user = await User.findById(userId);
+      if (!user) {
+        console.error('User not found');
+        return false;
+      }
+
+      const currentBalance = user.balance || 0;
+      const newBalance = currentBalance + amount;
+
+      if (newBalance < 0) {
+        console.error('Insufficient balance');
+        return false;
+      }
+
+      await User.findByIdAndUpdate(userId, { balance: newBalance });
+      console.log(`💰 mongoStorage: Balance updated for user ${userId}: ${currentBalance} → ${newBalance}`);
+      return true;
+    } catch (error) {
+      console.error('❌ mongoStorage: Error updating user balance:', error);
+      return false;
     }
   }
 

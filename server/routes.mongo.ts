@@ -2296,6 +2296,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle withdrawal access for user
+  app.post('/api/admin/users/toggle-withdrawal-access', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, withdrawalAccess } = req.body;
+      
+      console.log('Toggle withdrawal access called:', { userId, withdrawalAccess });
+      
+      if (!userId || typeof withdrawalAccess !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing userId or withdrawalAccess flag" 
+        });
+      }
+
+      const { User } = await import('./models/User');
+      const user = await User.findByIdAndUpdate(
+        userId, 
+        { withdrawalAccess }, 
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      console.log(`✅ Admin toggled withdrawal access for user ${userId}: ${withdrawalAccess}`);
+      
+      // Real-time WebSocket notification for withdrawal access update
+      if ((global as any).wss) {
+        (global as any).wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify({
+              type: 'WITHDRAWAL_ACCESS_UPDATE',
+              userId: userId,
+              withdrawalAccess: withdrawalAccess,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+        
+        console.log(`📡 Real-time withdrawal access update broadcasted for user ${userId}`);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Withdrawal access ${withdrawalAccess ? 'enabled' : 'disabled'} for user`,
+        data: {
+          userId: user._id,
+          username: user.username,
+          withdrawalAccess: user.withdrawalAccess
+        }
+      });
+    } catch (error) {
+      console.error('Admin toggle withdrawal access error:', error);
+      res.status(500).json({ success: false, message: "Failed to toggle withdrawal access" });
+    }
+  });
+
   // Update withdrawal restriction message for user
   app.post('/api/admin/users/update-withdrawal-message', requireAdminAuth, async (req: Request, res: Response) => {
     try {
@@ -2873,6 +2934,177 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
     } catch (error) {
       console.error('Get deposit transaction details error:', error);
       res.status(500).json({ success: false, message: "Failed to get transaction details" });
+    }
+  });
+
+  // Check withdrawal eligibility
+  app.get('/api/withdrawals/eligibility', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+
+      // Handle admin users
+      if (userId === 'ADMIN001') {
+        return res.json({
+          success: true,
+          data: {
+            canWithdraw: true,
+            hasAccess: true,
+            message: "Admin access granted"
+          }
+        });
+      }
+
+      const { User } = await import('./models/User');
+      const user = await User.findById(userId).select('withdrawalAccess withdrawalRestrictionMessage');
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // Check if user has withdrawal access
+      const canWithdraw = user.withdrawalAccess === true;
+      
+      res.json({
+        success: true,
+        data: {
+          canWithdraw,
+          hasAccess: canWithdraw,
+          message: canWithdraw ? "Withdrawal access granted" : (user.withdrawalRestrictionMessage || "Withdrawal access not granted")
+        }
+      });
+    } catch (error) {
+      console.error('Withdrawal eligibility check error:', error);
+      res.status(500).json({ success: false, message: "Failed to check withdrawal eligibility" });
+    }
+  });
+
+  // User withdrawal creation endpoint
+  app.post('/api/withdrawals/create', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { 
+        cryptoSymbol, 
+        cryptoName, 
+        chainType, 
+        networkName, 
+        withdrawalAddress, 
+        usdAmount, 
+        cryptoAmount 
+      } = req.body;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+
+      console.log(`📤 User withdrawal request from ${userId}: ${usdAmount} USD to ${cryptoSymbol}`);
+
+      // Validate input
+      if (!cryptoSymbol || !cryptoName || !chainType || !networkName || !withdrawalAddress || !usdAmount || !cryptoAmount) {
+        return res.status(400).json({ success: false, message: "Missing required fields" });
+      }
+
+      if (usdAmount <= 0 || cryptoAmount <= 0) {
+        return res.status(400).json({ success: false, message: "Invalid withdrawal amount" });
+      }
+
+      // Get user's current balance
+      const { mongoStorage } = await import('./mongoStorage');
+      const userBalance = await mongoStorage.getUserBalance(userId, 'USD');
+      
+      if (!userBalance || userBalance.balance < usdAmount) {
+        return res.status(400).json({ success: false, message: "Insufficient balance" });
+      }
+
+      // Get crypto price for validation
+      const cryptoPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&x_cg_demo_api_key=' + process.env.COINGECKO_API_KEY);
+      const cryptoPrices = await cryptoPriceResponse.json();
+      
+      const priceMap: { [key: string]: number } = {
+        BTC: cryptoPrices.bitcoin?.usd || 0,
+        ETH: cryptoPrices.ethereum?.usd || 0,
+        USDT: cryptoPrices.tether?.usd || 1,
+        BNB: cryptoPrices.binancecoin?.usd || 0
+      };
+      
+      const currentPrice = priceMap[cryptoSymbol];
+      if (!currentPrice || currentPrice <= 0) {
+        return res.status(400).json({ success: false, message: "Unable to get current crypto price" });
+      }
+
+      // Create withdrawal transaction
+      const withdrawalTransaction = await mongoStorage.createWithdrawalTransaction({
+        userId: userId,
+        adminId: 'USER_INITIATED', // Mark as user-initiated
+        cryptoSymbol,
+        cryptoName,
+        chainType,
+        networkName,
+        withdrawalAddress,
+        usdAmount: parseFloat(usdAmount),
+        cryptoAmount: parseFloat(cryptoAmount),
+        cryptoPrice: currentPrice
+      });
+
+      // Deduct balance from user account
+      await mongoStorage.updateUserBalance(userId, 'USD', -parseFloat(usdAmount));
+
+      // Create withdrawal notification
+      const notification = await mongoStorage.createNotification({
+        userId: userId,
+        type: 'withdrawal',
+        title: 'Withdrawal Confirmed',
+        message: `Dear valued Nedaxer trader,
+Your withdrawal has been processed successfully.
+Withdrawal amount: ${parseFloat(cryptoAmount).toFixed(8)} ${cryptoSymbol}
+Withdrawal address: ${withdrawalAddress}
+Network: ${networkName}
+Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
+        data: {
+          transactionId: withdrawalTransaction._id,
+          cryptoSymbol,
+          cryptoAmount: parseFloat(cryptoAmount),
+          usdAmount: parseFloat(usdAmount),
+          withdrawalAddress,
+          chainType,
+          networkName
+        }
+      });
+
+      // Real-time WebSocket notification
+      if (global.wss) {
+        global.wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify({
+              type: 'balance_update',
+              userId: userId,
+              newBalance: userBalance.balance - parseFloat(usdAmount),
+              timestamp: new Date().toISOString()
+            }));
+            
+            client.send(JSON.stringify({
+              type: 'new_notification',
+              userId: userId,
+              notification: notification,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+        
+        console.log(`📡 Real-time updates broadcasted for user ${userId}: withdrawal processed`);
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Withdrawal initiated successfully. ${cryptoAmount.toFixed(8)} ${cryptoSymbol} will be sent to your address.`,
+        transaction: withdrawalTransaction
+      });
+    } catch (error) {
+      console.error('User withdrawal creation error:', error);
+      res.status(500).json({ success: false, message: "Failed to process withdrawal" });
     }
   });
 
