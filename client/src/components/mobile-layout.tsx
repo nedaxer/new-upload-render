@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { BottomNavigation } from './bottom-navigation';
 import { PWAInstallPrompt } from './pwa-install-prompt';
+import { OfflineIndicator } from './offline-indicator';
 import { useTheme } from '@/contexts/theme-context';
 
 interface MobileLayoutProps {
@@ -27,6 +28,9 @@ export default function MobileLayout({ children, className = '', hideBottomNav =
 
   return (
     <div className={`min-h-screen ${getBackgroundClass()} ${getTextClass()}`}>
+      {/* Offline indicator for better user feedback */}
+      <OfflineIndicator showOnlineStatus={true} position="top" />
+      
       <div className={`${shouldHideBottomNav ? 'pb-4' : 'pb-16'} ${className}`} data-layout="mobile">
         {children}
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './pull-to-refresh-styles.css';
 import { hapticMedium } from '@/lib/haptics';
+import { OfflinePullToRefresh } from './offline-pull-to-refresh';
 
 // Add haptic feedback utility with moderate vibration
 const triggerHapticFeedback = () => {
@@ -38,8 +39,63 @@ export function PullToRefresh({ children, onRefresh, disabled = false }: PullToR
   const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
   const [showNedaxerHeader, setShowNedaxerHeader] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [useOfflineVersion, setUseOfflineVersion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>();
+
+  // Check network status and asset availability for pull-to-refresh
+  useEffect(() => {
+    const checkOfflineStatus = () => {
+      // Check if we're offline or if assets fail to load
+      if (!navigator.onLine) {
+        setIsOffline(true);
+        setUseOfflineVersion(true);
+        return;
+      }
+
+      // Try to load a test asset to verify network connectivity
+      const testImage = new Image();
+      testImage.onload = () => {
+        setIsOffline(false);
+        setUseOfflineVersion(false);
+      };
+      testImage.onerror = () => {
+        setIsOffline(true);
+        setUseOfflineVersion(true);
+      };
+      testImage.src = refreshLogo;
+    };
+
+    checkOfflineStatus();
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      setIsOffline(false);
+      setUseOfflineVersion(false);
+    };
+    const handleOffline = () => {
+      setIsOffline(true);
+      setUseOfflineVersion(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // If offline or assets fail, use the offline version
+  if (useOfflineVersion) {
+    return (
+      <OfflinePullToRefresh onRefresh={onRefresh} disabled={disabled}>
+        {children}
+      </OfflinePullToRefresh>
+    );
+  }
 
   const handleTouchStart = (e: TouchEvent) => {
     if (disabled || isRefreshing) return;
