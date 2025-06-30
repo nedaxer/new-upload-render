@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import MobileLayout from '@/components/mobile-layout';
+
 import QrScanner from 'qr-scanner';
 
 // Crypto logos
@@ -369,18 +369,17 @@ export default function MobileWithdrawal() {
   };
 
   return (
-    <MobileLayout>
-      <div className="h-screen bg-[#0a0a2e] text-white flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-[#0a0a2e] border-b border-[#1a1a40]">
-          <Link href="/mobile/assets">
-            <ArrowLeft className="w-6 h-6 text-gray-400 hover:text-white" />
-          </Link>
-          <h1 className="text-lg font-medium">Withdraw</h1>
-          <div className="flex items-center space-x-2">
-            <HelpCircle className="w-5 h-5 text-gray-400" />
-          </div>
+    <div className="h-screen bg-[#0a0a2e] text-white flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 bg-[#0a0a2e] border-b border-[#1a1a40]">
+        <Link href="/mobile/assets">
+          <ArrowLeft className="w-5 h-5 text-gray-400 hover:text-white" />
+        </Link>
+        <h1 className="text-base font-medium">Withdraw</h1>
+        <div className="flex items-center space-x-2">
+          <HelpCircle className="w-4 h-4 text-gray-400" />
         </div>
+      </div>
 
         {/* QR Scanner Modal */}
         {showQrScanner && (
@@ -401,41 +400,41 @@ export default function MobileWithdrawal() {
         )}
 
         {/* Content */}
-        <div className="flex-1 px-4 py-6 space-y-4 overflow-hidden">
+        <div className="flex-1 px-3 py-4 space-y-3 overflow-hidden">
           {/* Available Balance Card */}
-          <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-4">
+          <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3">
             <div className="text-center">
-              <p className="text-gray-400 text-sm">Available Balance</p>
-              <p className="text-white text-2xl font-bold">${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-gray-400 text-xs">Available Balance</p>
+              <p className="text-white text-lg font-bold">${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
           </div>
 
           {/* Coin Selection */}
           <div>
-            <label className="text-white font-medium mb-3 block text-sm">Coin</label>
+            <label className="text-white font-medium mb-2 block text-xs">Coin</label>
             <div className="relative">
               <button
                 onClick={() => setShowCryptoDropdown(!showCryptoDropdown)}
-                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-4 flex items-center justify-between"
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between"
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <img 
                     src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
                     alt={selectedCrypto.symbol}
-                    className="w-8 h-8"
+                    className="w-6 h-6"
                     onError={(e) => {
                       const fallbackDiv = document.createElement('div');
-                      fallbackDiv.className = 'w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center';
-                      fallbackDiv.innerHTML = `<span class="text-white font-bold text-sm">${selectedCrypto.symbol.charAt(0)}</span>`;
+                      fallbackDiv.className = 'w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center';
+                      fallbackDiv.innerHTML = `<span class="text-white font-bold text-xs">${selectedCrypto.symbol.charAt(0)}</span>`;
                       e.currentTarget.parentNode?.replaceChild(fallbackDiv, e.currentTarget);
                     }}
                   />
                   <div>
-                    <span className="text-white font-medium">{selectedCrypto.symbol}</span>
-                    <span className="text-gray-400 ml-2">{selectedCrypto.name}</span>
+                    <span className="text-white font-medium text-sm">{selectedCrypto.symbol}</span>
+                    <span className="text-gray-400 ml-1 text-xs">{selectedCrypto.name}</span>
                   </div>
                 </div>
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
               
               {showCryptoDropdown && (
@@ -444,16 +443,16 @@ export default function MobileWithdrawal() {
                     <button
                       key={crypto.symbol}
                       onClick={() => handleCryptoSelect(crypto)}
-                      className="w-full p-4 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg flex items-center space-x-3"
+                      className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
                     >
                       <img 
                         src={getCryptoLogo(crypto.symbol) || crypto.icon} 
                         alt={crypto.symbol}
-                        className="w-6 h-6"
+                        className="w-5 h-5"
                       />
                       <div>
-                        <span className="text-white">{crypto.symbol}</span>
-                        <span className="text-gray-400 ml-2 text-sm">{crypto.name}</span>
+                        <span className="text-white text-sm">{crypto.symbol}</span>
+                        <span className="text-gray-400 ml-1 text-xs">{crypto.name}</span>
                       </div>
                     </button>
                   ))}
@@ -464,36 +463,36 @@ export default function MobileWithdrawal() {
 
           {/* Address Input with QR Scanner */}
           <div>
-            <label className="text-white font-medium mb-3 block text-sm">Address</label>
+            <label className="text-white font-medium mb-2 block text-xs">Address</label>
             <div className="relative">
               <Input
                 type="text"
                 value={withdrawalAddress}
                 onChange={(e) => setWithdrawalAddress(e.target.value)}
                 placeholder="Scan QR or enter withdrawal address"
-                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-12 h-12"
+                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-10 h-10 text-sm"
               />
               <button 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
                 onClick={startQrScanner}
               >
-                <QrCode className="w-5 h-5 text-orange-500" />
+                <QrCode className="w-4 h-4 text-orange-500" />
               </button>
             </div>
           </div>
 
           {/* Network Selection */}
           <div>
-            <label className="text-white font-medium mb-3 block text-sm">Network</label>
+            <label className="text-white font-medium mb-2 block text-xs">Network</label>
             <div className="relative">
               <button
                 onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
-                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-4 flex items-center justify-between"
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between"
               >
-                <span className="text-gray-400">
-                  {selectedNetwork ? selectedNetwork.chainType : 'Please choose a chain type'}
+                <span className="text-gray-400 text-sm">
+                  {selectedNetwork ? selectedNetwork.chainType : 'Choose chain type'}
                 </span>
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
               
               {showNetworkDropdown && selectedCrypto.networks.length > 1 && (
@@ -505,9 +504,9 @@ export default function MobileWithdrawal() {
                         setSelectedNetwork(network);
                         setShowNetworkDropdown(false);
                       }}
-                      className="w-full p-4 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg"
+                      className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg"
                     >
-                      <span className="text-white">{network.chainType}</span>
+                      <span className="text-white text-sm">{network.chainType}</span>
                       <div className="text-xs text-gray-400 mt-1">{network.networkName}</div>
                     </button>
                   ))}
@@ -518,22 +517,22 @@ export default function MobileWithdrawal() {
 
           {/* USD Amount Input */}
           <div>
-            <label className="text-white font-medium mb-3 block text-sm">Withdrawal Amount (USD)</label>
+            <label className="text-white font-medium mb-2 block text-xs">Withdrawal Amount (USD)</label>
             <div className="relative">
               <Input
                 type="number"
                 value={usdAmount}
                 onChange={(e) => handleUsdAmountChange(e.target.value)}
                 placeholder="Enter USD amount to withdraw"
-                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-20 h-12"
+                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-16 h-10 text-sm"
                 step="0.01"
                 min="0"
                 max={userBalance}
               />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                <span className="text-orange-500 font-medium">USD</span>
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <span className="text-orange-500 font-medium text-xs">USD</span>
                 <button 
-                  className="text-orange-500 text-sm hover:text-orange-400"
+                  className="text-orange-500 text-xs hover:text-orange-400"
                   onClick={() => {
                     setUsdAmount(userBalance.toFixed(2));
                   }}
@@ -542,21 +541,25 @@ export default function MobileWithdrawal() {
                 </button>
               </div>
             </div>
+            {/* Available Balance Below Input */}
+            <div className="mt-1 text-xs text-gray-500">
+              Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
             {/* Crypto Equivalent Display */}
             {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
-              <div className="mt-2 p-3 bg-[#2a2a50] rounded-lg">
+              <div className="mt-2 p-2 bg-[#2a2a50] rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-sm">You will receive:</span>
-                  <div className="flex items-center space-x-2">
+                  <span className="text-gray-400 text-xs">You will receive:</span>
+                  <div className="flex items-center space-x-1">
                     <img 
                       src={getCryptoLogo(selectedCrypto.symbol) || ''} 
                       alt={selectedCrypto.symbol}
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
                     />
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-xs">
                       {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
                     </span>
                   </div>
@@ -567,16 +570,15 @@ export default function MobileWithdrawal() {
         </div>
 
         {/* Fixed Withdraw Button */}
-        <div className="p-4 bg-[#0a0a2e] border-t border-[#1a1a40]">
+        <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
           <Button
             onClick={handleWithdraw}
             disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium"
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-3 rounded-lg font-medium text-sm"
           >
             {isProcessing ? 'Processing...' : 'Withdraw'}
           </Button>
         </div>
       </div>
-    </MobileLayout>
   );
 }
