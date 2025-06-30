@@ -2171,6 +2171,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Broadcast WebSocket update for real-time UI updates
+      if (wss) {
+        const message = JSON.stringify({
+          type: 'user_restriction_update',
+          data: {
+            userId: user._id,
+            requiresDeposit: user.requiresDeposit,
+            withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
+          }
+        });
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(message);
+          }
+        });
+      }
+
       res.json({
         success: true,
         message: `Deposit requirement ${requiresDeposit ? 'enabled' : 'disabled'} for user`,
@@ -2185,6 +2203,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to update deposit requirement" 
+      });
+    }
+  });
+
+  // Update withdrawal restriction message for user
+  app.post('/api/admin/users/update-withdrawal-message', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, message } = req.body;
+      
+      if (!userId || typeof message !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "User ID and message string are required" 
+        });
+      }
+
+      const { User } = await import('./models/User');
+      
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { withdrawalRestrictionMessage: message },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      // Broadcast WebSocket update for real-time UI updates
+      if (wss) {
+        const wsMessage = JSON.stringify({
+          type: 'user_restriction_update',
+          data: {
+            userId: user._id,
+            requiresDeposit: user.requiresDeposit,
+            withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
+          }
+        });
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(wsMessage);
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Withdrawal restriction message updated successfully",
+        data: {
+          userId: user._id,
+          username: user.username,
+          withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
+        }
+      });
+    } catch (error) {
+      console.error('Update withdrawal message error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update withdrawal restriction message" 
+      });
+    }
+  });
+
+  // Get user withdrawal restriction message
+  app.get('/api/user/withdrawal-restriction', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { User } = await import('./models/User');
+      
+      const user = await User.findById(userId).select('withdrawalRestrictionMessage');
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      res.json({
+        success: true,
+        withdrawalRestrictionMessage: user.withdrawalRestrictionMessage || ""
+      });
+    } catch (error) {
+      console.error('Get withdrawal restriction error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to get withdrawal restriction message" 
       });
     }
   });

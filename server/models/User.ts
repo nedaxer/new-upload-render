@@ -29,6 +29,9 @@ export interface IUser {
   isOnline?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  // Admin controlled fields
+  requiresDeposit?: boolean;
+  withdrawalRestrictionMessage?: string;
   // KYC verification fields
   kycStatus?: 'none' | 'pending' | 'verified' | 'rejected';
   kycData?: {
@@ -80,6 +83,8 @@ const UserSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   // Admin controlled deposit requirement
   requiresDeposit: { type: Boolean, default: false },
+  // Admin controlled withdrawal restriction message
+  withdrawalRestrictionMessage: { type: String, default: "" },
   // KYC verification fields
   kycStatus: { type: String, enum: ['none', 'pending', 'verified', 'rejected'], default: 'none' },
   kycData: {
