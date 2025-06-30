@@ -79,7 +79,7 @@ export default function MobileEarn() {
     <MobileLayout>
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-blue-950">
-        <h1 className="text-xl font-bold text-white">{t('earn_title')}</h1>
+        <h1 className="text-xl font-bold text-white">Earnings</h1>
         <div className="flex items-center space-x-3">
           <Users className="w-6 h-6 text-gray-400" />
           <Gift className="w-6 h-6 text-gray-400" />
