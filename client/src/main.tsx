@@ -183,6 +183,39 @@ function addNoCacheHeaders() {
 // Setup no-cache headers
 addNoCacheHeaders();
 
+// Global error handling to prevent red browser errors
+function setupGlobalErrorHandling() {
+  // Handle unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    console.warn('Unhandled promise rejection prevented:', event.reason);
+    event.preventDefault(); // Prevent the default browser error display
+    
+    // Optional: Show user-friendly notification instead
+    // You can integrate with your toast system here if needed
+  });
+
+  // Handle JavaScript errors
+  window.addEventListener('error', (event) => {
+    console.warn('JavaScript error prevented:', event.error);
+    event.preventDefault(); // Prevent the default browser error display
+  });
+
+  // Handle fetch errors and other network issues
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    try {
+      return await originalFetch(...args);
+    } catch (error) {
+      console.warn('Fetch error handled:', error);
+      // Re-throw as a more user-friendly error
+      throw new Error('Network request failed. Please check your connection and try again.');
+    }
+  };
+}
+
+// Initialize global error handling
+setupGlobalErrorHandling();
+
 // Render the application
 const root = document.getElementById('root');
 if (root) {

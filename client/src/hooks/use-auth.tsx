@@ -113,28 +113,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       try {
-        const res = await apiRequest("POST", "/api/auth/login", credentials);
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(credentials),
+        });
+
         const data = await res.json();
 
         if (!data.success) {
-          // Create a more specific error message for incorrect credentials
+          // Create user-friendly error messages based on status
           if (res.status === 401) {
-            throw new Error("Incorrect email or password. Please check your credentials and try again.");
+            throw new Error("The email or password you entered is incorrect. Please double-check your information and try again.");
           } else if (res.status === 400) {
-            throw new Error("Please enter both email and password.");
+            throw new Error("Please make sure to enter both your email and password.");
+          } else if (res.status >= 500) {
+            throw new Error("We're experiencing technical difficulties. Please try again in a few moments.");
           } else {
-            throw new Error(data.message || "Login failed. Please try again.");
+            throw new Error(data.message || "Login failed. Please verify your credentials and try again.");
           }
         }
 
         return data;
       } catch (error) {
-        // Prevent raw error propagation that causes red browser errors
-        if (error instanceof Error) {
-          throw error; // Re-throw our custom errors
+        // Handle network and other errors gracefully
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          throw new Error("Unable to connect to our servers. Please check your internet connection and try again.");
+        } else if (error instanceof Error) {
+          throw error; // Re-throw our custom user-friendly errors
         } else {
-          // Handle network errors or other unexpected errors
-          throw new Error("Unable to connect to the server. Please check your internet connection and try again.");
+          throw new Error("An unexpected error occurred. Please try again.");
         }
       }
     },
@@ -219,14 +230,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const res = await apiRequest("POST", "/api/auth/register", userData);
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
 
-      if (!data.success) {
-        throw new Error(data.message || "Registration failed");
+        const data = await res.json();
+
+        if (!data.success) {
+          if (res.status === 400) {
+            throw new Error(data.message || "Please check your information and try again.");
+          } else if (res.status === 409) {
+            throw new Error("An account with this email address already exists. Please use a different email or try logging in.");
+          } else if (res.status >= 500) {
+            throw new Error("We're experiencing technical difficulties. Please try again in a few moments.");
+          } else {
+            throw new Error(data.message || "Registration failed. Please try again.");
+          }
+        }
+
+        return data;
+      } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          throw new Error("Unable to connect to our servers. Please check your internet connection and try again.");
+        } else if (error instanceof Error) {
+          throw error;
+        } else {
+          throw new Error("An unexpected error occurred during registration. Please try again.");
+        }
       }
-
-      return data;
     },
     onSuccess: async (data) => {
       console.log(

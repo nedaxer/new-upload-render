@@ -241,15 +241,36 @@ export default function UnifiedAdminPortal() {
   // Admin authentication
   const adminLoginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Login failed");
-      return data;
+      try {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Invalid admin credentials. Please check your email and password.");
+          } else if (response.status >= 500) {
+            throw new Error("Server error. Please try again in a few moments.");
+          } else {
+            throw new Error(data.message || "Access denied. Please verify your admin credentials.");
+          }
+        }
+        
+        return data;
+      } catch (error) {
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          throw new Error("Unable to connect to the server. Please check your connection and try again.");
+        } else if (error instanceof Error) {
+          throw error;
+        } else {
+          throw new Error("An unexpected error occurred. Please try again.");
+        }
+      }
     },
     onSuccess: () => {
       setIsAuthenticated(true);
@@ -259,9 +280,10 @@ export default function UnifiedAdminPortal() {
         variant: "default",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
+      console.warn('Admin login error handled:', error.message);
       toast({
-        title: "Login Failed",
+        title: "Access Denied",
         description: error.message,
         variant: "destructive",
       });
@@ -658,14 +680,21 @@ export default function UnifiedAdminPortal() {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear any existing browser error states
+    const errorElements = document.querySelectorAll('[data-error]');
+    errorElements.forEach(el => el.remove());
+    
     if (!adminCredentials.email || !adminCredentials.password) {
       toast({
-        title: "Missing Credentials",
-        description: "Please enter both email and password",
+        title: "Missing Information",
+        description: "Please enter both your admin email and password to continue.",
         variant: "destructive",
       });
       return;
     }
+    
+    // Execute admin login with proper error handling
     adminLoginMutation.mutate(adminCredentials);
   };
 

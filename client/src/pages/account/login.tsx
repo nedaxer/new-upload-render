@@ -47,24 +47,28 @@ export default function Login() {
     // Check if username and password are provided
     if (!username || !password) {
       toast({
-        title: "Login Failed",
-        description: "Please enter both email and password.",
+        title: "Missing Information",
+        description: "Please enter both your email address and password to continue.",
         variant: "destructive",
       });
       return;
     }
     
-    // Use mutation.mutate instead of mutateAsync to prevent unhandled promise rejections
+    // Clear any existing error states
+    const errorElements = document.querySelectorAll('[data-error]');
+    errorElements.forEach(el => el.remove());
+    
+    // Use mutation.mutate to handle the login request
     loginMutation.mutate(
       { username, password },
       {
         onSuccess: async () => {
-          // Save user data to localStorage if needed
+          // Save user preference if remember me is checked
           if (rememberMe) {
             localStorage.setItem('rememberLogin', 'true');
           }
           
-          // Invalidate auth query to refresh user state immediately
+          // Refresh user authentication state
           await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
           
           // Show success message
@@ -73,20 +77,35 @@ export default function Login() {
             description: "You have successfully logged in to your Nedaxer account.",
           });
           
-          // Small delay to ensure auth state is synced before redirect
+          // Navigate to mobile app after successful login
           setTimeout(() => {
             console.log('Login successful, redirecting to mobile app');
             setLocation('/mobile');
           }, 500);
         },
         onError: (error: Error) => {
-          // This prevents red browser errors by handling errors properly
-          console.log('Login error handled:', error.message);
+          // Handle all login errors gracefully - no red browser errors
+          console.warn('Login attempt failed:', error.message);
           
-          // Show user-friendly error message
+          // Show appropriate user-friendly error message
+          let errorTitle = "Login Failed";
+          let errorDescription = error.message;
+          
+          // Customize error messages based on common scenarios
+          if (error.message.includes('email or password')) {
+            errorTitle = "Incorrect Credentials";
+            errorDescription = "The email or password you entered is incorrect. Please double-check your information and try again.";
+          } else if (error.message.includes('email address')) {
+            errorTitle = "Account Not Found";
+            errorDescription = "We couldn't find an account with that email address. Please check your email or create a new account.";
+          } else if (error.message.includes('technical difficulties')) {
+            errorTitle = "Server Error";
+            errorDescription = "We're experiencing technical difficulties. Please try again in a few moments.";
+          }
+          
           toast({
-            title: "Login Failed",
-            description: error.message,
+            title: errorTitle,
+            description: errorDescription,
             variant: "destructive",
           });
         }

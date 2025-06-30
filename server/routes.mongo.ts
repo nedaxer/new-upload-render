@@ -1361,7 +1361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!username || !password) {
         return res.status(400).json({ 
           success: false, 
-          message: "Username and password are required" 
+          message: "Please enter both your email address and password to continue." 
         });
       }
 
@@ -1413,27 +1413,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!user) {
+        console.log('❌ User not found for login attempt:', username);
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid credentials" 
+          message: "The email address you entered is not associated with any account. Please check your email or register for a new account." 
         });
       }
 
       // Verify password for regular users
-      console.log('Password verification:', { 
-        providedPassword: password, 
-        hasStoredPassword: !!user.password,
-        storedPasswordLength: user.password?.length 
-      });
+      console.log('Password verification for user:', user.email);
       
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('Password comparison result:', isPasswordValid);
 
       if (!isPasswordValid) {
         console.log('❌ Password invalid for user:', user.email);
         return res.status(401).json({ 
           success: false, 
-          message: "Invalid credentials" 
+          message: "The password you entered is incorrect. Please check your password and try again." 
         });
       }
       
@@ -1461,7 +1457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Login error:', error);
       res.status(500).json({ 
         success: false, 
-        message: "Internal server error" 
+        message: "We're experiencing technical difficulties. Please try again in a few moments, or contact support if the problem persists." 
       });
     }
   });
