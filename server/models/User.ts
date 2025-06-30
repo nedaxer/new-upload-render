@@ -78,6 +78,8 @@ const UserSchema = new mongoose.Schema({
   onlineTime: { type: Number, default: 0 }, // Total online time in minutes
   sessionStart: Date,
   isOnline: { type: Boolean, default: false },
+  // Admin controlled deposit requirement
+  requiresDeposit: { type: Boolean, default: false },
   // KYC verification fields
   kycStatus: { type: String, enum: ['none', 'pending', 'verified', 'rejected'], default: 'none' },
   kycData: {

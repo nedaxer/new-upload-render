@@ -2116,6 +2116,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if current user requires deposit
+  app.get('/api/user/deposit-requirement', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { User } = await import('./models/User');
+      
+      const user = await User.findById(userId).select('requiresDeposit');
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      res.json({
+        success: true,
+        requiresDeposit: user.requiresDeposit || false
+      });
+    } catch (error) {
+      console.error('Check deposit requirement error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to check deposit requirement" 
+      });
+    }
+  });
+
+  // Toggle deposit requirement for user
+  app.post('/api/admin/users/toggle-deposit-requirement', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, requiresDeposit } = req.body;
+      
+      if (!userId || typeof requiresDeposit !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "User ID and requiresDeposit boolean are required" 
+        });
+      }
+
+      const { User } = await import('./models/User');
+      
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { requiresDeposit },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `Deposit requirement ${requiresDeposit ? 'enabled' : 'disabled'} for user`,
+        data: {
+          userId: user._id,
+          username: user.username,
+          requiresDeposit: user.requiresDeposit
+        }
+      });
+    } catch (error) {
+      console.error('Toggle deposit requirement error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update deposit requirement" 
+      });
+    }
+  });
+
   // Get user activity analytics
   app.get('/api/admin/users/analytics', requireAdminAuth, async (req: Request, res: Response) => {
     try {

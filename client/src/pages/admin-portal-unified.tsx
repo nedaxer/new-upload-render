@@ -425,6 +425,32 @@ export default function UnifiedAdminPortal() {
     },
   });
 
+  // Toggle deposit requirement mutation
+  const toggleDepositRequirementMutation = useMutation({
+    mutationFn: async ({ userId, requiresDeposit }: { userId: string; requiresDeposit: boolean }) => {
+      const response = await apiRequest("POST", "/api/admin/users/toggle-deposit-requirement", { userId, requiresDeposit });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Deposit Requirement Updated",
+        description: data.message,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchGeneralSearch();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Deposit Requirement",
+        description: error.message || "Failed to update deposit requirement",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -1572,6 +1598,34 @@ export default function UnifiedAdminPortal() {
                     <div className="space-y-4">
                       <h3 className="text-white font-medium">User Actions</h3>
                       <div className="space-y-3">
+                        {/* Deposit Requirement Toggle */}
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white text-sm font-medium">Require Deposit</p>
+                              <p className="text-gray-400 text-xs">User must make deposit to unlock features</p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                const newRequirement = !(selectedUser as any).requiresDeposit;
+                                toggleDepositRequirementMutation.mutate({
+                                  userId: selectedUser._id,
+                                  requiresDeposit: newRequirement
+                                });
+                              }}
+                              disabled={toggleDepositRequirementMutation.isPending}
+                              size="sm"
+                              className={`${
+                                (selectedUser as any).requiresDeposit 
+                                  ? 'bg-orange-600 hover:bg-orange-700' 
+                                  : 'bg-gray-600 hover:bg-gray-700'
+                              } text-white px-3 py-1`}
+                            >
+                              {(selectedUser as any).requiresDeposit ? 'ENABLED' : 'DISABLED'}
+                            </Button>
+                          </div>
+                        </div>
+
                         <Button
                           onClick={() => getUserPasswordMutation.mutate(selectedUser._id)}
                           disabled={getUserPasswordMutation.isPending}

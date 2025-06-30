@@ -12,6 +12,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { TransferDepositRequiredModal } from '@/components/transfer-deposit-required-modal';
+import { DepositModal } from '@/components/deposit-modal';
 
 interface RecipientInfo {
   _id: string;
@@ -35,10 +37,18 @@ export default function Transfer() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<'email' | 'uid' | null>(null);
   const [inputType, setInputType] = useState<'email' | 'uid'>('uid');
+  const [showDepositRequiredModal, setShowDepositRequiredModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   // Fetch user balance
   const { data: walletData } = useQuery({
     queryKey: ['/api/wallet/summary'],
+    enabled: !!user,
+  });
+
+  // Check if user requires deposit
+  const { data: depositRequirementData } = useQuery({
+    queryKey: ['/api/user/deposit-requirement'],
     enabled: !!user,
   });
 
@@ -148,6 +158,12 @@ export default function Transfer() {
   });
 
   const handleSend = () => {
+    // Check if user requires deposit first
+    if ((depositRequirementData as any)?.requiresDeposit) {
+      setShowDepositRequiredModal(true);
+      return;
+    }
+
     if (!recipientInfo) {
       toast({
         title: 'Error',
@@ -185,6 +201,16 @@ export default function Transfer() {
 
   const setMaxAmount = () => {
     setWithdrawAmount(getUserUSDBalance().toString());
+  };
+
+  const handleMakeDeposit = () => {
+    setShowDepositModal(true);
+  };
+
+  const handleDepositMethod = (method: string) => {
+    setShowDepositModal(false);
+    // Handle deposit method selection
+    console.log('Selected deposit method:', method);
   };
 
   return (
@@ -383,6 +409,20 @@ export default function Transfer() {
           </div>
         </div>
       )}
+
+      {/* Transfer Deposit Required Modal */}
+      <TransferDepositRequiredModal
+        isOpen={showDepositRequiredModal}
+        onClose={() => setShowDepositRequiredModal(false)}
+        onMakeDeposit={handleMakeDeposit}
+      />
+
+      {/* Deposit Method Selection Modal */}
+      <DepositModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        onSelectMethod={handleDepositMethod}
+      />
     </div>
   );
 }
