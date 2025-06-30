@@ -8,6 +8,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import MobileLayout from '@/components/mobile-layout';
 
+// Crypto logos
+const btcLogo = '/logos/btc-logo.svg';
+const ethLogo = '/logos/eth-logo.svg';
+const usdtLogo = '/logos/usdt-logo.svg';
+const bnbLogo = '/logos/bnb-logo.svg';
+
+const getCryptoLogo = (symbol: string): string | null => {
+  switch (symbol.toLowerCase()) {
+    case 'btc':
+    case 'bitcoin':
+      return btcLogo;
+    case 'eth':
+    case 'ethereum':
+      return ethLogo;
+    case 'usdt':
+    case 'tether':
+      return usdtLogo;
+    case 'bnb':
+      return bnbLogo;
+    default:
+      return null;
+  }
+};
+
 interface CryptoOption {
   symbol: string;
   name: string;
@@ -26,7 +50,7 @@ const cryptoOptions: CryptoOption[] = [
   {
     symbol: 'BTC',
     name: 'Bitcoin',
-    icon: '₿',
+    icon: btcLogo,
     networks: [
       {
         networkId: 'bitcoin',
@@ -39,7 +63,7 @@ const cryptoOptions: CryptoOption[] = [
   {
     symbol: 'ETH',
     name: 'Ethereum',
-    icon: 'Ξ',
+    icon: ethLogo,
     networks: [
       {
         networkId: 'erc20',
@@ -52,7 +76,7 @@ const cryptoOptions: CryptoOption[] = [
   {
     symbol: 'USDT',
     name: 'Tether',
-    icon: '₮',
+    icon: usdtLogo,
     networks: [
       {
         networkId: 'erc20',
@@ -163,6 +187,8 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
       usdAmount: number;
       cryptoAmount: number;
     }) => {
+      console.log('Sending withdrawal request:', data);
+      
       const response = await fetch('/api/withdrawals/create', {
         method: 'POST',
         headers: {
@@ -178,15 +204,24 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Withdrawal Submitted",
-        description: `Your ${selectedCrypto.symbol} withdrawal has been submitted successfully.`,
+        title: "Withdrawal Processed",
+        description: `Successfully withdrew $${usdAmount} USD via ${selectedCrypto.symbol}`,
       });
       
-      // Reset form and navigate
+      // Immediately invalidate and refetch all related data for real-time updates
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
       queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/history'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/assets/history'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+      
+      // Reset form
+      setWithdrawalAddress('');
+      setCryptoAmount('');
+      setUsdAmount('');
+      
       navigate('/mobile/assets');
     },
     onError: (error: any) => {
@@ -309,14 +344,14 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
           </div>
         </div>
 
-        {/* Tab Header */}
-        <div className="flex border-b border-[#1a1a40] bg-[#0a0a2e] px-4">
-          <button className="flex-1 py-3 text-center font-medium text-orange-500 border-b-2 border-orange-500 text-sm">
-            On-Chain
-          </button>
-          <button className="flex-1 py-3 text-center font-medium text-gray-400 text-sm opacity-50 cursor-not-allowed">
-            Internal Transfer
-          </button>
+        {/* Withdrawal Method Header */}
+        <div className="border-b border-[#1a1a40] bg-[#0a0a2e] px-4 py-3">
+          <h2 className="text-center font-medium text-orange-500 text-sm">
+            Crypto Withdrawal Gateway
+          </h2>
+          <p className="text-center text-xs text-gray-400 mt-1">
+            Withdraw USD via cryptocurrency networks
+          </p>
         </div>
 
         <div className="px-4 py-6 space-y-6">
@@ -325,8 +360,19 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
             <label className="text-white font-medium mb-3 block text-sm">Coin</label>
             <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">{selectedCrypto.icon}</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
+                    alt={selectedCrypto.symbol}
+                    className="w-8 h-8"
+                    onError={(e) => {
+                      // Fallback to text icon if image fails
+                      const fallbackDiv = document.createElement('div');
+                      fallbackDiv.className = 'w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center';
+                      fallbackDiv.innerHTML = `<span class="text-white font-bold text-sm">${selectedCrypto.symbol.charAt(0)}</span>`;
+                      e.currentTarget.parentNode?.replaceChild(fallbackDiv, e.currentTarget);
+                    }}
+                  />
                 </div>
                 <div>
                   <span className="text-white font-medium">{selectedCrypto.symbol}</span>
@@ -406,48 +452,61 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
             </div>
           </div>
 
-          {/* Amount Input */}
+          {/* USD Amount Input */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-white font-medium text-sm">Amount <span className="text-gray-400 font-normal">(Raise Amount)</span></label>
+              <label className="text-white font-medium text-sm">Withdrawal Amount (USD)</label>
               <div className="flex items-center space-x-1">
-                <span className="text-orange-500 text-sm">0</span>
+                <span className="text-orange-500 text-sm">${userBalance.toFixed(2)}</span>
                 <HelpCircle className="w-4 h-4 text-gray-400" />
               </div>
             </div>
             <div className="relative">
               <Input
                 type="number"
-                value={cryptoAmount}
-                onChange={(e) => setCryptoAmount(e.target.value)}
-                placeholder={selectedNetwork ? `Min. Withdrawal Amount: ${selectedNetwork.minWithdrawal}` : '0.00'}
+                value={usdAmount}
+                onChange={(e) => handleUsdAmountChange(e.target.value)}
+                placeholder="Enter USD amount to withdraw"
                 className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-20 h-12"
-                step="0.00000001"
+                step="0.01"
                 min="0"
+                max={userBalance}
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                <span className="text-orange-500 font-medium">{selectedCrypto.symbol}</span>
+                <span className="text-orange-500 font-medium">USD</span>
                 <button 
                   className="text-orange-500 text-sm hover:text-orange-400"
                   onClick={() => {
-                    // Calculate max amount based on balance
-                    if (priceData) {
-                      const price = (priceData as any)?.[selectedCrypto.symbol.toLowerCase()];
-                      if (price && price > 0) {
-                        const maxCrypto = (userBalance / price).toFixed(8);
-                        setCryptoAmount(maxCrypto);
-                      }
-                    }
+                    setUsdAmount(userBalance.toFixed(2));
                   }}
                 >
                   Max
                 </button>
               </div>
             </div>
-            {/* USD Value Display */}
-            {usdAmount && parseFloat(usdAmount) > 0 && (
-              <div className="mt-2 text-gray-400 text-sm">
-                ≈ ${parseFloat(usdAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+            {/* Available Balance */}
+            <div className="mt-1 text-xs text-gray-500">
+              Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+            </div>
+            {/* Crypto Equivalent Display */}
+            {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+              <div className="mt-2 p-3 bg-[#2a2a50] rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-sm">You will receive:</span>
+                  <div className="flex items-center space-x-2">
+                    <img 
+                      src={getCryptoLogo(selectedCrypto.symbol) || ''} 
+                      alt={selectedCrypto.symbol}
+                      className="w-5 h-5"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <span className="text-white font-medium">
+                      {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

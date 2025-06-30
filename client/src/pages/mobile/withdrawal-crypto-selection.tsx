@@ -1,4 +1,4 @@
-import { useState } from 'react';
+
 import { Link, useLocation } from 'wouter';
 import { ArrowLeft } from 'lucide-react';
 import MobileLayout from '@/components/mobile-layout';
@@ -42,7 +42,6 @@ interface WithdrawalCryptoSelectionProps {
 }
 
 export default function WithdrawalCryptoSelection({ onBack, onSelectCrypto }: WithdrawalCryptoSelectionProps) {
-  const [activeTab, setActiveTab] = useState('crypto');
 
   const handleCryptoSelect = (crypto: CryptoOption) => {
     onSelectCrypto(crypto);
@@ -71,24 +70,14 @@ export default function WithdrawalCryptoSelection({ onBack, onSelectCrypto }: Wi
         <div className="w-6 h-6" />
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-[#1a1a40] bg-[#0a0a2e]">
-        <button
-          onClick={() => setActiveTab('crypto')}
-          className={`flex-1 py-3 px-4 text-center font-medium transition-colors text-sm ${
-            activeTab === 'crypto'
-              ? 'text-orange-500 border-b-2 border-orange-500'
-              : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          On-Chain
-        </button>
-        <button
-          className="flex-1 py-3 px-4 text-center font-medium text-gray-400 hover:text-white transition-colors text-sm opacity-50 cursor-not-allowed"
-          disabled
-        >
-          Internal Transfer
-        </button>
+      {/* Crypto Withdrawal Header */}
+      <div className="border-b border-[#1a1a40] bg-[#0a0a2e] px-4 py-3">
+        <h2 className="text-center font-medium text-orange-500 text-sm">
+          Select Crypto Gateway
+        </h2>
+        <p className="text-center text-xs text-gray-400 mt-1">
+          Choose cryptocurrency for USD withdrawal
+        </p>
       </div>
 
       {/* Crypto List */}
