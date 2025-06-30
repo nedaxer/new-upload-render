@@ -115,7 +115,7 @@ export default function MessagesPage() {
     <div className="min-h-screen bg-[#0a0a2e] text-white">
       {/* Header */}
       <div className="flex items-center p-3 border-b border-white/10">
-        <Link href="/mobile/home">
+        <Link href="/mobile">
           <Button variant="ghost" size="sm" className="mr-2 text-white hover:bg-white/10 p-1">
             <ArrowLeft className="w-4 h-4" />
           </Button>
