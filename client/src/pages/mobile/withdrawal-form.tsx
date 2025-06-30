@@ -344,7 +344,15 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
           </div>
         </div>
 
-        
+        {/* Withdrawal Method Header */}
+        <div className="border-b border-[#1a1a40] bg-[#0a0a2e] px-4 py-3">
+          <h2 className="text-center font-medium text-orange-500 text-sm">
+            Crypto Withdrawal Gateway
+          </h2>
+          <p className="text-center text-xs text-gray-400 mt-1">
+            Withdraw USD via cryptocurrency networks
+          </p>
+        </div>
 
         <div className="px-4 py-6 space-y-6">
           {/* Coin Selection */}
@@ -393,7 +401,7 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
                 className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-12 h-12"
               />
               <button 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 hover:bg-[#2a2a50] rounded-lg transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
                 onClick={() => {
                   // QR scan functionality - placeholder for now
                   toast({
@@ -402,7 +410,10 @@ export default function WithdrawalForm({ selectedCrypto, onBack }: WithdrawalFor
                   });
                 }}
               >
-                <QrCode className="w-5 h-5 text-orange-500" />
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3v-10c0-2-1-3-3-3h-10c-2 0-3 1-3 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 11l2 2 4-4" />
+                </svg>
               </button>
             </div>
           </div>
