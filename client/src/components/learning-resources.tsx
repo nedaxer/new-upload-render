@@ -35,12 +35,23 @@ export const LearningResources = () => {
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-3 text-[#0033a0]">{resource.title}</h3>
                 <p className="mb-4 text-gray-800">{resource.description}</p>
-                <Link
-                  href={resource.link.href}
-                  className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
-                >
-                  {resource.link.label} <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+                {resource.link.href.startsWith('http') ? (
+                  <a
+                    href={resource.link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
+                  >
+                    {resource.link.label} <ArrowRight className="ml-1 h-4 w-4" />
+                  </a>
+                ) : (
+                  <Link
+                    href={resource.link.href}
+                    className="text-[#0033a0] hover:text-[#ff5900] font-semibold flex items-center"
+                  >
+                    {resource.link.label} <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                )}
               </div>
             </div>
           ))}
