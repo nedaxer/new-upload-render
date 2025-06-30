@@ -412,6 +412,24 @@ export default function ContactMessagesManager() {
                     </div>
                   </div>
 
+                  {/* Admin Reply Section */}
+                  {selectedMessage.hasReply && selectedMessage.adminReply && (
+                    <div>
+                      <div className="text-gray-300 text-sm mb-1 flex items-center">
+                        <Reply className="w-4 h-4 mr-1" />
+                        Your Reply
+                        {selectedMessage.adminReplyAt && (
+                          <span className="ml-2 text-xs text-gray-400">
+                            • {formatDate(selectedMessage.adminReplyAt)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-white bg-orange-500/10 border border-orange-500/20 p-3 rounded-lg whitespace-pre-wrap">
+                        {selectedMessage.adminReply}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <div className="text-gray-300 mb-1">Received</div>
@@ -425,7 +443,15 @@ export default function ContactMessagesManager() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-2 pt-4 border-t border-white/20">
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-white/20">
+                  <Button
+                    onClick={() => setShowReplyDialog(true)}
+                    className="bg-orange-600 hover:bg-orange-700"
+                    size="sm"
+                  >
+                    <Reply className="w-4 h-4 mr-2" />
+                    Reply to User
+                  </Button>
                   {!selectedMessage.isRead && (
                     <Button
                       onClick={() => markAsReadMutation.mutate(selectedMessage._id)}

@@ -107,6 +107,7 @@ import DepositDetails from '@/pages/mobile/deposit-details';
 import WithdrawalDetails from '@/pages/mobile/withdrawal-details';
 import TransferDetails from '@/pages/mobile/transfer-details';
 import Transfer from '@/pages/mobile/transfer';
+import MessagesPage from '@/pages/mobile/messages';
 import { VerificationFlow } from '@/pages/mobile/verification/VerificationFlow';
 import MobileKYCStatus from '@/pages/mobile/kyc-status';
 import VerificationSubmitted from '@/pages/mobile/verification-submitted';
@@ -275,6 +276,7 @@ export default function App() {
             <Route path="/mobile/notifications" component={MobileNotifications} />
             <Route path="/mobile/notification-settings" component={NotificationSettings} />
             <Route path="/mobile/chatbot" component={Chatbot} />
+            <Route path="/mobile/messages" component={MessagesPage} />
 
             <Route path="/mobile/news" component={MobileNews} />
             <Route path="/mobile/settings" component={MobileSettings} />
