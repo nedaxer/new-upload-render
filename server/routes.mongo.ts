@@ -2301,12 +2301,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Broadcast WebSocket update for real-time UI updates
+      // Broadcast multiple WebSocket update formats for comprehensive compatibility
       if (wss) {
-        const wsMessage = JSON.stringify({
+        // Primary format for withdrawal restrictions
+        const primaryMessage = JSON.stringify({
+          type: 'WITHDRAWAL_SETTINGS_UPDATE',
+          userId: user._id.toString(),
+          withdrawalRestrictionMessage: user.withdrawalRestrictionMessage,
+          timestamp: new Date().toISOString()
+        });
+
+        // Legacy format for backward compatibility
+        const legacyMessage = JSON.stringify({
           type: 'user_restriction_update',
           data: {
-            userId: user._id,
+            userId: user._id.toString(),
             requiresDeposit: user.requiresDeposit,
             withdrawalRestrictionMessage: user.withdrawalRestrictionMessage
           }
@@ -2314,9 +2323,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         wss.clients.forEach((client: any) => {
           if (client.readyState === 1) { // WebSocket.OPEN
-            client.send(wsMessage);
+            client.send(primaryMessage);
+            // Small delay to prevent message overlap
+            setTimeout(() => {
+              if (client.readyState === 1) {
+                client.send(legacyMessage);
+              }
+            }, 50);
           }
         });
+        
+        console.log(`📡 Real-time withdrawal restriction update broadcasted to all clients for user ${user._id}`);
       }
 
       res.json({

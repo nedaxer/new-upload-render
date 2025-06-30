@@ -11,6 +11,7 @@ import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
 import { SplashScreen } from '@/components/splash-screen';
 import { LanguageProvider } from '@/contexts/language-context';
 import { ThemeProvider } from '@/contexts/theme-context';
+import { WithdrawalProvider } from '@/contexts/withdrawal-context';
 import { lazy } from 'react';
 import { CookieConsent } from '@/components/cookie-consent';
 
@@ -173,7 +174,8 @@ export default function App() {
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
-            <Router hook={useHashLocation}>
+            <WithdrawalProvider>
+              <Router hook={useHashLocation}>
             <Switch>
             {/* Home route with auth redirect */}
             <Route path="/">
@@ -316,7 +318,8 @@ export default function App() {
             <Toaster />
             <CookieConsent />
             <PWAInstallPrompt />
-          </Router>
+            </Router>
+          </WithdrawalProvider>
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>

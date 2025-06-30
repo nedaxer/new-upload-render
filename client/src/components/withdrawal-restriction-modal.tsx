@@ -1,31 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
+import { AlertTriangle, DollarSign } from 'lucide-react';
 
 interface WithdrawalRestrictionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  minimumRequired: number;
-  totalDeposited: number;
-  shortfall: number;
-  withdrawalMessage?: string;
+  withdrawalData: {
+    hasRestriction: boolean;
+    message: string;
+    minimumRequired?: number;
+    totalDeposited?: number;
+    shortfall?: number;
+    canWithdraw?: boolean;
+  } | null;
   onMakeDeposit: () => void;
 }
 
 export function WithdrawalRestrictionModal({
   open,
   onOpenChange,
-  minimumRequired,
-  totalDeposited,
-  shortfall,
-  withdrawalMessage,
+  withdrawalData,
   onMakeDeposit
 }: WithdrawalRestrictionModalProps) {
-  // Process the withdrawal message to replace ${amount} with actual amount
-  const displayMessage = withdrawalMessage 
-    ? withdrawalMessage.replace('${amount}', `$${minimumRequired.toLocaleString()}`)
-    : `You need to make a first deposit of $${minimumRequired.toLocaleString()}`;
+  const [displayMessage, setDisplayMessage] = useState<string>('');
+
+  // Process the withdrawal message to replace placeholders with actual amounts
+  useEffect(() => {
+    if (!withdrawalData) {
+      setDisplayMessage('You need to make a deposit to unlock withdrawal features.');
+      return;
+    }
+
+    let message = withdrawalData.message || 'You need to make a deposit to unlock withdrawal features.';
+    
+    // Replace ${amount} placeholder with the actual minimum required amount
+    if (withdrawalData.minimumRequired) {
+      message = message.replace(/\$\{amount\}/g, `$${withdrawalData.minimumRequired.toLocaleString()}`);
+      message = message.replace(/\$\{minimumRequired\}/g, `$${withdrawalData.minimumRequired.toLocaleString()}`);
+    }
+    
+    // Replace ${shortfall} placeholder with the actual shortfall amount
+    if (withdrawalData.shortfall && withdrawalData.shortfall > 0) {
+      message = message.replace(/\$\{shortfall\}/g, `$${withdrawalData.shortfall.toLocaleString()}`);
+    }
+
+    setDisplayMessage(message);
+  }, [withdrawalData]);
+
+  // Don't render if no restriction data or user can withdraw
+  if (!withdrawalData || !withdrawalData.hasRestriction) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-[#1a1a40] border border-orange-500/30 text-white">
@@ -42,6 +69,25 @@ export function WithdrawalRestrictionModal({
           <p className="text-gray-300 text-base leading-relaxed">
             {displayMessage}
           </p>
+          
+          {withdrawalData.totalDeposited !== undefined && withdrawalData.minimumRequired !== undefined && (
+            <div className="bg-white/5 rounded-lg p-3 space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Total Deposited:</span>
+                <span className="text-green-400">${withdrawalData.totalDeposited.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Required Amount:</span>
+                <span className="text-orange-400">${withdrawalData.minimumRequired.toLocaleString()}</span>
+              </div>
+              {withdrawalData.shortfall && withdrawalData.shortfall > 0 && (
+                <div className="flex justify-between items-center text-sm font-medium">
+                  <span className="text-gray-400">Still Needed:</span>
+                  <span className="text-red-400">${withdrawalData.shortfall.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
+          )}
           
           <p className="text-xs text-gray-500">
             This requirement helps protect your account and ensures compliance with financial regulations.
@@ -63,6 +109,7 @@ export function WithdrawalRestrictionModal({
             }}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
           >
+            <DollarSign className="w-4 h-4 mr-2" />
             Make Deposit
           </Button>
         </div>

@@ -30,6 +30,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/hooks/use-auth';
+import { useWithdrawal } from '@/contexts/withdrawal-context';
 import advancedChartsVideo from '@/assets/advanced-charts-video.mp4';
 
 export default function MobileAssets() {
@@ -37,8 +38,9 @@ export default function MobileAssets() {
   const { user } = useAuth();
   const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
+  const { withdrawalData, isModalOpen, openModal, closeModal } = useWithdrawal();
 
-  // Unified WebSocket connection for all real-time updates
+  // WebSocket connection for balance updates only (withdrawal handled by context)
   useEffect(() => {
     if (!user) return;
 
@@ -49,7 +51,7 @@ export default function MobileAssets() {
     const ws = new WebSocket(`${protocol}//${window.location.host}`);
 
     ws.onopen = () => {
-      console.log('WebSocket connected for real-time assets page updates');
+      console.log('WebSocket connected for assets page balance updates');
       ws.send(JSON.stringify({ type: 'subscribe_notifications' }));
     };
 
@@ -57,23 +59,6 @@ export default function MobileAssets() {
       try {
         const data = JSON.parse(event.data);
         
-        // Handle withdrawal settings updates (both message formats for compatibility)
-        if ((data.type === 'WITHDRAWAL_SETTINGS_UPDATE' || data.type === 'withdrawal_settings_update') && 
-            data.userId === userId) {
-          console.log('Received withdrawal settings update:', data);
-          // Invalidate withdrawal eligibility query to refetch with new settings
-          queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/user/withdrawal-restriction"] });
-        }
-
-        // Handle user restriction updates from admin portal
-        if (data.type === 'user_restriction_update' && data.data?.userId === userId) {
-          console.log('Received user restriction update:', data);
-          // Invalidate withdrawal eligibility and related queries
-          queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/user/withdrawal-restriction"] });
-        }
-
         // Handle balance updates
         if (data.type === 'balance_update' && data.userId === userId) {
           console.log('Received balance update:', data);
@@ -108,7 +93,7 @@ export default function MobileAssets() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
-  const [withdrawalRestrictionOpen, setWithdrawalRestrictionOpen] = useState(false);
+
   const [depositActivationOpen, setDepositActivationOpen] = useState(false);
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
@@ -247,12 +232,7 @@ export default function MobileAssets() {
     return (walletData as any)?.data?.usdBalance || 0;
   };
 
-  // Check withdrawal eligibility
-  const { data: withdrawalEligibility } = useQuery({
-    queryKey: ["/api/withdrawals/eligibility"],
-    enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
-  });
+
 
 
 
@@ -269,7 +249,7 @@ export default function MobileAssets() {
 
   const handleWithdrawClick = () => {
     // Always show restriction modal first to check eligibility
-    setWithdrawalRestrictionOpen(true);
+    openModal();
   };
 
   const handlePaymentMethodSelect = (method: string) => {
@@ -587,12 +567,9 @@ export default function MobileAssets() {
       />
 
       <WithdrawalRestrictionModal
-        open={withdrawalRestrictionOpen}
-        onOpenChange={setWithdrawalRestrictionOpen}
-        minimumRequired={(withdrawalEligibility as any)?.data?.minimumRequired || 500}
-        totalDeposited={(withdrawalEligibility as any)?.data?.totalDeposited || 0}
-        shortfall={(withdrawalEligibility as any)?.data?.shortfall || 500}
-        withdrawalMessage={(withdrawalEligibility as any)?.data?.withdrawalMessage}
+        open={isModalOpen}
+        onOpenChange={closeModal}
+        withdrawalData={withdrawalData}
         onMakeDeposit={() => setDepositModalOpen(true)}
       />
 

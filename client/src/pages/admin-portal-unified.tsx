@@ -600,7 +600,7 @@ export default function UnifiedAdminPortal() {
       
       toast({
         title: "Withdrawal Message Updated",
-        description: data.message,
+        description: "Real-time update sent to user",
         variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
