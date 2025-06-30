@@ -183,7 +183,7 @@ export default function MessagesPage() {
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-1.5 mb-2">
                           <div className="flex items-center space-x-1 mb-1">
                             <Reply className="w-2.5 h-2.5 text-blue-400" />
-                            <span className="text-blue-400 text-xs font-medium">Admin Reply</span>
+                            <span className="text-blue-400 text-xs font-medium">Message from Support</span>
                           </div>
                           <div className="text-gray-300 text-xs line-clamp-1">
                             {message.adminReply}
@@ -253,12 +253,12 @@ export default function MessagesPage() {
                       </div>
                     </div>
 
-                    {/* Admin Reply */}
+                    {/* Support Reply */}
                     {selectedMessage.hasReply && selectedMessage.adminReply && (
                       <div className="mb-4">
                         <div className="flex items-center space-x-1 mb-1">
                           <Reply className="w-3 h-3 text-blue-400" />
-                          <div className="text-blue-400 text-xs font-medium">Admin Reply</div>
+                          <div className="text-blue-400 text-xs font-medium">Message from Support</div>
                           <div className="text-gray-400 text-xs">
                             {selectedMessage.adminReplyAt && formatDate(selectedMessage.adminReplyAt)}
                           </div>
