@@ -169,19 +169,13 @@ export const learningResources = [
     title: "Crypto Trading Guides",
     image: "https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     description: "Comprehensive guides on cryptocurrency trading strategies, blockchain analytics, and digital asset tutorials.",
-    link: { label: "View Guides", href: "#" },
+    link: { label: "View Guides", href: "https://www.youtube.com/@CoinBureau" },
   },
   {
     title: "Crypto Webinars",
     image: "https://images.unsplash.com/photo-1639322537133-5fcead339c5f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     description: "Live and on-demand webinars hosted by cryptocurrency experts covering trading strategies and market analysis.",
     link: { label: "Register Now", href: "#" },
-  },
-  {
-    title: "Blockchain Tutorials",
-    image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
-    description: "Step-by-step video tutorials on cryptocurrency trading, blockchain fundamentals, and digital asset analysis.",
-    link: { label: "Watch Videos", href: "#" },
   },
 ];
 
