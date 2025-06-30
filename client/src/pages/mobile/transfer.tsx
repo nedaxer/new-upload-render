@@ -52,6 +52,60 @@ export default function Transfer() {
     enabled: !!user,
   });
 
+  // WebSocket integration for real-time deposit requirement updates
+  useEffect(() => {
+    if (!user) return;
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('[Transfer] WebSocket connected');
+      ws.send(JSON.stringify({ type: 'subscribe_notifications' }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        console.log('[Transfer] WebSocket message:', message);
+
+        if (message.type === 'user_restriction_update' && message.data?.userId === (user as any)?._id) {
+          console.log('[Transfer] Updating deposit requirement from WebSocket:', message.data);
+          
+          // Invalidate and refetch deposit requirement data
+          queryClient.invalidateQueries({ queryKey: ['/api/user/deposit-requirement'] });
+          
+          // Close deposit required modal if restriction was removed
+          if (!message.data.requiresDeposit && showDepositRequiredModal) {
+            setShowDepositRequiredModal(false);
+            toast({
+              title: "Restriction Removed",
+              description: "You can now send transfers without making a deposit!",
+              variant: "default",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[Transfer] WebSocket message parsing error:', error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('[Transfer] WebSocket disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('[Transfer] WebSocket error:', error);
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, [user, showDepositRequiredModal, toast]);
+
   const getUserUSDBalance = () => {
     if (!walletData || !(walletData as any).data) return 0;
     
@@ -159,7 +213,7 @@ export default function Transfer() {
 
   const handleSend = () => {
     // Check if user requires deposit first
-    if ((depositRequirementData as any)?.requiresDeposit) {
+    if ((depositRequirementData as any)?.requiresDeposit === true) {
       setShowDepositRequiredModal(true);
       return;
     }

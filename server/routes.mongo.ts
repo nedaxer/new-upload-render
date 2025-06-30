@@ -2216,6 +2216,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, requiresDeposit } = req.body;
       
+      console.log('Toggle deposit requirement called:', { userId, requiresDeposit, userIdType: typeof userId });
+      
       if (!userId || typeof requiresDeposit !== 'boolean') {
         return res.status(400).json({ 
           success: false, 
@@ -2224,14 +2226,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { User } = await import('./models/User');
+      const { ObjectId } = await import('mongodb');
+      
+      // Convert userId to ObjectId if it's a string
+      let userObjectId;
+      try {
+        userObjectId = typeof userId === 'string' ? new ObjectId(userId) : userId;
+        console.log('Converted userId to ObjectId:', userObjectId);
+      } catch (error) {
+        console.error('Invalid ObjectId format:', userId, error);
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid user ID format" 
+        });
+      }
       
       const user = await User.findByIdAndUpdate(
-        userId,
+        userObjectId,
         { requiresDeposit },
         { new: true }
       );
 
+      console.log('User update result:', user ? 'FOUND' : 'NOT_FOUND');
+
       if (!user) {
+        // Try to find user to see if it exists
+        const existingUser = await User.findById(userObjectId);
+        console.log('User exists check:', existingUser ? 'EXISTS' : 'DOES_NOT_EXIST');
+        
         return res.status(404).json({ 
           success: false, 
           message: "User not found" 
