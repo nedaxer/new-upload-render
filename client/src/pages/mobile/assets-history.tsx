@@ -249,7 +249,7 @@ export default function AssetsHistory() {
                       <div className="text-right flex items-center space-x-2">
                         <div>
                           <p className="font-medium text-xs text-green-400">
-                            {isSent ? '-' : '+'}${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {isSent ? '-' : '+'}${(transaction.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-gray-400 text-xs">
                             {transaction.status}
@@ -286,10 +286,10 @@ export default function AssetsHistory() {
                       <div className="text-right flex items-center space-x-2">
                         <div>
                           <p className="text-red-400 font-medium text-xs">
-                            -{transaction.cryptoAmount.toFixed(6)}
+                            -{(transaction.cryptoAmount || 0).toFixed(6)}
                           </p>
                           <p className="text-gray-400 text-xs">
-                            ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-500" />
@@ -323,10 +323,10 @@ export default function AssetsHistory() {
                       <div className="text-right flex items-center space-x-2">
                         <div>
                           <p className="text-green-400 font-medium text-xs">
-                            +{transaction.cryptoAmount.toFixed(6)}
+                            +{(transaction.cryptoAmount || 0).toFixed(6)}
                           </p>
                           <p className="text-gray-400 text-xs">
-                            ${transaction.usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-500" />
