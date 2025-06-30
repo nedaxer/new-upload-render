@@ -38,26 +38,47 @@ export default function MobileAssets() {
   const { getBackgroundClass, getTextClass, getCardClass, getBorderClass } = useTheme();
   const queryClient = useQueryClient();
 
-  // WebSocket connection for real-time updates
+  // Unified WebSocket connection for all real-time updates
   useEffect(() => {
-    if (!user?._id) return;
+    if (!user) return;
+
+    const userId = (user as any)?._id;
+    if (!userId) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+    const ws = new WebSocket(`${protocol}//${window.location.host}`);
 
     ws.onopen = () => {
-      console.log('WebSocket connected for real-time updates');
+      console.log('WebSocket connected for real-time assets page updates');
+      ws.send(JSON.stringify({ type: 'subscribe_notifications' }));
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         
-        // Handle withdrawal settings updates
-        if (data.type === 'WITHDRAWAL_SETTINGS_UPDATE' && data.userId === user._id) {
+        // Handle withdrawal settings updates (both message formats for compatibility)
+        if ((data.type === 'WITHDRAWAL_SETTINGS_UPDATE' || data.type === 'withdrawal_settings_update') && 
+            data.userId === userId) {
           console.log('Received withdrawal settings update:', data);
-          // Invalidate withdrawal eligibility query to refresh deposit requirements
-          queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/eligibility'] });
+          // Invalidate withdrawal eligibility query to refetch with new settings
+          queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/user/withdrawal-restriction"] });
+        }
+
+        // Handle user restriction updates from admin portal
+        if (data.type === 'user_restriction_update' && data.data?.userId === userId) {
+          console.log('Received user restriction update:', data);
+          // Invalidate withdrawal eligibility and related queries
+          queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/user/withdrawal-restriction"] });
+        }
+
+        // Handle balance updates
+        if (data.type === 'balance_update' && data.userId === userId) {
+          console.log('Received balance update:', data);
+          queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/balances'] });
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
@@ -75,7 +96,7 @@ export default function MobileAssets() {
     return () => {
       ws.close();
     };
-  }, [user?._id, queryClient]);
+  }, [user, queryClient]);
   const [showBalance, setShowBalance] = useState(true);
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
@@ -224,34 +245,7 @@ export default function MobileAssets() {
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
-  // WebSocket for real-time withdrawal eligibility updates
-  useEffect(() => {
-    if (!user) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}`);
-    
-    ws.onopen = () => {
-      console.log('WebSocket connected for real-time assets page updates');
-      ws.send(JSON.stringify({ type: 'subscribe_withdrawals' }));
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'withdrawal_settings_update' && data.data.userId === (user as any)?._id) {
-        // Invalidate withdrawal eligibility query to refetch with new settings
-        queryClient.invalidateQueries({ queryKey: ["/api/withdrawals/eligibility"] });
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected, attempting to reconnect...');
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, [user, queryClient]);
 
   // Convert USD to BTC
   const convertUSDToBTC = (usdAmount: number) => {
