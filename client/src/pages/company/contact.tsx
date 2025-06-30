@@ -1,9 +1,156 @@
 import { PageLayout } from "@/components/page-layout";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link, useLocation } from "wouter";
+import { MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Contact() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: '',
+    message: '',
+    category: 'general',
+    priority: 'medium'
+  });
+
+  // Check URL parameters for redirect after login
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectedFromLogin = urlParams.get('from') === 'login';
+    
+    if (redirectedFromLogin && user) {
+      toast({
+        title: "Welcome back!",
+        description: "You can now submit your message below.",
+      });
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [user, toast]);
+
+  // Pre-fill user data when authenticated
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
+
+  // Contact form submission mutation
+  const contactMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const res = await fetch('/api/contact/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to send message');
+      }
+      return result;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Message Sent Successfully!",
+        description: "We've received your message and will get back to you soon.",
+      });
+      
+      // Reset form
+      setFormData({
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
+        subject: '',
+        message: '',
+        category: 'general',
+        priority: 'medium'
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to Send Message",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if user is authenticated
+    if (!user) {
+      // Store current page for redirect after login
+      localStorage.setItem('contactFormRedirect', 'true');
+      setLocation('/login?redirect=contact');
+      toast({
+        title: "Login Required",
+        description: "Please log in to send us a message.",
+      });
+      return;
+    }
+
+    // Validate form
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.message.length > 5000) {
+      toast({
+        title: "Message Too Long",
+        description: "Please keep your message under 5000 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    contactMutation.mutate(formData);
+  };
+
   const contactOptions = [
     {
       title: "General Inquiries",
@@ -24,66 +171,6 @@ export default function Contact() {
       title: "Technical Analysis Team",
       description: "Help with chart analysis, indicators, or trading strategies.",
       icon: <Zap className="h-10 w-10 text-[#0033a0]" />,
-    },
-  ];
-
-  const officeLocations = [
-    {
-      name: "San Francisco Headquarters",
-      address: [
-        "100 Market Street",
-        "Suite 800",
-        "San Francisco, CA 94105",
-        "USA",
-      ],
-      hours: "Monday - Friday: 8:00 AM - 5:00 PM PT",
-    },
-    {
-      name: "Singapore Office",
-      address: [
-        "1 Raffles Place",
-        "#20-01 Tower 2",
-        "Singapore 048616",
-      ],
-      hours: "Monday - Friday: 9:00 AM - 6:00 PM SGT",
-    },
-  ];
-
-  const supportHours = [
-    {
-      day: "Monday - Friday",
-      hours: "24 Hours (Live Support)",
-    },
-    {
-      day: "Saturday",
-      hours: "9:00 AM - 5:00 PM ET",
-    },
-    {
-      day: "Sunday",
-      hours: "9:00 AM - 5:00 PM ET",
-    },
-  ];
-
-  const faqs = [
-    {
-      question: "How do I open an account?",
-      answer: "Opening an account is easy. Click the 'Open Account' button at the top of our website and follow the step-by-step registration process. You'll need to provide some personal information and complete our identity verification process to comply with regulatory requirements.",
-    },
-    {
-      question: "What are the minimum deposit requirements?",
-      answer: "The minimum initial deposit to open an account is $100. After your account is open, there is no minimum for subsequent deposits. We accept deposits via bank transfer, credit/debit cards, and several cryptocurrencies.",
-    },
-    {
-      question: "How long does account verification take?",
-      answer: "Basic account verification is instant, allowing you to start trading with limited functionality. Full verification typically takes 24-48 hours after all required documents are submitted. You'll receive an email notification once your account is fully verified.",
-    },
-    {
-      question: "How do I reset my password?",
-      answer: "To reset your password, click the 'Forgot Password' link on the login page. You'll receive an email with instructions to create a new password. For security purposes, password reset links expire after 24 hours.",
-    },
-    {
-      question: "Are my digital assets secure on your platform?",
-      answer: "We implement industry-leading security measures including cold storage for 95% of assets, two-factor authentication, address whitelisting, and regular security audits. Additionally, we maintain an insurance fund to protect against potential security breaches.",
     },
   ];
 
@@ -118,213 +205,151 @@ export default function Contact() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Contact Form</h2>
           
+          {!user && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center">
+                <MessageSquare className="h-5 w-5 text-orange-600 mr-2" />
+                <div>
+                  <h3 className="text-sm font-semibold text-orange-800">Login Required</h3>
+                  <p className="text-sm text-orange-700 mt-1">
+                    You need to be logged in to send us a message. 
+                    <Link href="/login?redirect=contact" className="text-orange-600 hover:text-orange-800 underline ml-1">
+                      Click here to log in
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="bg-[#f5f5f5] p-6 rounded-lg">
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <input 
-                    type="text" 
-                    id="firstName" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
                     placeholder="Enter your first name"
+                    className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]"
+                    disabled={!user}
+                    required
                   />
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <input 
-                    type="text" 
-                    id="lastName" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
                     placeholder="Enter your last name"
+                    className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]"
+                    disabled={!user}
+                    required
                   />
                 </div>
               </div>
               
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   placeholder="Enter your email address"
+                  className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]"
+                  disabled={!user}
+                  required
                 />
               </div>
-              
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number (Optional)</label>
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <select 
-                    id="subject" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="account">Account Inquiry</option>
-                    <option value="trading">Trading Question</option>
-                    <option value="funding">Funding Inquiry</option>
-                    <option value="technical">Technical Support</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="other">Other</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={formData.category} onValueChange={(value) => handleSelectChange('category', value)} disabled={!user}>
+                    <SelectTrigger className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General Inquiries</SelectItem>
+                      <SelectItem value="support">Customer Support</SelectItem>
+                      <SelectItem value="security">Security & Compliance</SelectItem>
+                      <SelectItem value="technical">Technical Analysis</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label htmlFor="cryptocurrency" className="block text-sm font-medium text-gray-700 mb-1">Cryptocurrency of Interest</label>
-                  <select 
-                    id="cryptocurrency" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
-                  >
-                    <option value="">Select a cryptocurrency</option>
-                    <option value="bitcoin">Bitcoin (BTC)</option>
-                    <option value="ethereum">Ethereum (ETH)</option>
-                    <option value="solana">Solana (SOL)</option>
-                    <option value="cardano">Cardano (ADA)</option>
-                    <option value="ripple">XRP (XRP)</option>
-                    <option value="avalanche">Avalanche (AVAX)</option>
-                    <option value="polkadot">Polkadot (DOT)</option>
-                    <option value="other">Other</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={formData.priority} onValueChange={(value) => handleSelectChange('priority', value)} disabled={!user}>
+                    <SelectTrigger className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea 
-                  id="message" 
-                  rows={5} 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0033a0]"
-                  placeholder="Enter your message here"
-                ></textarea>
-              </div>
-              
-              <div className="flex items-start">
-                <input 
-                  type="checkbox" 
-                  id="privacy" 
-                  className="mt-1 mr-2"
+
+              <div className="space-y-2">
+                <Label htmlFor="subject">Subject *</Label>
+                <Input
+                  id="subject"
+                  name="subject"
+                  type="text"
+                  value={formData.subject}
+                  onChange={handleInputChange}
+                  placeholder="Enter the subject of your message"
+                  className="focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]"
+                  disabled={!user}
+                  required
                 />
-                <label htmlFor="privacy" className="text-sm text-gray-700">
-                  I agree to the <Link href="/legal/privacy" className="text-[#0033a0] hover:text-[#ff5900] font-semibold">Privacy Policy</Link> and consent to being contacted about my inquiry.
-                </label>
               </div>
               
-              <div>
-                <Button
-                  className="w-full bg-[#0033a0] hover:bg-opacity-90 text-white font-semibold py-3"
+              <div className="space-y-2">
+                <Label htmlFor="message">Message *</Label>
+                <Textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  placeholder="Type your detailed message here..."
+                  className="resize-none min-h-[120px] focus:ring-2 focus:ring-[#0033a0] focus:border-[#0033a0]"
+                  disabled={!user}
+                  required
+                />
+                <p className="text-sm text-gray-500">
+                  {formData.message.length}/5000 characters
+                </p>
+              </div>
+              
+              <div className="text-center pt-4">
+                <Button 
+                  type="submit" 
+                  className="bg-[#0033a0] hover:bg-[#002680] text-white px-8 py-3 font-medium"
+                  disabled={!user || contactMutation.isPending}
                 >
-                  Submit Message
+                  {contactMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending Message...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
                 </Button>
               </div>
             </form>
           </div>
-        </div>
-        
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Office Location</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {officeLocations.map((office, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <h3 className="text-xl font-bold mb-4 text-[#0033a0]">{office.name}</h3>
-                
-                <div className="flex items-start mb-3">
-                  <MapPin className="h-5 w-5 text-[#0033a0] mr-2 mt-1" />
-                  <div>
-                    {office.address.map((line, lineIndex) => (
-                      <div key={lineIndex}>{line}</div>
-                    ))}
-                  </div>
-                </div>
-                
-
-                
-                <div className="flex items-center">
-                  <Clock className="h-5 w-5 text-[#0033a0] mr-2" />
-                  <span>{office.hours}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Support Hours</h2>
-          
-          <div className="bg-[#f5f5f5] p-6 rounded-lg">
-            <p className="mb-4">
-              Our customer support team is available during the following hours:
-            </p>
-            
-            <table className="w-full border-collapse mb-4">
-              <thead>
-                <tr className="bg-[#0033a0] text-white">
-                  <th className="p-2 text-left">Day</th>
-                  <th className="p-2 text-left">Hours</th>
-                </tr>
-              </thead>
-              <tbody>
-                {supportHours.map((schedule, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-100'}>
-                    <td className="p-2 border-t border-gray-300">{schedule.day}</td>
-                    <td className="p-2 border-t border-gray-300">{schedule.hours}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            <p className="text-sm text-gray-700">
-              * Hours are subject to change during holidays. Please check our website for holiday schedules.
-            </p>
-          </div>
-        </div>
-        
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-[#0033a0]">Frequently Asked Questions</h2>
-          
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <h3 className="text-lg font-bold mb-2 text-[#0033a0]">{faq.question}</h3>
-                <p className="text-gray-700">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-6 text-center">
-            <Link 
-              href="/learn/getting-started" 
-              className="text-[#0033a0] hover:text-[#ff5900] font-semibold inline-flex items-center"
-            >
-              View More FAQs in Our Knowledge Base
-            </Link>
-          </div>
-        </div>
-
-        <div className="bg-[#0033a0] text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to Start Crypto Trading?</h2>
-          <p className="mb-6">Open an account today and experience our advanced trading platform with powerful charting tools.</p>
-          <Button
-            asChild
-            className="bg-[#ff5900] hover:bg-opacity-90 text-white font-semibold px-8 py-3"
-          >
-            <Link href="#">Open Account</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="ml-4 bg-transparent border border-white hover:bg-white hover:bg-opacity-20 text-white font-semibold px-8 py-3"
-          >
-            <Link href="/learn/getting-started">Learn More</Link>
-          </Button>
         </div>
       </div>
     </PageLayout>

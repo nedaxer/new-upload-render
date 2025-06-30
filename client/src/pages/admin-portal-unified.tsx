@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AdminPullToRefresh } from "@/components/admin-pull-to-refresh";
 import AdminDepositCreator from "@/components/admin-deposit-creator";
 import AdminWithdrawalCreator from "@/components/admin-withdrawal-creator";
+import ContactMessagesManager from "@/components/contact-messages-manager";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Search, 
@@ -1350,6 +1351,10 @@ export default function UnifiedAdminPortal() {
               <Minus className="w-3 h-3 mr-1" />
               Withdrawals
             </TabsTrigger>
+            <TabsTrigger value="messages" className="data-[state=active]:bg-white/20 text-xs">
+              <MessageSquare className="w-3 h-3 mr-1" />
+              Messages
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -1919,6 +1924,11 @@ export default function UnifiedAdminPortal() {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Contact Messages Tab */}
+          <TabsContent value="messages" className="space-y-6">
+            <ContactMessagesManager />
           </TabsContent>
         </Tabs>
       </div>

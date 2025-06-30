@@ -24,11 +24,20 @@ export default function Login() {
   const { user, loginMutation } = useAuth();
   const queryClient = useQueryClient();
   
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect appropriately
   useEffect(() => {
     if (user) {
-      console.log('User already logged in, redirecting to dashboard');
-      setLocation('/dashboard');
+      console.log('User already logged in, redirecting...');
+      
+      // Check for redirect parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirect');
+      
+      if (redirectTo === 'contact') {
+        setLocation('/contact?from=login');
+      } else {
+        setLocation('/dashboard');
+      }
       return;
     }
     

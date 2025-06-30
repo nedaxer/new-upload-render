@@ -3535,6 +3535,196 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
+  // Contact form submission (requires authentication)
+  app.post('/api/contact/submit', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { firstName, lastName, email, subject, message, category, priority } = req.body;
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Authentication required" });
+      }
+
+      if (!firstName || !lastName || !email || !subject || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "All fields are required" 
+        });
+      }
+
+      if (message.length > 5000) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Message too long (max 5000 characters)" 
+        });
+      }
+
+      const { ContactMessage } = await import('./models/ContactMessage');
+      
+      // Create contact message
+      const contactMessage = new ContactMessage({
+        userId: userId.toString(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim().toLowerCase(),
+        subject: subject.trim(),
+        message: message.trim(),
+        category: category || 'general',
+        priority: priority || 'medium'
+      });
+
+      await contactMessage.save();
+      
+      console.log(`✓ Contact message received from user ${userId}: "${subject}"`);
+      
+      res.json({ 
+        success: true, 
+        message: "Your message has been sent successfully. We'll get back to you soon!",
+        messageId: contactMessage._id
+      });
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to send message. Please try again." 
+      });
+    }
+  });
+
+  // Admin get all contact messages
+  app.get('/api/admin/contact-messages', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { ContactMessage } = await import('./models/ContactMessage');
+      const { mongoStorage } = await import('./mongoStorage');
+      
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const skip = (page - 1) * limit;
+      
+      const filter = req.query.filter as string;
+      let query: any = {};
+      
+      if (filter === 'unread') {
+        query.isRead = false;
+      } else if (filter === 'read') {
+        query.isRead = true;
+      }
+      
+      const messages = await ContactMessage
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await ContactMessage.countDocuments(query);
+      
+      // Enhance messages with user details
+      const enhancedMessages = await Promise.all(
+        messages.map(async (message) => {
+          try {
+            const user = await mongoStorage.getUserById(message.userId);
+            return {
+              ...message,
+              user: user ? {
+                username: user.username,
+                profilePicture: user.profilePicture
+              } : null
+            };
+          } catch (error) {
+            return {
+              ...message,
+              user: null
+            };
+          }
+        })
+      );
+      
+      res.json({
+        success: true,
+        messages: enhancedMessages,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        },
+        stats: {
+          total: await ContactMessage.countDocuments(),
+          unread: await ContactMessage.countDocuments({ isRead: false }),
+          read: await ContactMessage.countDocuments({ isRead: true })
+        }
+      });
+    } catch (error) {
+      console.error('Admin get contact messages error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch contact messages" 
+      });
+    }
+  });
+
+  // Admin mark contact message as read
+  app.patch('/api/admin/contact-messages/:messageId/read', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const { ContactMessage } = await import('./models/ContactMessage');
+      
+      const message = await ContactMessage.findByIdAndUpdate(
+        messageId,
+        { isRead: true, updatedAt: new Date() },
+        { new: true }
+      );
+      
+      if (!message) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Contact message not found" 
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Message marked as read",
+        data: message
+      });
+    } catch (error) {
+      console.error('Admin mark message read error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to mark message as read" 
+      });
+    }
+  });
+
+  // Admin delete contact message
+  app.delete('/api/admin/contact-messages/:messageId', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const { ContactMessage } = await import('./models/ContactMessage');
+      
+      const message = await ContactMessage.findByIdAndDelete(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Contact message not found" 
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Message deleted successfully"
+      });
+    } catch (error) {
+      console.error('Admin delete message error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to delete message" 
+      });
+    }
+  });
+
   // Store WebSocket server for broadcasting updates
   app.set('wss', wss);
   

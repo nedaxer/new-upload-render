@@ -8,6 +8,7 @@ import { InsertUser } from '@shared/schema';
 // Storage interface for MongoDB implementation
 export interface IMongoStorage {
   getUser(id: string): Promise<IUser | null>;
+  getUserById(id: string): Promise<IUser | null>;
   getUserByUsername(username: string): Promise<IUser | null>;
   getUserByEmail(email: string): Promise<IUser | null>;
   createUser(user: InsertUser): Promise<IUser>;
@@ -120,6 +121,10 @@ export class MongoStorage implements IMongoStorage {
       console.error('Error fetching user by ID:', error);
       return null;
     }
+  }
+
+  async getUserById(id: string): Promise<IUser | null> {
+    return this.getUser(id);
   }
 
   async getUserByUsername(username: string): Promise<IUser | null> {
