@@ -97,7 +97,11 @@ export default function MobileAssets() {
       ws.close();
     };
   }, [user, queryClient]);
-  const [showBalance, setShowBalance] = useState(true);
+  // Persistent balance visibility state
+  const [showBalance, setShowBalance] = useState(() => {
+    const saved = localStorage.getItem('showBalance');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [showPromoCard, setShowPromoCard] = useState(true);
   const [currentView, setCurrentView] = useState('assets'); // 'assets', 'crypto-selection', 'network-selection', 'address-display', 'currency-selection'
   const [activeTab, setActiveTab] = useState('assets'); // Only 'assets' tab now
@@ -109,6 +113,11 @@ export default function MobileAssets() {
   const [selectedCrypto, setSelectedCrypto] = useState('');
   const [selectedChain, setSelectedChain] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+
+  // Save balance visibility state to localStorage
+  useEffect(() => {
+    localStorage.setItem('showBalance', JSON.stringify(showBalance));
+  }, [showBalance]);
 
   // Load currency from localStorage
   useEffect(() => {

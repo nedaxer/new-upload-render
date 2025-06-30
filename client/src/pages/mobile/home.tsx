@@ -50,7 +50,11 @@ export default function MobileHome() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   // const { state, updateState } = useAppState();
-  const [showBalance, setShowBalance] = useState(true);
+  // Persistent balance visibility state
+  const [showBalance, setShowBalance] = useState(() => {
+    const saved = localStorage.getItem('showBalance');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [selectedTab, setSelectedTab] = useState('Exchange');
   const [currentView, setCurrentView] = useState('home');
   const [selectedCrypto, setSelectedCrypto] = useState('');
@@ -61,6 +65,11 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+
+  // Save balance visibility state to localStorage
+  useEffect(() => {
+    localStorage.setItem('showBalance', JSON.stringify(showBalance));
+  }, [showBalance]);
 
   // Load currency from localStorage and listen for profile updates
   useEffect(() => {
