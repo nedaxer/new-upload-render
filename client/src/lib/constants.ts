@@ -169,7 +169,7 @@ export const learningResources = [
     title: "Crypto Trading Guides",
     image: "https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&h=300&q=80",
     description: "Comprehensive guides on cryptocurrency trading strategies, blockchain analytics, and digital asset tutorials.",
-    link: { label: "View Guides", href: "https://www.youtube.com/@CoinBureau" },
+    link: { label: "View Guides", href: "https://youtu.be/MYnkNaBMjlg?si=k8U0SMQ4BEU0Q7lx" },
   },
   {
     title: "Crypto Webinars",
