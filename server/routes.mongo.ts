@@ -51,11 +51,23 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
   
-  // Verify regular user exists
+  // For regular users, verify they exist in database
   try {
-    const user = await storage.getUser(req.session.userId);
+    let userId = req.session.userId;
+    // Convert to string if it's an ObjectId
+    if (typeof userId === 'object' && userId.toString) {
+      userId = userId.toString();
+    }
+    
+    const user = await storage.getUser(userId);
     if (!user) {
+      console.log(`User not found for session userId: ${userId}`);
       return res.status(401).json({ success: false, message: "User not found" });
+    }
+    
+    // Store the resolved userId back in session if needed
+    if (req.session.userId !== userId) {
+      req.session.userId = userId;
     }
   } catch (error) {
     console.error('Auth verification error:', error);
@@ -627,6 +639,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/transfers/history', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId!;
+      console.log(`📋 Getting transfer history for user: ${userId}`);
+      
+      // Handle admin users differently - they see all transfers
+      if (userId === 'ADMIN001' || req.session.adminAuthenticated) {
+        console.log('✅ Admin user - returning all transfers');
+        
+        const { Transfer } = await import('./models/Transfer');
+        
+        const allTransfers = await Transfer.find({})
+          .sort({ createdAt: -1 })
+          .limit(100)
+          .populate('fromUserId', 'firstName lastName email uid')
+          .populate('toUserId', 'firstName lastName email uid');
+        
+        const formattedTransfers = allTransfers
+          .filter(transfer => transfer.fromUserId && transfer.toUserId)
+          .map(transfer => ({
+            _id: transfer._id,
+            transactionId: transfer.transactionId,
+            type: 'admin_view',
+            amount: transfer.amount,
+            currency: transfer.currency,
+            status: transfer.status,
+            fromUser: {
+              _id: transfer.fromUserId._id,
+              name: `${transfer.fromUserId.firstName || ''} ${transfer.fromUserId.lastName || ''}`.trim() || transfer.fromUserId.email,
+              email: transfer.fromUserId.email,
+              uid: transfer.fromUserId.uid
+            },
+            toUser: {
+              _id: transfer.toUserId._id,
+              name: `${transfer.toUserId.firstName || ''} ${transfer.toUserId.lastName || ''}`.trim() || transfer.toUserId.email,
+              email: transfer.toUserId.email,
+              uid: transfer.toUserId.uid
+            },
+            createdAt: transfer.createdAt
+          }));
+        
+        return res.json({
+          success: true,
+          data: formattedTransfers
+        });
+      }
       
       // Import models
       const { Transfer } = await import('./models/Transfer');
@@ -643,6 +698,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .limit(100)
       .populate('fromUserId', 'firstName lastName email uid')
       .populate('toUserId', 'firstName lastName email uid');
+      
+      console.log(`✅ Found ${transfers.length} transfers for user ${userId}`);
       
       // Format transfers for frontend
       const formattedTransfers = transfers
@@ -671,6 +728,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             createdAt: transfer.createdAt
           };
         });
+      
+      console.log(`📤 Returning ${formattedTransfers.length} formatted transfers`);
       
       res.json({
         success: true,
@@ -1361,14 +1420,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify password for regular users
+      console.log('Password verification:', { 
+        providedPassword: password, 
+        hasStoredPassword: !!user.password,
+        storedPasswordLength: user.password?.length 
+      });
+      
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      console.log('Password comparison result:', isPasswordValid);
 
       if (!isPasswordValid) {
+        console.log('❌ Password invalid for user:', user.email);
         return res.status(401).json({ 
           success: false, 
           message: "Invalid credentials" 
         });
       }
+      
+      console.log('✅ Password valid for user:', user.email);
 
       // Set session
       req.session.userId = user._id.toString();
@@ -2276,20 +2345,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/user/withdrawal-restriction', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = req.session.userId;
+      console.log(`📋 Getting withdrawal restriction for user: ${userId}`);
+      
+      // Handle admin users differently
+      if (userId === 'ADMIN001' || req.session.adminAuthenticated) {
+        console.log('✅ Admin user - returning empty restriction message');
+        return res.json({
+          success: true,
+          withdrawalRestrictionMessage: "",
+          requiresDeposit: false
+        });
+      }
+      
       const { User } = await import('./models/User');
       
-      const user = await User.findById(userId).select('withdrawalRestrictionMessage');
+      const user = await User.findById(userId).select('withdrawalRestrictionMessage requiresDeposit');
       
       if (!user) {
+        console.log(`❌ User not found: ${userId}`);
         return res.status(404).json({ 
           success: false, 
           message: "User not found" 
         });
       }
 
+      console.log(`✅ Found withdrawal restriction: "${user.withdrawalRestrictionMessage}"`);
+      
       res.json({
         success: true,
-        withdrawalRestrictionMessage: user.withdrawalRestrictionMessage || ""
+        data: {
+          hasRestriction: user.requiresDeposit || false,
+          message: user.withdrawalRestrictionMessage || ""
+        }
       });
     } catch (error) {
       console.error('Get withdrawal restriction error:', error);
