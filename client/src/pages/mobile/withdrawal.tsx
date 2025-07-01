@@ -134,33 +134,26 @@ export default function MobileWithdrawal() {
 
   const userBalance = (balanceData as any)?.data?.totalUSDValue || (balanceData as any)?.data?.usdBalance || 0;
 
-  // Calculate amounts when one changes
-  useEffect(() => {
-    if (!cryptoAmount || !priceData) {
-      setUsdAmount('');
-      return;
-    }
+  // Only USD input is used - no reverse calculation needed
 
-    const amount = parseFloat(cryptoAmount);
-    if (isNaN(amount) || amount <= 0) {
-      setUsdAmount('');
-      return;
-    }
-
-    // Access price data from the CoinGecko API response format
-    const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
-      ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
-      : null;
-    
-    const price = cryptoData?.price;
-    if (price && price > 0) {
-      setUsdAmount((amount * price).toFixed(2));
-    }
-  }, [cryptoAmount, selectedCrypto.symbol, priceData]);
-
-  // Simple input handler without complex validation
+  // USD input handler - formats as normal currency
   const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    let value = e.target.value;
+    
+    // Remove any non-digit or decimal characters
+    value = value.replace(/[^0-9.]/g, '');
+    
+    // Ensure only one decimal point
+    const parts = value.split('.');
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts[1];
+    }
+    
+    // Limit to 2 decimal places for USD
+    if (parts[1] && parts[1].length > 2) {
+      value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
     setUsdAmount(value);
     
     // Calculate crypto amount if valid number
@@ -547,12 +540,11 @@ export default function MobileWithdrawal() {
             <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
             <div className="relative">
               <input
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 value={usdAmount}
                 onChange={handleUsdAmountChange}
-                placeholder="0.00"
+                placeholder="Enter amount like 100.00"
                 className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-md text-white placeholder:text-gray-500 pr-16 h-10 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
