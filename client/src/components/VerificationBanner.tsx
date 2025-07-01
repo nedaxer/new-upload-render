@@ -15,10 +15,24 @@ export const VerificationBanner: React.FC<VerificationBannerProps> = ({
   questionsCompleted = false,
   kycStatus = 'none'
 }) => {
+  // Debug banner logic
+  React.useEffect(() => {
+    console.log('🎯 VerificationBanner: Render Logic Debug:', {
+      userName,
+      questionsCompleted,
+      kycStatus,
+      shouldShow: kycStatus !== 'pending' && kycStatus !== 'verified',
+      willRender: kycStatus !== 'pending' && kycStatus !== 'verified'
+    });
+  }, [userName, questionsCompleted, kycStatus]);
+
   // Hide banner when KYC is submitted (pending) or verified
   if (kycStatus === 'pending' || kycStatus === 'verified') {
+    console.log('🎯 VerificationBanner: Hidden due to status:', kycStatus);
     return null;
   }
+
+  console.log('🎯 VerificationBanner: Rendering banner for user:', userName);
   return (
     <div className="mx-4 mb-3 p-3 bg-orange-500 rounded-lg shadow-lg">
       {/* Progress indicators - smaller */}

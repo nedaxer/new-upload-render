@@ -40,6 +40,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { useTheme } from '@/contexts/theme-context';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import UserMessageBox from '@/components/user-message-box';
+import { BannerDebugPanel } from '@/components/banner-debug-panel';
 // import { useAppState } from '@/lib/app-state';
 // import { usePersistentState } from '@/hooks/use-persistent-state';
 
@@ -65,6 +66,19 @@ export default function MobileHome() {
   const [comingSoonFeature, setComingSoonFeature] = useState('');
   const [showHelperTooltip, setShowHelperTooltip] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [debugTapCount, setDebugTapCount] = useState(0);
+
+  // Debug panel trigger (5 quick taps on profile)
+  const handleProfileDebugTap = () => {
+    setDebugTapCount(prev => prev + 1);
+    if (debugTapCount >= 4) {
+      setShowDebugPanel(true);
+      setDebugTapCount(0);
+    }
+    // Reset tap count after 2 seconds
+    setTimeout(() => setDebugTapCount(0), 2000);
+  };
 
   // Save balance visibility state to localStorage
   useEffect(() => {
@@ -112,6 +126,50 @@ export default function MobileHome() {
     }
   }, [user]);
 
+  // WebSocket connection for real-time banner updates
+  useEffect(() => {
+    if (!user) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
+    
+    try {
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('🔌 WebSocket connected for banner updates');
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('📡 WebSocket message received:', data);
+          
+          if (data.type === 'KYC_STATUS_UPDATE' && data.userId === user.id) {
+            console.log('🎯 KYC status update received, refreshing banner...');
+            queryClient.invalidateQueries({ queryKey: ['/api/verification/status'] });
+          }
+        } catch (error) {
+          console.error('WebSocket message parsing error:', error);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('🔌 WebSocket disconnected');
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      return () => {
+        ws.close();
+      };
+    } catch (error) {
+      console.error('WebSocket connection failed:', error);
+    }
+  }, [user, queryClient]);
+
   // Fetch wallet data with optimized settings
   const { data: walletData, isLoading: walletLoading } = useQuery({
     queryKey: ['/api/wallet/summary'],
@@ -157,12 +215,27 @@ export default function MobileHome() {
   });
 
   // Fetch KYC verification status for verification banner
-  const { data: kycStatus, isLoading: kycLoading } = useQuery({
+  const { data: kycStatus, isLoading: kycLoading, error: kycError } = useQuery({
     queryKey: ['/api/verification/status'],
     enabled: !!user,
     staleTime: 30000,
     retry: 1
   });
+
+  // Debug KYC status for banner logic
+  useEffect(() => {
+    console.log('🏠 Home: KYC Status Debug:', {
+      user: !!user,
+      kycLoading,
+      kycError: kycError?.message,
+      kycStatus: kycStatus,
+      kycData: (kycStatus as any)?.data,
+      shouldShowBanner: user && !kycLoading && kycStatus && (
+        (kycStatus as any)?.data?.kycStatus === 'none' || 
+        (kycStatus as any)?.data?.kycStatus === 'rejected'
+      )
+    });
+  }, [user, kycLoading, kycStatus, kycError]);
 
   // Since MobileAppLoader handles initial loading, we can be more relaxed here
   const isLoadingCriticalData = false; // Handled by MobileAppLoader
@@ -665,19 +738,24 @@ export default function MobileHome() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-[#0a0a2e]">
         <div className="flex items-center space-x-3">
-          <Link href="/mobile/profile">
-            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors">
-              {user?.profilePicture ? (
-                <img 
-                  src={user.profilePicture} 
-                  alt="Profile" 
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-4 h-4 text-gray-300" />
-              )}
-            </div>
-          </Link>
+          <div 
+            onClick={(e) => {
+              e.preventDefault();
+              handleProfileDebugTap();
+              navigate('/mobile/profile');
+            }}
+            className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition-colors"
+          >
+            {user?.profilePicture ? (
+              <img 
+                src={user.profilePicture} 
+                alt="Profile" 
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-4 h-4 text-gray-300" />
+            )}
+          </div>
         </div>
         <div className="flex items-center space-x-3">
           <UserMessageBox className="flex-shrink-0" />
@@ -924,6 +1002,11 @@ export default function MobileHome() {
           onClose={() => setShowEligibilityModal(false)}
         />
       </PullToRefresh>
+
+      {/* Debug Panel - Shows when profile is tapped 5 times */}
+      {showDebugPanel && (
+        <BannerDebugPanel onClose={() => setShowDebugPanel(false)} />
+      )}
     </MobileLayout>
   );
 }

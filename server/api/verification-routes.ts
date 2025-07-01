@@ -131,7 +131,15 @@ router.post('/submit', requireAuth, upload.fields([
 router.get('/status', requireAuth, async (req: Request, res: Response) => {
   try {
     const userId = req.session?.userId;
+    console.log('🔐 Verification Status API - Auth Debug:', {
+      hasSession: !!req.session,
+      userId: userId,
+      sessionId: req.sessionID,
+      sessionData: req.session
+    });
+
     if (!userId) {
+      console.log('❌ No userId in session');
       return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
 
@@ -140,16 +148,26 @@ router.get('/status', requireAuth, async (req: Request, res: Response) => {
     
     const user = await User.findById(userId).select('kycStatus kycData');
     if (!user) {
+      console.log('❌ User not found for ID:', userId);
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    res.json({
+    const response = {
       success: true,
       data: {
         kycStatus: user.kycStatus || 'none',
         kycData: user.kycData || null
       }
+    };
+
+    console.log('✅ Verification Status Success:', {
+      userId,
+      kycStatus: user.kycStatus,
+      hasKycData: !!user.kycData,
+      response
     });
+
+    res.json(response);
 
   } catch (error) {
     console.error('Get verification status error:', error);
