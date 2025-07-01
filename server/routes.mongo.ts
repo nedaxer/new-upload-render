@@ -1536,18 +1536,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.redirect('/account/login');
       }
 
-      res.json({
-        success: true,
-        message: `Welcome ${user.firstName || user.username}!`,
-        user: {
-          name: `${user.firstName} ${user.lastName}`.trim() || user.username,
-          email: user.email,
-          uid: user.uid
-        }
-      });
+      console.log(`Dashboard redirect for Google OAuth user: ${user.email}`);
+      
+      // Redirect to mobile app for authenticated users
+      res.redirect('/mobile');
     } catch (error) {
       console.error('Dashboard error:', error);
-      res.status(500).json({ success: false, message: 'Error loading dashboard' });
+      res.redirect('/account/login');
     }
   });
 
