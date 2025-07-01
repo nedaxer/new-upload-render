@@ -586,7 +586,6 @@ export default function MobileWithdrawal() {
               </div>
             )}
           </div>
-        </div>
 
         {/* Withdrawal Summary - Above Button */}
         <div className="px-3 pb-2 bg-[#0a0a2e]">
