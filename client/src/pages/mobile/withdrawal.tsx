@@ -390,7 +390,7 @@ export default function MobileWithdrawal() {
       setShowPendingModal(false);
       setShowSuccessModal(true);
       
-      // Show success for 3 seconds then hide
+      // Show success for 2 seconds then hide
       setTimeout(() => {
         setShowSuccessModal(false);
         setSuccessData(null);
@@ -406,7 +406,7 @@ export default function MobileWithdrawal() {
           description: `Successfully withdrew $${parseFloat(usdAmount).toFixed(2)} as ${parseFloat(cryptoAmount).toFixed(8)} ${selectedCrypto.symbol}. You'll receive a notification when processed.`,
           variant: "default",
         });
-      }, 3000);
+      }, 2000);
       
       // Invalidate notifications and balance queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
