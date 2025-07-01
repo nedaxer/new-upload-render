@@ -401,13 +401,6 @@ export default function MobileWithdrawal() {
 
         {/* Content */}
         <div className="flex-1 px-3 py-4 space-y-3 overflow-hidden">
-          {/* Available Balance Card */}
-          <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3">
-            <div className="text-center">
-              <p className="text-gray-400 text-xs">Available Balance</p>
-              <p className="text-white text-lg font-bold">${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            </div>
-          </div>
 
           {/* Coin Selection */}
           <div>
@@ -515,9 +508,19 @@ export default function MobileWithdrawal() {
             </div>
           </div>
 
+          {/* Available USD Balance */}
+          <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 mb-3">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-xs">Available USD Balance</span>
+              <span className="text-white font-medium text-sm">
+                ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+
           {/* USD Amount Input */}
           <div>
-            <label className="text-white font-medium mb-2 block text-xs">Withdrawal Amount (USD)</label>
+            <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
             <div className="relative">
               <Input
                 type="number"
@@ -541,28 +544,23 @@ export default function MobileWithdrawal() {
                 </button>
               </div>
             </div>
-            {/* Available Balance Below Input */}
-            <div className="mt-1 text-xs text-gray-500">
-              Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+
+            {/* Withdrawal Fees Display */}
+            <div className="mt-2 p-2 bg-[#2a2a50] rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 text-xs">Withdrawal Fees</span>
+                <span className="text-white font-medium text-xs">0.00000 {selectedCrypto.symbol}</span>
+              </div>
             </div>
-            {/* Crypto Equivalent Display */}
+
+            {/* Amount Received Display */}
             {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
               <div className="mt-2 p-2 bg-[#2a2a50] rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-xs">You will receive:</span>
-                  <div className="flex items-center space-x-1">
-                    <img 
-                      src={getCryptoLogo(selectedCrypto.symbol) || ''} 
-                      alt={selectedCrypto.symbol}
-                      className="w-4 h-4"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <span className="text-white font-medium text-xs">
-                      {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
-                    </span>
-                  </div>
+                  <span className="text-gray-400 text-xs">Amount Received</span>
+                  <span className="text-white font-medium text-xs">
+                    {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                  </span>
                 </div>
               </div>
             )}
@@ -571,13 +569,22 @@ export default function MobileWithdrawal() {
 
         {/* Fixed Withdraw Button */}
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
-          <Button
-            onClick={handleWithdraw}
-            disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-3 rounded-lg font-medium text-sm"
-          >
-            {isProcessing ? 'Processing...' : 'Withdraw'}
-          </Button>
+          <div className="flex items-center justify-between gap-3">
+            <Button
+              onClick={handleWithdraw}
+              disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-3 rounded-lg font-medium text-sm"
+            >
+              {isProcessing ? 'Processing...' : 'Withdraw'}
+            </Button>
+            {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+              <div className="text-right">
+                <div className="text-white font-medium text-sm">
+                  {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
   );
