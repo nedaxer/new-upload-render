@@ -63,8 +63,9 @@ export default function AssetsHistory() {
 
   const deposits = Array.isArray((depositsResponse as any)?.data) 
     ? (depositsResponse as any).data.filter((deposit: any) => {
-        // Filter out test deposits with very small USD amounts (likely test notifications)
-        return deposit.usdAmount && deposit.usdAmount >= 1;
+        // Filter out test deposits with very small USD amounts and zero/invalid crypto amounts
+        return deposit.usdAmount && deposit.usdAmount >= 1 && 
+               deposit.cryptoAmount && deposit.cryptoAmount > 0;
       })
     : [];
   const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
