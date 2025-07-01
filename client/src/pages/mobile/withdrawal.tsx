@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { ArrowLeft, ChevronDown, HelpCircle, QrCode, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { showSuccessBanner, showErrorBanner } from '@/hooks/use-bottom-banner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -101,7 +101,7 @@ const cryptoOptions: CryptoOption[] = [
 export default function MobileWithdrawal() {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
-  const { toast } = useToast();
+
   const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
@@ -202,10 +202,10 @@ export default function MobileWithdrawal() {
           (result) => {
             setWithdrawalAddress(result.data);
             stopQrScanner();
-            toast({
-              title: "Address Scanned",
-              description: "Wallet address has been detected and filled in.",
-            });
+            showSuccessBanner(
+              "Address Scanned",
+              "Wallet address has been detected and filled in."
+            );
           },
           {
             returnDetailedScanResult: true,
@@ -217,11 +217,10 @@ export default function MobileWithdrawal() {
       }
     } catch (error) {
       console.error('Error starting QR scanner:', error);
-      toast({
-        title: "Camera Error",
-        description: "Unable to access camera. Please enter address manually.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Camera Error",
+        "Unable to access camera. Please enter address manually."
+      );
       setShowQrScanner(false);
     }
   };
@@ -274,10 +273,10 @@ export default function MobileWithdrawal() {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Withdrawal Processed",
-        description: `Successfully withdrew $${usdAmount} USD via ${selectedCrypto.symbol}`,
-      });
+      showSuccessBanner(
+        "Withdrawal Processed",
+        `Successfully withdrew $${usdAmount} USD via ${selectedCrypto.symbol}`
+      );
       
       // Invalidate and refetch all related data for real-time updates
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
@@ -294,22 +293,20 @@ export default function MobileWithdrawal() {
       navigate('/mobile/assets');
     },
     onError: (error: any) => {
-      toast({
-        title: "Withdrawal Failed",
-        description: error.message || "Failed to process withdrawal. Please try again.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Withdrawal Failed",
+        error.message || "Failed to process withdrawal. Please try again."
+      );
     },
   });
 
   // Handle withdrawal submission
   const handleWithdraw = async () => {
     if (!selectedNetwork || !withdrawalAddress || !usdAmount) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Missing Information",
+        "Please fill in all required fields."
+      );
       return;
     }
 
@@ -317,48 +314,43 @@ export default function MobileWithdrawal() {
     const cryptoAmountNum = parseFloat(cryptoAmount || '0');
     
     if (isNaN(usdAmountNum) || usdAmountNum <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid USD amount.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Invalid Amount",
+        "Please enter a valid USD amount."
+      );
       return;
     }
 
     if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
-      toast({
-        title: "Invalid Crypto Amount",
-        description: "Unable to calculate crypto amount. Please check the exchange rate.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Invalid Crypto Amount",
+        "Unable to calculate crypto amount. Please check the exchange rate."
+      );
       return;
     }
 
-    if (cryptoAmountNum < selectedNetwork.minWithdrawal) {
-      toast({
-        title: "Amount Too Low",
-        description: `Minimum withdrawal amount is ${selectedNetwork.minWithdrawal} ${selectedCrypto.symbol}`,
-        variant: "destructive",
-      });
+    if (selectedNetwork && cryptoAmountNum < selectedNetwork.minWithdrawal) {
+      showErrorBanner(
+        "Amount Too Low",
+        `Minimum withdrawal amount is ${selectedNetwork.minWithdrawal} ${selectedCrypto.symbol}`
+      );
       return;
     }
 
     if (usdAmountNum > userBalance) {
-      toast({
-        title: "Insufficient Balance",
-        description: "You don't have enough balance for this withdrawal.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Insufficient Balance",
+        "You don't have enough balance for this withdrawal."
+      );
       return;
     }
 
     // Basic address validation
     if (withdrawalAddress.length < 10) {
-      toast({
-        title: "Invalid Address",
-        description: "Please enter a valid withdrawal address.",
-        variant: "destructive",
-      });
+      showErrorBanner(
+        "Invalid Address",
+        "Please enter a valid withdrawal address."
+      );
       return;
     }
 

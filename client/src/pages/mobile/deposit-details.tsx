@@ -49,7 +49,7 @@ export default function DepositDetails() {
     enabled: !!transactionId,
   });
 
-  const transaction = transactionResponse?.data;
+  const transaction = (transactionResponse as any)?.data;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {

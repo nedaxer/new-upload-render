@@ -112,11 +112,10 @@ export default function Transfer() {
           // Close deposit required modal if restriction was removed
           if (!message.data.requiresDeposit && showDepositRequiredModal) {
             setShowDepositRequiredModal(false);
-            toast({
-              title: "Restriction Removed",
-              description: "You can now send transfers without making a deposit!",
-              variant: "default",
-            });
+            showSuccessBanner(
+              "Restriction Removed",
+              "You can now send transfers without making a deposit!"
+            );
           }
         }
 
@@ -130,11 +129,10 @@ export default function Transfer() {
           // Close deposit required modal if withdrawal access was granted
           if (message.withdrawalAccess && showDepositRequiredModal) {
             setShowDepositRequiredModal(false);
-            toast({
-              title: "Withdrawal Access Granted",
-              description: "You can now send transfers and make withdrawals!",
-              variant: "default",
-            });
+            showSuccessBanner(
+              "Withdrawal Access Granted",
+              "You can now send transfers and make withdrawals!"
+            );
           }
         }
 
@@ -148,11 +146,10 @@ export default function Transfer() {
           // Hide error banner if transfer access was granted
           if (message.transferAccess && showTransferBanner) {
             setShowTransferBanner(false);
-            toast({
-              title: "Transfer Access Enabled",
-              description: "You can now send transfers to other users!",
-              variant: "default",
-            });
+            showSuccessBanner(
+              "Transfer Access Enabled",
+              "You can now send transfers to other users!"
+            );
           }
         }
 
@@ -162,17 +159,15 @@ export default function Transfer() {
           
           // Show notification about transfer access change
           if (message.transferAccess) {
-            toast({
-              title: "Transfer Access Enabled",
-              description: "You can now send transfers to other users!",
-              variant: "default",
-            });
+            showSuccessBanner(
+              "Transfer Access Enabled",
+              "You can now send transfers to other users!"
+            );
           } else {
-            toast({
-              title: "Transfer Access Disabled",
-              description: "Transfer functionality has been disabled by administrator",
-              variant: "destructive",
-            });
+            showErrorBanner(
+              "Transfer Access Disabled",
+              "Transfer functionality has been disabled by administrator"
+            );
           }
         }
       } catch (error) {
@@ -193,7 +188,7 @@ export default function Transfer() {
         ws.close();
       }
     };
-  }, [user, showDepositRequiredModal, toast]);
+  }, [user, showDepositRequiredModal]);
 
   const getUserUSDBalance = () => {
     if (!walletData || !(walletData as any).data) return 0;
@@ -275,10 +270,10 @@ export default function Transfer() {
       return data;
     },
     onSuccess: () => {
-      toast({
-        title: 'Transfer Successful',
-        description: `Successfully transferred $${parseFloat(withdrawAmount).toFixed(2)} USD`,
-      });
+      showSuccessBanner(
+        'Transfer Successful',
+        `Successfully transferred $${parseFloat(withdrawAmount).toFixed(2)} USD`
+      );
       
       // Invalidate queries to refresh balances
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
@@ -292,11 +287,10 @@ export default function Transfer() {
       setSelectedMethod(null);
     },
     onError: (error: any) => {
-      toast({
-        title: 'Transfer Failed',
-        description: error.message || 'Failed to transfer funds',
-        variant: 'destructive',
-      });
+      showErrorBanner(
+        'Transfer Failed',
+        error.message || 'Failed to transfer funds'
+      );
     },
   });
 
@@ -328,31 +322,28 @@ export default function Transfer() {
     }
 
     if (!recipientInfo) {
-      toast({
-        title: 'Error',
-        description: 'Please search for a recipient first',
-        variant: 'destructive',
-      });
+      showErrorBanner(
+        'Error',
+        'Please search for a recipient first'
+      );
       return;
     }
 
     const transferAmount = parseFloat(withdrawAmount);
     
     if (isNaN(transferAmount) || transferAmount <= 0) {
-      toast({
-        title: 'Invalid Amount',
-        description: 'Please enter a valid amount',
-        variant: 'destructive',
-      });
+      showErrorBanner(
+        'Invalid Amount',
+        'Please enter a valid amount'
+      );
       return;
     }
 
     if (transferAmount > getUserUSDBalance()) {
-      toast({
-        title: 'Insufficient Balance',
-        description: 'You do not have enough funds',
-        variant: 'destructive',
-      });
+      showErrorBanner(
+        'Insufficient Balance',
+        'You do not have enough funds'
+      );
       return;
     }
 
