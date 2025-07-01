@@ -3,7 +3,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { mongoStorage as storage } from './mongoStorage';
 import { InsertMongoUser } from '@shared/mongo-schema';
 
-// Configure Google OAuth strategy - fallback to test credentials if env vars don't work
+// Configure Google OAuth strategy - fallback to updated credentials if env vars don't work
 const clientID = process.env.GOOGLE_CLIENT_ID || "319209339658-mhi810s4krhb64ehso7sohd4nl4kcg7h.apps.googleusercontent.com";
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "***REMOVED***";
 

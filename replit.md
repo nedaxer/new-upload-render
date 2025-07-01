@@ -120,7 +120,7 @@ Preferred communication style: Simple, everyday language.
 ## Google OAuth Configuration
 
 ### Current Setup
-- **Client ID**: 739063184905-6pij6bc7qrmt1pr2goe5s5vhsqclkv0m.apps.googleusercontent.com
+- **Client ID**: 319209339658-mhi810s4krhb64ehso7sohd4nl4kcg7h.apps.googleusercontent.com
 - **Client Secret**: ***REMOVED***
 - **Callback URL**: Dynamic based on environment variables
   - Uses `BASE_URL` environment variable if set
