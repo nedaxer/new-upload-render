@@ -80,10 +80,10 @@ export default function Login() {
           // Refresh user authentication state
           await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
           
-          // Show success message
+          // Show enhanced success message
           toast({
-            title: "Welcome Back!",
-            description: "You have successfully logged in to your Nedaxer account.",
+            title: "Welcome Back! 🎉",
+            description: `Hello ${username}! You're now connected to your Nedaxer trading account. All your features are ready to use.`,
           });
           
           // Navigate to mobile app after successful login

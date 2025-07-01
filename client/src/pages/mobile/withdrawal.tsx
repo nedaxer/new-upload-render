@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, ChevronDown, HelpCircle, QrCode } from 'lucide-react';
+import { ArrowLeft, ChevronDown, HelpCircle, QrCode, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -119,6 +119,12 @@ export default function MobileWithdrawal() {
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<{
+    usdAmount: string;
+    cryptoAmount: string;
+    cryptoSymbol: string;
+  } | null>(null);
 
   // Fetch user balance
   const { data: balanceData } = useQuery({
@@ -360,8 +366,8 @@ export default function MobileWithdrawal() {
     setShowPendingModal(true);
     
     try {
-      // Show pending modal for 4 seconds
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      // Show pending modal for 3 seconds
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
       await withdrawalMutation.mutateAsync({
         cryptoSymbol: selectedCrypto.symbol,
@@ -373,6 +379,35 @@ export default function MobileWithdrawal() {
         cryptoAmount: cryptoAmountNum,
       });
       
+      // Store success data
+      setSuccessData({
+        usdAmount: usdAmount,
+        cryptoAmount: cryptoAmount,
+        cryptoSymbol: selectedCrypto.symbol
+      });
+      
+      // Hide pending modal and show success
+      setShowPendingModal(false);
+      setShowSuccessModal(true);
+      
+      // Show success for 3 seconds then hide
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setSuccessData(null);
+        
+        // Clear form
+        setUsdAmount('');
+        setCryptoAmount('');
+        setWithdrawalAddress('');
+        
+        // Show success toast
+        toast({
+          title: "Withdrawal Completed! 🎉",
+          description: `Successfully withdrew $${parseFloat(usdAmount).toFixed(2)} as ${parseFloat(cryptoAmount).toFixed(8)} ${selectedCrypto.symbol}. You'll receive a notification when processed.`,
+          variant: "default",
+        });
+      }, 3000);
+      
       // Invalidate notifications and balance queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
@@ -381,7 +416,6 @@ export default function MobileWithdrawal() {
       
     } finally {
       setIsProcessing(false);
-      setShowPendingModal(false);
     }
   };
 
@@ -637,6 +671,34 @@ export default function MobileWithdrawal() {
             <p className="text-gray-400 text-sm text-center mt-2">
               Point your camera at the QR code
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-[#1a1a40] p-8 rounded-xl border border-[#2a2a50] flex flex-col items-center space-y-4 mx-4 max-w-sm w-full">
+            {/* Success Checkmark with animation */}
+            <div className="relative">
+              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                <CheckCircle className="w-12 h-12 text-white animate-bounce" />
+              </div>
+              <div className="absolute inset-0 w-20 h-20 border-4 border-green-400 rounded-full animate-ping opacity-75"></div>
+            </div>
+            
+            {/* Success Text */}
+            <div className="text-center">
+              <h3 className="text-white font-bold text-xl mb-2">Withdrawal Successful!</h3>
+              <p className="text-green-400 text-sm font-medium mb-3">
+                Your transaction has been processed
+              </p>
+              <div className="bg-[#0a0a2e] rounded-lg p-3 border border-[#2a2a50]">
+                <p className="text-orange-500 text-sm">
+                  ${parseFloat(successData.usdAmount).toFixed(2)} → {parseFloat(successData.cryptoAmount).toFixed(8)} {successData.cryptoSymbol}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
