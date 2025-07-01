@@ -3,11 +3,11 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { mongoStorage as storage } from './mongoStorage';
 import { InsertMongoUser } from '@shared/mongo-schema';
 
-// Configure Google OAuth strategy
+// Configure Google OAuth strategy with new credentials
 passport.use(new GoogleStrategy({
-  clientID: "558646855386-8ht15gg7j8jn7m7oo8p7nci7fklhcmg4.apps.googleusercontent.com",
+  clientID: "739063184905-6pij6bc7qrmt1pr2goe5s5vhsqclkv0m.apps.googleusercontent.com",
   clientSecret: "***REMOVED***",
-  callbackURL: "https://43f1d461-49ab-439c-9c38-6bb239d0af37-00-2s7sr664vpoc4.worf.replit.dev/auth/google/callback"
+  callbackURL: `https://${process.env.REPLIT_DOMAINS}/auth/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('Google OAuth profile received:', {

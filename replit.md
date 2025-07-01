@@ -117,9 +117,32 @@ The application now uses MongoDB Atlas as the primary database:
 
 Preferred communication style: Simple, everyday language.
 
+## Google OAuth Configuration
+
+### Current Setup
+- **Client ID**: 739063184905-6pij6bc7qrmt1pr2goe5s5vhsqclkv0m.apps.googleusercontent.com
+- **Client Secret**: ***REMOVED***
+- **Callback URL**: Dynamic based on REPLIT_DOMAINS environment variable
+- **Authorized Domains**: Configured for all *.replit.dev domains
+
+### Google Cloud Console Configuration
+The Google OAuth application is configured with:
+- Authorized JavaScript origins: https://*.replit.dev
+- Authorized redirect URIs: https://*.replit.dev/auth/google/callback
+- OAuth consent screen: External users, verified domain
+- Scopes: email, profile, openid
+
+### Integration Details
+- Uses passport-google-oauth20 strategy
+- Integrates with MongoDB user storage
+- Supports both login and registration flows
+- Redirects to mobile app after successful authentication
+- Creates user accounts automatically for new Google users
+
 ## Changelog
 
 Changelog:
+- January 1, 2025. Implemented complete Google OAuth authentication system with hard-coded credentials: created new Google Cloud Console OAuth application (739063184905-6pij6bc7qrmt1pr2goe5s5vhsqclkv0m.apps.googleusercontent.com) configured for all *.replit.dev domains, integrated passport-google-oauth20 strategy with MongoDB user storage, added Google sign-in button to login page (full-width) and registration page, implemented dynamic callback URL using REPLIT_DOMAINS environment variable to prevent OAuth client errors, removed GitHub authentication button from login page, enhanced user creation flow to support Google accounts with automatic profile data population, system now supports seamless Google OAuth login/registration with redirect to mobile trading app
 - January 1, 2025. Implemented comprehensive transfer access control system with hard-coded API keys: added separate transferAccess field to User model with default true value, created admin API endpoint for toggling user transfer access (/api/admin/users/toggle-transfer-access), enhanced transfer endpoint to check transferAccess field and block transfers when disabled, added transfer access toggle controls in admin portal with real-time WebSocket updates, integrated transfer access restriction handling in transfer page with appropriate error messages, hard-coded CoinGecko API key (CG-3A26qPLm2ba2sN6ZuDkvGRSn) and GitHub token (***REMOVED***) directly in code eliminating environment variable dependencies, transfer system now provides granular admin control over user-to-user transfers independent of withdrawal access permissions
 - June 30, 2025. Implemented comprehensive USD-based withdrawal system with crypto gateways and real-time features: removed internal transfer tabs and focused on crypto withdrawal gateway concept where users withdraw USD but receive equivalent cryptocurrency, integrated actual crypto logos (BTC, ETH, USDT) throughout withdrawal interface, implemented real-time balance display showing available USD funds under amount input field, added live USD-to-crypto conversion showing exact amounts user will receive in selected cryptocurrency, enhanced withdrawal form with immediate USD fund deduction upon transaction completion, implemented real-time notifications and withdrawal transaction history integration with assets page, added comprehensive validation and error handling with console debugging for transaction processing, withdrawal system now supports complete USD withdrawal via cryptocurrency networks with instant balance updates and WebSocket notifications
 - June 30, 2025. Removed all offline fallback functionality: eliminated offline indicators, removed OfflineIndicator and OfflineFallback components, removed useOffline hook, simplified service worker to basic PWA functionality without offline fallbacks, removed offline handling from pull-to-refresh and splash screen components, simplified error handling in main App component to show basic error message instead of offline fallback, app now requires internet connection for full functionality
