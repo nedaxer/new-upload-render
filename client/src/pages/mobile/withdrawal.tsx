@@ -400,11 +400,12 @@ export default function MobileWithdrawal() {
         setCryptoAmount('');
         setWithdrawalAddress('');
         
-        // Show success toast
+        // Show enhanced success toast
         toast({
-          title: "Withdrawal Completed! 🎉",
-          description: `Successfully withdrew $${parseFloat(usdAmount).toFixed(2)} as ${parseFloat(cryptoAmount).toFixed(8)} ${selectedCrypto.symbol}. You'll receive a notification when processed.`,
+          title: "🎉 Withdrawal Complete!",
+          description: `✅ Successfully processed $${parseFloat(usdAmount).toFixed(2)} → ${parseFloat(cryptoAmount).toFixed(8)} ${selectedCrypto.symbol}\n🔔 You'll receive a notification shortly`,
           variant: "default",
+          duration: 5000,
         });
       }, 2000);
       
@@ -675,15 +676,24 @@ export default function MobileWithdrawal() {
         </div>
       )}
 
-      {/* Success Modal */}
+      {/* Enhanced Success Modal */}
       {showSuccessModal && successData && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-[#1a1a40] p-8 rounded-xl border border-[#2a2a50] flex flex-col items-center space-y-4 mx-4 max-w-sm w-full">
-            {/* Animated Checkmark */}
-            <div className="relative">
-              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center animate-[fadeIn_0.3s_ease-out]">
+          <div className="bg-gradient-to-br from-[#1a1a40] to-[#0f0f2a] p-8 rounded-2xl border border-[#2a2a50] shadow-2xl flex flex-col items-center space-y-6 mx-4 max-w-sm w-full animate-[slideUp_0.4s_ease-out] relative overflow-hidden">
+            
+            {/* Animated Background Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-4 left-4 w-2 h-2 bg-green-400 rounded-full animate-[float_3s_ease-in-out_infinite]"></div>
+              <div className="absolute top-8 right-6 w-1 h-1 bg-orange-400 rounded-full animate-[float_2s_ease-in-out_infinite_0.5s]"></div>
+              <div className="absolute bottom-6 left-8 w-1.5 h-1.5 bg-blue-400 rounded-full animate-[float_2.5s_ease-in-out_infinite_1s]"></div>
+              <div className="absolute bottom-4 right-4 w-1 h-1 bg-purple-400 rounded-full animate-[float_3.5s_ease-in-out_infinite_1.5s]"></div>
+            </div>
+
+            {/* Animated Checkmark with Enhanced Effects */}
+            <div className="relative animate-[scaleIn_0.6s_ease-out_0.2s_both]">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg animate-[pulse_2s_ease-in-out_infinite]">
                 <svg 
-                  className="w-12 h-12" 
+                  className="w-14 h-14" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   xmlns="http://www.w3.org/2000/svg"
@@ -696,21 +706,36 @@ export default function MobileWithdrawal() {
                     strokeLinejoin="round"
                     strokeDasharray="10"
                     strokeDashoffset="10"
-                    className="animate-[draw_0.8s_ease-in-out_forwards]"
+                    className="animate-[draw_1s_ease-in-out_0.5s_forwards]"
                   />
                 </svg>
               </div>
-              <div className="absolute inset-0 w-20 h-20 border-4 border-green-400 rounded-full animate-ping opacity-75"></div>
+              <div className="absolute inset-0 w-24 h-24 border-4 border-green-300 rounded-full animate-[ripple_1.5s_ease-out_infinite] opacity-60"></div>
+              <div className="absolute inset-0 w-24 h-24 border-2 border-green-200 rounded-full animate-[ripple_1.5s_ease-out_infinite_0.5s] opacity-40"></div>
             </div>
             
-            {/* Success Text */}
-            <div className="text-center">
-              <h3 className="text-white font-bold text-xl mb-2">Withdrawal Successful!</h3>
-              <p className="text-green-400 text-sm font-medium mb-3">
-                Your transaction has been processed
-              </p>
-              <div className="bg-[#0a0a2e] rounded-lg p-3 border border-[#2a2a50]">
-                <p className="text-orange-500 text-sm">
+            {/* Enhanced Success Text with Animations */}
+            <div className="text-center space-y-4 animate-[slideUp_0.5s_ease-out_0.8s_both]">
+              <div className="space-y-2">
+                <h3 className="text-white font-bold text-2xl bg-gradient-to-r from-white to-gray-200 bg-clip-text">
+                  Withdrawal Successful!
+                </h3>
+                <div className="flex items-center justify-center space-x-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-[bounce_1s_infinite]"></div>
+                  <p className="text-green-400 text-sm font-medium">
+                    Transaction processed successfully
+                  </p>
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-r from-[#0a0a2e] to-[#1a1a3e] rounded-xl p-4 border border-[#2a2a50] shadow-inner">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full animate-[ping_1s_infinite]"></div>
+                  <span className="text-gray-300 text-xs font-medium">TRANSACTION DETAILS</span>
+                  <div className="w-3 h-3 bg-orange-500 rounded-full animate-[ping_1s_infinite_0.5s]"></div>
+                </div>
+                <p className="text-orange-400 font-mono text-lg font-bold">
                   ${parseFloat(successData.usdAmount).toFixed(2)} → {parseFloat(successData.cryptoAmount).toFixed(8)} {successData.cryptoSymbol}
                 </p>
               </div>
