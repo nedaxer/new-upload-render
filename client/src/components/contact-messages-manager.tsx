@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { showSuccessNotification, showErrorNotification } from '@/hooks/use-global-notification';
 import { 
   MessageSquare, 
   Mail, 
@@ -65,7 +65,7 @@ export default function ContactMessagesManager() {
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [replyText, setReplyText] = useState('');
   const [showReplyDialog, setShowReplyDialog] = useState(false);
-  const { toast } = useToast();
+
   const queryClient = useQueryClient();
 
   // Fetch contact messages
@@ -97,17 +97,16 @@ export default function ContactMessagesManager() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
-      toast({
-        title: "Message Marked as Read",
-        description: "The message has been marked as read successfully.",
-      });
+      showSuccessNotification(
+        "Message Marked as Read",
+        "The message has been marked as read successfully."
+      );
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Error",
+        error.message
+      );
     },
   });
 
@@ -126,17 +125,16 @@ export default function ContactMessagesManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
       setSelectedMessage(null);
-      toast({
-        title: "Message Deleted",
-        description: "The message has been deleted successfully.",
-      });
+      showSuccessNotification(
+        "Message Deleted",
+        "The message has been deleted successfully."
+      );
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Error",
+        error.message
+      );
     },
   });
 
@@ -160,17 +158,16 @@ export default function ContactMessagesManager() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
       setShowReplyDialog(false);
       setReplyText('');
-      toast({
-        title: "Reply Sent",
-        description: "Your reply has been sent to the user successfully.",
-      });
+      showSuccessNotification(
+        "Reply Sent",
+        "Your reply has been sent to the user successfully."
+      );
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Error",
+        error.message
+      );
     },
   });
 

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { showSuccessNotification } from '@/hooks/use-global-notification';
 
 interface ContactMessage {
   _id: string;
@@ -35,7 +35,7 @@ interface ContactMessage {
 
 export default function MessagesPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
+
   const queryClient = useQueryClient();
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
@@ -62,10 +62,10 @@ export default function MessagesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/contact-messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
-      toast({
-        title: "Message marked as read",
-        description: "The message has been marked as read successfully.",
-      });
+      showSuccessNotification(
+        "Message marked as read",
+        "The message has been marked as read successfully."
+      );
     },
   });
 

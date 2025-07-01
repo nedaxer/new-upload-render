@@ -8,13 +8,13 @@ import { Link, useLocation } from "wouter";
 import { MapPin, Clock, HelpCircle, MessageSquare, Shield, Zap, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { showErrorNotification, showSuccessNotification } from '@/hooks/use-global-notification';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Contact() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
+
   const queryClient = useQueryClient();
   
   // Form state
@@ -34,14 +34,14 @@ export default function Contact() {
     const redirectedFromLogin = urlParams.get('from') === 'login';
     
     if (redirectedFromLogin && user) {
-      toast({
-        title: "Welcome back!",
-        description: "You can now submit your message below.",
-      });
+      showSuccessNotification(
+        "Welcome back!",
+        "You can now submit your message below."
+      );
       // Clean up URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [user, toast]);
+  }, [user]);
 
   // Pre-fill user data when authenticated
   useEffect(() => {
@@ -74,10 +74,10 @@ export default function Contact() {
       return result;
     },
     onSuccess: (data) => {
-      toast({
-        title: "Message Sent Successfully!",
-        description: "We've received your message and will get back to you soon.",
-      });
+      showSuccessNotification(
+        "Message Sent Successfully!",
+        "We've received your message and will get back to you soon."
+      );
       
       // Reset form
       setFormData({
@@ -91,11 +91,10 @@ export default function Contact() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Failed to Send Message",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Failed to Send Message",
+        error.message
+      );
     },
   });
 
@@ -122,29 +121,27 @@ export default function Contact() {
       // Store current page for redirect after login
       localStorage.setItem('contactFormRedirect', 'true');
       setLocation('/login?redirect=contact');
-      toast({
-        title: "Login Required",
-        description: "Please log in to send us a message.",
-      });
+      showErrorNotification(
+        "Login Required",
+        "Please log in to send us a message."
+      );
       return;
     }
 
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Missing Information",
+        "Please fill in all required fields."
+      );
       return;
     }
 
     if (formData.message.length > 5000) {
-      toast({
-        title: "Message Too Long",
-        description: "Please keep your message under 5000 characters.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Message Too Long",
+        "Please keep your message under 5000 characters."
+      );
       return;
     }
 

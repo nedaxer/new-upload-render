@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { showErrorNotification, showSuccessNotification } from '@/hooks/use-global-notification';
 import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -32,7 +32,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string>("");
-  const { toast } = useToast();
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -79,39 +79,35 @@ export default function Register() {
     
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Missing information",
+        "Please fill in all required fields."
+      );
       return;
     }
     
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Passwords don't match",
+        "Please make sure your passwords match."
+      );
       return;
     }
     
     if (!formData.acceptTerms) {
-      toast({
-        title: "Terms not accepted",
-        description: "You must accept the terms and conditions to create an account.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Terms not accepted",
+        "You must accept the terms and conditions to create an account."
+      );
       return;
     }
 
     // Check reCAPTCHA
     if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA Required",
-        description: "Please complete the reCAPTCHA verification to continue.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "reCAPTCHA Required",
+        "Please complete the reCAPTCHA verification to continue."
+      );
       return;
     }
     
@@ -166,19 +162,18 @@ export default function Register() {
           errorDetail = "Please make sure all required fields are filled correctly. Check that your password meets all requirements.";
         }
         
-        toast({
-          title: "Registration failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        showErrorNotification(
+          "Registration failed",
+          errorMessage
+        );
         
         // Show additional detail if available
         if (errorDetail) {
           setTimeout(() => {
-            toast({
-              title: "What to do next",
-              description: errorDetail,
-            });
+            showErrorNotification(
+              "What to do next",
+              errorDetail
+            );
           }, 1000);
         }
         
@@ -187,17 +182,19 @@ export default function Register() {
       }
       
       // Success - account created and ready to use
-      toast({
-        title: "Welcome to Nedaxer!",
-        description: "Your account has been created successfully.",
-      });
+      showSuccessNotification(
+        "Welcome to Nedaxer!",
+        "Your account has been created successfully."
+      );
       
-      // Show toast with login info
-      toast({
-        title: "Your Login Information",
-        description: `Username: ${data.user.email}\nPlease use your email address to log in.`,
-        duration: 7000, // Show for longer
-      });
+      // Show notification with login info
+      setTimeout(() => {
+        showSuccessNotification(
+          "Your Login Information",
+          `Username: ${data.user.email}\nPlease use your email address to log in.`,
+          7000 // Show for longer
+        );
+      }, 1000);
       
       console.log("Registration successful, user is now logged in");
       
@@ -228,11 +225,10 @@ export default function Register() {
         errorMessage = error.message;
       }
       
-      toast({
-        title: "Registration failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Registration failed",
+        errorMessage
+      );
     } finally {
       setIsLoading(false);
     }
