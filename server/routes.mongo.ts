@@ -2416,6 +2416,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check user transfer access
+  app.get('/api/user/transfer-access', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const { User } = await import('./models/User');
+      
+      const user = await User.findById(userId).select('transferAccess');
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      res.json({
+        success: true,
+        hasTransferAccess: user.transferAccess !== false
+      });
+    } catch (error) {
+      console.error('Transfer access check error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to check transfer access'
+      });
+    }
+  });
+
   // Toggle deposit requirement for user
   app.post('/api/admin/users/toggle-deposit-requirement', requireAdminAuth, async (req: Request, res: Response) => {
     try {

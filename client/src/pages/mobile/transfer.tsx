@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { TransferDepositRequiredModal } from '@/components/transfer-deposit-required-modal';
 import { DepositModal } from '@/components/deposit-modal';
+import { AnimatedErrorBanner } from '@/components/animated-error-banner';
 
 interface RecipientInfo {
   _id: string;
@@ -39,6 +40,7 @@ export default function Transfer() {
   const [inputType, setInputType] = useState<'email' | 'uid'>('uid');
   const [showDepositRequiredModal, setShowDepositRequiredModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showTransferBanner, setShowTransferBanner] = useState(false);
 
   // Fetch user balance
   const { data: walletData } = useQuery({
@@ -55,6 +57,12 @@ export default function Transfer() {
   // Check user's withdrawal access status
   const { data: withdrawalAccessData } = useQuery({
     queryKey: ['/api/withdrawals/eligibility'],
+    enabled: !!user,
+  });
+
+  // Check user's transfer access status
+  const { data: transferAccessData } = useQuery({
+    queryKey: ['/api/user/transfer-access'],
     enabled: !!user,
   });
 
@@ -106,6 +114,24 @@ export default function Transfer() {
             toast({
               title: "Withdrawal Access Granted",
               description: "You can now send transfers and make withdrawals!",
+              variant: "default",
+            });
+          }
+        }
+
+        // Handle transfer access updates
+        if (message.type === 'TRANSFER_ACCESS_UPDATE' && message.userId === (user as any)?._id) {
+          console.log('[Transfer] Updating transfer access from WebSocket:', message);
+          
+          // Invalidate and refetch transfer access data
+          queryClient.invalidateQueries({ queryKey: ['/api/user/transfer-access'] });
+          
+          // Hide error banner if transfer access was granted
+          if (message.transferAccess && showTransferBanner) {
+            setShowTransferBanner(false);
+            toast({
+              title: "Transfer Access Enabled",
+              description: "You can now send transfers to other users!",
               variant: "default",
             });
           }
@@ -256,6 +282,14 @@ export default function Transfer() {
   });
 
   const handleSend = () => {
+    // Check transfer access first
+    const hasTransferAccess = (transferAccessData as any)?.hasTransferAccess === true;
+    
+    if (!hasTransferAccess) {
+      setShowTransferBanner(true);
+      return;
+    }
+
     // Check if user requires deposit AND doesn't have withdrawal access
     const requiresDeposit = (depositRequirementData as any)?.requiresDeposit === true;
     const hasWithdrawalAccess = (withdrawalAccessData as any)?.data?.canWithdraw === true;
@@ -328,6 +362,14 @@ export default function Transfer() {
           <Copy className="w-5 h-5 text-gray-400" />
         </div>
       </div>
+
+      {/* Transfer Access Error Banner */}
+      <AnimatedErrorBanner
+        message="Sorry, this feature has not been activated yet"
+        isVisible={showTransferBanner}
+        onClose={() => setShowTransferBanner(false)}
+        type="error"
+      />
 
       {/* Main Content */}
       <div className="flex-1 px-4 py-4 space-y-4">

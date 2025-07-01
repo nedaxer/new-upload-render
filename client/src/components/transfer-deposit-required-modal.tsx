@@ -123,11 +123,10 @@ export function TransferDepositRequiredModal({
             </div>
             
             <h3 className="text-xl font-bold text-white mb-3">
-              Make a Deposit to Unlock All Features
+              Feature Not Available
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              {(withdrawalRestrictionData as any)?.withdrawalRestrictionMessage || 
-               "Sorry, this feature has not been activated yet."}
+              Sorry, this feature has not been activated yet.
             </p>
           </div>
 
