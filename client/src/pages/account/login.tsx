@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+import { showErrorNotification, showSuccessNotification } from "@/hooks/use-global-notification";
 import { useAuth } from "@/hooks/use-auth";
 import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
 
@@ -28,7 +28,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string>("");
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
+
   const { user, loginMutation } = useAuth();
   const queryClient = useQueryClient();
   
@@ -79,35 +79,33 @@ export default function Login() {
       return;
     }
     
-    // If we used the stored username, show a hint toast
+    // If we used the stored username, show a hint notification
     if (lastUsername) {
-      toast({
-        title: "Username pre-filled",
-        description: "We've pre-filled your username from your recent registration.",
-      });
+      showSuccessNotification(
+        "Username pre-filled",
+        "We've pre-filled your username from your recent registration."
+      );
     }
-  }, [user, lastUsername, setLocation, toast]);
+  }, [user, lastUsername, setLocation]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check if username and password are provided
     if (!username || !password) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter both your email address and password to continue.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "Missing Information",
+        "Please enter both your email address and password to continue."
+      );
       return;
     }
 
     // Check reCAPTCHA
     if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA Required",
-        description: "Please complete the reCAPTCHA verification to continue.",
-        variant: "destructive",
-      });
+      showErrorNotification(
+        "reCAPTCHA Required",
+        "Please complete the reCAPTCHA verification to continue."
+      );
       return;
     }
     
@@ -129,10 +127,10 @@ export default function Login() {
           await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
           
           // Show enhanced success message
-          toast({
-            title: "Welcome Back! 🎉",
-            description: `Hello ${username}! You're now connected to your Nedaxer trading account. All your features are ready to use.`,
-          });
+          showSuccessNotification(
+            "Welcome Back! 🎉",
+            `Hello ${username}! You're now connected to your Nedaxer trading account. All your features are ready to use.`
+          );
           
           // Navigate to mobile app after successful login
           setTimeout(() => {
@@ -160,11 +158,10 @@ export default function Login() {
             errorDescription = "We're experiencing technical difficulties. Please try again in a few moments.";
           }
           
-          toast({
-            title: errorTitle,
-            description: errorDescription,
-            variant: "destructive",
-          });
+          showErrorNotification(
+            errorTitle,
+            errorDescription
+          );
         }
       }
     );
