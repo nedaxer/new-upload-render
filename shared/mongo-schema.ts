@@ -22,6 +22,7 @@ export const mongoUserSchema = z.object({
   isVerified: z.boolean().default(false),
   isAdmin: z.boolean().default(false),
   balance: z.number().default(0),
+  googleId: z.string().optional(),
   // New verification fields
   kycStatus: z.enum(['none', 'pending', 'verified', 'rejected']).default('none'),
   kycData: z.object({

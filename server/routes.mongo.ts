@@ -13,6 +13,8 @@ import { sendEmail, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEm
 import { imageOptimizer } from "./image-optimizer";
 import { exchangeRateService } from "./exchange-rate-service";
 import { getNewsSourceLogo } from "./logo-service";
+import './passport-config';
+import passport from 'passport';
 
 import crypto from "crypto";
 import chatbotRoutes from "./api/chatbot-routes";
@@ -132,6 +134,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     name: 'connect.sid', // Explicit session name
     rolling: false // Don't reset expiration on every request
   }));
+
+  // Initialize Passport for Google OAuth
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // Enable compression middleware for better performance
   app.use(compression({
@@ -1495,6 +1501,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Logout successful" 
       });
     });
+  });
+
+  // Google OAuth routes
+  app.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+  }));
+
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/account/login' }),
+    async (req: Request, res: Response) => {
+      // Successful authentication, create session and redirect
+      if (req.user) {
+        const user = req.user as any;
+        req.session.userId = user._id.toString();
+        
+        console.log('Google OAuth successful for user:', user.email);
+        
+        // Redirect to dashboard
+        res.redirect('/dashboard');
+      } else {
+        res.redirect('/account/login');
+      }
+    }
+  );
+
+  // Dashboard route for logged-in users
+  app.get('/dashboard', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId!;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.redirect('/account/login');
+      }
+
+      res.json({
+        success: true,
+        message: `Welcome ${user.firstName || user.username}!`,
+        user: {
+          name: `${user.firstName} ${user.lastName}`.trim() || user.username,
+          email: user.email,
+          uid: user.uid
+        }
+      });
+    } catch (error) {
+      console.error('Dashboard error:', error);
+      res.status(500).json({ success: false, message: 'Error loading dashboard' });
+    }
   });
 
   // User profile management

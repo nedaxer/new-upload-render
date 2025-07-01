@@ -35,6 +35,8 @@ export interface IUser {
   withdrawalAccess?: boolean;
   transferAccess?: boolean;
   allFeaturesDisabled?: boolean;
+  // OAuth fields
+  googleId?: string;
   // KYC verification fields
   kycStatus?: 'none' | 'pending' | 'verified' | 'rejected';
   kycData?: {
@@ -94,6 +96,8 @@ const UserSchema = new mongoose.Schema({
   transferAccess: { type: Boolean, default: true },
   // Admin controlled feature access
   allFeaturesDisabled: { type: Boolean, default: false },
+  // OAuth fields
+  googleId: { type: String, sparse: true, unique: true },
   // KYC verification fields
   kycStatus: { type: String, enum: ['none', 'pending', 'verified', 'rejected'], default: 'none' },
   kycData: {

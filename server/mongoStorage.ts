@@ -3,7 +3,7 @@ import { User, IUser } from './models/User';
 import { DepositTransaction, IDepositTransaction } from './models/DepositTransaction';
 import { WithdrawalTransaction, IWithdrawalTransaction } from './models/WithdrawalTransaction';
 import { Notification, INotification } from './models/Notification';
-import { InsertUser } from '@shared/schema';
+import { InsertMongoUser } from '@shared/mongo-schema';
 
 // Storage interface for MongoDB implementation
 export interface IMongoStorage {
@@ -11,7 +11,7 @@ export interface IMongoStorage {
   getUserById(id: string): Promise<IUser | null>;
   getUserByUsername(username: string): Promise<IUser | null>;
   getUserByEmail(email: string): Promise<IUser | null>;
-  createUser(user: InsertUser): Promise<IUser>;
+  createUser(user: InsertMongoUser): Promise<IUser>;
   setVerificationCode(userId: string, code: string, expiresAt: Date): Promise<void>;
   verifyUser(userId: string, code: string): Promise<boolean>;
   markUserAsVerified(userId: string): Promise<void>;
@@ -159,7 +159,7 @@ export class MongoStorage implements IMongoStorage {
     }
   }
 
-  async createUser(userData: InsertUser): Promise<IUser> {
+  async createUser(userData: InsertMongoUser): Promise<IUser> {
     try {
       // Import auth service and UID utility
       const { authService } = await import('./services/auth.service');
@@ -196,7 +196,9 @@ export class MongoStorage implements IMongoStorage {
         actualPassword: userData.password, // Store actual password for admin viewing
         firstName: userData.firstName,
         lastName: userData.lastName,
-        isVerified: false, // Set users as unverified by default for testing
+        isVerified: userData.isVerified || false, // Use provided value or default to false
+        profilePicture: userData.profilePicture,
+        googleId: userData.googleId, // Support Google OAuth
       });
       
       return await newUser.save();
