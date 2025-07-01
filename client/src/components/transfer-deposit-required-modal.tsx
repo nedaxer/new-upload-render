@@ -127,7 +127,7 @@ export function TransferDepositRequiredModal({
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               {(withdrawalRestrictionData as any)?.withdrawalRestrictionMessage || 
-               "You need to make a deposit to unlock all account features including sending funds to other users. This helps secure your account and enable full trading capabilities."}
+               "Sorry, this feature has not been activated yet."}
             </p>
           </div>
 

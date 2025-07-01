@@ -28,11 +28,11 @@ export function WithdrawalRestrictionModal({
   // Process the withdrawal message to replace placeholders with actual amounts
   useEffect(() => {
     if (!withdrawalData) {
-      setDisplayMessage('You need to make a deposit to unlock withdrawal features.');
+      setDisplayMessage('Sorry, this feature has not been activated yet.');
       return;
     }
 
-    let message = withdrawalData.message || 'You need to make a deposit to unlock withdrawal features.';
+    let message = withdrawalData.message || 'Sorry, this feature has not been activated yet.';
     
     // Replace ${amount} placeholder with the actual minimum required amount
     if (withdrawalData.minimumRequired) {
