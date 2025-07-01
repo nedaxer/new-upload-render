@@ -147,7 +147,12 @@ export default function MobileWithdrawal() {
       return;
     }
 
-    const price = (priceData as any)?.[selectedCrypto.symbol.toLowerCase()];
+    // Access price data from the CoinGecko API response format
+    const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+      ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+      : null;
+    
+    const price = cryptoData?.price;
     if (price && price > 0) {
       setUsdAmount((amount * price).toFixed(2));
     }
@@ -168,7 +173,12 @@ export default function MobileWithdrawal() {
       return;
     }
 
-    const price = (priceData as any)?.[selectedCrypto.symbol.toLowerCase()];
+    // Access price data from the CoinGecko API response format
+    const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+      ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+      : null;
+    
+    const price = cryptoData?.price;
     if (price && price > 0) {
       setCryptoAmount((amount / price).toFixed(8));
     }
@@ -544,8 +554,23 @@ export default function MobileWithdrawal() {
                 </button>
               </div>
             </div>
-
-
+            
+            {/* Live Conversion Display */}
+            {usdAmount && cryptoAmount && parseFloat(usdAmount) > 0 && (
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-gray-400">You will receive:</span>
+                <div className="flex items-center space-x-1">
+                  <img 
+                    src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
+                    alt={selectedCrypto.symbol}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-white font-medium">
+                    {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -572,10 +597,15 @@ export default function MobileWithdrawal() {
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
           <Button
             onClick={handleWithdraw}
-            disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg"
+            disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || isProcessing}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg flex items-center justify-center space-x-2"
           >
-            {isProcessing ? 'Processing...' : 'Withdraw'}
+            <span>{isProcessing ? 'Processing...' : 'Withdraw'}</span>
+            {!isProcessing && cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+              <span className="text-white font-bold">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
+            )}
           </Button>
         </div>
       </div>
