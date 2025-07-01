@@ -158,34 +158,30 @@ export default function MobileWithdrawal() {
     }
   }, [cryptoAmount, selectedCrypto.symbol, priceData]);
 
-  // Calculate crypto amount from USD - simplified without cursor preservation
+  // Simple input handler without complex validation
   const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    setUsdAmount(value);
     
-    // Allow only valid number input (including decimals)
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setUsdAmount(value);
-      
-      if (!value || !priceData) {
-        setCryptoAmount('');
-        return;
-      }
-
+    // Calculate crypto amount if valid number
+    if (value && priceData) {
       const amount = parseFloat(value);
-      if (isNaN(amount) || amount <= 0) {
+      if (!isNaN(amount) && amount > 0) {
+        const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+          ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+          : null;
+        
+        const price = cryptoData?.price;
+        if (price && price > 0) {
+          setCryptoAmount((amount / price).toFixed(8));
+        } else {
+          setCryptoAmount('');
+        }
+      } else {
         setCryptoAmount('');
-        return;
       }
-
-      // Access price data from the CoinGecko API response format
-      const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
-        ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
-        : null;
-      
-      const price = cryptoData?.price;
-      if (price && price > 0) {
-        setCryptoAmount((amount / price).toFixed(8));
-      }
+    } else {
+      setCryptoAmount('');
     }
   };
 
@@ -504,7 +500,7 @@ export default function MobileWithdrawal() {
                   </span>
                   {selectedNetwork && (
                     <span className="text-gray-400 text-xs">
-                      {selectedNetwork.networkName} • Min: {selectedNetwork.minWithdrawal} {selectedCrypto.symbol}
+                      {selectedNetwork.networkName}
                     </span>
                   )}
                 </div>
@@ -531,7 +527,6 @@ export default function MobileWithdrawal() {
                       <div className="flex flex-col">
                         <span className="text-white text-sm font-medium">{network.chainType}</span>
                         <span className="text-gray-400 text-xs">{network.networkName}</span>
-                        <span className="text-orange-500 text-xs">Min withdrawal: {network.minWithdrawal} {selectedCrypto.symbol}</span>
                       </div>
                     </button>
                   ))}
@@ -547,21 +542,23 @@ export default function MobileWithdrawal() {
             </span>
           </div>
 
-          {/* USD Amount Input */}
+          {/* USD Amount Input - Recreated */}
           <div>
             <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
             <div className="relative">
-              <Input
-                type="text"
-                inputMode="decimal"
+              <input
+                type="number"
+                step="0.01"
+                min="0"
                 value={usdAmount}
                 onChange={handleUsdAmountChange}
-                placeholder="Enter USD amount to withdraw"
-                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-16 h-10 text-sm"
+                placeholder="0.00"
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-md text-white placeholder:text-gray-500 pr-16 h-10 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                 <span className="text-orange-500 font-medium text-xs">USD</span>
                 <button 
+                  type="button"
                   className="text-orange-500 text-xs hover:text-orange-400"
                   onClick={() => {
                     const maxAmount = userBalance.toFixed(2);

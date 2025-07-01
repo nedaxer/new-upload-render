@@ -3092,8 +3092,8 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
         cryptoPrice: currentPrice
       });
 
-      // Deduct balance from user account
-      await mongoStorage.updateUserBalance(userId, 'USD', -parseFloat(usdAmount));
+      // Deduct balance from user account using the proper function
+      await mongoStorage.removeFundsFromUser(userId, parseFloat(usdAmount));
 
       // Create withdrawal notification
       const notification = await mongoStorage.createNotification({
