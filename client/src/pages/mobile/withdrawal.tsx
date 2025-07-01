@@ -132,7 +132,7 @@ export default function MobileWithdrawal() {
     staleTime: 25000,
   });
 
-  const userBalance = (balanceData as any)?.data?.balance || 0;
+  const userBalance = (balanceData as any)?.data?.totalUSDValue || (balanceData as any)?.data?.usdBalance || 0;
 
   // Calculate amounts when one changes
   useEffect(() => {
@@ -545,46 +545,38 @@ export default function MobileWithdrawal() {
               </div>
             </div>
 
-            {/* Withdrawal Fees Display */}
-            <div className="mt-2 p-2 bg-[#2a2a50] rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400 text-xs">Withdrawal Fees</span>
-                <span className="text-white font-medium text-xs">0.00000 {selectedCrypto.symbol}</span>
-              </div>
-            </div>
 
-            {/* Amount Received Display */}
-            {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
-              <div className="mt-2 p-2 bg-[#2a2a50] rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-xs">Amount Received</span>
-                  <span className="text-white font-medium text-xs">
-                    {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
+        </div>
+
+        {/* Withdrawal Summary - Above Button */}
+        <div className="px-3 pb-2 bg-[#0a0a2e]">
+          {/* Withdrawal Fees */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-sm">Withdrawal Fees</span>
+            <span className="text-white font-medium text-sm">0.00011 {selectedCrypto.symbol}</span>
+          </div>
+          
+          {/* Amount Received */}
+          {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-sm">Amount Received <span className="text-orange-500">Setting</span></span>
+              <span className="text-white font-bold text-lg">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Fixed Withdraw Button */}
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              onClick={handleWithdraw}
-              disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-3 rounded-lg font-medium text-sm"
-            >
-              {isProcessing ? 'Processing...' : 'Withdraw'}
-            </Button>
-            {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
-              <div className="text-right">
-                <div className="text-white font-medium text-sm">
-                  {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
-                </div>
-              </div>
-            )}
-          </div>
+          <Button
+            onClick={handleWithdraw}
+            disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg"
+          >
+            {isProcessing ? 'Processing...' : 'Withdraw'}
+          </Button>
         </div>
       </div>
   );
