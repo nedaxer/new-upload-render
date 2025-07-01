@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { Bug, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Bug, RefreshCw, Eye, EyeOff, TestTube } from 'lucide-react';
+import { showSuccessBanner, showErrorBanner, showWarningBanner, showInfoBanner } from '@/hooks/use-bottom-banner';
 
 interface BannerDebugPanelProps {
   onClose: () => void;
@@ -117,6 +118,40 @@ export function BannerDebugPanel({ onClose }: BannerDebugPanelProps) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Banner Testing */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white flex items-center">
+              <TestTube className="w-4 h-4 mr-2 text-orange-400" />
+              Banner Testing
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                onClick={() => showSuccessBanner('Test Success', 'Success banner is working!')}
+                className="bg-green-600 hover:bg-green-700 text-xs"
+              >
+                Success
+              </Button>
+              <Button 
+                onClick={() => showErrorBanner('Test Error', 'Error banner is working!')}
+                className="bg-red-600 hover:bg-red-700 text-xs"
+              >
+                Error
+              </Button>
+              <Button 
+                onClick={() => showWarningBanner('Test Warning', 'Warning banner is working!')}
+                className="bg-orange-600 hover:bg-orange-700 text-xs"
+              >
+                Warning
+              </Button>
+              <Button 
+                onClick={() => showInfoBanner('Test Info', 'Info banner is working!')}
+                className="bg-blue-600 hover:bg-blue-700 text-xs"
+              >
+                Info
+              </Button>
+            </div>
           </div>
 
           {/* Actions */}

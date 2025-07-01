@@ -124,6 +124,7 @@ import UnifiedAdminPortal from '@/pages/admin-portal-unified';
 // Other Pages
 import SiteMap from '@/pages/site-map';
 import PortfolioDemo from '@/pages/portfolio-demo';
+import BannerTest from '@/pages/banner-test';
 
 
 
@@ -351,6 +352,7 @@ export default function App() {
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />
             <Route path="/portfolio-demo" component={PortfolioDemo} />
+            <Route path="/banner-test" component={BannerTest} />
 
             {/* 404 Route */}
             <Route component={NotFound} />
