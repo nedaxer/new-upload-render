@@ -132,13 +132,13 @@ Preferred communication style: Simple, everyday language.
   - Production: `https://nedaxer.onrender.com`
 
 ### Google Cloud Console Configuration
-The Google OAuth application should be configured with both domains:
+The Google OAuth application should be configured with both domains (no wildcards allowed):
 - **Authorized JavaScript origins**: 
   - `https://nedaxer.onrender.com`
-  - `https://*.replit.dev` (for development)
+  - `https://61562ec5-c845-4df4-a721-02ee24ca4e42-00-154acc1eeop43.riker.replit.dev`
 - **Authorized redirect URIs**: 
   - `https://nedaxer.onrender.com/auth/google/callback`
-  - `https://*.replit.dev/auth/google/callback` (for development)
+  - `https://61562ec5-c845-4df4-a721-02ee24ca4e42-00-154acc1eeop43.riker.replit.dev/auth/google/callback`
 - OAuth consent screen: External users, verified domain
 - Scopes: email, profile, openid
 
