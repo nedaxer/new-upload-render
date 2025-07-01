@@ -4,7 +4,7 @@ import { mongoStorage as storage } from './mongoStorage';
 import { InsertMongoUser } from '@shared/mongo-schema';
 
 // Configure Google OAuth strategy - fallback to test credentials if env vars don't work
-const clientID = process.env.GOOGLE_CLIENT_ID || "558646855386-8ht15gg7j8jn7m7oo8p7nci7fklhcmg4.apps.googleusercontent.com";
+const clientID = process.env.GOOGLE_CLIENT_ID || "319209339658-mhi810s4krhb64ehso7sohd4nl4kcg7h.apps.googleusercontent.com";
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "***REMOVED***";
 
 passport.use(new GoogleStrategy({
