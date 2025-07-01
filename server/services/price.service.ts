@@ -51,7 +51,7 @@ class PriceService {
   private cacheTimeout = 30000; // 30 seconds
 
   constructor() {
-    this.apiKey = process.env.COINGECKO_API_KEY || '';
+    this.apiKey = 'CG-3A26qPLm2ba2sN6ZuDkvGRSn';
     if (!this.apiKey) {
       console.warn('CoinGecko API key not provided, using free tier with rate limits');
     }

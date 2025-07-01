@@ -582,6 +582,40 @@ export default function UnifiedAdminPortal() {
     },
   });
 
+  // Toggle transfer access mutation
+  const toggleTransferAccessMutation = useMutation({
+    mutationFn: async ({ userId, transferAccess }: { userId: string; transferAccess: boolean }) => {
+      const response = await apiRequest("POST", "/api/admin/users/toggle-transfer-access", { userId, transferAccess });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Update the selected user state immediately
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          transferAccess: data.data.transferAccess
+        } as any);
+      }
+      
+      toast({
+        title: "Transfer Access Updated",
+        description: data.message,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchGeneralSearch();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Transfer Access",
+        description: error.message || "Failed to update transfer access",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Get user password
   const getUserPasswordMutation = useMutation({
     mutationFn: async (userId: string) => {
@@ -1747,6 +1781,35 @@ export default function UnifiedAdminPortal() {
                               } text-white px-3 py-1`}
                             >
                               {(selectedUser as any).withdrawalAccess ? 'ENABLED' : 'DISABLED'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Transfer Access Toggle */}
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white text-sm font-medium">Transfer Access</p>
+                              <p className="text-gray-400 text-xs">Allow user to send transfers to other users</p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                const currentAccess = (selectedUser as any).transferAccess !== false;
+                                const newAccess = !currentAccess;
+                                toggleTransferAccessMutation.mutate({
+                                  userId: selectedUser._id,
+                                  transferAccess: newAccess
+                                });
+                              }}
+                              disabled={toggleTransferAccessMutation.isPending}
+                              size="sm"
+                              className={`${
+                                (selectedUser as any).transferAccess !== false
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-gray-600 hover:bg-gray-700'
+                              } text-white px-3 py-1`}
+                            >
+                              {(selectedUser as any).transferAccess !== false ? 'ENABLED' : 'DISABLED'}
                             </Button>
                           </div>
                         </div>

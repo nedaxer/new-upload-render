@@ -448,6 +448,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { Transfer } = await import('./models/Transfer');
       const { User } = await import('./models/User');
       
+      // Check if sender has transfer access
+      const sender = await User.findById(senderId).select('transferAccess');
+      if (!sender) {
+        console.log('❌ Sender not found');
+        return res.status(404).json({
+          success: false,
+          message: 'Sender not found'
+        });
+      }
+      
+      if (sender.transferAccess === false) {
+        console.log('❌ Transfer access denied for user:', senderId);
+        return res.status(403).json({
+          success: false,
+          message: 'Transfer access has been disabled by administrator'
+        });
+      }
+      
       // Start MongoDB transaction
       const mongoose = await import('mongoose');
       const session = await mongoose.startSession();
@@ -2469,6 +2487,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle transfer access for user
+  app.post('/api/admin/users/toggle-transfer-access', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, transferAccess } = req.body;
+      
+      console.log('Toggle transfer access called:', { userId, transferAccess });
+      
+      if (!userId || typeof transferAccess !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing userId or transferAccess flag" 
+        });
+      }
+
+      const { User } = await import('./models/User');
+      const user = await User.findByIdAndUpdate(
+        userId, 
+        { transferAccess }, 
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      console.log(`✅ Admin toggled transfer access for user ${userId}: ${transferAccess}`);
+      
+      // Real-time WebSocket notification for transfer access update
+      if ((global as any).wss) {
+        (global as any).wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify({
+              type: 'TRANSFER_ACCESS_UPDATE',
+              userId: userId,
+              transferAccess: transferAccess,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+        
+        console.log(`📡 Real-time transfer access update broadcasted for user ${userId}`);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Transfer access ${transferAccess ? 'enabled' : 'disabled'} for user`,
+        data: {
+          userId: user._id,
+          username: user.username,
+          transferAccess: user.transferAccess
+        }
+      });
+    } catch (error) {
+      console.error('Admin toggle transfer access error:', error);
+      res.status(500).json({ success: false, message: "Failed to toggle transfer access" });
+    }
+  });
+
   // Update withdrawal restriction message for user
   app.post('/api/admin/users/update-withdrawal-message', requireAdminAuth, async (req: Request, res: Response) => {
     try {
@@ -3132,7 +3211,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
       }
 
       // Get crypto price for validation
-      const cryptoPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&x_cg_demo_api_key=' + process.env.COINGECKO_API_KEY);
+      const cryptoPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&x_cg_demo_api_key=CG-3A26qPLm2ba2sN6ZuDkvGRSn');
       const cryptoPrices = await cryptoPriceResponse.json();
       
       const priceMap: { [key: string]: number } = {

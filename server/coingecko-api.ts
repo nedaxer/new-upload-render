@@ -177,7 +177,7 @@ interface CryptoTicker {
 
 export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
   try {
-    const API_KEY = process.env.COINGECKO_API_KEY;
+    const API_KEY = 'CG-3A26qPLm2ba2sN6ZuDkvGRSn';
     if (!API_KEY) {
       throw new Error('CoinGecko API key not configured');
     }
@@ -264,7 +264,7 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
 
 export async function getCoinGeckoPrice(coinGeckoId: string): Promise<CryptoTicker | null> {
   try {
-    const API_KEY = process.env.COINGECKO_API_KEY;
+    const API_KEY = 'CG-3A26qPLm2ba2sN6ZuDkvGRSn';
     if (!API_KEY) {
       throw new Error('CoinGecko API key not configured');
     }

@@ -110,6 +110,26 @@ export default function Transfer() {
             });
           }
         }
+
+        // Handle transfer access updates
+        if (message.type === 'TRANSFER_ACCESS_UPDATE' && message.userId === (user as any)?._id) {
+          console.log('[Transfer] Updating transfer access from WebSocket:', message);
+          
+          // Show notification about transfer access change
+          if (message.transferAccess) {
+            toast({
+              title: "Transfer Access Enabled",
+              description: "You can now send transfers to other users!",
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Transfer Access Disabled",
+              description: "Transfer functionality has been disabled by administrator",
+              variant: "destructive",
+            });
+          }
+        }
       } catch (error) {
         console.error('[Transfer] WebSocket message parsing error:', error);
       }
