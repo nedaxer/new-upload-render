@@ -122,13 +122,23 @@ Preferred communication style: Simple, everyday language.
 ### Current Setup
 - **Client ID**: 739063184905-6pij6bc7qrmt1pr2goe5s5vhsqclkv0m.apps.googleusercontent.com
 - **Client Secret**: ***REMOVED***
-- **Callback URL**: https://nedaxer.onrender.com/auth/google/callback
-- **Authorized Domains**: Configured for nedaxer.onrender.com domain
+- **Callback URL**: Dynamic based on environment variables
+  - Uses `BASE_URL` environment variable if set
+  - Falls back to `REPLIT_DOMAINS` for development
+  - Default fallback: https://nedaxer.onrender.com/auth/google/callback
+- **Environment Variables**:
+  - `BASE_URL`: Set to domain URL for each environment
+  - Development: `https://[replit-url].replit.dev`
+  - Production: `https://nedaxer.onrender.com`
 
 ### Google Cloud Console Configuration
-The Google OAuth application is configured with:
-- Authorized JavaScript origins: https://nedaxer.onrender.com
-- Authorized redirect URIs: https://nedaxer.onrender.com/auth/google/callback
+The Google OAuth application should be configured with both domains:
+- **Authorized JavaScript origins**: 
+  - `https://nedaxer.onrender.com`
+  - `https://*.replit.dev` (for development)
+- **Authorized redirect URIs**: 
+  - `https://nedaxer.onrender.com/auth/google/callback`
+  - `https://*.replit.dev/auth/google/callback` (for development)
 - OAuth consent screen: External users, verified domain
 - Scopes: email, profile, openid
 

@@ -7,10 +7,32 @@ import { InsertMongoUser } from '@shared/mongo-schema';
 const clientID = process.env.GOOGLE_CLIENT_ID || "319209339658-mhi810s4krhb64ehso7sohd4nl4kcg7h.apps.googleusercontent.com";
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "***REMOVED***";
 
+// Dynamic callback URL based on environment
+const getCallbackURL = () => {
+  if (process.env.BASE_URL) {
+    console.log(`Using BASE_URL for Google OAuth callback: ${process.env.BASE_URL}/auth/google/callback`);
+    return `${process.env.BASE_URL}/auth/google/callback`;
+  }
+  
+  // Fallback logic for different environments
+  if (process.env.REPLIT_DOMAINS) {
+    const replatCallback = `https://${process.env.REPLIT_DOMAINS}/auth/google/callback`;
+    console.log(`Using REPLIT_DOMAINS for Google OAuth callback: ${replatCallback}`);
+    return replatCallback;
+  }
+  
+  // Production fallback
+  const renderCallback = "https://nedaxer.onrender.com/auth/google/callback";
+  console.log(`Using fallback for Google OAuth callback: ${renderCallback}`);
+  return renderCallback;
+};
+
+const callbackURL = getCallbackURL();
+
 passport.use(new GoogleStrategy({
   clientID: clientID,
   clientSecret: clientSecret,
-  callbackURL: "https://nedaxer.onrender.com/auth/google/callback"
+  callbackURL: callbackURL
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('Google OAuth profile received:', {
