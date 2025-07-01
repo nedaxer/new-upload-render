@@ -3562,50 +3562,6 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
     }
   });
 
-  // Create test deposit notification (for testing purposes)
-  app.post('/api/test/create-deposit-notification', async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.body;
-      
-      if (!userId) {
-        return res.status(400).json({ success: false, message: "User ID required" });
-      }
-
-      const { mongoStorage } = await import('./mongoStorage');
-      
-      // Create test deposit notification
-      const notification = await mongoStorage.createNotification({
-        userId,
-        type: 'deposit',
-        title: 'Deposit Confirmed',
-        message: `Dear valued Nedaxer trader,
-Your deposit has been confirmed.
-Deposit amount: 0.00222222 BTC
-Deposit address: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
-Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
-        data: {
-          cryptoSymbol: 'BTC',
-          cryptoAmount: 0.00222222,
-          usdAmount: 100,
-          senderAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-          chainType: 'Bitcoin',
-          networkName: 'Bitcoin Network'
-        }
-      });
-
-      console.log(`✅ Test deposit notification created for user ${userId}`);
-      
-      res.json({ 
-        success: true, 
-        message: "Test deposit notification created",
-        notification: notification
-      });
-    } catch (error) {
-      console.error('Create test deposit notification error:', error);
-      res.status(500).json({ success: false, message: "Failed to create test notification" });
-    }
-  });
-
   // Get user notifications (requires authentication)
   app.get('/api/notifications', requireAuth, async (req: Request, res: Response) => {
     try {

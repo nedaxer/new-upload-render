@@ -61,7 +61,12 @@ export default function AssetsHistory() {
     gcTime: 0,
   });
 
-  const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];
+  const deposits = Array.isArray((depositsResponse as any)?.data) 
+    ? (depositsResponse as any).data.filter((deposit: any) => {
+        // Filter out test deposits with very small USD amounts (likely test notifications)
+        return deposit.usdAmount && deposit.usdAmount >= 1;
+      })
+    : [];
   const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
   const withdrawals = Array.isArray((withdrawalsResponse as any)?.data) ? (withdrawalsResponse as any).data : [];
   
