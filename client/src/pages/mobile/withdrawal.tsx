@@ -533,19 +533,14 @@ export default function MobileWithdrawal() {
             <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
             <div className="relative">
               <Input
-                type="text"
+                type="number"
                 value={usdAmount}
-                onChange={(e) => {
-                  // Allow only numbers and decimal point
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
-                  // Ensure only one decimal point
-                  const parts = value.split('.');
-                  const cleanValue = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value;
-                  handleUsdAmountChange(cleanValue);
-                }}
-                placeholder="0.00"
+                onChange={(e) => handleUsdAmountChange(e.target.value)}
+                placeholder="Enter USD amount to withdraw"
                 className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-16 h-10 text-sm"
-                inputMode="decimal"
+                step="0.01"
+                min="0"
+                max={userBalance}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                 <span className="text-orange-500 font-medium text-xs">USD</span>
@@ -561,22 +556,21 @@ export default function MobileWithdrawal() {
             </div>
             
             {/* Live Conversion Display */}
-            <div className="mt-2 flex items-center justify-between text-xs">
-              <span className="text-gray-400">You will receive:</span>
-              <div className="flex items-center space-x-1">
-                <img 
-                  src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
-                  alt={selectedCrypto.symbol}
-                  className="w-4 h-4"
-                />
-                <span className="text-white font-medium">
-                  {cryptoAmount && parseFloat(cryptoAmount) > 0 
-                    ? parseFloat(cryptoAmount).toFixed(8) 
-                    : '0.00000000'
-                  } {selectedCrypto.symbol}
-                </span>
+            {usdAmount && cryptoAmount && parseFloat(usdAmount) > 0 && (
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-gray-400">You will receive:</span>
+                <div className="flex items-center space-x-1">
+                  <img 
+                    src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
+                    alt={selectedCrypto.symbol}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-white font-medium">
+                    {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -589,42 +583,30 @@ export default function MobileWithdrawal() {
           </div>
           
           {/* Amount Received */}
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 text-sm">Amount Received <span className="text-orange-500">Setting</span></span>
-            <span className="text-white font-bold text-lg">
-              {cryptoAmount && parseFloat(cryptoAmount) > 0 
-                ? parseFloat(cryptoAmount).toFixed(8) 
-                : '0'
-              } {selectedCrypto.symbol}
-            </span>
-          </div>
+          {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-sm">Amount Received <span className="text-orange-500">Setting</span></span>
+              <span className="text-white font-bold text-lg">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Fixed Withdraw Button with Amount Display */}
+        {/* Fixed Withdraw Button */}
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
-          <div className="flex items-center space-x-2">
-            {/* Withdraw Button - Takes 75% of width */}
-            <Button
-              onClick={handleWithdraw}
-              disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || isProcessing}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg"
-            >
-              {isProcessing ? 'Processing...' : 'Withdraw'}
-            </Button>
-            
-            {/* Crypto Amount Display - Takes remaining width */}
-            <div className="min-w-[100px] bg-[#1a1a40] border border-[#2a2a50] rounded-lg py-4 px-3">
-              <div className="text-white font-bold text-xs text-center">
-                {cryptoAmount && parseFloat(cryptoAmount) > 0 
-                  ? parseFloat(cryptoAmount).toFixed(6) 
-                  : '0'
-                }
-              </div>
-              <div className="text-orange-500 text-xs text-center mt-1">
-                {selectedCrypto.symbol}
-              </div>
-            </div>
-          </div>
+          <Button
+            onClick={handleWithdraw}
+            disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || isProcessing}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg flex items-center justify-center space-x-2"
+          >
+            <span>{isProcessing ? 'Processing...' : 'Withdraw'}</span>
+            {!isProcessing && cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+              <span className="text-white font-bold">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
+            )}
+          </Button>
         </div>
       </div>
   );
