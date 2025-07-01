@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { ArrowLeft, Settings, CheckCheck } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ export default function MobileNotifications() {
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { medium } = useHaptics();
+  const [location, navigate] = useLocation();
 
   // Fetch notifications with automatic refetch every 10 seconds for real-time updates
   const { data: notificationsResponse, isLoading } = useQuery({
@@ -335,11 +336,11 @@ export default function MobileNotifications() {
                               data: notification.data 
                             });
                             
+                            // Use proper navigation with URL parameters stored in sessionStorage
                             if (transactionId) {
-                              window.location.hash = `#/mobile/assets-history?highlight=${transactionId}`;
-                            } else {
-                              window.location.hash = '#/mobile/assets-history';
+                              sessionStorage.setItem('highlightTransactionId', transactionId);
                             }
+                            navigate('/mobile/assets-history');
                           }
                         }}
                       >

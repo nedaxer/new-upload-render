@@ -125,14 +125,16 @@ export default function AssetsHistory() {
     }
   }, [user, queryClient]);
 
-  // Handle transaction highlighting from URL parameters
+  // Handle transaction highlighting from sessionStorage
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const highlightId = urlParams.get('highlight');
+    const highlightId = sessionStorage.getItem('highlightTransactionId');
     
     if (highlightId) {
       console.log('🎯 Highlighting transaction:', highlightId);
       setHighlightTransactionId(highlightId);
+      
+      // Clear the sessionStorage immediately to prevent re-highlighting on future visits
+      sessionStorage.removeItem('highlightTransactionId');
       
       // Wait for transactions to load and then scroll to highlighted transaction
       const scrollTimer = setTimeout(() => {
@@ -149,9 +151,6 @@ export default function AssetsHistory() {
       // Clear highlight after animation completes (6 seconds)
       const highlightTimer = setTimeout(() => {
         setHighlightTransactionId(null);
-        // Clean up URL parameters
-        const newUrl = window.location.pathname + window.location.hash.split('?')[0];
-        window.history.replaceState({}, '', newUrl);
         console.log('✨ Transaction highlight animation completed');
       }, 6000);
       
