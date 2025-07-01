@@ -63,6 +63,7 @@ interface AdminUser {
   isOnline?: boolean;
   sessionStart?: string;
   createdAt?: string;
+  allFeaturesDisabled?: boolean;
 }
 
 interface UserAnalytics {
@@ -457,6 +458,40 @@ export default function UnifiedAdminPortal() {
       toast({
         title: "Error Updating Deposit Requirement",
         description: error.message || "Failed to update deposit requirement",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle all features disabled mutation
+  const toggleAllFeaturesDisabledMutation = useMutation({
+    mutationFn: async ({ userId, allFeaturesDisabled }: { userId: string; allFeaturesDisabled: boolean }) => {
+      const response = await apiRequest("POST", "/api/admin/users/toggle-all-features", { userId, allFeaturesDisabled });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Update the selected user state immediately
+      if (selectedUser) {
+        setSelectedUser({
+          ...selectedUser,
+          allFeaturesDisabled: data.data.allFeaturesDisabled
+        } as any);
+      }
+      
+      toast({
+        title: "Feature Access Updated",
+        description: data.message,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
+      refetchGeneralSearch();
+      refetchUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Feature Access",
+        description: error.message || "Failed to update feature access",
         variant: "destructive",
       });
     },
@@ -1712,6 +1747,34 @@ export default function UnifiedAdminPortal() {
                               } text-white px-3 py-1`}
                             >
                               {(selectedUser as any).withdrawalAccess ? 'ENABLED' : 'DISABLED'}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* All Features Disabled Toggle */}
+                        <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white text-sm font-medium">All Features Access</p>
+                              <p className="text-gray-400 text-xs">Enable/disable all platform features for user</p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                const newDisabled = !(selectedUser as any).allFeaturesDisabled;
+                                toggleAllFeaturesDisabledMutation.mutate({
+                                  userId: selectedUser._id,
+                                  allFeaturesDisabled: newDisabled
+                                });
+                              }}
+                              disabled={toggleAllFeaturesDisabledMutation.isPending}
+                              size="sm"
+                              className={`${
+                                !(selectedUser as any).allFeaturesDisabled 
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-red-600 hover:bg-red-700'
+                              } text-white px-3 py-1`}
+                            >
+                              {!(selectedUser as any).allFeaturesDisabled ? 'ENABLED' : 'DISABLED'}
                             </Button>
                           </div>
                         </div>

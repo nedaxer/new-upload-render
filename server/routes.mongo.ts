@@ -2073,7 +2073,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             createdAt: 1,
             requiresDeposit: { $ifNull: ['$requiresDeposit', false] },
             withdrawalAccess: { $ifNull: ['$withdrawalAccess', false] },
-            withdrawalRestrictionMessage: 1
+            withdrawalRestrictionMessage: 1,
+            allFeaturesDisabled: { $ifNull: ['$allFeaturesDisabled', false] }
           }
         }
       ]);
@@ -2335,6 +2336,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to update deposit requirement" 
+      });
+    }
+  });
+
+  // Toggle all features disabled for user
+  app.post('/api/admin/users/toggle-all-features', requireAdminAuth, async (req: Request, res: Response) => {
+    try {
+      const { userId, allFeaturesDisabled } = req.body;
+      
+      console.log('Toggle all features disabled called:', { userId, allFeaturesDisabled, userIdType: typeof userId });
+      
+      if (!userId || typeof allFeaturesDisabled !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "User ID and allFeaturesDisabled boolean required" 
+        });
+      }
+
+      const { User } = await import('./models/User');
+      
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { allFeaturesDisabled },
+        { new: true }
+      );
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      console.log(`✅ Admin toggled all features disabled for user ${userId}: ${allFeaturesDisabled}`);
+      
+      // Real-time WebSocket notification for feature access update
+      const { getWebSocketServer } = await import('./websocket');
+      const wss = getWebSocketServer();
+      
+      if (wss) {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(JSON.stringify({
+              type: 'ALL_FEATURES_UPDATE',
+              userId: userId,
+              allFeaturesDisabled: allFeaturesDisabled,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+        
+        console.log(`📡 Real-time all features update broadcasted for user ${userId}`);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `All features ${allFeaturesDisabled ? 'disabled' : 'enabled'} for user`,
+        data: {
+          userId: user._id,
+          username: user.username,
+          allFeaturesDisabled: user.allFeaturesDisabled
+        }
+      });
+    } catch (error) {
+      console.error('Admin toggle all features disabled error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to toggle all features disabled" 
       });
     }
   });
