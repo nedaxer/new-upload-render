@@ -28,7 +28,7 @@ interface RecipientInfo {
 
 export default function Transfer() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Replaced with bottom banner system
   
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [recipientIdentifier, setRecipientIdentifier] = useState('');

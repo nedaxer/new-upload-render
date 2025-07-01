@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { showSuccessBanner } from '@/hooks/use-bottom-banner';
 
 // Crypto logos
 const btcLogo = '/logos/btc-logo.svg';
@@ -41,7 +41,7 @@ const generateLongTransactionId = (shortId: string): string => {
 export default function DepositDetails() {
   const { transactionId } = useParams();
   const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Replaced with bottom banner system
 
   // Fetch transaction details
   const { data: transactionResponse, isLoading, error } = useQuery({
@@ -54,11 +54,10 @@ export default function DepositDetails() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Address copied to clipboard",
-        variant: "default",
-      });
+      showSuccessBanner(
+        "Copied!",
+        "Address copied to clipboard"
+      );
       setTimeout(() => setCopied(false), 2000);
     });
   };

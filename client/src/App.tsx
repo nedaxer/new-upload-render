@@ -83,9 +83,9 @@ import VerifyAccount from '@/pages/account/verify';
 
 // Legacy Dashboard Pages (keeping for compatibility)
 // import LegacyDashboard from '@/pages/dashboard';
-import Trade from '@/pages/dashboard/trade';
-import LegacyStaking from '@/pages/dashboard/staking';
-import LegacyDeposit from '@/pages/dashboard/deposit';
+// import Trade from '@/pages/dashboard/trade';
+// import LegacyStaking from '@/pages/dashboard/staking';
+// import LegacyDeposit from '@/pages/dashboard/deposit';
 
 // Mobile Pages
 import MobileHome from '@/pages/mobile/home';
@@ -330,15 +330,9 @@ export default function App() {
             <Route path="/mobile/security" component={MobileSecurity} />
             <Route path="/mobile/language-selection" component={LanguageSelection} />
             <Route path="/mobile/assets-history" component={AssetsHistory} />
-            <Route path="/mobile/deposit-details/:transactionId">
-              {(params) => <DepositDetails {...params} />}
-            </Route>
-            <Route path="/mobile/withdrawal-details/:transactionId">
-              {(params) => <WithdrawalDetails {...params} />}
-            </Route>
-            <Route path="/mobile/transfer-details/:transactionId">
-              {(params) => <TransferDetails {...params} />}
-            </Route>
+            <Route path="/mobile/deposit-details/:transactionId" component={DepositDetails} />
+            <Route path="/mobile/withdrawal-details/:transactionId" component={WithdrawalDetails} />
+            <Route path="/mobile/transfer-details/:transactionId" component={TransferDetails} />
             <Route path="/mobile/currency-selection">
               {() => <div>Currency Selection</div>}
             </Route>
