@@ -10,8 +10,22 @@ async function debugDepositAmounts() {
     console.log('\n📊 Checking deposit transactions...');
     const deposits = await db.collection('deposittransactions').find({}).sort({ createdAt: -1 }).limit(5).toArray();
     
-    console.log(`Found ${deposits.length} recent deposits:`);
+    // Also check the mongoose collection name
+    const depositTransactions = await db.collection('DepositTransactions').find({}).sort({ createdAt: -1 }).limit(5).toArray();
+    
+    console.log(`Found ${deposits.length} recent deposits in 'deposittransactions':`);
     deposits.forEach((deposit, index) => {
+      console.log(`\n${index + 1}. Deposit ${deposit._id}:`);
+      console.log(`   - cryptoSymbol: ${deposit.cryptoSymbol}`);
+      console.log(`   - cryptoAmount: ${deposit.cryptoAmount} (type: ${typeof deposit.cryptoAmount})`);
+      console.log(`   - usdAmount: ${deposit.usdAmount} (type: ${typeof deposit.usdAmount})`);
+      console.log(`   - cryptoPrice: ${deposit.cryptoPrice} (type: ${typeof deposit.cryptoPrice})`);
+      console.log(`   - userId: ${deposit.userId}`);
+      console.log(`   - createdAt: ${deposit.createdAt}`);
+    });
+    
+    console.log(`\nFound ${depositTransactions.length} recent deposits in 'DepositTransactions':`);
+    depositTransactions.forEach((deposit, index) => {
       console.log(`\n${index + 1}. Deposit ${deposit._id}:`);
       console.log(`   - cryptoSymbol: ${deposit.cryptoSymbol}`);
       console.log(`   - cryptoAmount: ${deposit.cryptoAmount} (type: ${typeof deposit.cryptoAmount})`);

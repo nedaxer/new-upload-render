@@ -35,4 +35,4 @@ const DepositTransactionSchema = new Schema<IDepositTransaction>({
   timestamps: true
 });
 
-export const DepositTransaction = mongoose.model<IDepositTransaction>('DepositTransaction', DepositTransactionSchema);
+export const DepositTransaction = mongoose.model<IDepositTransaction>('DepositTransaction', DepositTransactionSchema, 'deposittransactions');
