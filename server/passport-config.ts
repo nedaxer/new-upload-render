@@ -10,7 +10,7 @@ const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "***REMOVED***";
 passport.use(new GoogleStrategy({
   clientID: clientID,
   clientSecret: clientSecret,
-  callbackURL: `https://${process.env.REPLIT_DOMAINS}/auth/google/callback`
+  callbackURL: "https://nedaxer.onrender.com/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('Google OAuth profile received:', {
