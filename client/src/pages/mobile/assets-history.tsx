@@ -248,7 +248,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className="font-medium text-xs text-green-400">
+                          <p className="font-medium text-xs text-white">
                             {isSent ? '-' : '+'}${(transaction.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-gray-400 text-xs">
@@ -285,7 +285,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className="text-red-400 font-medium text-xs">
+                          <p className="text-white font-medium text-xs">
                             -{(transaction.cryptoAmount || 0).toFixed(6)}
                           </p>
                           <p className="text-gray-400 text-xs">
@@ -322,7 +322,7 @@ export default function AssetsHistory() {
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <div>
-                          <p className="text-green-400 font-medium text-xs">
+                          <p className="text-white font-medium text-xs">
                             +{(transaction.cryptoAmount || 0).toFixed(6)}
                           </p>
                           <p className="text-gray-400 text-xs">

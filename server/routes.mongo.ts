@@ -3424,43 +3424,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
   const { default: adminKycRoutes } = await import('./api/admin-kyc-routes');
   app.use('/api/admin', adminKycRoutes);
 
-  // Check withdrawal eligibility
-  app.get('/api/withdrawals/eligibility', requireAuth, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.userId!;
-      
-      const { User } = await import('./models/User');
-      const { mongoStorage } = await import('./mongoStorage');
-      
-      // Get user data including withdrawal restriction message
-      const user = await User.findById(userId).select('withdrawalRestrictionMessage');
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-      
-      // Calculate total deposits from transaction history
-      const deposits = await mongoStorage.getUserDepositTransactions(userId);
-      const totalDeposited = deposits.reduce((sum, deposit) => sum + deposit.usdAmount, 0);
-      
-      // Default minimum required amount (can be made configurable per user later)
-      const minimumRequired = 500;
-      const canWithdraw = totalDeposited >= minimumRequired;
-      
-      res.json({
-        success: true,
-        data: {
-          canWithdraw,
-          totalDeposited,
-          minimumRequired,
-          withdrawalMessage: user.withdrawalRestrictionMessage || "You need to make a first deposit of $500 to unlock withdrawal features.",
-          shortfall: Math.max(0, minimumRequired - totalDeposited)
-        }
-      });
-    } catch (error) {
-      console.error('Check withdrawal eligibility error:', error);
-      res.status(500).json({ success: false, message: "Failed to check withdrawal eligibility" });
-    }
-  });
+
 
   // Admin send message to user
   app.post('/api/admin/send-message', requireAdminAuth, async (req: Request, res: Response) => {
