@@ -7,7 +7,7 @@ import { InsertMongoUser } from '@shared/mongo-schema';
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  callbackURL: "/auth/google/callback"
+  callbackURL: "https://43f1d461-49ab-439c-9c38-6bb239d0af37-00-2s7sr664vpoc4.worf.replit.dev/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('Google OAuth profile received:', {
