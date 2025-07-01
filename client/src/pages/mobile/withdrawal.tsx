@@ -158,9 +158,19 @@ export default function MobileWithdrawal() {
     }
   }, [cryptoAmount, selectedCrypto.symbol, priceData]);
 
-  // Calculate crypto amount from USD
-  const handleUsdAmountChange = (value: string) => {
+  // Calculate crypto amount from USD with cursor position preservation
+  const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cursorPosition = e.target.selectionStart;
+    
     setUsdAmount(value);
+    
+    // Preserve cursor position after state update
+    setTimeout(() => {
+      if (e.target && cursorPosition !== null) {
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }, 0);
     
     if (!value || !priceData) {
       setCryptoAmount('');
@@ -484,33 +494,50 @@ export default function MobileWithdrawal() {
             </div>
           </div>
 
-          {/* Network Selection */}
+          {/* Network Selection - Improved */}
           <div>
             <label className="text-white font-medium mb-2 block text-xs">Network</label>
             <div className="relative">
               <button
                 onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
-                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between"
+                disabled={selectedCrypto.networks.length === 1}
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between disabled:opacity-70"
               >
-                <span className="text-gray-400 text-sm">
-                  {selectedNetwork ? selectedNetwork.chainType : 'Choose chain type'}
-                </span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <div className="flex flex-col items-start">
+                  <span className="text-white text-sm font-medium">
+                    {selectedNetwork ? selectedNetwork.chainType : 'Choose network'}
+                  </span>
+                  {selectedNetwork && (
+                    <span className="text-gray-400 text-xs">
+                      {selectedNetwork.networkName} • Min: {selectedNetwork.minWithdrawal} {selectedCrypto.symbol}
+                    </span>
+                  )}
+                </div>
+                {selectedCrypto.networks.length > 1 && (
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showNetworkDropdown ? 'rotate-180' : ''}`} />
+                )}
               </button>
               
               {showNetworkDropdown && selectedCrypto.networks.length > 1 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10">
-                  {selectedCrypto.networks.map((network) => (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10 shadow-lg">
+                  {selectedCrypto.networks.map((network, index) => (
                     <button
                       key={network.networkId}
                       onClick={() => {
                         setSelectedNetwork(network);
                         setShowNetworkDropdown(false);
                       }}
-                      className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg"
+                      className={`w-full p-3 text-left hover:bg-[#2a2a50] transition-colors ${
+                        index === 0 ? 'rounded-t-lg' : ''
+                      } ${
+                        index === selectedCrypto.networks.length - 1 ? 'rounded-b-lg' : ''
+                      }`}
                     >
-                      <span className="text-white text-sm">{network.chainType}</span>
-                      <div className="text-xs text-gray-400 mt-1">{network.networkName}</div>
+                      <div className="flex flex-col">
+                        <span className="text-white text-sm font-medium">{network.chainType}</span>
+                        <span className="text-gray-400 text-xs">{network.networkName}</span>
+                        <span className="text-orange-500 text-xs">Min withdrawal: {network.minWithdrawal} {selectedCrypto.symbol}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -518,14 +545,11 @@ export default function MobileWithdrawal() {
             </div>
           </div>
 
-          {/* Available USD Balance */}
-          <div className="bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 mb-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-xs">Available USD Balance</span>
-              <span className="text-white font-medium text-sm">
-                ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
+          {/* Available Balance - Simple text display */}
+          <div className="mb-2">
+            <span className="text-gray-400 text-xs">
+              Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
           </div>
 
           {/* USD Amount Input */}
@@ -535,7 +559,7 @@ export default function MobileWithdrawal() {
               <Input
                 type="number"
                 value={usdAmount}
-                onChange={(e) => handleUsdAmountChange(e.target.value)}
+                onChange={handleUsdAmountChange}
                 placeholder="Enter USD amount to withdraw"
                 className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-16 h-10 text-sm"
                 step="0.01"
