@@ -4,13 +4,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { showSuccessNotification } from '@/hooks/use-global-notification';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function TransferDetails() {
   const { transactionId } = useParams();
   const [copied, setCopied] = useState(false);
-
+  const { toast } = useToast();
   const { user } = useAuth();
 
   // Fetch transfer details
@@ -24,10 +24,10 @@ export default function TransferDetails() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      showSuccessNotification(
-        "Copied!",
-        "Transaction ID copied to clipboard"
-      );
+      toast({
+        title: "Copied!",
+        description: "Transaction ID copied to clipboard",
+      });
       setTimeout(() => setCopied(false), 2000);
     });
   };

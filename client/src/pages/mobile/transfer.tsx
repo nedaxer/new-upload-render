@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { showErrorNotification, showSuccessNotification } from '@/hooks/use-global-notification';
+import { showSuccessBanner, showErrorBanner } from '@/hooks/use-bottom-banner';
 import { TransferDepositRequiredModal } from '@/components/transfer-deposit-required-modal';
 import { DepositModal } from '@/components/deposit-modal';
 import { AnimatedErrorBanner } from '@/components/animated-error-banner';
@@ -28,7 +28,7 @@ interface RecipientInfo {
 
 export default function Transfer() {
   const { user } = useAuth();
-
+  const { toast } = useToast();
   
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [recipientIdentifier, setRecipientIdentifier] = useState('');
@@ -112,10 +112,11 @@ export default function Transfer() {
           // Close deposit required modal if restriction was removed
           if (!message.data.requiresDeposit && showDepositRequiredModal) {
             setShowDepositRequiredModal(false);
-            showSuccessNotification(
-              "Restriction Removed",
-              "You can now send transfers without making a deposit!"
-            );
+            toast({
+              title: "Restriction Removed",
+              description: "You can now send transfers without making a deposit!",
+              variant: "default",
+            });
           }
         }
 
@@ -129,10 +130,11 @@ export default function Transfer() {
           // Close deposit required modal if withdrawal access was granted
           if (message.withdrawalAccess && showDepositRequiredModal) {
             setShowDepositRequiredModal(false);
-            showSuccessNotification(
-              "Withdrawal Access Granted",
-              "You can now send transfers and make withdrawals!"
-            );
+            toast({
+              title: "Withdrawal Access Granted",
+              description: "You can now send transfers and make withdrawals!",
+              variant: "default",
+            });
           }
         }
 
@@ -146,10 +148,11 @@ export default function Transfer() {
           // Hide error banner if transfer access was granted
           if (message.transferAccess && showTransferBanner) {
             setShowTransferBanner(false);
-            showSuccessNotification(
-              "Transfer Access Enabled",
-              "You can now send transfers to other users!"
-            );
+            toast({
+              title: "Transfer Access Enabled",
+              description: "You can now send transfers to other users!",
+              variant: "default",
+            });
           }
         }
 
@@ -159,15 +162,17 @@ export default function Transfer() {
           
           // Show notification about transfer access change
           if (message.transferAccess) {
-            showSuccessNotification(
-              "Transfer Access Enabled",
-              "You can now send transfers to other users!"
-            );
+            toast({
+              title: "Transfer Access Enabled",
+              description: "You can now send transfers to other users!",
+              variant: "default",
+            });
           } else {
-            showErrorNotification(
-              "Transfer Access Disabled",
-              "Transfer functionality has been disabled by administrator"
-            );
+            toast({
+              title: "Transfer Access Disabled",
+              description: "Transfer functionality has been disabled by administrator",
+              variant: "destructive",
+            });
           }
         }
       } catch (error) {
@@ -188,7 +193,7 @@ export default function Transfer() {
         ws.close();
       }
     };
-  }, [user, showDepositRequiredModal]);
+  }, [user, showDepositRequiredModal, toast]);
 
   const getUserUSDBalance = () => {
     if (!walletData || !(walletData as any).data) return 0;
@@ -270,10 +275,10 @@ export default function Transfer() {
       return data;
     },
     onSuccess: () => {
-      showSuccessNotification(
-        'Transfer Successful',
-        `Successfully transferred $${parseFloat(withdrawAmount).toFixed(2)} USD`
-      );
+      toast({
+        title: 'Transfer Successful',
+        description: `Successfully transferred $${parseFloat(withdrawAmount).toFixed(2)} USD`,
+      });
       
       // Invalidate queries to refresh balances
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
@@ -287,10 +292,11 @@ export default function Transfer() {
       setSelectedMethod(null);
     },
     onError: (error: any) => {
-      showErrorNotification(
-        'Transfer Failed',
-        error.message || 'Failed to transfer funds'
-      );
+      toast({
+        title: 'Transfer Failed',
+        description: error.message || 'Failed to transfer funds',
+        variant: 'destructive',
+      });
     },
   });
 
@@ -322,28 +328,31 @@ export default function Transfer() {
     }
 
     if (!recipientInfo) {
-      showErrorNotification(
-        'Error',
-        'Please search for a recipient first'
-      );
+      toast({
+        title: 'Error',
+        description: 'Please search for a recipient first',
+        variant: 'destructive',
+      });
       return;
     }
 
     const transferAmount = parseFloat(withdrawAmount);
     
     if (isNaN(transferAmount) || transferAmount <= 0) {
-      showErrorNotification(
-        'Invalid Amount',
-        'Please enter a valid amount'
-      );
+      toast({
+        title: 'Invalid Amount',
+        description: 'Please enter a valid amount',
+        variant: 'destructive',
+      });
       return;
     }
 
     if (transferAmount > getUserUSDBalance()) {
-      showErrorNotification(
-        'Insufficient Balance',
-        'You do not have enough funds'
-      );
+      toast({
+        title: 'Insufficient Balance',
+        description: 'You do not have enough funds',
+        variant: 'destructive',
+      });
       return;
     }
 

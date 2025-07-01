@@ -6,10 +6,11 @@ import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AuthRedirect } from '@/components/auth-redirect';
+
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt';
-import { GlobalNotificationBanner } from '@/components/global-notification-banner';
-import { useGlobalNotification } from '@/hooks/use-global-notification';
 import { SplashScreen } from '@/components/splash-screen';
+import { BottomSlideBanner } from '@/components/bottom-slide-banner';
+import { useBottomBanner } from '@/hooks/use-bottom-banner';
 
 import { LanguageProvider } from '@/contexts/language-context';
 import { ThemeProvider } from '@/contexts/theme-context';
@@ -139,7 +140,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [appCrashed, setAppCrashed] = useState(false);
-  const { currentNotification, dismissNotification } = useGlobalNotification();
+  const { currentBanner, dismissBanner } = useBottomBanner();
 
   useEffect(() => {
     // Error boundary to catch app crashes
@@ -360,9 +361,9 @@ export default function App() {
             {/* 404 Route */}
             <Route component={NotFound} />
             </Switch>
-            <GlobalNotificationBanner 
-              notification={currentNotification}
-              onDismiss={dismissNotification}
+            <BottomSlideBanner 
+              notification={currentBanner}
+              onDismiss={dismissBanner}
             />
             <CookieConsent />
             <PWAInstallPrompt />

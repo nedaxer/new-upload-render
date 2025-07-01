@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { showErrorNotification, showSuccessNotification } from "@/hooks/use-global-notification";
+import { showSuccessBanner, showErrorBanner } from "@/hooks/use-bottom-banner";
 import { useAuth } from "@/hooks/use-auth";
 import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
 
@@ -79,9 +79,9 @@ export default function Login() {
       return;
     }
     
-    // If we used the stored username, show a hint notification
+    // If we used the stored username, show a hint banner
     if (lastUsername) {
-      showSuccessNotification(
+      showSuccessBanner(
         "Username pre-filled",
         "We've pre-filled your username from your recent registration."
       );
@@ -93,7 +93,7 @@ export default function Login() {
     
     // Check if username and password are provided
     if (!username || !password) {
-      showErrorNotification(
+      showErrorBanner(
         "Missing Information",
         "Please enter both your email address and password to continue."
       );
@@ -102,7 +102,7 @@ export default function Login() {
 
     // Check reCAPTCHA
     if (!recaptchaToken) {
-      showErrorNotification(
+      showErrorBanner(
         "reCAPTCHA Required",
         "Please complete the reCAPTCHA verification to continue."
       );
@@ -127,7 +127,7 @@ export default function Login() {
           await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
           
           // Show enhanced success message
-          showSuccessNotification(
+          showSuccessBanner(
             "Welcome Back! 🎉",
             `Hello ${username}! You're now connected to your Nedaxer trading account. All your features are ready to use.`
           );
@@ -158,7 +158,7 @@ export default function Login() {
             errorDescription = "We're experiencing technical difficulties. Please try again in a few moments.";
           }
           
-          showErrorNotification(
+          showErrorBanner(
             errorTitle,
             errorDescription
           );

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { ArrowLeft, ChevronDown, HelpCircle, QrCode, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { showSuccessNotification, showErrorNotification } from '@/hooks/use-global-notification';
+import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -48,59 +48,60 @@ const cryptoOptions: CryptoOption[] = [
   {
     symbol: 'BTC',
     name: 'Bitcoin',
-    icon: '/crypto-icons/btc.svg',
+    icon: btcLogo,
     networks: [
       {
         networkId: 'bitcoin',
         networkName: 'Bitcoin Network',
         chainType: 'Bitcoin',
-        minWithdrawal: 0.001,
-      },
-    ],
+        minWithdrawal: 0.00027
+      }
+    ]
   },
   {
     symbol: 'ETH',
     name: 'Ethereum',
-    icon: '/crypto-icons/eth.svg',
+    icon: ethLogo,
     networks: [
       {
-        networkId: 'ethereum',
-        networkName: 'ERC20 (Ethereum)',
+        networkId: 'erc20',
+        networkName: 'Ethereum (ERC20)',
         chainType: 'ERC20',
-        minWithdrawal: 0.01,
-      },
-    ],
+        minWithdrawal: 0.01
+      }
+    ]
   },
   {
     symbol: 'USDT',
     name: 'Tether',
-    icon: '/crypto-icons/usdt.svg',
+    icon: usdtLogo,
     networks: [
       {
         networkId: 'erc20',
-        networkName: 'ERC20 (Ethereum)',
+        networkName: 'Ethereum (ERC20)',
         chainType: 'ERC20',
-        minWithdrawal: 10,
+        minWithdrawal: 10
       },
       {
         networkId: 'trc20',
-        networkName: 'TRC20 (Tron)',
+        networkName: 'TRON (TRC20)',
         chainType: 'TRC20',
-        minWithdrawal: 1,
+        minWithdrawal: 1
       },
       {
         networkId: 'bep20',
-        networkName: 'BEP-20 (BSC)',
+        networkName: 'BNB Smart Chain (BEP20)',
         chainType: 'BEP20',
-        minWithdrawal: 1,
-      },
-    ],
-  },
+        minWithdrawal: 1
+      }
+    ]
+  }
 ];
 
 export default function MobileWithdrawal() {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
@@ -139,6 +140,8 @@ export default function MobileWithdrawal() {
   });
 
   const userBalance = (balanceData as any)?.data?.totalUSDValue || (balanceData as any)?.data?.usdBalance || 0;
+
+  // Only USD input is used - no reverse calculation needed
 
   // USD input handler - formats as normal currency
   const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,10 +202,10 @@ export default function MobileWithdrawal() {
           (result) => {
             setWithdrawalAddress(result.data);
             stopQrScanner();
-            showSuccessNotification(
-              "Address Scanned",
-              "Wallet address has been detected and filled in."
-            );
+            toast({
+              title: "Address Scanned",
+              description: "Wallet address has been detected and filled in.",
+            });
           },
           {
             returnDetailedScanResult: true,
@@ -214,10 +217,11 @@ export default function MobileWithdrawal() {
       }
     } catch (error) {
       console.error('Error starting QR scanner:', error);
-      showErrorNotification(
-        "Camera Error",
-        "Unable to access camera. Please enter address manually."
-      );
+      toast({
+        title: "Camera Error",
+        description: "Unable to access camera. Please enter address manually.",
+        variant: "destructive",
+      });
       setShowQrScanner(false);
     }
   };
@@ -270,10 +274,10 @@ export default function MobileWithdrawal() {
       return response.json();
     },
     onSuccess: (data) => {
-      showSuccessNotification(
-        "Withdrawal Processed",
-        `Successfully withdrew $${usdAmount} USD via ${selectedCrypto.symbol}`
-      );
+      toast({
+        title: "Withdrawal Processed",
+        description: `Successfully withdrew $${usdAmount} USD via ${selectedCrypto.symbol}`,
+      });
       
       // Invalidate and refetch all related data for real-time updates
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/summary'] });
@@ -290,20 +294,22 @@ export default function MobileWithdrawal() {
       navigate('/mobile/assets');
     },
     onError: (error: any) => {
-      showErrorNotification(
-        "Withdrawal Failed",
-        error.message || "Failed to process withdrawal. Please try again."
-      );
+      toast({
+        title: "Withdrawal Failed",
+        description: error.message || "Failed to process withdrawal. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
   // Handle withdrawal submission
   const handleWithdraw = async () => {
     if (!selectedNetwork || !withdrawalAddress || !usdAmount) {
-      showErrorNotification(
-        "Missing Information",
-        "Please fill in all required fields."
-      );
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -311,43 +317,48 @@ export default function MobileWithdrawal() {
     const cryptoAmountNum = parseFloat(cryptoAmount || '0');
     
     if (isNaN(usdAmountNum) || usdAmountNum <= 0) {
-      showErrorNotification(
-        "Invalid Amount",
-        "Please enter a valid USD amount."
-      );
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid USD amount.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
-      showErrorNotification(
-        "Invalid Crypto Amount",
-        "Unable to calculate crypto amount. Please check the exchange rate."
-      );
+      toast({
+        title: "Invalid Crypto Amount",
+        description: "Unable to calculate crypto amount. Please check the exchange rate.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (cryptoAmountNum < selectedNetwork.minWithdrawal) {
-      showErrorNotification(
-        "Amount Too Low",
-        `Minimum withdrawal amount is ${selectedNetwork.minWithdrawal} ${selectedCrypto.symbol}`
-      );
+      toast({
+        title: "Amount Too Low",
+        description: `Minimum withdrawal amount is ${selectedNetwork.minWithdrawal} ${selectedCrypto.symbol}`,
+        variant: "destructive",
+      });
       return;
     }
 
     if (usdAmountNum > userBalance) {
-      showErrorNotification(
-        "Insufficient Balance",
-        "You don't have enough balance for this withdrawal."
-      );
+      toast({
+        title: "Insufficient Balance",
+        description: "You don't have enough balance for this withdrawal.",
+        variant: "destructive",
+      });
       return;
     }
 
     // Basic address validation
     if (withdrawalAddress.length < 10) {
-      showErrorNotification(
-        "Invalid Address",
-        "Please enter a valid withdrawal address."
-      );
+      toast({
+        title: "Invalid Address",
+        description: "Please enter a valid withdrawal address.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -388,6 +399,8 @@ export default function MobileWithdrawal() {
         setUsdAmount('');
         setCryptoAmount('');
         setWithdrawalAddress('');
+        
+
       }, 2000);
       
       // Invalidate notifications and balance queries to refresh data
@@ -417,207 +430,337 @@ export default function MobileWithdrawal() {
       {/* Content - Scrollable */}
       <div className="flex-1 px-3 py-4 space-y-3 overflow-y-auto pb-24">
         {/* Coin Selection */}
-        <div>
-          <label className="text-white font-medium mb-2 block text-xs">Coin</label>
-          <div className="relative">
-            <button
-              onClick={() => setShowCryptoDropdown(!showCryptoDropdown)}
-              className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between"
-            >
-              <div className="flex items-center space-x-2">
-                <img 
-                  src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
-                  alt={selectedCrypto.symbol}
-                  className="w-6 h-6"
-                  onError={(e) => {
-                    const fallbackDiv = document.createElement('div');
-                    fallbackDiv.className = 'w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center';
-                    fallbackDiv.innerHTML = `<span class="text-white font-bold text-xs">${selectedCrypto.symbol.charAt(0)}</span>`;
-                    e.currentTarget.parentNode?.replaceChild(fallbackDiv, e.currentTarget);
+          <div>
+            <label className="text-white font-medium mb-2 block text-xs">Coin</label>
+            <div className="relative">
+              <button
+                onClick={() => setShowCryptoDropdown(!showCryptoDropdown)}
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between"
+              >
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
+                    alt={selectedCrypto.symbol}
+                    className="w-6 h-6"
+                    onError={(e) => {
+                      const fallbackDiv = document.createElement('div');
+                      fallbackDiv.className = 'w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center';
+                      fallbackDiv.innerHTML = `<span class="text-white font-bold text-xs">${selectedCrypto.symbol.charAt(0)}</span>`;
+                      e.currentTarget.parentNode?.replaceChild(fallbackDiv, e.currentTarget);
+                    }}
+                  />
+                  <div>
+                    <span className="text-white font-medium text-sm">{selectedCrypto.symbol}</span>
+                    <span className="text-gray-400 ml-1 text-xs">{selectedCrypto.name}</span>
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+              
+              {showCryptoDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10">
+                  {cryptoOptions.map((crypto) => (
+                    <button
+                      key={crypto.symbol}
+                      onClick={() => handleCryptoSelect(crypto)}
+                      className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
+                    >
+                      <img 
+                        src={getCryptoLogo(crypto.symbol) || crypto.icon} 
+                        alt={crypto.symbol}
+                        className="w-5 h-5"
+                      />
+                      <div>
+                        <span className="text-white text-sm">{crypto.symbol}</span>
+                        <span className="text-gray-400 ml-1 text-xs">{crypto.name}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Address Input with QR Scanner */}
+          <div>
+            <label className="text-white font-medium mb-2 block text-xs">Address</label>
+            <div className="relative">
+              <Input
+                type="text"
+                value={withdrawalAddress}
+                onChange={(e) => setWithdrawalAddress(e.target.value)}
+                placeholder="Scan QR or enter withdrawal address"
+                className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-10 h-10 text-sm"
+              />
+              <button 
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
+                onClick={startQrScanner}
+              >
+                <QrCode className="w-4 h-4 text-orange-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Network Selection - Improved */}
+          <div>
+            <label className="text-white font-medium mb-2 block text-xs">Network</label>
+            <div className="relative">
+              <button
+                onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
+                disabled={selectedCrypto.networks.length === 1}
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between disabled:opacity-70"
+              >
+                <div className="flex flex-col items-start">
+                  <span className="text-white text-sm font-medium">
+                    {selectedNetwork ? selectedNetwork.chainType : 'Choose network'}
+                  </span>
+                  {selectedNetwork && (
+                    <span className="text-gray-400 text-xs">
+                      {selectedNetwork.networkName}
+                    </span>
+                  )}
+                </div>
+                {selectedCrypto.networks.length > 1 && (
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showNetworkDropdown ? 'rotate-180' : ''}`} />
+                )}
+              </button>
+              
+              {showNetworkDropdown && selectedCrypto.networks.length > 1 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10 shadow-lg">
+                  {selectedCrypto.networks.map((network, index) => (
+                    <button
+                      key={network.networkId}
+                      onClick={() => {
+                        setSelectedNetwork(network);
+                        setShowNetworkDropdown(false);
+                      }}
+                      className={`w-full p-3 text-left hover:bg-[#2a2a50] transition-colors ${
+                        index === 0 ? 'rounded-t-lg' : ''
+                      } ${
+                        index === selectedCrypto.networks.length - 1 ? 'rounded-b-lg' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-white text-sm font-medium">{network.chainType}</span>
+                        <span className="text-gray-400 text-xs">{network.networkName}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Available Balance - Simple text display */}
+          <div className="mb-2">
+            <span className="text-gray-400 text-xs">
+              Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+
+          {/* USD Amount Input - Recreated */}
+          <div>
+            <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={usdAmount}
+                onChange={handleUsdAmountChange}
+                placeholder="Enter amount like 100.00"
+                className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-md text-white placeholder:text-gray-500 pr-16 h-10 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <span className="text-orange-500 font-medium text-xs">USD</span>
+                <button 
+                  type="button"
+                  className="text-orange-500 text-xs hover:text-orange-400"
+                  onClick={() => {
+                    const maxAmount = userBalance.toFixed(2);
+                    setUsdAmount(maxAmount);
+                    
+                    // Trigger crypto amount calculation
+                    const amount = parseFloat(maxAmount);
+                    if (amount > 0 && priceData) {
+                      const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+                        ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+                        : null;
+                      
+                      const price = cryptoData?.price;
+                      if (price && price > 0) {
+                        setCryptoAmount((amount / price).toFixed(8));
+                      }
+                    }
                   }}
-                />
-                <div>
-                  <span className="text-white font-medium text-sm">{selectedCrypto.symbol}</span>
-                  <span className="text-gray-400 ml-1 text-xs">{selectedCrypto.name}</span>
+                >
+                  Max
+                </button>
+              </div>
+            </div>
+            
+            {/* Live Conversion Display */}
+            {usdAmount && cryptoAmount && parseFloat(usdAmount) > 0 && (
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-gray-400">You will receive:</span>
+                <div className="flex items-center space-x-1">
+                  <img 
+                    src={getCryptoLogo(selectedCrypto.symbol) || selectedCrypto.icon} 
+                    alt={selectedCrypto.symbol}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-white font-medium">
+                    {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+                  </span>
                 </div>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </button>
-            
-            {showCryptoDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10">
-                {cryptoOptions.map((crypto) => (
-                  <button
-                    key={crypto.symbol}
-                    onClick={() => handleCryptoSelect(crypto)}
-                    className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg flex items-center space-x-2"
-                  >
-                    <img 
-                      src={getCryptoLogo(crypto.symbol) || crypto.icon} 
-                      alt={crypto.symbol}
-                      className="w-5 h-5"
-                    />
-                    <div>
-                      <span className="text-white text-sm">{crypto.symbol}</span>
-                      <span className="text-gray-400 ml-1 text-xs">{crypto.name}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
             )}
           </div>
-        </div>
+      </div>
 
-        {/* Address Input with QR Scanner */}
-        <div>
-          <label className="text-white font-medium mb-2 block text-xs">Address</label>
-          <div className="relative">
-            <Input
-              type="text"
-              value={withdrawalAddress}
-              onChange={(e) => setWithdrawalAddress(e.target.value)}
-              placeholder="Scan QR or enter withdrawal address"
-              className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-10 h-10 text-sm"
-            />
-            <button 
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-[#2a2a50] rounded"
-              onClick={startQrScanner}
-            >
-              <QrCode className="w-4 h-4 text-orange-500" />
-            </button>
-          </div>
-        </div>
-
-        {/* Network Selection */}
-        <div>
-          <label className="text-white font-medium mb-2 block text-xs">Network</label>
-          <div className="relative">
-            <button
-              onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
-              disabled={selectedCrypto.networks.length === 1}
-              className="w-full bg-[#1a1a40] border border-[#2a2a50] rounded-lg p-3 flex items-center justify-between disabled:opacity-70"
-            >
-              <div className="flex flex-col items-start">
-                <span className="text-white text-sm">
-                  {selectedNetwork?.networkName || 'Select Network'}
-                </span>
-                {selectedNetwork && (
-                  <span className="text-gray-400 text-xs">
-                    Min: {selectedNetwork.minWithdrawal} {selectedCrypto.symbol}
-                  </span>
-                )}
-              </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </button>
-            
-            {showNetworkDropdown && selectedCrypto.networks.length > 1 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a40] border border-[#2a2a50] rounded-lg z-10">
-                {selectedCrypto.networks.map((network) => (
-                  <button
-                    key={network.networkId}
-                    onClick={() => {
-                      setSelectedNetwork(network);
-                      setShowNetworkDropdown(false);
-                    }}
-                    className="w-full p-3 text-left hover:bg-[#2a2a50] first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-white text-sm">{network.networkName}</span>
-                      <span className="text-gray-400 text-xs">
-                        Min: {network.minWithdrawal} {selectedCrypto.symbol}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Amount Input */}
-        <div>
-          <label className="text-white font-medium mb-2 block text-xs">Amount</label>
-          <Input
-            type="text"
-            value={usdAmount}
-            onChange={handleUsdAmountChange}
-            placeholder="0.00"
-            className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 h-10 text-sm"
-          />
-          
-          {/* Balance display */}
-          <div className="mt-1 text-xs text-gray-400">
-            Available: ${userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
+      {/* Fixed Bottom Section - Withdrawal Summary and Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] z-20">
+        {/* Withdrawal Summary */}
+        <div className="px-3 pt-2 pb-2">
+          {/* Withdrawal Fees */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-400 text-sm">Withdrawal Fees</span>
+            <span className="text-white font-medium text-sm">0.00011 {selectedCrypto.symbol}</span>
           </div>
           
-          {/* Live USD to crypto conversion */}
-          {cryptoAmount && (
-            <div className="mt-1 text-xs text-orange-500">
-              ≈ {cryptoAmount} {selectedCrypto.symbol}
+          {/* Amount Received */}
+          {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-sm">Amount Received <span className="text-orange-500">Setting</span></span>
+              <span className="text-white font-bold text-lg">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
             </div>
           )}
         </div>
 
-        {/* QR Scanner Modal */}
-        {showQrScanner && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#1a1a40] rounded-lg p-4 w-80 max-w-[90vw]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-white font-medium">Scan QR Code</h3>
-                <button
-                  onClick={stopQrScanner}
-                  className="text-gray-400 hover:text-white"
+        {/* Withdraw Button */}
+        <div className="p-3">
+          <Button
+            onClick={handleWithdraw}
+            disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || parseFloat(usdAmount || '0') <= 0 || isProcessing}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg flex items-center justify-center space-x-2"
+          >
+            <span>{isProcessing ? 'Processing...' : 'Withdraw'}</span>
+            {!isProcessing && usdAmount && parseFloat(usdAmount) > 0 && cryptoAmount && (
+              <span className="text-white font-bold">
+                {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
+              </span>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* QR Scanner Modal */}
+      {showQrScanner && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center">
+          <div className="bg-[#0a0a2e] p-4 rounded-lg w-11/12 max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-medium">Scan QR Code</h3>
+              <button onClick={stopQrScanner} className="text-gray-400 hover:text-white">
+                ✕
+              </button>
+            </div>
+            <video ref={videoRef} className="w-full rounded-lg" />
+            <p className="text-gray-400 text-sm text-center mt-2">
+              Point your camera at the QR code
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center animate-[fadeIn_0.3s_ease-out]">
+          <div className="bg-gradient-to-br from-[#1a1a40] to-[#0f0f2a] p-8 rounded-2xl border border-[#2a2a50] shadow-2xl flex flex-col items-center space-y-6 mx-4 max-w-sm w-full animate-[slideUp_0.4s_ease-out] relative overflow-hidden">
+            
+            {/* Animated Background Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-4 left-4 w-2 h-2 bg-green-400 rounded-full animate-[float_3s_ease-in-out_infinite]"></div>
+              <div className="absolute top-8 right-6 w-1 h-1 bg-orange-400 rounded-full animate-[float_2s_ease-in-out_infinite_0.5s]"></div>
+              <div className="absolute bottom-6 left-8 w-1.5 h-1.5 bg-blue-400 rounded-full animate-[float_2.5s_ease-in-out_infinite_1s]"></div>
+              <div className="absolute bottom-4 right-4 w-1 h-1 bg-purple-400 rounded-full animate-[float_3.5s_ease-in-out_infinite_1.5s]"></div>
+            </div>
+
+            {/* Animated Checkmark with Enhanced Effects */}
+            <div className="relative animate-[scaleIn_0.6s_ease-out_0.2s_both]">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg animate-[pulse_2s_ease-in-out_infinite]">
+                <svg 
+                  className="w-14 h-14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  ×
-                </button>
+                  <path
+                    d="M9 12l2 2 4-4"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray="10"
+                    strokeDashoffset="10"
+                    className="animate-[draw_1s_ease-in-out_0.5s_forwards]"
+                  />
+                </svg>
               </div>
-              <video
-                ref={videoRef}
-                className="w-full h-48 bg-black rounded-lg"
-                playsInline
-              />
+              <div className="absolute inset-0 w-24 h-24 border-4 border-green-300 rounded-full animate-[ripple_1.5s_ease-out_infinite] opacity-60"></div>
+              <div className="absolute inset-0 w-24 h-24 border-2 border-green-200 rounded-full animate-[ripple_1.5s_ease-out_infinite_0.5s] opacity-40"></div>
+            </div>
+            
+            {/* Enhanced Success Text with Animations */}
+            <div className="text-center space-y-4 animate-[slideUp_0.5s_ease-out_0.8s_both]">
+              <div className="space-y-2">
+                <h3 className="text-white font-bold text-2xl bg-gradient-to-r from-white to-gray-200 bg-clip-text">
+                  Withdrawal Successful!
+                </h3>
+                <div className="flex items-center justify-center space-x-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-[bounce_1s_infinite]"></div>
+                  <p className="text-green-400 text-sm font-medium">
+                    Transaction processed successfully
+                  </p>
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-r from-[#0a0a2e] to-[#1a1a3e] rounded-xl p-4 border border-[#2a2a50] shadow-inner">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full animate-[ping_1s_infinite]"></div>
+                  <span className="text-gray-300 text-xs font-medium">TRANSACTION DETAILS</span>
+                  <div className="w-3 h-3 bg-orange-500 rounded-full animate-[ping_1s_infinite_0.5s]"></div>
+                </div>
+                <p className="text-orange-400 font-mono text-lg font-bold">
+                  ${parseFloat(successData.usdAmount).toFixed(2)} → {parseFloat(successData.cryptoAmount).toFixed(8)} {successData.cryptoSymbol}
+                </p>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Pending Modal */}
-        {showPendingModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#1a1a40] rounded-lg p-6 w-80 max-w-[90vw] text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-              <h3 className="text-white font-medium mb-2">Processing Withdrawal</h3>
-              <p className="text-gray-400 text-sm">Please wait while we process your withdrawal...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Success Modal */}
-        {showSuccessModal && successData && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#1a1a40] rounded-lg p-6 w-80 max-w-[90vw] text-center">
-              <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-              <h3 className="text-white font-medium mb-2">Withdrawal Successful!</h3>
-              <p className="text-gray-400 text-sm mb-2">
-                Successfully withdrew ${successData.usdAmount} USD
+      {/* Pending Processing Modal */}
+      {showPendingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-[#1a1a40] p-8 rounded-xl border border-[#2a2a50] flex flex-col items-center space-y-4">
+            {/* Spinning Wheel */}
+            <div className="w-16 h-16 border-4 border-gray-600 border-t-orange-500 rounded-full animate-spin"></div>
+            
+            {/* Processing Text */}
+            <div className="text-center">
+              <h3 className="text-white font-medium text-lg mb-2">Processing Withdrawal</h3>
+              <p className="text-gray-400 text-sm">
+                Your withdrawal is being processed...
               </p>
-              <p className="text-gray-400 text-xs">
-                ≈ {successData.cryptoAmount} {successData.cryptoSymbol}
+              <p className="text-orange-500 text-xs mt-2">
+                ${parseFloat(usdAmount || '0').toFixed(2)} → {parseFloat(cryptoAmount || '0').toFixed(8)} {selectedCrypto.symbol}
               </p>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Fixed Bottom Button */}
-      <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
-        <Button
-          onClick={handleWithdraw}
-          disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || isProcessing}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium h-12 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isProcessing ? 'Processing...' : 'Withdraw'}
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

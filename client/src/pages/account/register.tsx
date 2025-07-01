@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { showErrorNotification, showSuccessNotification } from '@/hooks/use-global-notification';
+import { showSuccessBanner, showErrorBanner } from "@/hooks/use-bottom-banner";
 import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -79,7 +79,7 @@ export default function Register() {
     
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      showErrorNotification(
+      showErrorBanner(
         "Missing information",
         "Please fill in all required fields."
       );
@@ -87,7 +87,7 @@ export default function Register() {
     }
     
     if (formData.password !== formData.confirmPassword) {
-      showErrorNotification(
+      showErrorBanner(
         "Passwords don't match",
         "Please make sure your passwords match."
       );
@@ -95,7 +95,7 @@ export default function Register() {
     }
     
     if (!formData.acceptTerms) {
-      showErrorNotification(
+      showErrorBanner(
         "Terms not accepted",
         "You must accept the terms and conditions to create an account."
       );
@@ -104,7 +104,7 @@ export default function Register() {
 
     // Check reCAPTCHA
     if (!recaptchaToken) {
-      showErrorNotification(
+      showErrorBanner(
         "reCAPTCHA Required",
         "Please complete the reCAPTCHA verification to continue."
       );
@@ -162,7 +162,7 @@ export default function Register() {
           errorDetail = "Please make sure all required fields are filled correctly. Check that your password meets all requirements.";
         }
         
-        showErrorNotification(
+        showErrorBanner(
           "Registration failed",
           errorMessage
         );
@@ -170,7 +170,7 @@ export default function Register() {
         // Show additional detail if available
         if (errorDetail) {
           setTimeout(() => {
-            showErrorNotification(
+            showErrorBanner(
               "What to do next",
               errorDetail
             );
@@ -182,14 +182,14 @@ export default function Register() {
       }
       
       // Success - account created and ready to use
-      showSuccessNotification(
+      showSuccessBanner(
         "Welcome to Nedaxer!",
         "Your account has been created successfully."
       );
       
-      // Show notification with login info
+      // Show banner with login info
       setTimeout(() => {
-        showSuccessNotification(
+        showSuccessBanner(
           "Your Login Information",
           `Username: ${data.user.email}\nPlease use your email address to log in.`,
           7000 // Show for longer
@@ -225,7 +225,7 @@ export default function Register() {
         errorMessage = error.message;
       }
       
-      showErrorNotification(
+      showErrorBanner(
         "Registration failed",
         errorMessage
       );

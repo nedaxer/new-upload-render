@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export interface NotificationBannerData {
+export interface BottomSlideBannerData {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
   title: string;
@@ -10,12 +10,12 @@ export interface NotificationBannerData {
   duration?: number; // Duration in milliseconds, default 3000
 }
 
-interface GlobalNotificationBannerProps {
-  notification: NotificationBannerData | null;
+interface BottomSlideBannerProps {
+  notification: BottomSlideBannerData | null;
   onDismiss: () => void;
 }
 
-export function GlobalNotificationBanner({ notification, onDismiss }: GlobalNotificationBannerProps) {
+export function BottomSlideBanner({ notification, onDismiss }: BottomSlideBannerProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -23,7 +23,7 @@ export function GlobalNotificationBanner({ notification, onDismiss }: GlobalNoti
     if (notification) {
       // Show the banner with animation
       setIsVisible(true);
-      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(true), 50); // Small delay for smooth animation
       
       // Auto-dismiss after specified duration (default 3 seconds)
       const duration = notification.duration || 3000;
@@ -82,13 +82,13 @@ export function GlobalNotificationBanner({ notification, onDismiss }: GlobalNoti
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none">
+    <div className="fixed bottom-0 left-0 right-0 z-[9999] pointer-events-none">
       <div 
         className={cn(
-          "mx-4 mt-4 p-4 rounded-lg border-2 backdrop-blur-sm shadow-2xl pointer-events-auto",
+          "mx-4 mb-4 p-4 rounded-lg border-2 backdrop-blur-sm shadow-2xl pointer-events-auto",
           "transform transition-all duration-300 ease-out",
           getBannerStyles(),
-          isAnimating ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+          isAnimating ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
         )}
       >
         <div className="flex items-start space-x-3">
