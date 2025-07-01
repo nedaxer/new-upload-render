@@ -427,8 +427,8 @@ export default function MobileWithdrawal() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-3 py-4 space-y-3 overflow-hidden">
+      {/* Content - Scrollable */}
+      <div className="flex-1 px-3 py-4 space-y-3 overflow-y-auto pb-24">
         {/* Coin Selection */}
           <div>
             <label className="text-white font-medium mb-2 block text-xs">Coin</label>
@@ -615,9 +615,12 @@ export default function MobileWithdrawal() {
               </div>
             )}
           </div>
+      </div>
 
-        {/* Withdrawal Summary - Above Button */}
-        <div className="px-3 pb-2 bg-[#0a0a2e]">
+      {/* Fixed Bottom Section - Withdrawal Summary and Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a2e] border-t border-[#1a1a40] z-20">
+        {/* Withdrawal Summary */}
+        <div className="px-3 pt-2 pb-2">
           {/* Withdrawal Fees */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-gray-400 text-sm">Withdrawal Fees</span>
@@ -635,8 +638,8 @@ export default function MobileWithdrawal() {
           )}
         </div>
 
-        {/* Fixed Withdraw Button */}
-        <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
+        {/* Withdraw Button */}
+        <div className="p-3">
           <Button
             onClick={handleWithdraw}
             disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || parseFloat(usdAmount || '0') <= 0 || isProcessing}

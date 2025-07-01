@@ -52,6 +52,12 @@ export default function Transfer() {
     enabled: !!user,
   });
 
+  // Check user's withdrawal access status
+  const { data: withdrawalAccessData } = useQuery({
+    queryKey: ['/api/withdrawals/eligibility'],
+    enabled: !!user,
+  });
+
   // WebSocket integration for real-time deposit requirement updates
   useEffect(() => {
     if (!user) return;
@@ -82,6 +88,24 @@ export default function Transfer() {
             toast({
               title: "Restriction Removed",
               description: "You can now send transfers without making a deposit!",
+              variant: "default",
+            });
+          }
+        }
+
+        // Handle withdrawal access updates
+        if (message.type === 'WITHDRAWAL_ACCESS_UPDATE' && message.userId === (user as any)?._id) {
+          console.log('[Transfer] Updating withdrawal access from WebSocket:', message);
+          
+          // Invalidate and refetch withdrawal access data
+          queryClient.invalidateQueries({ queryKey: ['/api/withdrawals/eligibility'] });
+          
+          // Close deposit required modal if withdrawal access was granted
+          if (message.withdrawalAccess && showDepositRequiredModal) {
+            setShowDepositRequiredModal(false);
+            toast({
+              title: "Withdrawal Access Granted",
+              description: "You can now send transfers and make withdrawals!",
               variant: "default",
             });
           }
@@ -212,8 +236,12 @@ export default function Transfer() {
   });
 
   const handleSend = () => {
-    // Check if user requires deposit first
-    if ((depositRequirementData as any)?.requiresDeposit === true) {
+    // Check if user requires deposit AND doesn't have withdrawal access
+    const requiresDeposit = (depositRequirementData as any)?.requiresDeposit === true;
+    const hasWithdrawalAccess = (withdrawalAccessData as any)?.data?.canWithdraw === true;
+    
+    // Show deposit modal only if user requires deposit and doesn't have withdrawal access
+    if (requiresDeposit && !hasWithdrawalAccess) {
       setShowDepositRequiredModal(true);
       return;
     }

@@ -1986,7 +1986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           $addFields: {
             balance: {
               $ifNull: [
-                { $arrayElemAt: ['$balanceInfo.usdBalance', 0] },
+                { $arrayElemAt: ['$balanceInfo.amount', 0] },
                 0
               ]
             }
@@ -2048,7 +2048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           $addFields: {
             balance: {
               $ifNull: [
-                { $arrayElemAt: ['$balanceInfo.usdBalance', 0] },
+                { $arrayElemAt: ['$balanceInfo.amount', 0] },
                 0
               ]
             }
