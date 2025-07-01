@@ -90,9 +90,9 @@ const UserSchema = new mongoose.Schema({
   requiresDeposit: { type: Boolean, default: false },
   // Admin controlled withdrawal restriction message
   withdrawalRestrictionMessage: { type: String, default: "" },
-  // Admin controlled withdrawal access
+  // Admin controlled withdrawal access - NEW USERS RESTRICTED BY DEFAULT
   withdrawalAccess: { type: Boolean, default: false },
-  // Admin controlled transfer access
+  // Admin controlled transfer access - NEW USERS RESTRICTED BY DEFAULT
   transferAccess: { type: Boolean, default: false },
   // Admin controlled feature access
   allFeaturesDisabled: { type: Boolean, default: false },
