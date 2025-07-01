@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { PageLayout } from "@/components/page-layout";
@@ -9,6 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { EyeIcon, EyeOffIcon, InfoIcon, MailIcon, LockIcon, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+
+// Declare global grecaptcha type
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -24,6 +31,7 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>("");
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,6 +43,36 @@ export default function Register() {
   };
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load reCAPTCHA script and setup callbacks
+  useEffect(() => {
+    const loadRecaptchaScript = () => {
+      if (window.grecaptcha) return;
+      
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    };
+
+    // Setup global reCAPTCHA callbacks
+    (window as any).onRegisterRecaptchaCallback = (token: string) => {
+      setRecaptchaToken(token);
+    };
+
+    (window as any).onRegisterRecaptchaExpired = () => {
+      setRecaptchaToken("");
+    };
+
+    loadRecaptchaScript();
+
+    // Cleanup
+    return () => {
+      delete (window as any).onRegisterRecaptchaCallback;
+      delete (window as any).onRegisterRecaptchaExpired;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +104,16 @@ export default function Register() {
       });
       return;
     }
+
+    // Check reCAPTCHA
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Set loading state
     setIsLoading(true);
@@ -80,6 +128,7 @@ export default function Register() {
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        recaptchaToken: recaptchaToken,
       };
       
       console.log('Registration payload:', { ...registrationData, password: '***' });
@@ -383,6 +432,16 @@ export default function Register() {
                     I would like to receive updates on cryptocurrency market news, trading opportunities, and platform enhancements (optional)
                   </label>
                 </div>
+              </div>
+
+              {/* reCAPTCHA Widget */}
+              <div className="flex justify-center">
+                <div 
+                  className="g-recaptcha" 
+                  data-sitekey="6LeX_XMrAAAAAOE1YUBRSnQb70l9FJra_s2Ohb8u"
+                  data-callback="onRegisterRecaptchaCallback"
+                  data-expired-callback="onRegisterRecaptchaExpired"
+                ></div>
               </div>
 
               <Button 

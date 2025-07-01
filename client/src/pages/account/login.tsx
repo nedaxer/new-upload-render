@@ -11,6 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { EyeIcon, EyeOffIcon, LockIcon, UserIcon, Loader2Icon } from "lucide-react";
 
+// Declare global grecaptcha type
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
+
 export default function Login() {
   // Check if we have a stored username from a recent registration
   const lastUsername = localStorage.getItem('lastUsername') || "";
@@ -19,11 +26,42 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, loginMutation } = useAuth();
   const queryClient = useQueryClient();
   
+  // Load reCAPTCHA script and setup callbacks
+  useEffect(() => {
+    const loadRecaptchaScript = () => {
+      if (window.grecaptcha) return;
+      
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    };
+
+    // Setup global reCAPTCHA callbacks
+    (window as any).onRecaptchaCallback = (token: string) => {
+      setRecaptchaToken(token);
+    };
+
+    (window as any).onRecaptchaExpired = () => {
+      setRecaptchaToken("");
+    };
+
+    loadRecaptchaScript();
+
+    // Cleanup
+    return () => {
+      delete (window as any).onRecaptchaCallback;
+      delete (window as any).onRecaptchaExpired;
+    };
+  }, []);
+
   // If user is already logged in, redirect appropriately
   useEffect(() => {
     if (user) {
@@ -62,6 +100,16 @@ export default function Login() {
       });
       return;
     }
+
+    // Check reCAPTCHA
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Clear any existing error states
     const errorElements = document.querySelectorAll('[data-error]');
@@ -69,7 +117,7 @@ export default function Login() {
     
     // Use mutation.mutate to handle the login request
     loginMutation.mutate(
-      { username, password },
+      { username, password, recaptchaToken },
       {
         onSuccess: async () => {
           // Save user preference if remember me is checked
@@ -209,6 +257,16 @@ export default function Login() {
                   Remember me
                 </label>
               </div>
+            </div>
+
+            {/* reCAPTCHA Widget */}
+            <div className="flex justify-center">
+              <div 
+                className="g-recaptcha" 
+                data-sitekey="6LeX_XMrAAAAAOE1YUBRSnQb70l9FJra_s2Ohb8u"
+                data-callback="onRecaptchaCallback"
+                data-expired-callback="onRecaptchaExpired"
+              ></div>
             </div>
 
             <Button 

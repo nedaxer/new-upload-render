@@ -1277,6 +1277,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: req.body.password ? '********' : undefined
       });
 
+      // Verify reCAPTCHA if provided
+      if (req.body.recaptchaToken) {
+        try {
+          const axios = (await import('axios')).default;
+          const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
+            params: {
+              secret: process.env.RECAPTCHA_SECRET_KEY,
+              response: req.body.recaptchaToken
+            }
+          });
+
+          if (!response.data.success) {
+            console.log('reCAPTCHA verification failed:', response.data);
+            return res.status(400).json({
+              success: false,
+              message: "reCAPTCHA verification failed. Please try again."
+            });
+          }
+          console.log('✓ reCAPTCHA verification successful for registration');
+        } catch (recaptchaError) {
+          console.error('reCAPTCHA verification error:', recaptchaError);
+          return res.status(500).json({
+            success: false,
+            message: "Unable to verify reCAPTCHA. Please try again."
+          });
+        }
+      }
+
       // Validate input with zod schema
       const result = insertMongoUserSchema.safeParse(req.body);
 
@@ -1380,13 +1408,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Login endpoint with hardcoded admin bypass
   app.post('/api/auth/login', async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, recaptchaToken } = req.body;
       
       if (!username || !password) {
         return res.status(400).json({ 
           success: false, 
           message: "Please enter both your email address and password to continue." 
         });
+      }
+
+      // Verify reCAPTCHA for non-admin users
+      if (recaptchaToken) {
+        try {
+          const axios = (await import('axios')).default;
+          const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
+            params: {
+              secret: process.env.RECAPTCHA_SECRET_KEY,
+              response: recaptchaToken
+            }
+          });
+
+          if (!response.data.success) {
+            console.log('reCAPTCHA verification failed:', response.data);
+            return res.status(400).json({
+              success: false,
+              message: "reCAPTCHA verification failed. Please try again."
+            });
+          }
+          console.log('✓ reCAPTCHA verification successful');
+        } catch (recaptchaError) {
+          console.error('reCAPTCHA verification error:', recaptchaError);
+          return res.status(500).json({
+            success: false,
+            message: "Unable to verify reCAPTCHA. Please try again."
+          });
+        }
       }
 
       // HARDCODED ADMIN LOGIN - bypasses MongoDB completely

@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 type LoginData = {
   username: string;
   password: string;
+  recaptchaToken?: string;
 };
 
 type UserData = Pick<
