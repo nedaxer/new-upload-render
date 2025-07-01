@@ -35,6 +35,8 @@ export default function AssetsHistory() {
     retryDelay: 1000,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache to avoid stale data (replaces cacheTime in newer versions)
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   // Fetch transfer transactions for authenticated user only
@@ -62,6 +64,25 @@ export default function AssetsHistory() {
   const deposits = Array.isArray((depositsResponse as any)?.data) ? (depositsResponse as any).data : [];
   const transfers = Array.isArray((transfersResponse as any)?.data) ? (transfersResponse as any).data : [];
   const withdrawals = Array.isArray((withdrawalsResponse as any)?.data) ? (withdrawalsResponse as any).data : [];
+  
+  // Debug transaction data for troubleshooting
+  console.log('Assets History Debug:', {
+    user: user ? { id: (user as any)._id, email: (user as any).email } : null,
+    depositsCount: deposits.length,
+    transfersCount: transfers.length,
+    withdrawalsCount: withdrawals.length,
+    firstDeposit: deposits[0] ? {
+      id: deposits[0]._id,
+      amount: deposits[0].cryptoAmount,
+      symbol: deposits[0].cryptoSymbol,
+      usdAmount: deposits[0].usdAmount
+    } : null,
+    firstTransfer: transfers[0] ? {
+      id: transfers[0]._id || transfers[0].transactionId,
+      amount: transfers[0].amount,
+      type: transfers[0].type
+    } : null
+  });
   
   // Combine and sort all transactions
   const allTransactions = [...deposits, ...transfers, ...withdrawals].sort((a, b) => 

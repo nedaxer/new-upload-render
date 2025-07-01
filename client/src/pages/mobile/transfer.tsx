@@ -66,6 +66,25 @@ export default function Transfer() {
     enabled: !!user,
   });
 
+  // Show transfer restriction banner automatically if user doesn't have access
+  useEffect(() => {
+    const hasTransferAccess = (transferAccessData as any)?.hasTransferAccess;
+    
+    console.log('Transfer access effect:', {
+      transferAccessData,
+      hasTransferAccess,
+      showingBanner: showTransferBanner
+    });
+    
+    if (hasTransferAccess === false && !showTransferBanner) {
+      console.log('Auto-showing transfer restriction banner');
+      setShowTransferBanner(true);
+    } else if (hasTransferAccess === true && showTransferBanner) {
+      console.log('Auto-hiding transfer restriction banner');
+      setShowTransferBanner(false);
+    }
+  }, [transferAccessData, showTransferBanner]);
+
   // WebSocket integration for real-time deposit requirement updates
   useEffect(() => {
     if (!user) return;
@@ -282,10 +301,18 @@ export default function Transfer() {
   });
 
   const handleSend = () => {
-    // Check transfer access first
-    const hasTransferAccess = (transferAccessData as any)?.hasTransferAccess === true;
+    // Check transfer access first - if transferAccess is false, user is restricted
+    const hasTransferAccess = (transferAccessData as any)?.hasTransferAccess;
     
-    if (!hasTransferAccess) {
+    console.log('Transfer access check:', {
+      transferAccessData,
+      hasTransferAccess,
+      dataType: typeof hasTransferAccess
+    });
+    
+    // Show restriction banner if user doesn't have transfer access
+    if (hasTransferAccess === false) {
+      console.log('User transfer access is disabled, showing banner');
       setShowTransferBanner(true);
       return;
     }
