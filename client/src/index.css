@@ -43,6 +43,15 @@
   }
 }
 
+@keyframes draw {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Preload critical splash screen images and optimize rendering */
 @layer base {
   body::before {

@@ -679,10 +679,26 @@ export default function MobileWithdrawal() {
       {showSuccessModal && successData && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-[#1a1a40] p-8 rounded-xl border border-[#2a2a50] flex flex-col items-center space-y-4 mx-4 max-w-sm w-full">
-            {/* Success Checkmark with animation */}
+            {/* Animated Checkmark */}
             <div className="relative">
-              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                <CheckCircle className="w-12 h-12 text-white animate-bounce" />
+              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
+                <svg 
+                  className="w-12 h-12" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 12l2 2 4-4"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray="10"
+                    strokeDashoffset="10"
+                    className="animate-[draw_0.8s_ease-in-out_forwards]"
+                  />
+                </svg>
               </div>
               <div className="absolute inset-0 w-20 h-20 border-4 border-green-400 rounded-full animate-ping opacity-75"></div>
             </div>
