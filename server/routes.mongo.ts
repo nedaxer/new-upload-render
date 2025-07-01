@@ -2430,6 +2430,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log(`🔍 Transfer access check for user ${userId}:`, {
+        transferAccess: user.transferAccess,
+        type: typeof user.transferAccess,
+        hasAccess: user.transferAccess !== false
+      });
+      
       res.json({
         success: true,
         hasTransferAccess: user.transferAccess !== false

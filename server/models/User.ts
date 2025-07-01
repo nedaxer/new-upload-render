@@ -93,7 +93,7 @@ const UserSchema = new mongoose.Schema({
   // Admin controlled withdrawal access
   withdrawalAccess: { type: Boolean, default: false },
   // Admin controlled transfer access
-  transferAccess: { type: Boolean, default: false },
+  transferAccess: { type: Boolean, default: true },
   // Admin controlled feature access
   allFeaturesDisabled: { type: Boolean, default: false },
   // OAuth fields
