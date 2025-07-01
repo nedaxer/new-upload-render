@@ -1575,6 +1575,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Debug endpoint to check callback URL
+  app.get('/api/auth/debug-callback', (req: Request, res: Response) => {
+    const getCallbackURL = () => {
+      if (process.env.BASE_URL) {
+        return `${process.env.BASE_URL}/auth/google/callback`;
+      }
+      if (process.env.REPLIT_DOMAINS) {
+        return `https://${process.env.REPLIT_DOMAINS}/auth/google/callback`;
+      }
+      return "https://nedaxer.onrender.com/auth/google/callback";
+    };
+    
+    res.json({
+      callbackURL: getCallbackURL(),
+      environment: {
+        BASE_URL: process.env.BASE_URL || 'not set',
+        REPLIT_DOMAINS: process.env.REPLIT_DOMAINS || 'not set',
+        NODE_ENV: process.env.NODE_ENV || 'not set'
+      }
+    });
+  });
+
   // Google OAuth routes
   app.get('/auth/google', passport.authenticate('google', {
     scope: ['profile', 'email']
