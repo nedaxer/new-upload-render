@@ -16,7 +16,7 @@ export async function connectToDatabase() {
     console.log('Connecting to MongoDB Atlas...');
     
     // Use your MongoDB Atlas connection string
-    mongoUri = 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+    mongoUri = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
     console.log('Using MongoDB Atlas cluster');
     
     await mongoose.connect(mongoUri);
@@ -131,7 +131,7 @@ export async function getMongoClient() {
 
   try {
     // Use your MongoDB Atlas connection string
-    const connectionString = 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+    const connectionString = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
     const client = new MongoClient(connectionString);
     await client.connect();
     cachedClient = client;

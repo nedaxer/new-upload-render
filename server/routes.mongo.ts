@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup MongoDB session store
   const MongoDBStore = MongoStore(session);
   const store = new MongoDBStore({
-    uri: 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer',
+    uri: process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer',
     collection: 'sessions'
   });
 
@@ -223,6 +223,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Crypto prices endpoint
+  app.get('/api/config/recaptcha', async (req: Request, res: Response) => {
+    try {
+      const siteKey = process.env.RECAPTCHA_SITE_KEY || '';
+      res.json({ 
+        success: true, 
+        siteKey: siteKey 
+      });
+    } catch (error) {
+      console.error('Error getting reCAPTCHA config:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to get reCAPTCHA configuration' 
+      });
+    }
+  });
+
   app.get('/api/crypto/prices', async (req: Request, res: Response) => {
     try {
       const prices = await getCoinGeckoPrices();
@@ -3316,7 +3332,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`;
       }
 
       // Get crypto price for validation
-      const cryptoPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&x_cg_demo_api_key=CG-3A26qPLm2ba2sN6ZuDkvGRSn');
+      const cryptoPriceResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin&vs_currencies=usd&x_cg_demo_api_key=${process.env.COINGECKO_API_KEY || ''}`);
       const cryptoPrices = await cryptoPriceResponse.json();
       
       const priceMap: { [key: string]: number } = {
@@ -4348,6 +4364,8 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       res.status(500).json({ success: false, message: "Failed to fetch messages" });
     }
   });
+
+
 
   // Store WebSocket server for broadcasting updates
   app.set('wss', wss);

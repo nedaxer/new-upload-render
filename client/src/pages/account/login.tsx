@@ -263,7 +263,7 @@ export default function Login() {
             <div className="flex justify-center">
               <div 
                 className="g-recaptcha" 
-                data-sitekey="6LeX_XMrAAAAAOE1YUBRSnQb70l9FJra_s2Ohb8u"
+                data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeX_XMrAAAAAOE1YUBRSnQb70l9FJra_s2Ohb8u"}
                 data-callback="onRecaptchaCallback"
                 data-expired-callback="onRecaptchaExpired"
               ></div>
