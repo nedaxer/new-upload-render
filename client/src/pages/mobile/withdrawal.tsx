@@ -293,13 +293,6 @@ export default function MobileWithdrawal() {
 
   // Handle withdrawal submission
   const handleWithdraw = async () => {
-    console.log('Withdraw button clicked!', {
-      selectedNetwork,
-      withdrawalAddress,
-      cryptoAmount,
-      usdAmount
-    });
-    
     if (!selectedNetwork || !withdrawalAddress || !cryptoAmount) {
       toast({
         title: "Missing Information",
@@ -577,24 +570,13 @@ export default function MobileWithdrawal() {
 
         {/* Fixed Withdraw Button */}
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleWithdraw}
-              onTouchStart={() => {}} // Enable touch events
-              disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-xl font-bold text-lg active:bg-orange-700 transition-all duration-150 touch-manipulation"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              {isProcessing ? 'Processing...' : 'Withdraw'}
-            </button>
-            {cryptoAmount && parseFloat(cryptoAmount) > 0 && (
-              <div className="text-right min-w-0 flex-shrink-0">
-                <div className="text-white font-bold text-lg">
-                  {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
-                </div>
-              </div>
-            )}
-          </div>
+          <Button
+            onClick={handleWithdraw}
+            disabled={!selectedNetwork || !withdrawalAddress || !cryptoAmount || isProcessing}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg"
+          >
+            {isProcessing ? 'Processing...' : 'Withdraw'}
+          </Button>
         </div>
       </div>
   );
