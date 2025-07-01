@@ -158,39 +158,34 @@ export default function MobileWithdrawal() {
     }
   }, [cryptoAmount, selectedCrypto.symbol, priceData]);
 
-  // Calculate crypto amount from USD with cursor position preservation
+  // Calculate crypto amount from USD - simplified without cursor preservation
   const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const cursorPosition = e.target.selectionStart;
     
-    setUsdAmount(value);
-    
-    // Preserve cursor position after state update
-    setTimeout(() => {
-      if (e.target && cursorPosition !== null) {
-        e.target.setSelectionRange(cursorPosition, cursorPosition);
+    // Allow only valid number input (including decimals)
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setUsdAmount(value);
+      
+      if (!value || !priceData) {
+        setCryptoAmount('');
+        return;
       }
-    }, 0);
-    
-    if (!value || !priceData) {
-      setCryptoAmount('');
-      return;
-    }
 
-    const amount = parseFloat(value);
-    if (isNaN(amount) || amount <= 0) {
-      setCryptoAmount('');
-      return;
-    }
+      const amount = parseFloat(value);
+      if (isNaN(amount) || amount <= 0) {
+        setCryptoAmount('');
+        return;
+      }
 
-    // Access price data from the CoinGecko API response format
-    const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
-      ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
-      : null;
-    
-    const price = cryptoData?.price;
-    if (price && price > 0) {
-      setCryptoAmount((amount / price).toFixed(8));
+      // Access price data from the CoinGecko API response format
+      const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+        ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+        : null;
+      
+      const price = cryptoData?.price;
+      if (price && price > 0) {
+        setCryptoAmount((amount / price).toFixed(8));
+      }
     }
   };
 
@@ -313,7 +308,7 @@ export default function MobileWithdrawal() {
 
   // Handle withdrawal submission
   const handleWithdraw = async () => {
-    if (!selectedNetwork || !withdrawalAddress || !cryptoAmount) {
+    if (!selectedNetwork || !withdrawalAddress || !usdAmount) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -322,22 +317,22 @@ export default function MobileWithdrawal() {
       return;
     }
 
-    const cryptoAmountNum = parseFloat(cryptoAmount);
     const usdAmountNum = parseFloat(usdAmount);
+    const cryptoAmountNum = parseFloat(cryptoAmount || '0');
     
-    if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
+    if (isNaN(usdAmountNum) || usdAmountNum <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid withdrawal amount.",
+        description: "Please enter a valid USD amount.",
         variant: "destructive",
       });
       return;
     }
 
-    if (isNaN(usdAmountNum) || usdAmountNum <= 0) {
+    if (isNaN(cryptoAmountNum) || cryptoAmountNum <= 0) {
       toast({
-        title: "Invalid USD Amount",
-        description: "Please enter a valid USD amount.",
+        title: "Invalid Crypto Amount",
+        description: "Unable to calculate crypto amount. Please check the exchange rate.",
         variant: "destructive",
       });
       return;
@@ -557,21 +552,33 @@ export default function MobileWithdrawal() {
             <label className="text-white font-medium mb-2 block text-xs">Amount to Withdraw</label>
             <div className="relative">
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={usdAmount}
                 onChange={handleUsdAmountChange}
                 placeholder="Enter USD amount to withdraw"
                 className="bg-[#1a1a40] border border-[#2a2a50] text-white placeholder:text-gray-500 pr-16 h-10 text-sm"
-                step="0.01"
-                min="0"
-                max={userBalance}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                 <span className="text-orange-500 font-medium text-xs">USD</span>
                 <button 
                   className="text-orange-500 text-xs hover:text-orange-400"
                   onClick={() => {
-                    setUsdAmount(userBalance.toFixed(2));
+                    const maxAmount = userBalance.toFixed(2);
+                    setUsdAmount(maxAmount);
+                    
+                    // Trigger crypto amount calculation
+                    const amount = parseFloat(maxAmount);
+                    if (amount > 0 && priceData) {
+                      const cryptoData = (priceData as any)?.success && Array.isArray((priceData as any)?.data) 
+                        ? (priceData as any).data.find((crypto: any) => crypto.symbol === selectedCrypto.symbol)
+                        : null;
+                      
+                      const price = cryptoData?.price;
+                      if (price && price > 0) {
+                        setCryptoAmount((amount / price).toFixed(8));
+                      }
+                    }
                   }}
                 >
                   Max
@@ -621,11 +628,11 @@ export default function MobileWithdrawal() {
         <div className="p-3 bg-[#0a0a2e] border-t border-[#1a1a40]">
           <Button
             onClick={handleWithdraw}
-            disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || isProcessing}
+            disabled={!selectedNetwork || !withdrawalAddress || !usdAmount || parseFloat(usdAmount || '0') <= 0 || isProcessing}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:text-gray-400 text-white py-4 rounded-lg font-medium text-lg flex items-center justify-center space-x-2"
           >
             <span>{isProcessing ? 'Processing...' : 'Withdraw'}</span>
-            {!isProcessing && cryptoAmount && parseFloat(cryptoAmount) > 0 && (
+            {!isProcessing && usdAmount && parseFloat(usdAmount) > 0 && cryptoAmount && (
               <span className="text-white font-bold">
                 {parseFloat(cryptoAmount).toFixed(8)} {selectedCrypto.symbol}
               </span>
