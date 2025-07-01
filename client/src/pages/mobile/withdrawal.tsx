@@ -400,13 +400,7 @@ export default function MobileWithdrawal() {
         setCryptoAmount('');
         setWithdrawalAddress('');
         
-        // Show enhanced success toast
-        toast({
-          title: "🎉 Withdrawal Complete!",
-          description: `✅ Successfully processed $${parseFloat(usdAmount).toFixed(2)} → ${parseFloat(cryptoAmount).toFixed(8)} ${selectedCrypto.symbol}\n🔔 You'll receive a notification shortly`,
-          variant: "default",
-          duration: 5000,
-        });
+
       }, 2000);
       
       // Invalidate notifications and balance queries to refresh data
