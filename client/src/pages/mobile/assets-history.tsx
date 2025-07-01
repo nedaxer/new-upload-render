@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -13,6 +13,8 @@ export default function AssetsHistory() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [location] = useLocation();
+  const [highlightTransactionId, setHighlightTransactionId] = useState<string | null>(null);
+  const transactionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   
   // Determine back navigation path based on referrer
   const getBackPath = () => {
@@ -175,6 +177,37 @@ export default function AssetsHistory() {
     };
   }, [user, queryClient]);
 
+  // Handle transaction highlighting from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightId = urlParams.get('highlight');
+    
+    if (highlightId && !isLoading && transactions.length > 0) {
+      setHighlightTransactionId(highlightId);
+      
+      // Wait for DOM to render, then scroll to and highlight the transaction
+      setTimeout(() => {
+        const transactionElement = transactionRefs.current[highlightId];
+        if (transactionElement) {
+          // Scroll to the transaction with smooth behavior
+          transactionElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+          
+          // Remove highlight after animation completes
+          setTimeout(() => {
+            setHighlightTransactionId(null);
+            // Clean up URL parameter
+            const newUrl = window.location.hash.split('?')[0];
+            window.history.replaceState(null, '', newUrl);
+          }, 3000);
+        }
+      }, 500);
+    }
+  }, [isLoading, transactions.length]);
+
   const historyTabs = ['All Transactions', 'Deposit', 'Withdraw', 'Transfer'];
 
   return (
@@ -252,115 +285,130 @@ export default function AssetsHistory() {
             if (isTransfer) {
               const isSent = transaction.type === 'sent';
               const otherUser = isSent ? transaction.toUser : transaction.fromUser;
+              const transactionId = transaction.transactionId || transaction._id;
+              const isHighlighted = highlightTransactionId === transactionId;
               
               return (
-                <Link 
-                  key={transaction._id} 
-                  href={`/mobile/transfer-details/${transaction.transactionId}`}
+                <div
+                  key={transaction._id}
+                  ref={(el) => transactionRefs.current[transactionId] = el}
+                  className={`${isHighlighted ? 'transaction-highlight' : ''}`}
                 >
-                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-xs">
-                          {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
-                        </p>
-                        <p className="text-gray-400 text-xs">
-                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right flex items-center space-x-2">
-                        <div>
-                          <p className="font-medium text-xs text-white">
-                            {isSent ? '-' : '+'}${(transaction.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <Link href={`/mobile/transfer-details/${transaction.transactionId}`}>
+                    <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-xs">
+                            {isSent ? 'Sent to' : 'Received from'} {otherUser.name}
                           </p>
                           <p className="text-gray-400 text-xs">
-                            {transaction.status}
+                            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                        <div className="text-right flex items-center space-x-2">
+                          <div>
+                            <p className="font-medium text-xs text-white">
+                              {isSent ? '-' : '+'}${(transaction.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              {transaction.status}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-500" />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                </Link>
+                    </Card>
+                  </Link>
+                </div>
               );
             } else if (isWithdrawal) {
-              // Withdrawal transaction
+              const transactionId = transaction._id;
+              const isHighlighted = highlightTransactionId === transactionId;
+              
               return (
-                <Link 
-                  key={transaction._id} 
-                  href={`/mobile/withdrawal-details/${transaction._id}`}
+                <div
+                  key={transaction._id}
+                  ref={(el) => transactionRefs.current[transactionId] = el}
+                  className={`${isHighlighted ? 'transaction-highlight' : ''}`}
                 >
-                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-xs">
-                          {transaction.cryptoSymbol} Withdrawal
-                        </p>
-                        <p className="text-gray-400 text-xs">
-                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right flex items-center space-x-2">
-                        <div>
+                  <Link href={`/mobile/withdrawal-details/${transaction._id}`}>
+                    <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
                           <p className="text-white font-medium text-xs">
-                            -{(transaction.cryptoAmount || 0).toFixed(6)}
+                            {transaction.cryptoSymbol} Withdrawal
                           </p>
                           <p className="text-gray-400 text-xs">
-                            ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                        <div className="text-right flex items-center space-x-2">
+                          <div>
+                            <p className="text-white font-medium text-xs">
+                              -{(transaction.cryptoAmount || 0).toFixed(6)}
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-500" />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                </Link>
+                    </Card>
+                  </Link>
+                </div>
               );
             } else {
-              // Deposit transaction
+              const transactionId = transaction._id;
+              const isHighlighted = highlightTransactionId === transactionId;
+              
               return (
-                <Link 
-                  key={transaction._id} 
-                  href={`/mobile/deposit-details/${transaction._id}`}
+                <div
+                  key={transaction._id}
+                  ref={(el) => transactionRefs.current[transactionId] = el}
+                  className={`${isHighlighted ? 'transaction-highlight' : ''}`}
                 >
-                  <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-xs">
-                          {transaction.cryptoSymbol} Deposit
-                        </p>
-                        <p className="text-gray-400 text-xs">
-                          {new Date(transaction.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right flex items-center space-x-2">
-                        <div>
+                  <Link href={`/mobile/deposit-details/${transaction._id}`}>
+                    <Card className="bg-[#1a1a40] border-[#2a2a50] p-3 hover:bg-[#2a2a50] transition-colors cursor-pointer">
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
                           <p className="text-white font-medium text-xs">
-                            +{(transaction.cryptoAmount || 0).toFixed(6)}
+                            {transaction.cryptoSymbol} Deposit
                           </p>
                           <p className="text-gray-400 text-xs">
-                            ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                        <div className="text-right flex items-center space-x-2">
+                          <div>
+                            <p className="text-white font-medium text-xs">
+                              +{(transaction.cryptoAmount || 0).toFixed(6)}
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              ${(transaction.usdAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-gray-500" />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                </Link>
+                    </Card>
+                  </Link>
+                </div>
               );
             }
           })

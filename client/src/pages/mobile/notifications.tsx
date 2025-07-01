@@ -313,8 +313,13 @@ export default function MobileNotifications() {
                           if (notification.type === 'deposit' || notification.type === 'transfer_received' || notification.type === 'transfer_sent' || notification.type === 'withdrawal') {
                             // Set referrer for smart back navigation
                             localStorage.setItem('assetsHistoryReferrer', 'notifications');
-                            // Navigate to asset history
-                            window.location.hash = '#/mobile/assets-history';
+                            // Navigate to asset history with transaction highlight
+                            const transactionId = notification.data?.transactionId || notification.data?.depositId || notification.data?.transferId || notification.data?.withdrawalId;
+                            if (transactionId) {
+                              window.location.hash = `#/mobile/assets-history?highlight=${transactionId}`;
+                            } else {
+                              window.location.hash = '#/mobile/assets-history';
+                            }
                           }
                         }}
                       >
