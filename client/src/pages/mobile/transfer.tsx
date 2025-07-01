@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { showSuccessBanner, showErrorBanner } from '@/hooks/use-bottom-banner';
 import { TransferDepositRequiredModal } from '@/components/transfer-deposit-required-modal';
 import { DepositModal } from '@/components/deposit-modal';
-import { AnimatedErrorBanner } from '@/components/animated-error-banner';
+
 
 interface RecipientInfo {
   _id: string;
@@ -40,7 +40,7 @@ export default function Transfer() {
   const [inputType, setInputType] = useState<'email' | 'uid'>('uid');
   const [showDepositRequiredModal, setShowDepositRequiredModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
-  const [showTransferBanner, setShowTransferBanner] = useState(false);
+
 
   // Fetch user balance
   const { data: walletData } = useQuery({
@@ -66,24 +66,16 @@ export default function Transfer() {
     enabled: !!user,
   });
 
-  // Show transfer restriction banner automatically if user doesn't have access
+  // Log transfer access status for debugging
   useEffect(() => {
     const hasTransferAccess = (transferAccessData as any)?.hasTransferAccess;
     
-    console.log('Transfer access effect:', {
+    console.log('Transfer access status:', {
       transferAccessData,
       hasTransferAccess,
-      showingBanner: showTransferBanner
+      type: typeof hasTransferAccess
     });
-    
-    if (hasTransferAccess === false && !showTransferBanner) {
-      console.log('Auto-showing transfer restriction banner');
-      setShowTransferBanner(true);
-    } else if (hasTransferAccess === true && showTransferBanner) {
-      console.log('Auto-hiding transfer restriction banner');
-      setShowTransferBanner(false);
-    }
-  }, [transferAccessData, showTransferBanner]);
+  }, [transferAccessData]);
 
   // WebSocket integration for real-time deposit requirement updates
   useEffect(() => {
@@ -143,27 +135,15 @@ export default function Transfer() {
           // Invalidate and refetch transfer access data
           queryClient.invalidateQueries({ queryKey: ['/api/user/transfer-access'] });
           
-          // Hide error banner if transfer access was granted
-          if (message.transferAccess && showTransferBanner) {
-            setShowTransferBanner(false);
-            showSuccessBanner(
-              "Transfer Access Enabled",
-              "You can now send transfers to other users!"
-            );
-          }
-        }
-
-        // Handle transfer access updates
-        if (message.type === 'TRANSFER_ACCESS_UPDATE' && message.userId === (user as any)?._id) {
-          console.log('[Transfer] Updating transfer access from WebSocket:', message);
-          
-          // Show notification about transfer access change
+          // Show notification based on access change
           if (message.transferAccess) {
+            // Access was granted
             showSuccessBanner(
               "Transfer Access Enabled",
               "You can now send transfers to other users!"
             );
           } else {
+            // Access was disabled
             showErrorBanner(
               "Transfer Access Disabled",
               "Transfer functionality has been disabled by administrator"
@@ -307,7 +287,10 @@ export default function Transfer() {
     // Show restriction banner if user doesn't have transfer access
     if (hasTransferAccess === false) {
       console.log('User transfer access is disabled, showing banner');
-      setShowTransferBanner(true);
+      showErrorBanner(
+        "Transfer Access Restricted",
+        "This feature has not been activated yet. Contact support for assistance."
+      );
       return;
     }
 
@@ -381,13 +364,7 @@ export default function Transfer() {
         </div>
       </div>
 
-      {/* Transfer Access Error Banner */}
-      <AnimatedErrorBanner
-        message="Sorry, this feature has not been activated yet"
-        isVisible={showTransferBanner}
-        onClose={() => setShowTransferBanner(false)}
-        type="error"
-      />
+      {/* Transfer Access Restriction - handled by showErrorBanner when needed */}
 
       {/* Main Content */}
       <div className="flex-1 px-4 py-4 space-y-4">
