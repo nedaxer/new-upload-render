@@ -314,7 +314,27 @@ export default function MobileNotifications() {
                             // Set referrer for smart back navigation
                             localStorage.setItem('assetsHistoryReferrer', 'notifications');
                             // Navigate to asset history with transaction highlight
-                            const transactionId = notification.data?.transactionId || notification.data?.depositId || notification.data?.transferId || notification.data?.withdrawalId;
+                            let transactionId = null;
+                            
+                            // For deposits, the notification.data.transactionId is actually the MongoDB _id
+                            if (notification.type === 'deposit' && notification.data?.transactionId) {
+                              transactionId = notification.data.transactionId;
+                            }
+                            // For transfers, use the transferId which maps to transfer._id
+                            else if ((notification.type === 'transfer_sent' || notification.type === 'transfer_received') && notification.data?.transferId) {
+                              transactionId = notification.data.transferId;
+                            }
+                            // For withdrawals, use the transactionId which maps to withdrawal._id
+                            else if (notification.type === 'withdrawal' && notification.data?.transactionId) {
+                              transactionId = notification.data.transactionId;
+                            }
+                            
+                            console.log('Notification highlight:', { 
+                              type: notification.type, 
+                              transactionId,
+                              data: notification.data 
+                            });
+                            
                             if (transactionId) {
                               window.location.hash = `#/mobile/assets-history?highlight=${transactionId}`;
                             } else {

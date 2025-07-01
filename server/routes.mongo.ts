@@ -687,7 +687,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const { Transfer } = await import('./models/Transfer');
         
-        const allTransfers = await Transfer.find({})
+        const allTransfers = await Transfer.find({
+          // Filter out ALL zero transfers regardless of source
+          $and: [
+            { amount: { $gt: 0 } },
+            { amount: { $exists: true } },
+            { amount: { $ne: null } },
+            { amount: { $ne: "" } }
+          ]
+        })
           .sort({ createdAt: -1 })
           .limit(100)
           .populate('fromUserId', 'firstName lastName email uid')
@@ -727,11 +735,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { Transfer } = await import('./models/Transfer');
       const { User } = await import('./models/User');
       
-      // Get transfers where user is sender or recipient
+      // Get transfers where user is sender or recipient (excluding zero transfers)
       const transfers = await Transfer.find({
-        $or: [
-          { fromUserId: userId },
-          { toUserId: userId }
+        $and: [
+          {
+            $or: [
+              { fromUserId: userId },
+              { toUserId: userId }
+            ]
+          },
+          // Filter out ALL zero transfers regardless of source
+          { amount: { $gt: 0 } },
+          { amount: { $exists: true } },
+          { amount: { $ne: null } },
+          { amount: { $ne: "" } }
         ]
       })
       .sort({ createdAt: -1 })

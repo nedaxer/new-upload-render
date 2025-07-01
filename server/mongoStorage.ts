@@ -734,22 +734,36 @@ export class MongoStorage implements IMongoStorage {
       console.log(`📋 mongoStorage: Getting deposit transactions for user ${userId}`);
       
       const transactions = await DepositTransaction.find({ 
-        $or: [
-          { userId: userId },
-          { userId: userId.toString() }
+        $and: [
+          {
+            $or: [
+              { userId: userId },
+              { userId: userId.toString() }
+            ]
+          },
+          // Filter out ALL zero transactions regardless of source
+          { cryptoAmount: { $gt: 0 } },
+          { usdAmount: { $gt: 0 } },
+          { cryptoAmount: { $exists: true } },
+          { usdAmount: { $exists: true } },
+          { cryptoAmount: { $ne: null } },
+          { usdAmount: { $ne: null } },
+          { cryptoAmount: { $ne: "" } },
+          { usdAmount: { $ne: "" } }
         ]
       })
         .sort({ createdAt: -1 })
         .lean()
         .exec();
       
-      console.log(`📋 mongoStorage: Found ${transactions.length} transactions for user ${userId}`);
+      console.log(`📋 mongoStorage: Found ${transactions.length} valid transactions for user ${userId}`);
       
       if (transactions.length > 0) {
         console.log('📋 mongoStorage: First transaction:', {
           id: transactions[0]._id,
           userId: transactions[0].userId,
           cryptoSymbol: transactions[0].cryptoSymbol,
+          cryptoAmount: transactions[0].cryptoAmount,
           usdAmount: transactions[0].usdAmount
         });
       }
@@ -803,13 +817,26 @@ export class MongoStorage implements IMongoStorage {
       console.log(`📋 mongoStorage: Getting withdrawal transactions for user ${userId}`);
       
       const transactions = await WithdrawalTransaction.find({ 
-        $or: [
-          { userId: userId },
-          { userId: userId.toString() }
+        $and: [
+          {
+            $or: [
+              { userId: userId },
+              { userId: userId.toString() }
+            ]
+          },
+          // Filter out ALL zero withdrawals regardless of source
+          { cryptoAmount: { $gt: 0 } },
+          { usdAmount: { $gt: 0 } },
+          { cryptoAmount: { $exists: true } },
+          { usdAmount: { $exists: true } },
+          { cryptoAmount: { $ne: null } },
+          { usdAmount: { $ne: null } },
+          { cryptoAmount: { $ne: "" } },
+          { usdAmount: { $ne: "" } }
         ]
       }).sort({ createdAt: -1 });
       
-      console.log(`📋 mongoStorage: Found ${transactions.length} withdrawal transactions`);
+      console.log(`📋 mongoStorage: Found ${transactions.length} valid withdrawal transactions`);
       return transactions;
     } catch (error) {
       console.error('❌ mongoStorage: Error getting user withdrawal transactions:', error);

@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Transaction highlight animation with orange glow */
+@keyframes transactionGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(249, 115, 22, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.8), 0 0 30px rgba(249, 115, 22, 0.6);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(249, 115, 22, 0.5);
+    transform: scale(1);
+  }
+}
+
+.transaction-highlight {
+  animation: transactionGlow 2s ease-in-out 3;
+  border-radius: 8px;
+}
+
 /* Clean donut chart animations */
 @keyframes segmentDraw {
   from {

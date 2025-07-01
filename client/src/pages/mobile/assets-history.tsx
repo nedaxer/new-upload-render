@@ -125,6 +125,43 @@ export default function AssetsHistory() {
     }
   }, [user, queryClient]);
 
+  // Handle transaction highlighting from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightId = urlParams.get('highlight');
+    
+    if (highlightId) {
+      console.log('🎯 Highlighting transaction:', highlightId);
+      setHighlightTransactionId(highlightId);
+      
+      // Wait for transactions to load and then scroll to highlighted transaction
+      const scrollTimer = setTimeout(() => {
+        const element = transactionRefs.current[highlightId];
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          console.log('📍 Scrolled to highlighted transaction');
+        }
+      }, 500);
+      
+      // Clear highlight after animation completes (6 seconds)
+      const highlightTimer = setTimeout(() => {
+        setHighlightTransactionId(null);
+        // Clean up URL parameters
+        const newUrl = window.location.pathname + window.location.hash.split('?')[0];
+        window.history.replaceState({}, '', newUrl);
+        console.log('✨ Transaction highlight animation completed');
+      }, 6000);
+      
+      return () => {
+        clearTimeout(scrollTimer);
+        clearTimeout(highlightTimer);
+      };
+    }
+  }, [location, depositsResponse, transfersResponse, withdrawalsResponse]);
+
   // WebSocket connection for real-time transaction updates
   useEffect(() => {
     let socket: WebSocket;

@@ -1,96 +1,116 @@
 import { MongoClient } from 'mongodb';
-import fetch from 'node-fetch';
 
 async function testFinalVerification() {
+  const client = new MongoClient('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/');
+  
   try {
-    console.log('🧪 Final verification of both fixes...\n');
+    await client.connect();
+    const db = client.db('nedaxer');
     
-    // Use the working user credentials from the logs
-    console.log('=== TESTING WITH WORKING USER SESSION ===');
-    const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: 'robinstephen100@outlook.com',
-        password: 'smart123'
-      })
-    });
+    console.log('\n🔍 FINAL VERIFICATION: Testing comprehensive zero transaction system...');
     
-    const loginData = await loginResponse.json();
-    console.log('Login response:', loginData.success ? 'SUCCESS' : 'FAILED');
+    // 1. Check that all zero transactions have been removed
+    console.log('\n=== ZERO TRANSACTION CLEANUP VERIFICATION ===');
     
-    if (loginData.success) {
-      const sessionCookie = loginResponse.headers.get('set-cookie')?.split(';')[0] || '';
-      
-      // Test 1: Withdrawal Restriction Messages
-      console.log('\n1. Testing Withdrawal Restriction Messages:');
-      const withdrawalResponse = await fetch('http://localhost:5000/api/user/withdrawal-restriction', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': sessionCookie
-        }
-      });
-      
-      const withdrawalData = await withdrawalResponse.json();
-      console.log('Status:', withdrawalResponse.status);
-      console.log('Response:', JSON.stringify(withdrawalData, null, 2));
-      
-      if (withdrawalData.success && withdrawalData.data) {
-        console.log('✅ WITHDRAWAL RESTRICTION MESSAGES WORKING');
-        console.log(`   Has Restriction: ${withdrawalData.data.hasRestriction}`);
-        console.log(`   Message: "${withdrawalData.data.message}"`);
-      } else {
-        console.log('❌ Withdrawal restriction messages still not working');
+    const zeroDeposits = await db.collection('deposittransactions').find({
+      $or: [
+        { cryptoAmount: { $lte: 0 } },
+        { usdAmount: { $lte: 0 } },
+        { cryptoAmount: { $exists: false } },
+        { usdAmount: { $exists: false } }
+      ]
+    }).toArray();
+    
+    const zeroTransfers = await db.collection('transfers').find({
+      $or: [
+        { amount: { $lte: 0 } },
+        { amount: { $exists: false } }
+      ]
+    }).toArray();
+    
+    const zeroWithdrawals = await db.collection('withdrawaltransactions').find({
+      $or: [
+        { cryptoAmount: { $lte: 0 } },
+        { usdAmount: { $lte: 0 } }
+      ]
+    }).toArray();
+    
+    console.log(`Zero deposits remaining: ${zeroDeposits.length} (should be 0)`);
+    console.log(`Zero transfers remaining: ${zeroTransfers.length} (should be 0)`);
+    console.log(`Zero withdrawals remaining: ${zeroWithdrawals.length} (should be 0)`);
+    
+    // 2. Check valid transactions
+    console.log('\n=== VALID TRANSACTIONS CHECK ===');
+    
+    const validDeposits = await db.collection('deposittransactions').find({
+      cryptoAmount: { $gt: 0 },
+      usdAmount: { $gt: 0 }
+    }).toArray();
+    
+    const validTransfers = await db.collection('transfers').find({
+      amount: { $gt: 0 }
+    }).toArray();
+    
+    const validWithdrawals = await db.collection('withdrawaltransactions').find({
+      cryptoAmount: { $gt: 0 },
+      usdAmount: { $gt: 0 }
+    }).toArray();
+    
+    console.log(`Valid deposits: ${validDeposits.length}`);
+    console.log(`Valid transfers: ${validTransfers.length}`);
+    console.log(`Valid withdrawals: ${validWithdrawals.length}`);
+    
+    // 3. Check notification-to-transaction ID mapping
+    console.log('\n=== NOTIFICATION MAPPING VERIFICATION ===');
+    
+    const notifications = await db.collection('notifications').find({
+      type: { $in: ['deposit', 'transfer_sent', 'transfer_received', 'withdrawal'] }
+    }).toArray();
+    
+    console.log(`Found ${notifications.length} transaction notifications`);
+    
+    for (const notification of notifications) {
+      if (notification.type === 'deposit') {
+        const deposit = await db.collection('deposittransactions').findOne({
+          _id: notification.data?.transactionId || new require('mongodb').ObjectId(notification.data?.transactionId)
+        });
+        console.log(`Deposit notification ${notification._id} -> ${deposit ? '✅ MAPPED' : '❌ BROKEN'}`);
+      } else if (notification.type === 'transfer_sent' || notification.type === 'transfer_received') {
+        const transfer = await db.collection('transfers').findOne({
+          _id: notification.data?.transferId || new require('mongodb').ObjectId(notification.data?.transferId)
+        });
+        console.log(`Transfer notification ${notification._id} -> ${transfer ? '✅ MAPPED' : '❌ BROKEN'}`);
       }
-      
-      // Test 2: Transfer History
-      console.log('\n2. Testing Transfer History:');
-      const transferResponse = await fetch('http://localhost:5000/api/transfers/history', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': sessionCookie
-        }
-      });
-      
-      const transferData = await transferResponse.json();
-      console.log('Status:', transferResponse.status);
-      console.log('Transfer count:', transferData.data?.length || 0);
-      
-      if (transferData.success && Array.isArray(transferData.data)) {
-        console.log('✅ TRANSFER HISTORY WORKING');
-        console.log(`   Found ${transferData.data.length} transfers`);
-        if (transferData.data.length > 0) {
-          console.log(`   Latest: ${transferData.data[0].transactionId} - $${transferData.data[0].amount}`);
-        }
-      } else {
-        console.log('❌ Transfer history still not working');
-      }
-      
-      console.log('\n=== FINAL RESULTS ===');
-      const withdrawalWorking = withdrawalData.success && withdrawalData.data;
-      const transferWorking = transferData.success && Array.isArray(transferData.data);
-      
-      if (withdrawalWorking && transferWorking) {
-        console.log('🎉 BOTH ISSUES SUCCESSFULLY FIXED!');
-        console.log('✅ Withdrawal restriction messages are working');
-        console.log('✅ Transfer history is working');
-      } else {
-        console.log('⚠️  Some issues remain:');
-        if (!withdrawalWorking) console.log('❌ Withdrawal restriction messages');
-        if (!transferWorking) console.log('❌ Transfer history');
-      }
-      
-    } else {
-      console.log('❌ Cannot test - login failed');
     }
     
+    // 4. Show sample transaction data for frontend testing
+    console.log('\n=== SAMPLE DATA FOR FRONTEND TESTING ===');
+    
+    if (validDeposits.length > 0) {
+      const sampleDeposit = validDeposits[0];
+      console.log(`Sample deposit for highlighting test:`);
+      console.log(`  ID: ${sampleDeposit._id}`);
+      console.log(`  Amount: ${sampleDeposit.cryptoAmount} ${sampleDeposit.cryptoSymbol}`);
+      console.log(`  USD: $${sampleDeposit.usdAmount}`);
+      console.log(`  Test URL: #/mobile/assets-history?highlight=${sampleDeposit._id}`);
+    }
+    
+    if (validTransfers.length > 0) {
+      const sampleTransfer = validTransfers[0];
+      console.log(`Sample transfer for highlighting test:`);
+      console.log(`  ID: ${sampleTransfer._id}`);
+      console.log(`  Transaction ID: ${sampleTransfer.transactionId}`);
+      console.log(`  Amount: $${sampleTransfer.amount}`);
+      console.log(`  Test URL: #/mobile/assets-history?highlight=${sampleTransfer._id}`);
+    }
+    
+    console.log('\n✅ Comprehensive zero transaction cleanup and highlighting system verification complete!');
+    
   } catch (error) {
-    console.error('Test error:', error.message);
+    console.error('Verification error:', error);
+  } finally {
+    await client.close();
   }
 }
 
-testFinalVerification().catch(console.error);
+testFinalVerification();
