@@ -3751,7 +3751,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
       if (!userSettings) {
         userSettings = new UserSettings({ 
           userId,
-          minimumDepositForWithdrawal: 500,
+          minimumDepositForWithdrawal: 1000,
           totalDeposited: 0,
           canWithdraw: false
         });
@@ -3773,7 +3773,7 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
           canWithdraw: userSettings.canWithdraw,
           totalDeposited: userSettings.totalDeposited,
           minimumRequired: userSettings.minimumDepositForWithdrawal,
-          withdrawalMessage: userSettings.withdrawalMessage || "You need to make a first deposit of ${amount} to unlock withdrawal features.",
+          withdrawalMessage: userSettings.withdrawalMessage || "You need to fund your account up to $1,000 to unlock withdrawal features.",
           shortfall: Math.max(0, userSettings.minimumDepositForWithdrawal - userSettings.totalDeposited)
         }
       });
