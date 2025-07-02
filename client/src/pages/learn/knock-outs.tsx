@@ -344,8 +344,8 @@ export default function KnockOutsLearn() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6 mb-12">
-          <div className="md:w-1/2 bg-[#f5f5f5] p-6 rounded-lg">
+        <div className="flex justify-center mb-12">
+          <div className="bg-[#f5f5f5] p-8 rounded-lg text-center max-w-md">
             <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Ready to Trade Knock-Outs?</h3>
             <p className="mb-6">Open an account and start leveraged cryptocurrency trading with built-in risk management.</p>
             <Button
@@ -353,18 +353,6 @@ export default function KnockOutsLearn() {
               className="w-full bg-[#0033a0] hover:bg-opacity-90 text-white font-semibold"
             >
               <Link href="#">Open Trading Account</Link>
-            </Button>
-          </div>
-          
-          <div className="md:w-1/2 bg-[#f5f5f5] p-6 rounded-lg">
-            <h3 className="text-xl font-bold mb-4 text-[#0033a0]">Practice Risk-Free</h3>
-            <p className="mb-6">Try crypto Knock-Outs with virtual funds on our demo platform before trading with real money.</p>
-            <Button
-              asChild
-              variant="outline"
-              className="w-full border-[#0033a0] text-[#0033a0] hover:bg-[#0033a0] hover:text-white"
-            >
-              <Link href="#">Open Demo Account</Link>
             </Button>
           </div>
         </div>
