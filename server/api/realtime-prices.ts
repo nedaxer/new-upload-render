@@ -19,22 +19,37 @@ export async function getRealtimePrices(req: Request, res: Response) {
   try {
     const now = Date.now();
     
+    // Force clear cache for testing
+    priceCache = null;
+    lastCacheTime = 0;
+    
     // Use cache if available and fresh
     if (priceCache && (now - lastCacheTime) < CACHE_DURATION) {
       return res.json({ success: true, data: priceCache });
     }
 
-    console.log('🚀 Fetching fresh CoinGecko data...');
-    
     // Direct API call to CoinGecko for essential coins
     const API_KEY = process.env.COINGECKO_API_KEY || '';
+    
+    // Top 30 popular coins for better API compatibility
+    const popularCoins = [
+      'bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana', 'ripple', 'dogecoin', 'cardano',
+      'tron', 'avalanche-2', 'chainlink', 'the-open-network', 'shiba-inu', 'sui', 'polkadot',
+      'bitcoin-cash', 'litecoin', 'pepe', 'usd-coin', 'arbitrum', 'cosmos', 'algorand',
+      'vechain', 'render-token', 'hedera-hashgraph', 'mantle', 'near', 'filecoin', 'stellar', 'kaspa'
+    ];
+
+    console.log('🚀 Fetching fresh CoinGecko data...');
+    console.log('🔑 Using API key:', API_KEY ? 'Present' : 'Missing');
+    console.log('📊 Requesting coins:', popularCoins.length, 'coins:', popularCoins.slice(0, 10).join(','), '...');
+    
     if (!API_KEY) {
       throw new Error('CoinGecko API key not configured');
     }
 
     const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
       params: {
-        ids: 'bitcoin,ethereum,tether,binancecoin,solana,ripple,dogecoin,cardano',
+        ids: popularCoins.join(','),
         vs_currencies: 'usd',
         include_24hr_change: 'true',
         include_24hr_vol: 'true',
@@ -48,8 +63,10 @@ export async function getRealtimePrices(req: Request, res: Response) {
     });
 
     console.log('✅ CoinGecko response received:', Object.keys(response.data));
+    console.log('🔍 Full API response status:', response.status);
+    console.log('📊 Response headers rate limit:', response.headers['x-ratelimit-remaining'] || 'N/A');
 
-    // Transform data
+    // Enhanced coin mapping with comprehensive symbol support
     const coinMapping = {
       'bitcoin': { symbol: 'BTC', name: 'Bitcoin' },
       'ethereum': { symbol: 'ETH', name: 'Ethereum' },
@@ -58,7 +75,121 @@ export async function getRealtimePrices(req: Request, res: Response) {
       'solana': { symbol: 'SOL', name: 'Solana' },
       'ripple': { symbol: 'XRP', name: 'XRP' },
       'dogecoin': { symbol: 'DOGE', name: 'Dogecoin' },
-      'cardano': { symbol: 'ADA', name: 'Cardano' }
+      'cardano': { symbol: 'ADA', name: 'Cardano' },
+      'tron': { symbol: 'TRX', name: 'TRON' },
+      'avalanche-2': { symbol: 'AVAX', name: 'Avalanche' },
+      'chainlink': { symbol: 'LINK', name: 'Chainlink' },
+      'the-open-network': { symbol: 'TON', name: 'Toncoin' },
+      'shiba-inu': { symbol: 'SHIB', name: 'Shiba Inu' },
+      'sui': { symbol: 'SUI', name: 'Sui' },
+      'polkadot': { symbol: 'DOT', name: 'Polkadot' },
+      'bitcoin-cash': { symbol: 'BCH', name: 'Bitcoin Cash' },
+      'litecoin': { symbol: 'LTC', name: 'Litecoin' },
+      'pepe': { symbol: 'PEPE', name: 'Pepe' },
+      'usd-coin': { symbol: 'USDC', name: 'USD Coin' },
+      'arbitrum': { symbol: 'ARB', name: 'Arbitrum' },
+      'cosmos': { symbol: 'ATOM', name: 'Cosmos' },
+      'algorand': { symbol: 'ALGO', name: 'Algorand' },
+      'vechain': { symbol: 'VET', name: 'VeChain' },
+      'render-token': { symbol: 'RNDR', name: 'Render' },
+      'hedera-hashgraph': { symbol: 'HBAR', name: 'Hedera' },
+      'mantle': { symbol: 'MNT', name: 'Mantle' },
+      'near': { symbol: 'NEAR', name: 'NEAR Protocol' },
+      'filecoin': { symbol: 'FIL', name: 'Filecoin' },
+      'blockstack': { symbol: 'STX', name: 'Stacks' },
+      'maker': { symbol: 'MKR', name: 'Maker' },
+      'stellar': { symbol: 'XLM', name: 'Stellar' },
+      'kaspa': { symbol: 'KAS', name: 'Kaspa' },
+      'immutable-x': { symbol: 'IMX', name: 'Immutable X' },
+      'optimism': { symbol: 'OP', name: 'Optimism' },
+      'okb': { symbol: 'OKB', name: 'OKB' },
+      'first-digital-usd': { symbol: 'FDUSD', name: 'First Digital USD' },
+      'polygon': { symbol: 'MATIC', name: 'Polygon' },
+      'ethereum-classic': { symbol: 'ETC', name: 'Ethereum Classic' },
+      'monero': { symbol: 'XMR', name: 'Monero' },
+      'kucoin-shares': { symbol: 'KCS', name: 'KuCoin Token' },
+      'internet-computer': { symbol: 'ICP', name: 'Internet Computer' },
+      'uniswap': { symbol: 'UNI', name: 'Uniswap' },
+      'fantom': { symbol: 'FTM', name: 'Fantom' },
+      'whitebit': { symbol: 'WBT', name: 'WhiteBIT Token' },
+      'ondo-finance': { symbol: 'ONDO', name: 'Ondo' },
+      'aave': { symbol: 'AAVE', name: 'Aave' },
+      'bittorrent-new': { symbol: 'BTT', name: 'BitTorrent' },
+      'floki': { symbol: 'FLOKI', name: 'FLOKI' },
+      'lido-dao': { symbol: 'LDO', name: 'Lido DAO' },
+      'cronos': { symbol: 'CRO', name: 'Cronos' },
+      'bonk': { symbol: 'BONK', name: 'Bonk' },
+      'jupiter-exchange-solana': { symbol: 'JUP', name: 'Jupiter' },
+      'worldcoin-wld': { symbol: 'WLD', name: 'Worldcoin' },
+      'sei-network': { symbol: 'SEI', name: 'Sei' },
+      'compound': { symbol: 'COMP', name: 'Compound' },
+      'wormhole': { symbol: 'W', name: 'Wormhole' },
+      'aptos': { symbol: 'APT', name: 'Aptos' },
+      'beam-2': { symbol: 'BEAM', name: 'Beam' },
+      'conflux-token': { symbol: 'CFX', name: 'Conflux' },
+      'thorchain': { symbol: 'RUNE', name: 'THORChain' },
+      'matic-network': { symbol: 'MATIC', name: 'Polygon' },
+      'pyth-network': { symbol: 'PYTH', name: 'Pyth Network' },
+      'celestia': { symbol: 'TIA', name: 'Celestia' },
+      'akash-network': { symbol: 'AKT', name: 'Akash Network' },
+      'the-sandbox': { symbol: 'SAND', name: 'The Sandbox' },
+      'injective-protocol': { symbol: 'INJ', name: 'Injective' },
+      'gala': { symbol: 'GALA', name: 'Gala' },
+      'flow': { symbol: 'FLOW', name: 'Flow' },
+      'theta-token': { symbol: 'THETA', name: 'THETA' },
+      'helium': { symbol: 'HNT', name: 'Helium' },
+      'quant-network': { symbol: 'QNT', name: 'Quant' },
+      'nexo': { symbol: 'NEXO', name: 'Nexo' },
+      'kava': { symbol: 'KAVA', name: 'Kava' },
+      'the-graph': { symbol: 'GRT', name: 'The Graph' },
+      'blur': { symbol: 'BLUR', name: 'Blur' },
+      'decentraland': { symbol: 'MANA', name: 'Decentraland' },
+      'curve-dao-token': { symbol: 'CRV', name: 'Curve DAO Token' },
+      'pancakeswap-token': { symbol: 'CAKE', name: 'PancakeSwap' },
+      'chiliz': { symbol: 'CHZ', name: 'Chiliz' },
+      'sushi': { symbol: 'SUSHI', name: 'SushiSwap' },
+      'gmx': { symbol: 'GMX', name: 'GMX' },
+      'flare-networks': { symbol: 'FLR', name: 'Flare' },
+      'axie-infinity': { symbol: 'AXS', name: 'Axie Infinity' },
+      'synthetix-network-token': { symbol: 'SNX', name: 'Synthetix' },
+      'mask-network': { symbol: 'MASK', name: 'Mask Network' },
+      'livepeer': { symbol: 'LPT', name: 'Livepeer' },
+      'trust-wallet-token': { symbol: 'TWT', name: 'Trust Wallet Token' },
+      'enjin-coin': { symbol: 'ENJ', name: 'Enjin Coin' },
+      'frax-share': { symbol: 'FXS', name: 'Frax Share' },
+      'stepn': { symbol: 'GMT', name: 'STEPN' },
+      'ocean-protocol': { symbol: 'OCEAN', name: 'Ocean Protocol' },
+      'havven': { symbol: 'SNX', name: 'Synthetix' },
+      'dydx': { symbol: 'DYDX', name: 'dYdX' },
+      'loopring': { symbol: 'LRC', name: 'Loopring' },
+      'fetch-ai': { symbol: 'FET', name: 'Fetch.ai' },
+      'singularitynet': { symbol: 'AGIX', name: 'SingularityNET' },
+      'basic-attention-token': { symbol: 'BAT', name: 'Basic Attention Token' },
+      'sandbox': { symbol: 'SAND', name: 'The Sandbox' },
+      'zcash': { symbol: 'ZEC', name: 'Zcash' },
+      'dash': { symbol: 'DASH', name: 'Dash' },
+      'nervos-network': { symbol: 'CKB', name: 'Nervos Network' },
+      'eos': { symbol: 'EOS', name: 'EOS' },
+      'ethena': { symbol: 'ENA', name: 'Ethena' },
+      'ankr': { symbol: 'ANKR', name: 'Ankr' },
+      'celo': { symbol: 'CELO', name: 'Celo' },
+      'kadena': { symbol: 'KDA', name: 'Kadena' },
+      'coredaoorg': { symbol: 'CORE', name: 'Core' },
+      'harmony': { symbol: 'ONE', name: 'Harmony' },
+      'zilliqa': { symbol: 'ZIL', name: 'Zilliqa' },
+      'waves': { symbol: 'WAVES', name: 'Waves' },
+      'iotex': { symbol: 'IOTX', name: 'IoTeX' },
+      'coti': { symbol: 'COTI', name: 'COTI' },
+      'band-protocol': { symbol: 'BAND', name: 'Band Protocol' },
+      'bittorrent': { symbol: 'BTT', name: 'BitTorrent' },
+      'ravencoin': { symbol: 'RVN', name: 'Ravencoin' },
+      'siacoin': { symbol: 'SC', name: 'Siacoin' },
+      'decred': { symbol: 'DCR', name: 'Decred' },
+      'zencash': { symbol: 'ZEN', name: 'Horizen' },
+      'stormx': { symbol: 'STMX', name: 'StormX' },
+      'smooth-love-potion': { symbol: 'SLP', name: 'Smooth Love Potion' },
+      'nem': { symbol: 'XEM', name: 'NEM' },
+      'lisk': { symbol: 'LSK', name: 'Lisk' }
     };
     
     const tickers: CryptoTicker[] = [];
