@@ -31,17 +31,29 @@ export async function getRealtimePrices(req: Request, res: Response) {
     // Direct API call to CoinGecko for essential coins
     const API_KEY = process.env.COINGECKO_API_KEY || '';
     
-    // Top 30 popular coins for better API compatibility
-    const popularCoins = [
-      'bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana', 'ripple', 'dogecoin', 'cardano',
+    // Complete list of coins from CRYPTO_PAIRS for full coverage
+    const allCryptoPairCoins = [
+      'bitcoin', 'ethereum', 'solana', 'binancecoin', 'ripple', 'usd-coin', 'dogecoin', 'cardano',
       'tron', 'avalanche-2', 'chainlink', 'the-open-network', 'shiba-inu', 'sui', 'polkadot',
-      'bitcoin-cash', 'litecoin', 'pepe', 'usd-coin', 'arbitrum', 'cosmos', 'algorand',
-      'vechain', 'render-token', 'hedera-hashgraph', 'mantle', 'near', 'filecoin', 'stellar', 'kaspa'
+      'bitcoin-cash', 'litecoin', 'pepe', 'tether', 'arbitrum', 'cosmos', 'algorand', 'vechain',
+      'render-token', 'hedera-hashgraph', 'mantle', 'near', 'filecoin', 'blockstack', 'maker',
+      'stellar', 'kaspa', 'immutable-x', 'optimism', 'okb', 'first-digital-usd', 'polygon',
+      'ethereum-classic', 'monero', 'kucoin-shares', 'internet-computer', 'uniswap', 'fantom',
+      'whitebit', 'ondo-finance', 'aave', 'bittorrent-new', 'floki', 'lido-dao', 'cronos',
+      'bonk', 'jupiter-exchange-solana', 'worldcoin-wld', 'sei-network', 'compound-governance-token',
+      'wormhole', 'aptos', 'beam-2', 'conflux-token', 'thorchain', 'pyth-network', 'celestia',
+      'akash-network', 'the-sandbox', 'injective-protocol', 'gala', 'flow', 'theta-token',
+      'helium', 'quant-network', 'nexo', 'kava', 'the-graph', 'blur', 'decentraland',
+      'curve-dao-token', 'pancakeswap-token', 'chiliz', 'havven', 'enjincoin', 'axelar',
+      'arkham', 'starknet', 'fetch-ai', 'ether-fi', 'gmx', 'dydx', 'zetachain',
+      'ethereum-name-service', 'sushi', 'yearn-finance', 'jasmycoin', 'jito-governance-token',
+      'kusama', 'zcash', 'basic-attention-token', 'nervos-network', 'eos', 'stepn', 'ethena',
+      'ankr', 'celo', 'kadena', 'coredaoorg'
     ];
 
     console.log('🚀 Fetching fresh CoinGecko data...');
     console.log('🔑 Using API key:', API_KEY ? 'Present' : 'Missing');
-    console.log('📊 Requesting coins:', popularCoins.length, 'coins:', popularCoins.slice(0, 10).join(','), '...');
+    console.log('📊 Requesting coins:', allCryptoPairCoins.length, 'coins:', allCryptoPairCoins.slice(0, 10).join(','), '...');
     
     if (!API_KEY) {
       throw new Error('CoinGecko API key not configured');
@@ -49,7 +61,7 @@ export async function getRealtimePrices(req: Request, res: Response) {
 
     const response = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
       params: {
-        ids: popularCoins.join(','),
+        ids: allCryptoPairCoins.join(','),
         vs_currencies: 'usd',
         include_24hr_change: 'true',
         include_24hr_vol: 'true',
