@@ -178,28 +178,20 @@ interface CryptoTicker {
 export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
   try {
     const API_KEY = process.env.COINGECKO_API_KEY || '';
+    console.log('🔑 CoinGecko API key check:', API_KEY ? 'Present' : 'Missing');
+    
     if (!API_KEY) {
       throw new Error('CoinGecko API key not configured');
     }
 
-    // Get unique coinGeckoIds from our crypto pairs
-    const seenIds = new Set<string>();
-    const uniqueCoinIds: string[] = [];
+    // Start with just essential coins for better reliability
+    const essentialCoins = ['bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana', 'ripple', 'dogecoin', 'cardano'];
     
-    CRYPTO_PAIRS.forEach(pair => {
-      if (pair.coinGeckoId && !seenIds.has(pair.coinGeckoId)) {
-        uniqueCoinIds.push(pair.coinGeckoId);
-        seenIds.add(pair.coinGeckoId);
-      }
-    });
-    
-    const coinIds = uniqueCoinIds.join(',');
-
-    console.log('Fetching CoinGecko prices for coins:', uniqueCoinIds.length);
+    console.log('🚀 Fetching CoinGecko prices for essential coins:', essentialCoins.length);
 
     const response = await axios.get(`https://api.coingecko.com/api/v3/simple/price`, {
       params: {
-        ids: coinIds,
+        ids: essentialCoins.join(','),
         vs_currencies: 'usd',
         include_24hr_change: 'true',
         include_24hr_vol: 'true',
@@ -209,49 +201,40 @@ export async function getCoinGeckoPrices(): Promise<CryptoTicker[]> {
         'x-cg-demo-api-key': API_KEY,
         'Accept': 'application/json'
       },
-      timeout: 10000
+      timeout: 15000
     });
 
-    // Transform data to match our crypto pairs - only add unique base assets
+    console.log('✅ CoinGecko API response status:', response.status);
+    console.log('📊 CoinGecko data received for coins:', Object.keys(response.data));
+
+    // Transform essential coin data
     const tickers: CryptoTicker[] = [];
-    const missingCoins: string[] = [];
-    const addedSymbols = new Set<string>();
+    const coinMapping = {
+      'bitcoin': { symbol: 'BTC', name: 'Bitcoin' },
+      'ethereum': { symbol: 'ETH', name: 'Ethereum' },
+      'tether': { symbol: 'USDT', name: 'Tether' },
+      'binancecoin': { symbol: 'BNB', name: 'BNB' },
+      'solana': { symbol: 'SOL', name: 'Solana' },
+      'ripple': { symbol: 'XRP', name: 'XRP' },
+      'dogecoin': { symbol: 'DOGE', name: 'Dogecoin' },
+      'cardano': { symbol: 'ADA', name: 'Cardano' }
+    };
     
-    CRYPTO_PAIRS.forEach(pair => {
-      if (pair.coinGeckoId && response.data[pair.coinGeckoId] && !addedSymbols.has(pair.baseAsset)) {
-        const coinData: CoinGeckoPrice = response.data[pair.coinGeckoId];
-        
-        // Add only the base asset symbol (like BTC) to avoid duplicates
+    for (const [coinId, coinInfo] of Object.entries(coinMapping)) {
+      if (response.data[coinId]) {
+        const coinData: CoinGeckoPrice = response.data[coinId];
         tickers.push({
-          symbol: pair.baseAsset,
-          name: pair.name,
+          symbol: coinInfo.symbol,
+          name: coinInfo.name,
           price: coinData.usd,
           change: coinData.usd_24h_change || 0,
           volume: coinData.usd_24h_vol || 0,
           marketCap: coinData.usd_market_cap || 0
         });
-        
-        addedSymbols.add(pair.baseAsset);
-      } else if (pair.coinGeckoId && !response.data[pair.coinGeckoId] && !missingCoins.includes(pair.coinGeckoId)) {
-        missingCoins.push(pair.coinGeckoId);
+        console.log(`✅ ${coinInfo.symbol}: $${coinData.usd.toFixed(2)}`);
+      } else {
+        console.log(`❌ Missing data for ${coinId}`);
       }
-    });
-
-    if (missingCoins.length > 0) {
-      console.log(`Missing coin data for: ${missingCoins.join(', ')}`);
-    }
-
-    // Add USDT as a stablecoin with $1.00 price if not already present
-    const usdtExists = tickers.some(t => t.symbol === 'USDT');
-    if (!usdtExists) {
-      tickers.push({
-        symbol: 'USDT',
-        name: 'Tether',
-        price: 1.00,
-        change: 0,
-        volume: 0,
-        marketCap: 0
-      });
     }
 
     console.log(`Successfully fetched ${tickers.length} crypto prices from CoinGecko`);

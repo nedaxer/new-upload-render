@@ -510,13 +510,13 @@ export default function MobileHome() {
     { key: 'Turnover', label: t('turnover') }
   ];
 
-  // Get BTC price for USD to BTC conversion
+  // Get BTC price for USD to BTC conversion from real CoinGecko data
   const getBTCPrice = () => {
     if (!marketData?.data || !Array.isArray(marketData.data)) return 0;
-    const btcTicker = marketData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
+    const btcTicker = marketData.data.find((ticker: any) => ticker.symbol === 'BTC');
     const price = btcTicker ? parseFloat(btcTicker.price) : 0;
-    console.log('🏠 BTC Price Debug:', { btcTicker, price, marketData });
-    return price || 45000; // Fallback to 45k if not found
+    console.log('🏠 Real-time BTC Price from CoinGecko:', { btcTicker, price, marketData });
+    return price || 0; // Return 0 if no real data available
   };
 
   // Get user's USD balance

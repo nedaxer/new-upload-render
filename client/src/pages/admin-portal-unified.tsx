@@ -924,18 +924,15 @@ export default function UnifiedAdminPortal() {
     });
   };
 
-  // Admin dashboard refresh function
+  // Optimized admin dashboard refresh function
   const handleAdminRefresh = async () => {
     try {
+      // Only refresh essential data for faster performance
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/users/search"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-kyc"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] }),
         refetchUsers(),
-        refetchKyc(),
-        refetchAnalytics(),
-        generalSearchQuery.length > 0 && refetchGeneralSearch()
+        refetchAnalytics()
       ]);
       
       toast({
@@ -1121,7 +1118,7 @@ export default function UnifiedAdminPortal() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-2">
-                  {Array.isArray(allUsers) && allUsers.slice(0, 8).map((user: AdminUser) => (
+                  {Array.isArray(allUsers) && allUsers.map((user: AdminUser) => (
                     <div
                       key={user._id}
                       className="p-2 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all cursor-pointer group"
@@ -1178,19 +1175,11 @@ export default function UnifiedAdminPortal() {
                     </div>
                   ))}
                 </div>
-                {Array.isArray(allUsers) && allUsers.length > 12 && (
+                {Array.isArray(allUsers) && allUsers.length > 0 && (
                   <div className="text-center mt-4">
                     <p className="text-blue-200 text-sm">
-                      Showing first 12 users • {allUsers.length - 12} more available
+                      Showing all {allUsers.length} users
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 text-blue-300 hover:text-white"
-                      onClick={() => setShowUsersList(false)}
-                    >
-                      Use search below to find specific users
-                    </Button>
                   </div>
                 )}
               </CardContent>

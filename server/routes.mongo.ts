@@ -2206,13 +2206,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { User } = await import('./models/User');
       
-      // OPTIMIZED: Use aggregation pipeline for single database query
+      // OPTIMIZED: Use aggregation pipeline for single database query - fetch ALL users
       const usersWithBalance = await User.aggregate([
         {
           $sort: { createdAt: -1 }
-        },
-        {
-          $limit: 50
         },
         {
           $lookup: {
