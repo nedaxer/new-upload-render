@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { AdminPullToRefresh } from "@/components/admin-pull-to-refresh";
+import { RefreshCw } from "lucide-react";
 import AdminDepositCreator from "@/components/admin-deposit-creator";
 import AdminWithdrawalCreator from "@/components/admin-withdrawal-creator";
 import ContactMessagesManager from "@/components/contact-messages-manager";
@@ -998,21 +998,29 @@ export default function UnifiedAdminPortal() {
 
   // Main dashboard
   return (
-    <AdminPullToRefresh onRefresh={handleAdminRefresh}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-2">
-        {/* Enhanced Header - Mobile Optimized */}
-        <div className="mb-4">
-          <div className="flex flex-col items-start justify-between mb-4 space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
-              <div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-2">
+      {/* Enhanced Header - Mobile Optimized */}
+      <div className="mb-4">
+        <div className="flex flex-col items-start justify-between mb-4 space-y-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div>
                 <h1 className="text-lg font-bold text-white">Admin Portal</h1>
                 <p className="text-blue-200 text-xs">Platform Management</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Button 
+                onClick={handleAdminRefresh}
+                variant="outline" 
+                size="sm"
+                className="border-green-500/30 text-green-400 hover:bg-green-500/20 text-xs px-2 py-1"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Refresh Data
+              </Button>
               <Button 
                 onClick={() => setShowUsersList(!showUsersList)}
                 variant="outline" 
@@ -2120,75 +2128,6 @@ export default function UnifiedAdminPortal() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Enhanced Document Modal for KYC Photo Viewing */}
-      {documentModalOpen && selectedDocumentImage && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[999999] p-4">
-          <div className="relative max-w-5xl max-h-full flex flex-col">
-            {/* Document Counter and Navigation */}
-            <div className="flex items-center justify-between mb-4 px-4">
-              <div className="text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-                Document {currentDocumentIndex + 1} of {allDocuments.length}
-              </div>
-              <div className="flex items-center space-x-2">
-                {allDocuments.length > 1 && (
-                  <>
-                    <Button
-                      onClick={() => {
-                        const newIndex = currentDocumentIndex > 0 ? currentDocumentIndex - 1 : allDocuments.length - 1;
-                        setCurrentDocumentIndex(newIndex);
-                        setSelectedDocumentImage(allDocuments[newIndex]);
-                      }}
-                      className="bg-white/20 hover:bg-white/30 text-white rounded-full w-10 h-10 p-0"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        const newIndex = currentDocumentIndex < allDocuments.length - 1 ? currentDocumentIndex + 1 : 0;
-                        setCurrentDocumentIndex(newIndex);
-                        setSelectedDocumentImage(allDocuments[newIndex]);
-                      }}
-                      className="bg-white/20 hover:bg-white/30 text-white rounded-full w-10 h-10 p-0"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  </>
-                )}
-                <Button
-                  onClick={() => {
-                    setDocumentModalOpen(false);
-                    setSelectedDocumentImage(null);
-                    setAllDocuments([]);
-                    setCurrentDocumentIndex(0);
-                  }}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 p-0"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* Document Image */}
-            <div className="flex-1 flex items-center justify-center">
-              <img 
-                src={selectedDocumentImage} 
-                alt="KYC Document" 
-                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-              />
-            </div>
-            
-            {/* Document Type Label */}
-            <div className="text-center mt-4">
-              <span className="text-white/70 text-sm bg-black/50 px-3 py-1 rounded-full">
-                {currentDocumentIndex === 0 && allDocuments.length > 1 ? 'Front Side' : 
-                 currentDocumentIndex === 1 && allDocuments.length > 1 ? 'Back Side' : 
-                 'Identity Document'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-    </AdminPullToRefresh>
+    </div>
   );
 }

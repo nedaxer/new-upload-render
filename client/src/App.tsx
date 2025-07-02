@@ -119,7 +119,7 @@ import VerificationSubmitted from '@/pages/mobile/verification-submitted';
 
 
 // Admin Pages
-import UnifiedAdminPortal from '@/pages/admin-portal-unified';
+import MinimalAdminPortal from '@/pages/admin-portal-minimal';
 
 // Other Pages
 import SiteMap from '@/pages/site-map';
@@ -345,9 +345,9 @@ export default function App() {
 
 
             {/* Admin Portal Routes */}
-            <Route path="/admin-portal" component={UnifiedAdminPortal} />
-            <Route path="/admin-portal-enhanced" component={UnifiedAdminPortal} />
-            <Route path="/admin" component={UnifiedAdminPortal} />
+            <Route path="/admin-portal" component={MinimalAdminPortal} />
+            <Route path="/admin-portal-enhanced" component={MinimalAdminPortal} />
+            <Route path="/admin" component={MinimalAdminPortal} />
 
             {/* Other Routes */}
             <Route path="/site-map" component={SiteMap} />
