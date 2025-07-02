@@ -48,34 +48,68 @@ const FEATURED_CRYPTOCURRENCIES = [
   { id: 'lido-dao', symbol: 'LDO', name: 'Lido DAO' },
   { id: 'internet-computer', symbol: 'ICP', name: 'Internet Computer' },
   { id: 'arbitrum', symbol: 'ARB', name: 'Arbitrum' },
-  { id: 'optimism', symbol: 'OP', name: 'Optimism' },
   { id: 'vechain', symbol: 'VET', name: 'VeChain' },
-  { id: 'hedera-hashgraph', symbol: 'HBAR', name: 'Hedera' },
-  { id: 'thorchain', symbol: 'RUNE', name: 'THORChain' },
   { id: 'maker', symbol: 'MKR', name: 'Maker' },
-  { id: 'elrond-erd-2', symbol: 'EGLD', name: 'MultiversX (Elrond)' },
-  { id: 'the-sandbox', symbol: 'SAND', name: 'The Sandbox' },
-  { id: 'aave', symbol: 'AAVE', name: 'Aave' },
-  { id: 'the-graph', symbol: 'GRT', name: 'The Graph' },
-  { id: 'decentraland', symbol: 'MANA', name: 'Decentraland' },
-  { id: 'stacks', symbol: 'STX', name: 'Stacks' },
-  { id: 'quant-network', symbol: 'QNT', name: 'Quant' },
-  { id: 'immutable-x', symbol: 'IMX', name: 'Immutable' },
+  { id: 'ethereum-classic', symbol: 'ETC', name: 'Ethereum Classic' },
+  { id: 'optimism', symbol: 'OP', name: 'Optimism' },
+  { id: 'immutable-x', symbol: 'IMX', name: 'Immutable X' },
   { id: 'fantom', symbol: 'FTM', name: 'Fantom' },
-  { id: 'algorand', symbol: 'ALGO', name: 'Algorand' },
-  { id: 'kava', symbol: 'KAVA', name: 'Kava' },
-  { id: 'xdc-network', symbol: 'XDC', name: 'XDC Network' },
+  { id: 'monero', symbol: 'XMR', name: 'Monero' },
+  { id: 'sui', symbol: 'SUI', name: 'Sui' },
+  { id: 'hedera-hashgraph', symbol: 'HBAR', name: 'Hedera' },
+  { id: 'kaspa', symbol: 'KAS', name: 'Kaspa' },
+  { id: 'render-token', symbol: 'RNDR', name: 'Render' },
+  { id: 'mantle', symbol: 'MNT', name: 'Mantle' },
+  { id: 'stacks', symbol: 'STX', name: 'Stacks' },
+  { id: 'aave', symbol: 'AAVE', name: 'Aave' },
+  { id: 'ondo-finance', symbol: 'ONDO', name: 'Ondo' },
+  { id: 'floki', symbol: 'FLOKI', name: 'FLOKI' },
+  { id: 'crypto-com-chain', symbol: 'CRO', name: 'Cronos' },
+  { id: 'bonk', symbol: 'BONK', name: 'Bonk' },
+  { id: 'jupiter-exchange-solana', symbol: 'JUP', name: 'Jupiter' },
+  { id: 'worldcoin-wld', symbol: 'WLD', name: 'Worldcoin' },
+  { id: 'sei-network', symbol: 'SEI', name: 'Sei' },
+  { id: 'wormhole', symbol: 'W', name: 'Wormhole' },
+  { id: 'beam-2', symbol: 'BEAM', name: 'Beam' },
+  { id: 'conflux-token', symbol: 'CFX', name: 'Conflux' },
+  { id: 'thorchain', symbol: 'RUNE', name: 'THORChain' },
+  { id: 'pyth-network', symbol: 'PYTH', name: 'Pyth Network' },
   { id: 'celestia', symbol: 'TIA', name: 'Celestia' },
-  { id: 'dydx-chain', symbol: 'DYDX', name: 'dYdX' },
-  { id: 'synthetix-network-token', symbol: 'SNX', name: 'Synthetix' },
+  { id: 'akash-network', symbol: 'AKT', name: 'Akash Network' },
+  { id: 'the-sandbox', symbol: 'SAND', name: 'The Sandbox' },
+  { id: 'injective-protocol', symbol: 'INJ', name: 'Injective' },
+  { id: 'gala', symbol: 'GALA', name: 'Gala' },
+  { id: 'flow', symbol: 'FLOW', name: 'Flow' },
+  { id: 'theta-token', symbol: 'THETA', name: 'Theta Network' },
+  { id: 'helium', symbol: 'HNT', name: 'Helium' },
+  { id: 'quant-network', symbol: 'QNT', name: 'Quant' },
+  { id: 'nexo', symbol: 'NEXO', name: 'Nexo' },
+  { id: 'kava', symbol: 'KAVA', name: 'Kava' },
+  { id: 'the-graph', symbol: 'GRT', name: 'The Graph' },
+  { id: 'blur', symbol: 'BLUR', name: 'Blur' },
+  { id: 'decentraland', symbol: 'MANA', name: 'Decentraland' },
   { id: 'curve-dao-token', symbol: 'CRV', name: 'Curve DAO' },
+  { id: 'pancakeswap-token', symbol: 'CAKE', name: 'PancakeSwap' },
   { id: 'chiliz', symbol: 'CHZ', name: 'Chiliz' },
-  { id: 'enjincoin', symbol: 'ENJ', name: 'Enjin Coin' },
-  { id: 'zilliqa', symbol: 'ZIL', name: 'Zilliqa' },
-  { id: 'basic-attention-token', symbol: 'BAT', name: 'Basic Attention Token' }
+  { id: 'sushiswap', symbol: 'SUSHI', name: 'SushiSwap' },
+  { id: 'gmx', symbol: 'GMX', name: 'GMX' },
+  { id: 'stepn', symbol: 'GMT', name: 'STEPN' },
+  { id: 'synthetix-network-token', symbol: 'SNX', name: 'Synthetix' },
+  { id: 'dydx-chain', symbol: 'DYDX', name: 'dYdX' },
+  { id: 'fetch-ai', symbol: 'FET', name: 'Fetch.AI' },
+  { id: 'basic-attention-token', symbol: 'BAT', name: 'Basic Attention Token' },
+  { id: 'zcash', symbol: 'ZEC', name: 'Zcash' },
+  { id: 'nervos-network', symbol: 'CKB', name: 'Nervos Network' },
+  { id: 'eos', symbol: 'EOS', name: 'EOS' },
+  { id: 'ethena', symbol: 'ENA', name: 'Ethena' },
+  { id: 'ankr', symbol: 'ANKR', name: 'Ankr' },
+  { id: 'celo', symbol: 'CELO', name: 'Celo' },
+  { id: 'kadena', symbol: 'KDA', name: 'Kadena' },
+  { id: 'coredaoorg', symbol: 'CORE', name: 'Core' },
+  { id: 'zilliqa', symbol: 'ZIL', name: 'Zilliqa' }
 ];
 
-export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: CryptoPairSelectorProps) {
+function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: CryptoPairSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
   const { user } = useAuth();
@@ -83,253 +117,65 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
 
   const { data: cryptoData, isLoading } = useQuery<CryptoPair[]>({
     queryKey: ['/api/crypto/prices'],
-    refetchInterval: 10000, // Refresh every 10 seconds
     enabled: isOpen
   });
 
-  // Fetch user favorites
-  const { data: userFavorites } = useQuery<string[]>({
-    queryKey: ['/api/user/favorites'],
-    enabled: !!user && isOpen,
-    retry: false
+  const { data: userFavorites } = useQuery({
+    queryKey: ['/api/favorites'],
+    enabled: !!user && isOpen
   });
 
-  // Update favorites when user favorites data changes
+  const addFavoriteMutation = useMutation({
+    mutationFn: (crypto: { id: string; symbol: string }) => 
+      apiRequest('/api/favorites', {
+        method: 'POST',
+        body: { cryptoId: crypto.id, symbol: crypto.symbol }
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+    }
+  });
+
+  const removeFavoriteMutation = useMutation({
+    mutationFn: (crypto: { id: string; symbol: string }) =>
+      apiRequest('/api/favorites', {
+        method: 'DELETE',
+        body: { cryptoId: crypto.id, symbol: crypto.symbol }
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+    }
+  });
+
   useEffect(() => {
-    if (userFavorites) {
-      setFavorites(userFavorites);
+    if (userFavorites?.data) {
+      setFavorites(userFavorites.data.map((fav: any) => fav.cryptoId));
     }
   }, [userFavorites]);
 
-  // Mutation for adding/removing favorites
-  const favoritesMutation = useMutation({
-    mutationFn: async ({ action, cryptoPairSymbol, cryptoId }: { 
-      action: 'add' | 'remove'; 
-      cryptoPairSymbol: string; 
-      cryptoId?: string; 
-    }) => {
-      if (action === 'add' && cryptoId) {
-        await apiRequest('/api/user/favorites', 'POST', { cryptoPairSymbol, cryptoId });
-      } else if (action === 'remove') {
-        await apiRequest(`/api/user/favorites/${cryptoPairSymbol}`, 'DELETE');
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/favorites'] });
-    }
-  });
-
-  const filteredCryptos = FEATURED_CRYPTOCURRENCIES.filter(crypto =>
-    crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    crypto.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getCryptoData = (cryptoId: string) => {
-    return cryptoData?.find(crypto => crypto.id === cryptoId);
-  };
-
-  const toggleFavorite = (cryptoId: string, cryptoPairSymbol: string) => {
-    if (!user) return; // Only logged-in users can manage favorites
-    
-    const isFavorite = favorites.includes(cryptoPairSymbol);
-    
-    if (isFavorite) {
-      favoritesMutation.mutate({ action: 'remove', cryptoPairSymbol });
+  const handleToggleFavorite = (crypto: CryptoPair) => {
+    if (favorites.includes(crypto.id)) {
+      removeFavoriteMutation.mutate({ id: crypto.id, symbol: crypto.symbol });
     } else {
-      favoritesMutation.mutate({ action: 'add', cryptoPairSymbol, cryptoId });
+      addFavoriteMutation.mutate({ id: crypto.id, symbol: crypto.symbol });
     }
   };
 
-  const handleSelectPair = (cryptoId: string, symbol: string) => {
-    onSelectPair(cryptoId, symbol);
+  const handleSelectPair = (crypto: CryptoPair) => {
+    onSelectPair(crypto.id, crypto.symbol);
     onClose();
   };
 
-  if (!isOpen) return null;
+  const filteredCryptos = cryptoData?.filter((crypto) =>
+    crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    crypto.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
-      <div className="bg-gray-900 w-full h-[80vh] rounded-t-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-white text-lg font-semibold">Select Trading Pair</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
+  const displayCryptos = searchTerm ? filteredCryptos : 
+    cryptoData?.filter(crypto => 
+      FEATURED_CRYPTOCURRENCIES.some(featured => featured.id === crypto.id)
+    ) || [];
 
-        {/* Search */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Search cryptocurrencies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-800 border-gray-600 text-white"
-            />
-          </div>
-        </div>
-
-        {/* Favorites Section */}
-        {favorites.length > 0 && !searchTerm && (
-          <div className="p-4 border-b border-gray-700">
-            <h3 className="text-gray-400 text-sm mb-3">Favorites</h3>
-            <div className="space-y-2">
-              {favorites.map(cryptoPairSymbol => {
-                const crypto = FEATURED_CRYPTOCURRENCIES.find(c => `${c.symbol.toUpperCase()}USDT` === cryptoPairSymbol);
-                const liveData = crypto ? getCryptoData(crypto.id) : null;
-                if (!crypto) return null;
-
-                return (
-                  <div
-                    key={cryptoId}
-                    onClick={() => handleSelectPair(cryptoId, crypto.symbol)}
-                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedPair === `${crypto.symbol}/USDT` ? 'bg-orange-500/20' : 'bg-gray-800 hover:bg-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(cryptoId);
-                        }}
-                        className="text-yellow-500"
-                      >
-                        <Star className="w-4 h-4 fill-current" />
-                      </button>
-                      {liveData?.image && (
-                        <img src={liveData.image} alt={crypto.name} className="w-8 h-8 rounded-full" />
-                      )}
-                      <div>
-                        <div className="text-white font-medium">{crypto.symbol}/USDT</div>
-                        <div className="text-gray-400 text-sm">{crypto.name}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {liveData ? (
-                        <>
-                          <div className="text-white font-medium">
-                            ${liveData.current_price?.toFixed(liveData.current_price < 1 ? 6 : 2)}
-                          </div>
-                          <div className={`text-sm ${
-                            liveData.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                            {liveData.price_change_percentage_24h >= 0 ? '+' : ''}
-                            {liveData.price_change_percentage_24h?.toFixed(2)}%
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-gray-400 text-sm">Loading...</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* All Cryptocurrencies */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4">
-            <h3 className="text-gray-400 text-sm mb-3">
-              {searchTerm ? 'Search Results' : 'All Trading Pairs'}
-            </h3>
-            {isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="bg-gray-800 rounded-lg p-3 animate-pulse">
-                    <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                    <div className="h-3 bg-gray-700 rounded w-2/3"></div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredCryptos.map(crypto => {
-                  const liveData = getCryptoData(crypto.id);
-                  const cryptoPairSymbol = `${crypto.symbol.toUpperCase()}USDT`;
-                  const isFavorite = favorites.includes(cryptoPairSymbol);
-
-                  return (
-                    <div
-                      key={crypto.id}
-                      onClick={() => handleSelectPair(crypto.id, crypto.symbol)}
-                      className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedPair === `${crypto.symbol}/USDT` ? 'bg-orange-500/20' : 'bg-gray-800 hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(crypto.id);
-                          }}
-                          className={`${isFavorite ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
-                        >
-                          <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                        </button>
-                        {liveData?.image && (
-                          <img src={liveData.image} alt={crypto.name} className="w-8 h-8 rounded-full" />
-                        )}
-                        <div>
-                          <div className="text-white font-medium">{crypto.symbol}/USDT</div>
-                          <div className="text-gray-400 text-sm">{crypto.name}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {liveData ? (
-                          <>
-                            <div className="text-white font-medium">
-                              ${liveData.current_price?.toFixed(liveData.current_price < 1 ? 6 : 2)}
-                            </div>
-                            <div className={`text-sm ${
-                              liveData.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'
-                            }`}>
-                              {liveData.price_change_percentage_24h >= 0 ? '+' : ''}
-                              {liveData.price_change_percentage_24h?.toFixed(2)}%
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-gray-400 text-sm">Loading...</div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-import React from 'react';
-import { X } from 'lucide-react';
-
-interface CryptoPair {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-}
-
-interface CryptoPairSelectorProps {
-  isOpen: boolean;
-  onClose: () => void;
-  pairs: CryptoPair[];
-  onSelect: (pair: CryptoPair) => void;
-}
-
-export const CryptoPairSelector: React.FC<CryptoPairSelectorProps> = ({
-  isOpen,
-  onClose,
-  pairs,
-  onSelect
-}) => {
   if (!isOpen) return null;
 
   return (
@@ -344,36 +190,88 @@ export const CryptoPairSelector: React.FC<CryptoPairSelectorProps> = ({
             <X className="h-6 w-6" />
           </button>
         </div>
+        
         <div className="p-4">
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Input
+              type="text"
+              placeholder="Search cryptocurrencies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {pairs.map((pair) => (
-              <button
-                key={pair.symbol}
-                onClick={() => onSelect(pair)}
-                className="w-full p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
+            {isLoading ? (
+              <div className="text-center py-8 text-gray-500">Loading...</div>
+            ) : displayCryptos.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {searchTerm ? 'No cryptocurrencies found' : 'No data available'}
+              </div>
+            ) : (
+              displayCryptos.map((crypto) => (
+                <div
+                  key={crypto.id}
+                  className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer ${
+                    selectedPair === crypto.symbol ? 'border-[#ff5900] bg-orange-50' : ''
+                  }`}
+                  onClick={() => handleSelectPair(crypto)}
+                >
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-[#0033a0] rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      {pair.symbol.charAt(0)}
-                    </div>
+                    <img
+                      src={crypto.image}
+                      alt={crypto.name}
+                      className="w-8 h-8 rounded-full"
+                    />
                     <div>
-                      <div className="font-medium">{pair.symbol}/USDT</div>
-                      <div className="text-sm text-gray-500">{pair.name}</div>
+                      <div className="font-medium">{crypto.symbol}/USDT</div>
+                      <div className="text-sm text-gray-500">{crypto.name}</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">${pair.price.toFixed(2)}</div>
-                    <div className={`text-sm ${pair.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {pair.change >= 0 ? '+' : ''}{pair.change.toFixed(2)}%
+                  
+                  <div className="flex items-center space-x-2">
+                    <div className="text-right">
+                      <div className="font-medium">${crypto.current_price?.toFixed(2) || 'N/A'}</div>
+                      <div className={`text-sm ${
+                        (crypto.price_change_percentage_24h || 0) >= 0 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(crypto.price_change_percentage_24h || 0) >= 0 ? '+' : ''}
+                        {crypto.price_change_percentage_24h?.toFixed(2) || '0.00'}%
+                      </div>
                     </div>
+                    
+                    {user && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(crypto);
+                        }}
+                        className="p-1 h-auto"
+                      >
+                        <Star
+                          className={`h-4 w-4 ${
+                            favorites.includes(crypto.id)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-400'
+                          }`}
+                        />
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </button>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
+
+export default CryptoPairSelector;

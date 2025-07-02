@@ -227,7 +227,7 @@ export default function App() {
             <Route path="/">
               {(params) => (
                 <AuthRedirect>
-                  <Home {...params} />
+                  <Home {...(params || {})} />
                 </AuthRedirect>
               )}
             </Route>
@@ -281,14 +281,14 @@ export default function App() {
             <Route path="/account/login">
               {(params) => (
                 <AuthRedirect redirectTo="/mobile">
-                  <Login {...params} />
+                  <Login {...(params || {})} />
                 </AuthRedirect>
               )}
             </Route>
             <Route path="/account/register">
               {(params) => (
                 <AuthRedirect redirectTo="/mobile">
-                  <Register {...params} />
+                  <Register {...(params || {})} />
                 </AuthRedirect>
               )}
             </Route>

@@ -84,7 +84,7 @@ export const LightweightChart = memo(({
       // Add price series
       let series;
       if (chartType === 'candlestick') {
-        series = chart.addCandlestickSeries({
+        series = chart.addSeries('Candlestick', {
           upColor: '#26a69a',
           downColor: '#ef5350',
           borderVisible: false,
@@ -93,7 +93,7 @@ export const LightweightChart = memo(({
         });
         series.setData(chartData);
       } else {
-        series = chart.addLineSeries({
+        series = chart.addSeries('Line', {
           color: '#0033a0',
           lineWidth: 2,
         });
@@ -109,7 +109,7 @@ export const LightweightChart = memo(({
           color: item.close >= item.open ? '#26a69a' : '#ef5350',
         }));
 
-        const volumeSeries = chart.addHistogramSeries({
+        const volumeSeries = chart.addSeries('Histogram', {
           color: '#26a69a',
           priceFormat: {
             type: 'volume',

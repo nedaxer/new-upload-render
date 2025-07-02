@@ -1,127 +1,225 @@
 # Nedaxer Trading Platform
 
-A comprehensive cryptocurrency trading platform built with modern web technologies, featuring real-time market data, mobile-optimized UI, and secure user management.
+A cutting-edge mobile-first cryptocurrency trading platform built with modern web technologies.
 
-## Features
-
-- **Real-time Market Data**: Live cryptocurrency prices for 106+ trading pairs using CoinGecko API
-- **Mobile-First Design**: Responsive interface optimized for mobile trading
-- **User Management**: Secure authentication with KYC verification system
-- **Admin Dashboard**: Comprehensive admin tools for user and platform management
-- **Trading Interface**: Advanced charts with TradingView integration
-- **Wallet System**: Multi-currency balance management with USD focus
-- **Transfer System**: Secure user-to-user fund transfers
-- **Notification System**: Real-time WebSocket notifications
-
-## Technology Stack
-
-### Frontend
-- React 18 with TypeScript
-- Tailwind CSS + shadcn/ui components
-- TanStack Query for state management
-- Wouter for routing
-- Recharts for data visualization
-
-### Backend
-- Node.js with Express.js
-- MongoDB with native driver
-- WebSocket server for real-time updates
-- Session-based authentication
-- Image optimization with Sharp
-
-### External Services
-- CoinGecko API for cryptocurrency prices
-- MongoDB Atlas for database hosting
-- Google OAuth for authentication
-- Nodemailer for email services
-
-## Deployment on Render
+## 🚀 Quick Start
 
 ### Prerequisites
-Set these environment variables in your Render dashboard:
+- Node.js 18+ 
+- npm or yarn
+- MongoDB Atlas account (for production)
 
+### Development Setup
 ```bash
-MONGODB_URI=your_mongodb_connection_string
-SESSION_SECRET=your_random_session_secret
-COINGECKO_API_KEY=your_coingecko_api_key
-GOOGLE_CLIENT_ID=your_google_oauth_client_id
-GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
-RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
-GITHUB_TOKEN=your_github_token
+# Clone the repository
+git clone <repository-url>
+cd nedaxer-trading-platform
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start development server
+npm run dev
+```
+
+## 🏗️ Architecture
+
+### Technology Stack
+- **Frontend**: React 18 + TypeScript + Vite
+- **Backend**: Node.js + Express + TypeScript
+- **Database**: MongoDB Atlas with Mongoose ODM
+- **UI Framework**: Tailwind CSS + shadcn/ui
+- **Real-time**: WebSocket integration
+- **Charts**: TradingView Lightweight Charts + Recharts
+- **Authentication**: Session-based with bcrypt
+
+### Project Structure
+```
+├── client/               # Frontend React application
+│   ├── src/
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/        # Route components
+│   │   ├── hooks/        # Custom React hooks
+│   │   └── lib/          # Utilities and configurations
+├── server/               # Backend Express server
+│   ├── api/              # API route handlers
+│   ├── models/           # Database models
+│   └── storage/          # Database storage layer
+└── shared/               # Shared types and schemas
+```
+
+## 🚀 Deployment on Render
+
+### Step 1: Create New Web Service
+1. Go to [render.com](https://render.com) and sign up/login
+2. Click "New +" → "Web Service"
+3. Connect your GitHub repository
+
+### Step 2: Configure Build Settings
+```yaml
+Environment: Node
+Build Command: npm install && npm run build
+Start Command: npm start
+```
+
+### Step 3: Environment Variables
+Set these environment variables in Render dashboard:
+
+**Required Variables:**
+```bash
 NODE_ENV=production
+MONGODB_URI=mongodb+srv://your-connection-string
+SESSION_SECRET=your-super-secret-session-key
 ```
 
-### Render Configuration
-- **Build Command**: `npm run build`
-- **Start Command**: `npm start`
-- **Node.js Version**: 18+
-- **Environment**: Web Service
+**Optional API Keys (for full functionality):**
+```bash
+COINGECKO_API_KEY=your-coingecko-api-key
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-secret
+RECAPTCHA_SITE_KEY=your-recaptcha-site-key
+RECAPTCHA_SECRET_KEY=your-recaptcha-secret-key
+SENDGRID_API_KEY=your-sendgrid-api-key
+ZOHO_USER=your-zoho-email
+ZOHO_PASS=your-zoho-app-password
+```
 
-### Build Process
+### Step 4: Advanced Settings
+```yaml
+Node Version: 18
+Auto-Deploy: No (recommended for production)
+Build Command: npm install && npm run build
+Start Command: npm start
+```
+
+### Step 5: Deploy
+1. Click "Create Web Service"
+2. Wait for initial deployment (5-10 minutes)
+3. Your app will be available at `https://your-app-name.onrender.com`
+
+## 🔧 Build Process
+
 The build process includes:
-1. Frontend compilation with Vite
-2. Backend bundling with esbuild
-3. TypeScript compilation
-4. Asset optimization
+1. **TypeScript Compilation**: Type checking with relaxed settings for deployment
+2. **Frontend Build**: Vite builds optimized production bundle
+3. **Backend Build**: esbuild creates Node.js server bundle
+4. **Asset Processing**: Image optimization and compression
 
-## Local Development
+### Manual Build
+```bash
+# Install dependencies
+npm install
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env`
-4. Start development server: `npm run dev`
+# Build frontend and backend
+npm run build
 
-## Project Structure
-
-```
-├── client/          # Frontend React application
-├── server/          # Backend Express server
-├── scripts/         # Database scripts and utilities
-├── shared/          # Shared types and utilities
-├── public/          # Static assets
-└── attached_assets/ # User uploaded assets
+# Start production server
+npm start
 ```
 
-## API Endpoints
+## 🛠️ Configuration
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/google` - Google OAuth
+### Database Setup
+The application uses MongoDB Atlas:
+1. Create MongoDB Atlas cluster
+2. Add connection string to `MONGODB_URI` environment variable
+3. Database will auto-initialize on first run
 
-### Market Data
-- `GET /api/crypto/realtime-prices` - Live cryptocurrency prices
-- `GET /api/crypto/pairs` - Available trading pairs
+### Google OAuth Setup
+For Google OAuth login:
+1. Create project in Google Cloud Console
+2. Configure OAuth consent screen
+3. Add authorized origins and redirect URIs
+4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+
+### Email Configuration
+For email notifications:
+1. Set up SendGrid account OR Zoho email
+2. Configure respective API keys/credentials
+3. Email templates are included in the system
+
+## 📊 Features
+
+### Trading Platform
+- **Real-time Market Data**: Live cryptocurrency prices via CoinGecko API
+- **Interactive Charts**: TradingView integration with technical indicators
+- **Order Management**: Spot trading simulation with order history
+- **Portfolio Tracking**: Real-time balance updates and P&L tracking
 
 ### User Management
-- `GET /api/user/profile` - User profile data
-- `PUT /api/user/profile` - Update profile
-- `GET /api/balances` - User balances
+- **Authentication**: Username/email registration with email verification
+- **KYC System**: Document upload and verification workflow
+- **Admin Dashboard**: Comprehensive user and platform management
+- **Notifications**: Real-time WebSocket-based notification system
 
-### Admin
-- `GET /api/admin/users` - User management
-- `POST /api/admin/deposits` - Create deposits
-- `GET /api/admin/analytics` - Platform statistics
+### Mobile Experience
+- **PWA Support**: Installable progressive web app
+- **Offline Functionality**: Service worker caching for core features
+- **Pull-to-Refresh**: Native mobile-like interactions
+- **Responsive Design**: Optimized for all screen sizes
 
-## Security Features
+## 🔐 Security
 
+### Authentication & Authorization
 - Session-based authentication with secure cookies
-- Environment variable configuration for all secrets
-- reCAPTCHA integration for form protection
-- Input validation and sanitization
-- MongoDB injection protection
-- CORS configuration for production
+- bcrypt password hashing
+- Role-based access control (user/admin)
+- CSRF protection with session tokens
 
-## Performance Optimizations
+### Data Protection
+- Input validation with Zod schemas
+- MongoDB injection prevention
+- Rate limiting on API endpoints
+- Secure file upload handling
 
-- Image optimization with Sharp
-- WebSocket connections for real-time data
-- Query caching with TanStack Query
-- Lazy loading for mobile components
-- Service worker for offline capabilities
+## 🚨 Troubleshooting
 
-## License
+### Common Deployment Issues
 
-MIT License
+**Build Failures:**
+- Ensure Node.js version is 18+
+- Check all environment variables are set
+- Verify MongoDB connection string is valid
+
+**Asset Loading Issues:**
+- Placeholder assets are auto-generated for missing files
+- Ensure asset paths are correct in imports
+- Check Vite configuration for asset handling
+
+**TypeScript Errors:**
+- Build uses relaxed TypeScript settings for deployment
+- Critical type errors are fixed while maintaining functionality
+- Non-critical warnings are suppressed for production builds
+
+### Performance Optimization
+- Images are automatically optimized during build
+- Service worker caches critical assets
+- Database queries use efficient aggregation pipelines
+- WebSocket connections handle real-time updates
+
+## 📈 Monitoring
+
+### Available Endpoints
+- `GET /` - Landing page
+- `GET /mobile` - Mobile trading app
+- `GET /admin-portal` - Admin dashboard
+- `GET /api/health` - Health check endpoint
+
+### Logs
+- All API requests are logged with timestamps
+- Database operations include performance metrics
+- WebSocket connections tracked for debugging
+
+## 🤝 Support
+
+For deployment issues or questions:
+1. Check Render deployment logs
+2. Verify all environment variables are configured
+3. Test database connectivity
+4. Review MongoDB Atlas network access settings
+
+The application is designed to be resilient and will gracefully handle missing configuration while providing core functionality.

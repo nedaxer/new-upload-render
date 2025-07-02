@@ -40,7 +40,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Development mode: Allow access to mobile routes without authentication for testing
   // But protect sensitive routes like verification flows
-  const isDevelopment = import.meta.env.DEV;
+  const isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
   const isMobileRoute = path.startsWith('/mobile');
   const isVerificationRoute = path.includes('/verification') || path.includes('/kyc-status');
   
