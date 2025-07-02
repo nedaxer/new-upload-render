@@ -34,37 +34,57 @@ export function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[10003] bg-white border-t border-gray-200 shadow-lg">
-      <div className="container mx-auto p-4 pb-20 md:pb-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-          <div className="pr-8 mb-4 md:mb-0">
-            <p className="text-sm text-gray-700">
-              We use a range of cookies to give you the best possible user experience. By continuing to use any part of this website and/or the trading platform, you agree to our use of cookies. You can view both our Cookie and Privacy Policies by clicking the "Legal" link at the bottom of any page on our site.
+    <div className="fixed inset-0 z-[10003] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={declineCookies} />
+      
+      {/* Modal Content */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">Cookie Consent</h3>
+            <button 
+              onClick={declineCookies} 
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          {/* Content */}
+          <div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              We use cookies to enhance your experience on our platform. By continuing to use our website, 
+              you agree to our use of cookies as described in our Privacy Policy.
             </p>
           </div>
-          <div className="flex flex-shrink-0 space-x-3">
+          
+          {/* Actions */}
+          <div className="flex space-x-3 pt-2">
             <Button 
               variant="outline"
               size="sm"
               onClick={declineCookies}
-              className="text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
+              className="flex-1 text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
             >
               Decline
             </Button>
             <Button 
               size="sm"
               onClick={acceptCookies}
-              className="bg-[#0033a0] hover:bg-opacity-90 text-white"
+              className="flex-1 bg-[#0033a0] hover:bg-opacity-90 text-white"
             >
               Accept Cookies
             </Button>
           </div>
-          <button 
-            onClick={declineCookies} 
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 md:hidden"
-          >
-            <X size={16} />
-          </button>
+          
+          {/* Legal Link */}
+          <div className="text-center pt-2">
+            <Link href="/legal/privacy" className="text-xs text-gray-500 hover:text-[#0033a0] underline">
+              View Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </div>
