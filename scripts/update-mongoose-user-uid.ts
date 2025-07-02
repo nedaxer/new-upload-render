@@ -34,7 +34,7 @@ const User = mongoose.model('User', UserSchema);
 async function updateMongooseUserUID() {
   try {
     // Connect to MongoDB using the same connection string
-    await mongoose.connect('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017');
     console.log('Connected to MongoDB Atlas via Mongoose');
     
     // Find the user with session ID 685c46d9b3dc40aeae0ed7fa

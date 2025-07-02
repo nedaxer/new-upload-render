@@ -22,7 +22,7 @@ const User = mongoose.model('User', userSchema);
 async function setUserUnverified(userId: string) {
   try {
     // Connect to MongoDB
-    const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/nedaxer_db';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/nedaxer';
     await mongoose.connect(mongoUri);
     console.log('Connected to MongoDB');
 

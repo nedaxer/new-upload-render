@@ -3,7 +3,7 @@
 import { MongoClient, ObjectId } from 'mongodb';
 
 async function fixSessionUserId() {
-  const client = new MongoClient('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/');
+  const client = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017');
   
   try {
     await client.connect();
