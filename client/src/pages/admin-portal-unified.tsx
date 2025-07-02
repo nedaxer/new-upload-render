@@ -111,7 +111,7 @@ export default function UnifiedAdminPortal() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // WebSocket connection for real-time updates
+  // WebSocket connection for real-time admin updates
   useEffect(() => {
     if (!isAuthenticated) return;
     
@@ -119,60 +119,55 @@ export default function UnifiedAdminPortal() {
     let reconnectTimeout: NodeJS.Timeout;
     
     const connectWebSocket = () => {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      socket = new WebSocket(wsUrl);
-      
-      socket.onopen = () => {
-        console.log('Admin WebSocket connected for real-time updates');
-        socket.send(JSON.stringify({ type: 'subscribe_admin' }));
-      };
-      
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('Admin real-time update received:', data);
-          
-          if (data.type === 'CONNECTION_REQUEST_CREATED' || data.type === 'CONNECTION_REQUEST_RESPONDED') {
-            // Refresh connection requests and user data
-            queryClient.invalidateQueries({ queryKey: ["/api/admin/connection-requests"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] });
-            console.log('Admin dashboard refreshed due to connection request update');
-          }
-          
-          if (data.type === 'DEPOSIT_CREATED' || data.type === 'TRANSFER_CREATED') {
-            // Refresh user balance data
-            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/all"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/admin/users/analytics"] });
-          }
-          
-          if (data.type === 'PASSWORD_CHANGED') {
-            // Hide password display when user changes password
-            if (selectedUser && selectedUser._id === data.userId) {
-              setShowPassword(false);
-              setUserPassword("");
-              toast({
-                title: "Password Updated",
-                description: "User password was changed - display cleared for security",
-                variant: "default",
-              });
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}`;
+        socket = new WebSocket(wsUrl);
+        
+        socket.onopen = () => {
+          console.log('🔌 Admin WebSocket connected');
+          // Subscribe to admin events
+          socket.send(JSON.stringify({ type: 'subscribe_admin' }));
+        };
+        
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('📨 Admin WebSocket message:', data);
+            
+            switch (data.type) {
+              case 'user_updated':
+              case 'balance_updated':
+              case 'user_created':
+                // Refresh user data
+                queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/admin/users/search'] });
+                break;
+              case 'admin_action_success':
+                toast({
+                  title: "Action Completed",
+                  description: data.message || "Admin action successful",
+                  variant: "default",
+                });
+                break;
             }
-            console.log('Password changed for user:', data.userId);
+          } catch (error) {
+            console.error('Error parsing admin WebSocket message:', error);
           }
-        } catch (error) {
-          console.error('Error parsing admin WebSocket message:', error);
-        }
-      };
-      
-      socket.onclose = () => {
-        console.log('Admin WebSocket disconnected, attempting to reconnect...');
-        reconnectTimeout = setTimeout(connectWebSocket, 5000);
-      };
-      
-      socket.onerror = (error) => {
-        console.error('Admin WebSocket error:', error);
-      };
+        };
+        
+        socket.onclose = () => {
+          console.log('🔌 Admin WebSocket disconnected, attempting reconnect...');
+          reconnectTimeout = setTimeout(connectWebSocket, 3000);
+        };
+        
+        socket.onerror = (error) => {
+          console.error('❌ Admin WebSocket error:', error);
+        };
+      } catch (error) {
+        console.error('Failed to connect admin WebSocket:', error);
+        reconnectTimeout = setTimeout(connectWebSocket, 3000);
+      }
     };
     
     connectWebSocket();
@@ -185,7 +180,7 @@ export default function UnifiedAdminPortal() {
         clearTimeout(reconnectTimeout);
       }
     };
-  }, [isAuthenticated, queryClient]);
+  }, [isAuthenticated, queryClient, toast]);
 
   // Force desktop view for admin portal
   useEffect(() => {
