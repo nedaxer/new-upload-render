@@ -15,8 +15,12 @@ export async function connectToDatabase() {
   try {
     console.log('Connecting to MongoDB Atlas...');
     
-    // Use your MongoDB Atlas connection string
-    mongoUri = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+    // Use MongoDB URI from environment variables only
+    mongoUri = process.env.MONGODB_URI;
+    
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
     console.log('Using MongoDB Atlas cluster');
     
     await mongoose.connect(mongoUri);
@@ -130,8 +134,12 @@ export async function getMongoClient() {
   }
 
   try {
-    // Use your MongoDB Atlas connection string
-    const connectionString = process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer';
+    // Use MongoDB URI from environment variables only
+    const connectionString = process.env.MONGODB_URI;
+    
+    if (!connectionString) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
     const client = new MongoClient(connectionString);
     await client.connect();
     cachedClient = client;
