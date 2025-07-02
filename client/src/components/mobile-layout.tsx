@@ -28,38 +28,26 @@ export default function MobileLayout({ children, className = '', hideBottomNav =
     // Force mobile view with specific constraints
     viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     
-    // Add CSS to force mobile layout regardless of screen size
-    const style = document.getElementById('force-mobile-view') || document.createElement('style');
-    style.id = 'force-mobile-view';
+    // Responsive layout that adapts to screen size
+    const style = document.getElementById('responsive-mobile-view') || document.createElement('style');
+    style.id = 'responsive-mobile-view';
     style.textContent = `
       @media screen {
         body {
-          max-width: 430px !important;
-          margin: 0 auto !important;
           overflow-x: hidden !important;
         }
         
-        /* Force mobile layout styling */
+        /* Mobile layout styling */
         [data-layout="mobile"] {
-          max-width: 430px !important;
           width: 100% !important;
           box-sizing: border-box !important;
         }
         
-        /* Hide desktop elements */
+        /* Desktop responsive behavior */
         @media (min-width: 431px) {
-          body {
-            background: #000 !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            min-height: 100vh !important;
-          }
-          
           [data-layout="mobile"] {
-            border-left: 1px solid #333 !important;
-            border-right: 1px solid #333 !important;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5) !important;
+            max-width: none !important;
+            width: 100% !important;
           }
         }
       }
@@ -76,7 +64,7 @@ export default function MobileLayout({ children, className = '', hideBottomNav =
     
     return () => {
       // Cleanup on unmount (though this component rarely unmounts)
-      const mobileStyle = document.getElementById('force-mobile-view');
+      const mobileStyle = document.getElementById('responsive-mobile-view');
       if (mobileStyle) {
         mobileStyle.remove();
       }
