@@ -426,7 +426,7 @@ export default function MobileHome() {
     }
   }, []);
 
-  // Fetch live market data from CoinGecko API
+  // Fetch live market data from CoinGecko API with real-time updates
   const { data: marketData } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
     queryFn: async () => {
@@ -436,9 +436,11 @@ export default function MobileHome() {
       }
       return await response.json();
     },
-    refetchInterval: 10000, // Refresh every 10 seconds for consistent data
+    refetchInterval: 3000, // Refresh every 3 seconds for real-time BTC price
     retry: 3,
-    staleTime: 5000, // Consider data stale after 5 seconds
+    staleTime: 1000, // Consider data stale after 1 second for real-time feel
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Process market data from CoinGecko API
@@ -510,9 +512,11 @@ export default function MobileHome() {
 
   // Get BTC price for USD to BTC conversion
   const getBTCPrice = () => {
-    if (!priceData?.data || !Array.isArray(priceData.data)) return 0;
-    const btcTicker = priceData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
-    return btcTicker ? parseFloat(btcTicker.price) : 45000; // Fallback to 45k if not found
+    if (!marketData?.data || !Array.isArray(marketData.data)) return 0;
+    const btcTicker = marketData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
+    const price = btcTicker ? parseFloat(btcTicker.price) : 0;
+    console.log('🏠 BTC Price Debug:', { btcTicker, price, marketData });
+    return price || 45000; // Fallback to 45k if not found
   };
 
   // Get user's USD balance
@@ -548,6 +552,7 @@ export default function MobileHome() {
       socket.onopen = () => {
         console.log('WebSocket connected for real-time home page updates');
         socket.send(JSON.stringify({ type: 'subscribe_notifications' }));
+        socket.send(JSON.stringify({ type: 'subscribe_prices' }));
       };
       
       socket.onmessage = (event) => {
@@ -567,6 +572,10 @@ export default function MobileHome() {
             }
             
             console.log('Home page data refreshed due to real-time update:', data.type);
+          } else if (data.type === 'PRICE_UPDATE') {
+            // Real-time price updates for BTC and other currencies
+            queryClient.setQueryData(['/api/crypto/realtime-prices'], data.data);
+            console.log('🏠 Real-time price update received:', data.data);
           }
         } catch (error) {
           console.error('WebSocket message error:', error);

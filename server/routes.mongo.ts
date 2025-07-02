@@ -3846,26 +3846,82 @@ Timestamp: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}(UTC)`,
 
   const httpServer = createServer(app);
   
-  // WebSocket server for real-time updates
+  // Enhanced WebSocket server for real-time updates
   const { WebSocketServer, WebSocket } = await import('ws');
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
+  // Store connected clients with metadata
+  const connectedClients = new Map();
+  
   wss.on('connection', (ws) => {
-    console.log('WebSocket client connected');
+    const clientId = Date.now() + Math.random();
+    connectedClients.set(clientId, { ws, subscriptions: [] });
+    console.log(`🔌 WebSocket client connected (${clientId}), total clients: ${connectedClients.size}`);
     
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        console.log('WebSocket message received:', data);
+        console.log('📨 WebSocket message received:', data);
+        
+        const client = connectedClients.get(clientId);
+        if (client) {
+          // Handle subscription requests
+          if (data.type === 'subscribe_notifications') {
+            client.subscriptions.push('notifications');
+          } else if (data.type === 'subscribe_admin') {
+            client.subscriptions.push('admin');
+          } else if (data.type === 'subscribe_prices') {
+            client.subscriptions.push('prices');
+          }
+        }
       } catch (error) {
-        console.error('Invalid WebSocket message:', error);
+        console.error('❌ Invalid WebSocket message:', error);
       }
     });
     
     ws.on('close', () => {
-      console.log('WebSocket client disconnected');
+      connectedClients.delete(clientId);
+      console.log(`🔌 WebSocket client disconnected (${clientId}), remaining: ${connectedClients.size}`);
+    });
+    
+    ws.on('error', (error) => {
+      console.error(`❌ WebSocket error for client ${clientId}:`, error);
+      connectedClients.delete(clientId);
     });
   });
+  
+  // Function to broadcast to specific subscription types
+  const broadcastToSubscribers = (subscriptionType: string, data: any) => {
+    let sentCount = 0;
+    connectedClients.forEach((client, clientId) => {
+      if (client.subscriptions.includes(subscriptionType) && client.ws.readyState === 1) {
+        try {
+          client.ws.send(JSON.stringify(data));
+          sentCount++;
+        } catch (error) {
+          console.error(`❌ Failed to send to client ${clientId}:`, error);
+          connectedClients.delete(clientId);
+        }
+      }
+    });
+    console.log(`📡 Broadcasted ${data.type} to ${sentCount} ${subscriptionType} subscribers`);
+  };
+  
+  // Add periodic price updates for real-time BTC price
+  setInterval(async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/crypto/realtime-prices');
+      if (response.ok) {
+        const priceData = await response.json();
+        broadcastToSubscribers('prices', {
+          type: 'PRICE_UPDATE',
+          data: priceData
+        });
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch prices for broadcast:', error);
+    }
+  }, 5000); // Broadcast price updates every 5 seconds
   
   // =======================
   // CONNECTION REQUEST ROUTES

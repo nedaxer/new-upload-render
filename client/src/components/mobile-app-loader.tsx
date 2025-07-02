@@ -14,6 +14,7 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
   const [authCheckComplete, setAuthCheckComplete] = useState(false);
   const [loadingSteps, setLoadingSteps] = useState({
     auth: false,
+    images: false,
     prices: false,
     wallet: false,
     balances: false,
@@ -31,12 +32,58 @@ export const MobileAppLoader: React.FC<MobileAppLoaderProps> = ({ children }) =>
     }
   }, [authLoading, user]);
 
+  // Preload critical images for faster mobile experience
+  useEffect(() => {
+    if (!authCheckComplete || !user) return;
+    
+    const preloadImages = async () => {
+      const criticalImages = [
+        // Critical mobile app images for faster loading
+        '/logos/btc-logo.png',
+        '/logos/eth-logo.png', 
+        '/logos/usdt-logo.png',
+        '/logos/bnb-logo.png',
+        '/assets/nedaxer-logo.png',
+        '/assets/refresh-logo.png',
+        '/optimized/assets/nedaxer-logo.webp',
+        '/optimized/logos/btc-logo.webp',
+        // Add splash screen assets
+        '/assets/20250618_001640_1750207793691.png',
+        '/assets/20250618_042459_1750217238332.png'
+      ];
+      
+      console.log('🖼️ Preloading critical images for mobile app...');
+      
+      const preloadPromises = criticalImages.map(src => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false); // Don't fail on missing images
+          img.src = src;
+          // Add to cache if service worker is available
+          if ('serviceWorker' in navigator && 'caches' in window) {
+            caches.open('mobile-images-v1').then(cache => {
+              cache.add(src).catch(() => {/* Silent fail */});
+            });
+          }
+        });
+      });
+      
+      await Promise.allSettled(preloadPromises);
+      console.log('✅ Critical images preloaded');
+      setLoadingSteps(prev => ({ ...prev, images: true }));
+    };
+    
+    preloadImages();
+  }, [authCheckComplete, user]);
+
   // Critical data queries with immediate execution and fast timeout for new users
   const { data: priceData, isSuccess: pricesLoaded, isError: pricesError } = useQuery({
     queryKey: ['/api/crypto/realtime-prices'],
     enabled: authCheckComplete && !!user && isPreloading,
     retry: 1,
-    staleTime: 30000,
+    staleTime: 5000, // Reduced for real-time updates
+    refetchInterval: 5000, // Auto-refresh during loading
   });
 
   const { data: walletData, isSuccess: walletLoaded, isError: walletError } = useQuery({

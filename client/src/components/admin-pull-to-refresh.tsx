@@ -80,23 +80,32 @@ export function AdminPullToRefresh({ children, onRefresh, disabled = false }: Ad
   const handleTouchEnd = async () => {
     if (disabled || isRefreshing || !isPulling) return;
 
+    const wasPulledEnough = pullDistance >= PULL_THRESHOLD;
+    
     setIsPulling(false);
     setHasTriggeredHaptic(false);
     setShowAdminHeader(false);
 
     // Trigger refresh if pulled enough
-    if (pullDistance >= PULL_THRESHOLD) {
-      setPullDistance(0);
+    if (wasPulledEnough) {
       setIsRefreshing(true);
+      setPullDistance(0);
       
       try {
         await onRefresh();
+        console.log('✅ Admin refresh completed successfully');
       } catch (error) {
-        console.error('Admin refresh error:', error);
+        console.error('❌ Admin refresh error:', error);
       } finally {
+        // Reset all states completely for next pull
         setTimeout(() => {
           setIsRefreshing(false);
-        }, 1000); // Show refresh animation for 1 second
+          setPullDistance(0);
+          setIsPulling(false);
+          setHasTriggeredHaptic(false);
+          setShowAdminHeader(false);
+          console.log('🔄 Admin pull-to-refresh reset for next use');
+        }, 1500); // Show refresh animation for 1.5 seconds
       }
     } else {
       // Smooth return to original position
@@ -108,16 +117,44 @@ export function AdminPullToRefresh({ children, onRefresh, disabled = false }: Ad
     const container = containerRef.current;
     if (!container) return;
 
+    const handleTouchCancel = () => {
+      // Reset states if touch is cancelled
+      setIsPulling(false);
+      setHasTriggeredHaptic(false);
+      setShowAdminHeader(false);
+      setPullDistance(0);
+      console.log('🔄 Touch cancelled, resetting admin pull-to-refresh');
+    };
+
     container.addEventListener('touchstart', handleTouchStart, { passive: false });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('touchcancel', handleTouchCancel, { passive: true });
 
     return () => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('touchcancel', handleTouchCancel);
     };
   }, [isPulling, pullDistance, startY, hasTriggeredHaptic, showAdminHeader]);
+
+  // Auto-reset if stuck in pulling state
+  useEffect(() => {
+    if (isPulling) {
+      const resetTimer = setTimeout(() => {
+        if (isPulling && !isRefreshing) {
+          console.log('🔄 Auto-resetting stuck pull state');
+          setIsPulling(false);
+          setHasTriggeredHaptic(false);
+          setShowAdminHeader(false);
+          setPullDistance(0);
+        }
+      }, 5000); // Reset after 5 seconds if stuck
+
+      return () => clearTimeout(resetTimer);
+    }
+  }, [isPulling, isRefreshing]);
 
   // Calculate icon scale based on pull distance
   const iconScale = Math.min(pullDistance / ICON_COMPLETE_THRESHOLD, 1);
