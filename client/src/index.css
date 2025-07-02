@@ -146,13 +146,8 @@
       url('/src/assets/20250618_002006_1750207793730.png');
   }
   
-  /* Instant splash screen background */
-  .splash-background {
-    background-image: url('/src/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+  /* Optimized image rendering for splash screen */
+  .splash-optimized {
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
