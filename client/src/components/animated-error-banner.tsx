@@ -123,7 +123,7 @@ export function AnimatedErrorBanner({
         </div>
       </div>
       
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0% { 
             background: linear-gradient(90deg, rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1));

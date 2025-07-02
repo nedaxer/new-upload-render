@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, X, Star } from 'lucide-react';
+import { Search, X as CloseIcon, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -183,8 +183,8 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
 
                 return (
                   <div
-                    key={cryptoId}
-                    onClick={() => handleSelectPair(cryptoId, crypto.symbol)}
+                    key={crypto.id}
+                    onClick={() => handleSelectPair(crypto.id, crypto.symbol)}
                     className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedPair === `${crypto.symbol}/USDT` ? 'bg-orange-500/20' : 'bg-gray-800 hover:bg-gray-700'
                     }`}
@@ -193,7 +193,7 @@ export default function CryptoPairSelector({ isOpen, onClose, onSelectPair, sele
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(cryptoId);
+                          toggleFavorite(crypto.id);
                         }}
                         className="text-yellow-500"
                       >

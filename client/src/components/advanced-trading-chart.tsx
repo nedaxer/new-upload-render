@@ -194,7 +194,7 @@ export function AdvancedTradingChart({
   const renderChart = () => {
     if (!processedData.length) return null;
 
-    const chartData = processedData.map(item => ({
+    const chartData = processedData.map((item: any) => ({
       time: item.date,
       open: item.price * 0.999, // Approximate open price
       high: item.price * 1.002, // Approximate high price
