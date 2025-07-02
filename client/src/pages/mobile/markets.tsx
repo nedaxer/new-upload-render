@@ -134,6 +134,12 @@ export default function MobileMarkets() {
       const price = ticker.price;
       const change = ticker.change;
       const volume = ticker.volume;
+      const marketCap = ticker.marketCap;
+      
+      // Determine sentiment based on price change
+      let sentiment: 'Bullish' | 'Bearish' | 'Neutral' = 'Neutral';
+      if (change > 2) sentiment = 'Bullish';
+      else if (change < -2) sentiment = 'Bearish';
       
       return {
         symbol: pair.baseAsset,
@@ -148,7 +154,7 @@ export default function MobileMarkets() {
         volumeValue: volume,
         high24h: '--',
         low24h: '--',
-        sentiment: ticker.sentiment,
+        sentiment: sentiment,
         favorite: favoriteCoins.includes(pair.symbol),
         cryptoPair: pair
       };
@@ -158,12 +164,12 @@ export default function MobileMarkets() {
         symbol: pair.baseAsset,
         pair: pair.symbol,
         displayPair: getPairDisplayName(pair),
-        price: '--',
+        price: '0.00',
         priceValue: 0,
-        change: '--',
+        change: '0.00%',
         changeValue: 0,
         isPositive: true,
-        volume: '--',
+        volume: '$0',
         volumeValue: 0,
         high24h: '--',
         low24h: '--',
@@ -314,7 +320,9 @@ export default function MobileMarkets() {
 
               <div className="flex items-center space-x-4">
                 <div className="text-right">
-                  <div className="text-white font-medium">${market.price}</div>
+                  <div className="text-white font-medium">
+                    {market.priceValue > 0 ? `$${market.price}` : '$0.00'}
+                  </div>
                   <div className="text-gray-400 text-sm">
                     Vol: {market.volume}
                   </div>

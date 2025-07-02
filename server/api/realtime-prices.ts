@@ -12,6 +12,7 @@ interface CryptoTicker {
   change: number;
   volume: number;
   marketCap: number;
+  sentiment: 'Bullish' | 'Bearish' | 'Neutral';
 }
 
 export async function getRealtimePrices(req: Request, res: Response) {
@@ -65,15 +66,23 @@ export async function getRealtimePrices(req: Request, res: Response) {
     for (const [coinId, coinInfo] of Object.entries(coinMapping)) {
       if (response.data[coinId]) {
         const coinData = response.data[coinId];
+        const change = coinData.usd_24h_change || 0;
+        
+        // Determine sentiment based on price change
+        let sentiment: 'Bullish' | 'Bearish' | 'Neutral' = 'Neutral';
+        if (change > 2) sentiment = 'Bullish';
+        else if (change < -2) sentiment = 'Bearish';
+        
         tickers.push({
           symbol: coinInfo.symbol,
           name: coinInfo.name,
           price: coinData.usd,
-          change: coinData.usd_24h_change || 0,
+          change: change,
           volume: coinData.usd_24h_vol || 0,
-          marketCap: coinData.usd_market_cap || 0
+          marketCap: coinData.usd_market_cap || 0,
+          sentiment: sentiment
         });
-        console.log(`✅ ${coinInfo.symbol}: $${coinData.usd.toFixed(2)}`);
+        console.log(`✅ ${coinInfo.symbol}: $${coinData.usd.toFixed(2)} (${change >= 0 ? '+' : ''}${change.toFixed(2)}%)`);
       }
     }
     
