@@ -1,3 +1,4 @@
+
 declare module 'imagemin' {
   interface Plugin {
     (buffer: Buffer): Promise<Buffer>;
