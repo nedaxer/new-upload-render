@@ -8,7 +8,7 @@ const clientID = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 if (!clientID || !clientSecret) {
-  throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required');
+  console.warn('Google OAuth not configured - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are missing');
 }
 
 // Dynamic callback URL based on environment
@@ -33,11 +33,13 @@ const getCallbackURL = () => {
 
 const callbackURL = getCallbackURL();
 
-passport.use(new GoogleStrategy({
-  clientID: clientID,
-  clientSecret: clientSecret,
-  callbackURL: callbackURL
-}, async (accessToken, refreshToken, profile, done) => {
+// Only configure Google OAuth if credentials are available
+if (clientID && clientSecret) {
+  passport.use(new GoogleStrategy({
+    clientID: clientID as string,
+    clientSecret: clientSecret as string,
+    callbackURL: callbackURL
+  }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
   try {
     console.log('Google OAuth profile received:', {
       id: profile.id,
@@ -86,7 +88,10 @@ passport.use(new GoogleStrategy({
     console.error('Google OAuth error:', error);
     return done(error, undefined);
   }
-}));
+  }));
+} else {
+  console.log('Google OAuth strategy not configured - credentials missing');
+}
 
 // Serialize user for session
 passport.serializeUser((user: any, done) => {

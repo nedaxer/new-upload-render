@@ -1,4 +1,3 @@
-
 declare module 'imagemin' {
   interface Plugin {
     (buffer: Buffer): Promise<Buffer>;
@@ -61,29 +60,4 @@ declare module 'imagemin-optipng' {
 
   function imageminOptipng(options?: Options): (buffer: Buffer) => Promise<Buffer>;
   export = imageminOptipng;
-}
-
-declare module 'compression' {
-  import { RequestHandler } from 'express';
-  
-  interface CompressionOptions {
-    level?: number;
-    threshold?: number;
-    filter?: (req: any, res: any) => boolean;
-  }
-
-  function compression(options?: CompressionOptions): RequestHandler;
-  export = compression;
-}
-
-declare module 'serve-static' {
-  import { RequestHandler } from 'express';
-  
-  interface ServeStaticOptions {
-    maxAge?: string | number;
-    setHeaders?: (res: any, path: string) => void;
-  }
-
-  function serveStatic(root: string, options?: ServeStaticOptions): RequestHandler;
-  export = serveStatic;
 }
