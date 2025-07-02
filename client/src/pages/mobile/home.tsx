@@ -513,16 +513,10 @@ export default function MobileHome() {
   // Get BTC price for USD to BTC conversion
   const getBTCPrice = () => {
     if (!marketData?.data || !Array.isArray(marketData.data)) return 0;
-    // Look for BTC price in the realtime prices API
-    const btcTicker = marketData.data.find((ticker: any) => ticker.symbol === 'BTC');
+    const btcTicker = marketData.data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
     const price = btcTicker ? parseFloat(btcTicker.price) : 0;
-    console.log('🏠 BTC Price Debug:', { 
-      btcTicker, 
-      price, 
-      foundSymbols: marketData.data.slice(0, 5).map((t: any) => t.symbol),
-      totalTickers: marketData.data.length 
-    });
-    return price > 0 ? price : 97000; // Use current approximate BTC price as fallback
+    console.log('🏠 BTC Price Debug:', { btcTicker, price, marketData });
+    return price || 45000; // Fallback to 45k if not found
   };
 
   // Get user's USD balance

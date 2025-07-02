@@ -224,15 +224,10 @@ export default function MobileAssets() {
   // Get BTC price for USD to BTC conversion with real-time updates
   const getBTCPrice = () => {
     if (!(priceData as any)?.data || !Array.isArray((priceData as any).data)) return 0;
-    const btcTicker = (priceData as any).data.find((ticker: any) => ticker.symbol === 'BTC');
+    const btcTicker = (priceData as any).data.find((ticker: any) => ticker.symbol === 'BTCUSDT');
     const price = btcTicker ? parseFloat(btcTicker.price) : 0;
-    console.log('💰 Assets BTC Price Debug:', { 
-      btcTicker, 
-      price,
-      foundSymbols: (priceData as any).data.slice(0, 5).map((t: any) => t.symbol),
-      totalTickers: (priceData as any).data.length 
-    });
-    return price > 0 ? price : 97000; // Use current approximate BTC price as fallback
+    console.log('💰 Assets BTC Price Debug:', { btcTicker, price, priceData });
+    return price || 45000; // Fallback to 45k if not found
   };
 
   // Get user's USD balance
