@@ -48,7 +48,7 @@ export async function getRealtimePrices(req: Request, res: Response) {
       'arkham', 'starknet', 'fetch-ai', 'ether-fi', 'gmx', 'dydx', 'zetachain',
       'ethereum-name-service', 'sushi', 'yearn-finance', 'jasmycoin', 'jito-governance-token',
       'kusama', 'zcash', 'basic-attention-token', 'nervos-network', 'eos', 'stepn', 'ethena',
-      'ankr', 'celo', 'kadena', 'coredaoorg', 'dogwifcoin', 'mina-protocol'
+      'ankr', 'celo', 'kadena', 'coredaoorg', 'dogwifcoin', 'mina-protocol', 'axie-infinity'
     ];
 
     console.log('🚀 Fetching fresh CoinGecko data...');
@@ -159,7 +159,6 @@ export async function getRealtimePrices(req: Request, res: Response) {
       'chiliz': { symbol: 'CHZ', name: 'Chiliz' },
       'sushi': { symbol: 'SUSHI', name: 'SushiSwap' },
       'gmx': { symbol: 'GMX', name: 'GMX' },
-      'axie-infinity': { symbol: 'AXS', name: 'Axie Infinity' },
       'havven': { symbol: 'SNX', name: 'Synthetix' },
       'enjincoin': { symbol: 'ENJ', name: 'Enjin Coin' },
       'axelar': { symbol: 'AXL', name: 'Axelar' },
@@ -185,7 +184,8 @@ export async function getRealtimePrices(req: Request, res: Response) {
       'kusama': { symbol: 'KSM', name: 'Kusama' },
       'arkham': { symbol: 'ARKM', name: 'Arkham' },
       'starknet': { symbol: 'STRK', name: 'Starknet' },
-      'mina-protocol': { symbol: 'MINA', name: 'Mina Protocol' }
+      'mina-protocol': { symbol: 'MINA', name: 'Mina Protocol' },
+      'axie-infinity': { symbol: 'AXS', name: 'Axie Infinity' }
     };
     
     const tickers: CryptoTicker[] = [];
@@ -209,17 +209,7 @@ export async function getRealtimePrices(req: Request, res: Response) {
           marketCap: coinData.usd_market_cap || 0,
           sentiment: sentiment
         });
-        console.log(`✅ ${coinInfo.symbol}: $${coinData.usd.toFixed(2)} (${change >= 0 ? '+' : ''}${change.toFixed(2)}%)`);
       }
-    }
-    
-    // Check for missing coins that should have data
-    const missingCoins = allCryptoPairCoins.filter(coinId => 
-      !Object.keys(coinMapping).includes(coinId) || !response.data[coinId]
-    );
-    
-    if (missingCoins.length > 0) {
-      console.log('⚠️ Missing price data for coins:', missingCoins);
     }
     
     // Update cache
@@ -227,6 +217,7 @@ export async function getRealtimePrices(req: Request, res: Response) {
     lastCacheTime = now;
     
     console.log(`🎉 Successfully fetched ${tickers.length} crypto prices (${allCryptoPairCoins.length} requested)`);
+    
     res.json({ success: true, data: tickers });
     
   } catch (error) {
