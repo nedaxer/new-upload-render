@@ -1,17 +1,19 @@
-// TypeScript declarations for imagemin packages
 declare module 'imagemin' {
   interface Plugin {
     (buffer: Buffer): Promise<Buffer>;
   }
+
   interface Options {
     destination?: string;
     plugins: Plugin[];
   }
+
   interface Result {
     data: Buffer;
     sourcePath: string;
     destinationPath: string;
   }
+
   function imagemin(input: string[], options?: Options): Promise<Result[]>;
   export = imagemin;
 }
@@ -23,6 +25,7 @@ declare module 'imagemin-webp' {
     lossless?: boolean;
     nearLossless?: boolean;
   }
+
   function imageminWebp(options?: Options): (buffer: Buffer) => Promise<Buffer>;
   export = imageminWebp;
 }
@@ -32,6 +35,7 @@ declare module 'imagemin-avif' {
     quality?: number;
     effort?: number;
   }
+
   function imageminAvif(options?: Options): (buffer: Buffer) => Promise<Buffer>;
   export = imageminAvif;
 }
@@ -41,6 +45,7 @@ declare module 'imagemin-mozjpeg' {
     quality?: number;
     progressive?: boolean;
   }
+
   function imageminMozjpeg(options?: Options): (buffer: Buffer) => Promise<Buffer>;
   export = imageminMozjpeg;
 }
@@ -52,6 +57,34 @@ declare module 'imagemin-optipng' {
     colorTypeReduction?: boolean;
     paletteReduction?: boolean;
   }
+
   function imageminOptipng(options?: Options): (buffer: Buffer) => Promise<Buffer>;
   export = imageminOptipng;
+}
+
+declare module 'compression' {
+  import { RequestHandler } from 'express';
+  
+  interface CompressionOptions {
+    level?: number;
+    threshold?: number;
+    filter?: (req: any, res: any) => boolean;
+  }
+
+  function compression(options?: CompressionOptions): RequestHandler;
+  compression.filter: (req: any, res: any) => boolean;
+  
+  export = compression;
+}
+
+declare module 'serve-static' {
+  import { RequestHandler } from 'express';
+  
+  interface ServeStaticOptions {
+    maxAge?: string | number;
+    setHeaders?: (res: any, path: string) => void;
+  }
+
+  function serveStatic(root: string, options?: ServeStaticOptions): RequestHandler;
+  export = serveStatic;
 }
