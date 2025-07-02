@@ -72,11 +72,6 @@ declare module 'compression' {
   }
 
   function compression(options?: CompressionOptions): RequestHandler;
-  
-  namespace compression {
-    const filter: (req: any, res: any) => boolean;
-  }
-  
   export = compression;
 }
 
