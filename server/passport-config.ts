@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { mongoStorage as storage } from './mongoStorage';
-import { InsertMongoUser } from '@shared/mongo-schema';
+import { InsertMongoUser } from '../shared/mongo-schema.js';
 
 // Configure Google OAuth strategy - using environment variables only
 const clientID = process.env.GOOGLE_CLIENT_ID;

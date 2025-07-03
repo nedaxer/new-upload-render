@@ -1,7 +1,17 @@
 import 'dotenv/config'; // Load environment variables from .env file
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes.mongo"; // Using PostgreSQL routes
-import { setupVite, serveStatic, log } from "./vite";
+import { registerRoutes } from "./routes.mongo"; // Using MongoDB routes
+
+// Simple log function for production
+export function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
 
 const app = express();
 app.use(express.json({ limit: '10mb' })); // Increased limit for profile picture uploads
@@ -50,19 +60,21 @@ app.use((req, res, next) => {
       throw err;
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
+    // Add CORS for production API-only server
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', process.env.BASE_URL || '*');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+      } else {
+        next();
+      }
+    });
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = 5000;
+    // Use environment port or default for development
+    const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3001 : 5000);
     server.listen({
       port,
       host: "0.0.0.0",
