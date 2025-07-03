@@ -134,8 +134,12 @@ async function comprehensiveZeroCleanup() {
   } catch (error) {
     console.error('Error:', error);
   } finally {
-    await client.close();
+    await client.await client.close();
   }
 }
 
-comprehensiveZeroCleanup();
+// Use environment variable for MongoDB connection
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error('MONGODB_URI environment variable is required');
+}veZeroCleanup();
