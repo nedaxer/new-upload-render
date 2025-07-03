@@ -1,7 +1,11 @@
 import { MongoClient } from 'mongodb';
 
 async function comprehensiveZeroCleanup() {
-  const client = new MongoClient('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/');
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI environment variable is required');
+  }
+  const client = new MongoClient(mongoUri);
   
   try {
     await client.connect();

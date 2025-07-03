@@ -109,8 +109,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup MongoDB session store
   const MongoDBStore = MongoStore(session);
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI environment variable is required');
+  }
   const store = new MongoDBStore({
-    uri: process.env.MONGODB_URI || 'mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/?retryWrites=true&w=majority&appName=Nedaxer',
+    uri: mongoUri,
     collection: 'sessions'
   });
 

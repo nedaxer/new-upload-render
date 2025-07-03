@@ -2,7 +2,11 @@ import mongoose from 'mongoose';
 
 async function createTestKYCWithDocuments() {
   try {
-    await mongoose.connect('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/');
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
+    await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
     
     const userSchema = new mongoose.Schema({}, { strict: false, collection: 'users' });

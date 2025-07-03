@@ -6,7 +6,11 @@ async function testBothIssues() {
   
   try {
     // Connect to MongoDB
-    client = new MongoClient('mongodb+srv://glo54t875:HC3kFetCuyWe9u28@nedaxer.qzntzfb.mongodb.net/nedaxer?retryWrites=true&w=majority&appName=Cluster0');
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
+    client = new MongoClient(mongoUri);
     await client.connect();
     const db = client.db('nedaxer');
     
