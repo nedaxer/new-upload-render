@@ -17,7 +17,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "baseUrl": ".",
-    "types": ["node", "vite/client"],
+    "types": ["node"],
     "noImplicitAny": false,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
