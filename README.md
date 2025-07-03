@@ -1,225 +1,302 @@
-# Nedaxer Trading Platform
+# Nedaxer Trading Platform - Monorepo
 
-A cutting-edge mobile-first cryptocurrency trading platform built with modern web technologies.
+A cutting-edge mobile-first cryptocurrency trading platform built with modern web technologies. This monorepo contains both the React frontend and Node.js backend components.
+
+## 🏗️ Project Structure
+
+```
+nedaxer-monorepo/
+├── client/                 # React Frontend (Vite)
+│   ├── src/               # React components and pages
+│   ├── public/            # Static assets
+│   ├── package.json       # Client dependencies
+│   ├── vite.config.ts     # Vite configuration
+│   ├── tailwind.config.ts # Tailwind CSS configuration
+│   └── tsconfig.json      # TypeScript configuration
+├── server/                # Node.js Backend (Express + MongoDB)
+│   ├── api/               # API route handlers
+│   ├── models/            # MongoDB models
+│   ├── services/          # Business logic services
+│   ├── package.json       # Server dependencies
+│   └── tsconfig.json      # TypeScript configuration
+├── render.yaml            # Render deployment configuration
+├── package.json           # Root workspace configuration
+└── README.md              # This file
+```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- MongoDB Atlas account (for production)
+
+- **Node.js** 18+ 
+- **npm** 9+
+- **MongoDB Atlas** account (or local MongoDB)
 
 ### Development Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd nedaxer-monorepo
+   ```
+
+2. **Install dependencies for both client and server:**
+   ```bash
+   # Install root dependencies
+   npm install
+   
+   # Install client dependencies
+   cd client && npm install && cd ..
+   
+   # Install server dependencies
+   cd server && npm install && cd ..
+   ```
+
+3. **Set up environment variables:**
+   
+   **Server environment variables** (create `server/.env`):
+   ```env
+   NODE_ENV=development
+   PORT=3001
+   MONGODB_URI=mongodb+srv://your-connection-string
+   SESSION_SECRET=your-secret-key
+   COINGECKO_API_KEY=your-api-key
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   SENDGRID_API_KEY=your-sendgrid-key
+   ZOHO_EMAIL=your-zoho-email
+   ZOHO_PASSWORD=your-zoho-password
+   GITHUB_TOKEN=your-github-token
+   RECAPTCHA_SECRET_KEY=your-recaptcha-secret
+   BASE_URL=http://localhost:3000
+   ```
+
+   **Client environment variables** (create `client/.env`):
+   ```env
+   VITE_API_BASE_URL=http://localhost:3001
+   VITE_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
+   ```
+
+4. **Start development servers:**
+   
+   **Option 1: Start both servers concurrently**
+   ```bash
+   npm run dev
+   ```
+   
+   **Option 2: Start servers separately**
+   ```bash
+   # Terminal 1 - Start backend server
+   npm run dev:server
+   
+   # Terminal 2 - Start frontend dev server
+   npm run dev:client
+   ```
+
+5. **Access the application:**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+
+## 📦 Available Scripts
+
+### Root Level Scripts
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd nedaxer-trading-platform
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start development server
-npm run dev
+npm run dev              # Start backend server (main development command)
+npm run dev:client       # Start frontend development server
+npm run dev:server       # Start backend development server
+npm run build            # Build both client and server
+npm run build:client     # Build only frontend
+npm run build:server     # Build only backend
+npm run start            # Start production server
+npm run install:all      # Install dependencies for all packages
+npm run clean            # Clean all build files and node_modules
+npm run lint             # Lint both client and server
 ```
 
-## 🏗️ Architecture
-
-### Technology Stack
-- **Frontend**: React 18 + TypeScript + Vite
-- **Backend**: Node.js + Express + TypeScript
-- **Database**: MongoDB Atlas with Mongoose ODM
-- **UI Framework**: Tailwind CSS + shadcn/ui
-- **Real-time**: WebSocket integration
-- **Charts**: TradingView Lightweight Charts + Recharts
-- **Authentication**: Session-based with bcrypt
-
-### Project Structure
-```
-├── client/               # Frontend React application
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Route components
-│   │   ├── hooks/        # Custom React hooks
-│   │   └── lib/          # Utilities and configurations
-├── server/               # Backend Express server
-│   ├── api/              # API route handlers
-│   ├── models/           # Database models
-│   └── storage/          # Database storage layer
-└── shared/               # Shared types and schemas
-```
-
-## 🚀 Deployment on Render
-
-### Step 1: Create New Web Service
-1. Go to [render.com](https://render.com) and sign up/login
-2. Click "New +" → "Web Service"
-3. Connect your GitHub repository
-
-### Step 2: Configure Build Settings
-```yaml
-Environment: Node
-Build Command: npm install && npm run build
-Start Command: npm start
-```
-
-### Step 3: Environment Variables
-Set these environment variables in Render dashboard:
-
-**Required Variables:**
+### Client Scripts (run from `client/` directory)
 ```bash
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://your-connection-string
-SESSION_SECRET=your-super-secret-session-key
+npm run dev              # Start Vite development server
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm run lint             # TypeScript type checking
 ```
 
-**Optional API Keys (for full functionality):**
+### Server Scripts (run from `server/` directory)
 ```bash
-COINGECKO_API_KEY=your-coingecko-api-key
-GOOGLE_CLIENT_ID=your-google-oauth-client-id
-GOOGLE_CLIENT_SECRET=your-google-oauth-secret
-RECAPTCHA_SITE_KEY=your-recaptcha-site-key
-RECAPTCHA_SECRET_KEY=your-recaptcha-secret-key
-SENDGRID_API_KEY=your-sendgrid-api-key
-ZOHO_USER=your-zoho-email
-ZOHO_PASS=your-zoho-app-password
+npm run dev              # Start development server with hot reload
+npm run build            # Build for production
+npm run start            # Start production server
+npm run lint             # TypeScript type checking
 ```
 
-### Step 4: Advanced Settings
-```yaml
-Node Version: 18
-Auto-Deploy: No (recommended for production)
-Build Command: npm install && npm run build
-Start Command: npm start
-```
+## 🚢 Deployment on Render
 
-### Step 5: Deploy
-1. Click "Create Web Service"
-2. Wait for initial deployment (5-10 minutes)
-3. Your app will be available at `https://your-app-name.onrender.com`
+This project is configured for easy deployment on Render using the included `render.yaml` file.
 
-## 🔧 Build Process
+### Prerequisites
+1. Create a [Render account](https://render.com)
+2. Connect your GitHub repository to Render
+3. Set up environment variables in Render dashboard
 
-The build process includes:
-1. **TypeScript Compilation**: Type checking with relaxed settings for deployment
-2. **Frontend Build**: Vite builds optimized production bundle
-3. **Backend Build**: esbuild creates Node.js server bundle
-4. **Asset Processing**: Image optimization and compression
+### Deployment Steps
 
-### Manual Build
-```bash
-# Install dependencies
-npm install
+1. **Push your code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Initial monorepo setup"
+   git push origin main
+   ```
 
-# Build frontend and backend
-npm run build
+2. **Create a new Blueprint on Render:**
+   - Go to your Render dashboard
+   - Click "New" → "Blueprint"
+   - Connect your GitHub repository
+   - Render will automatically detect the `render.yaml` file
 
-# Start production server
-npm start
-```
+3. **Configure environment variables:**
+   
+   **For nedaxer-server service:**
+   - `MONGODB_URI` - Your MongoDB Atlas connection string
+   - `COINGECKO_API_KEY` - CoinGecko API key for crypto prices
+   - `GOOGLE_CLIENT_ID` - Google OAuth client ID
+   - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+   - `SENDGRID_API_KEY` - SendGrid API key for emails
+   - `ZOHO_EMAIL` - Zoho email for SMTP
+   - `ZOHO_PASSWORD` - Zoho email password
+   - `GITHUB_TOKEN` - GitHub token for AI features
+   - `RECAPTCHA_SECRET_KEY` - reCAPTCHA secret key
 
-## 🛠️ Configuration
+   **For nedaxer-client service:**
+   - `VITE_RECAPTCHA_SITE_KEY` - reCAPTCHA site key
 
-### Database Setup
-The application uses MongoDB Atlas:
-1. Create MongoDB Atlas cluster
-2. Add connection string to `MONGODB_URI` environment variable
-3. Database will auto-initialize on first run
+4. **Deploy:**
+   - Click "Apply" to deploy both services
+   - Render will build and deploy automatically
+   - Your app will be available at the provided URLs
 
-### Google OAuth Setup
-For Google OAuth login:
-1. Create project in Google Cloud Console
-2. Configure OAuth consent screen
-3. Add authorized origins and redirect URIs
-4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+### Service Architecture on Render
 
-### Email Configuration
-For email notifications:
-1. Set up SendGrid account OR Zoho email
-2. Configure respective API keys/credentials
-3. Email templates are included in the system
+The deployment creates two services:
 
-## 📊 Features
+1. **nedaxer-server** (Node.js Web Service)
+   - Handles API requests, authentication, database operations
+   - Runs on backend URL: `https://nedaxer-server.onrender.com`
 
-### Trading Platform
-- **Real-time Market Data**: Live cryptocurrency prices via CoinGecko API
-- **Interactive Charts**: TradingView integration with technical indicators
-- **Order Management**: Spot trading simulation with order history
-- **Portfolio Tracking**: Real-time balance updates and P&L tracking
+2. **nedaxer-client** (Static Site)
+   - Serves the React frontend application
+   - Runs on frontend URL: `https://nedaxer-client.onrender.com`
 
-### User Management
-- **Authentication**: Username/email registration with email verification
-- **KYC System**: Document upload and verification workflow
-- **Admin Dashboard**: Comprehensive user and platform management
-- **Notifications**: Real-time WebSocket-based notification system
+## 🛠️ Development Workflow
 
-### Mobile Experience
-- **PWA Support**: Installable progressive web app
-- **Offline Functionality**: Service worker caching for core features
-- **Pull-to-Refresh**: Native mobile-like interactions
-- **Responsive Design**: Optimized for all screen sizes
+### Adding New Features
 
-## 🔐 Security
+1. **Frontend changes:**
+   ```bash
+   cd client
+   npm run dev
+   # Make your changes in src/
+   npm run build  # Test production build
+   ```
 
-### Authentication & Authorization
-- Session-based authentication with secure cookies
-- bcrypt password hashing
-- Role-based access control (user/admin)
-- CSRF protection with session tokens
+2. **Backend changes:**
+   ```bash
+   cd server
+   npm run dev
+   # Make your changes in api/, models/, services/
+   npm run build  # Test production build
+   ```
 
-### Data Protection
-- Input validation with Zod schemas
-- MongoDB injection prevention
-- Rate limiting on API endpoints
-- Secure file upload handling
+3. **Test both together:**
+   ```bash
+   npm run build  # Build both client and server
+   npm run start  # Test production setup locally
+   ```
 
-## 🚨 Troubleshooting
+### Database Management
 
-### Common Deployment Issues
+The application uses MongoDB Atlas with Mongoose ORM. Database models are located in `server/models/`.
 
-**Build Failures:**
+**Key collections:**
+- Users (authentication, profiles)
+- Transactions (deposits, withdrawals, transfers)
+- Balances (user account balances)
+- Notifications (real-time user notifications)
+
+### API Documentation
+
+The backend API provides REST endpoints for:
+- Authentication (`/api/auth/*`)
+- User management (`/api/user/*`)
+- Trading operations (`/api/trading/*`)
+- Market data (`/api/crypto/*`)
+- Admin operations (`/api/admin/*`)
+
+## 🔧 Configuration Details
+
+### Client Configuration
+
+- **Vite**: Modern build tool with hot reload
+- **Tailwind CSS**: Utility-first CSS framework
+- **TypeScript**: Type-safe development
+- **React Query**: Server state management
+- **Wouter**: Lightweight routing
+
+### Server Configuration
+
+- **Express.js**: Web application framework
+- **MongoDB/Mongoose**: Database and ODM
+- **TypeScript**: Type-safe backend development
+- **WebSocket**: Real-time features
+- **Session-based Auth**: Secure authentication
+
+## 📁 Important Files
+
+- `render.yaml` - Render deployment configuration
+- `client/vite.config.ts` - Frontend build configuration
+- `server/index.ts` - Backend application entry point
+- `client/src/App.tsx` - Frontend application root
+- `server/models/` - Database schema definitions
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Build failures:**
 - Ensure Node.js version is 18+
 - Check all environment variables are set
 - Verify MongoDB connection string is valid
 
-**Asset Loading Issues:**
-- Placeholder assets are auto-generated for missing files
+**Asset loading issues:**
+- Check Vite configuration in `client/vite.config.ts`
 - Ensure asset paths are correct in imports
-- Check Vite configuration for asset handling
 
-**TypeScript Errors:**
-- Build uses relaxed TypeScript settings for deployment
-- Critical type errors are fixed while maintaining functionality
-- Non-critical warnings are suppressed for production builds
+**TypeScript errors:**
+- Run type checking: `npm run lint`
+- Check tsconfig.json files in both client and server
 
-### Performance Optimization
-- Images are automatically optimized during build
-- Service worker caches critical assets
-- Database queries use efficient aggregation pipelines
-- WebSocket connections handle real-time updates
+**Database connection issues:**
+- Verify MongoDB Atlas whitelist includes Render IPs
+- Check connection string format and credentials
 
-## 📈 Monitoring
+### Getting Help
 
-### Available Endpoints
-- `GET /` - Landing page
-- `GET /mobile` - Mobile trading app
-- `GET /admin-portal` - Admin dashboard
-- `GET /api/health` - Health check endpoint
+1. Check console logs in browser developer tools
+2. Check server logs in Render dashboard
+3. Verify environment variables are set correctly
+4. Test API endpoints directly using curl or Postman
 
-### Logs
-- All API requests are logged with timestamps
-- Database operations include performance metrics
-- WebSocket connections tracked for debugging
+## 📄 License
 
-## 🤝 Support
+MIT License - see LICENSE file for details.
 
-For deployment issues or questions:
-1. Check Render deployment logs
-2. Verify all environment variables are configured
-3. Test database connectivity
-4. Review MongoDB Atlas network access settings
+## 🤝 Contributing
 
-The application is designed to be resilient and will gracefully handle missing configuration while providing core functionality.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+---
+
+Built with ❤️ for modern web development
