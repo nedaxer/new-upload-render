@@ -64,7 +64,7 @@ export const WithdrawalProvider: React.FC<WithdrawalProviderProps> = ({ children
 
     return {
       hasRestriction: restriction?.hasRestriction || !eligibility?.canWithdraw || false,
-      message: eligibility?.withdrawalMessage || restriction?.message || "You need to fund your account up to $1,000 to unlock withdrawal features.",
+      message: eligibility?.withdrawalMessage || restriction?.message || "Withdrawal Not Permitted Until Account Funding is Complete",
       minimumRequired: eligibility?.minimumRequired || 1000,
       totalDeposited: eligibility?.totalDeposited || 0,
       shortfall: eligibility?.shortfall || 1000,
