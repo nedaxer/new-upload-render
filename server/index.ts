@@ -49,8 +49,14 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Register routes with PostgreSQL
+    // Register routes with MongoDB
     const server = await registerRoutes(app);
+    
+    // In development, serve the frontend
+    if (process.env.NODE_ENV !== 'production') {
+      const { setupVite } = await import('./vite');
+      await setupVite(app, server);
+    }
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
