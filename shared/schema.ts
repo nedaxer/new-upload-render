@@ -253,69 +253,116 @@ export const userPreferencesRelations = relations(userPreferences, ({ one }) => 
   })
 }));
 
-// Insert schemas using zod
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  uid: true,
-  createdAt: true,
+// Basic validation schemas using zod
+export const insertUserSchema = z.object({
+  username: z.string(),
+  email: z.string().email(),
+  password: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  verificationCode: z.string().optional(),
+  verificationCodeExpires: z.date().optional(),
+  isVerified: z.boolean().default(false),
+  isAdmin: z.boolean().default(false),
+  kycStatus: z.string().default("pending"),
+  phone: z.string().optional(),
+  country: z.string().optional(),
+  totalPortfolioValue: z.number().default(0),
+  riskLevel: z.string().default("moderate"),
+  referralCode: z.string().optional(),
+  referredBy: z.number().optional(),
+  profilePicture: z.string().optional(),
 });
 
-export const insertCurrencySchema = createInsertSchema(currencies).omit({
-  id: true,
-  createdAt: true,
+export const insertCurrencySchema = z.object({
+  symbol: z.string(),
+  name: z.string(),
+  type: z.string(),
+  isActive: z.boolean().default(true),
 });
 
-export const insertUserBalanceSchema = createInsertSchema(userBalances).omit({
-  id: true,
-  updatedAt: true,
+export const insertUserBalanceSchema = z.object({
+  userId: z.number(),
+  currencyId: z.number(),
+  balance: z.number(),
 });
 
-export const insertUserWalletSchema = createInsertSchema(userWallets).omit({
-  id: true,
-  createdAt: true,
+export const insertUserWalletSchema = z.object({
+  userId: z.number(),
+  currencyId: z.number(),
+  address: z.string(),
+  privateKey: z.string().optional(),
+  publicKey: z.string().optional(),
+  type: z.string(),
 });
 
-export const insertTransactionSchema = createInsertSchema(transactions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertTransactionSchema = z.object({
+  userId: z.number(),
+  type: z.string(),
+  amount: z.number(),
+  currencyId: z.number(),
+  status: z.string().default("pending"),
+  txHash: z.string().optional(),
+  description: z.string().optional(),
 });
 
-export const insertStakingRateSchema = createInsertSchema(stakingRates).omit({
-  id: true,
-  createdAt: true,
+export const insertStakingRateSchema = z.object({
+  currencyId: z.number(),
+  apr: z.number(),
+  isActive: z.boolean().default(true),
 });
 
-export const insertStakingPositionSchema = createInsertSchema(stakingPositions).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertStakingPositionSchema = z.object({
+  userId: z.number(),
+  currencyId: z.number(),
+  amount: z.number(),
+  apr: z.number(),
+  startDate: z.date(),
+  endDate: z.date().optional(),
+  rewards: z.number().default(0),
+  status: z.string().default("active"),
 });
 
-export const insertMarketPriceSchema = createInsertSchema(marketPrices).omit({
-  id: true,
-  lastUpdated: true,
+export const insertMarketPriceSchema = z.object({
+  symbol: z.string(),
+  price: z.number(),
+  change24h: z.number().optional(),
+  volume24h: z.number().optional(),
+  marketCap: z.number().optional(),
 });
 
-export const insertFuturesOrderSchema = createInsertSchema(futuresOrders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertFuturesOrderSchema = z.object({
+  userId: z.number(),
+  symbol: z.string(),
+  type: z.string(),
+  side: z.string(),
+  amount: z.number(),
+  price: z.number().optional(),
+  leverage: z.number().default(1),
+  status: z.string().default("pending"),
+  stopLoss: z.number().optional(),
+  takeProfit: z.number().optional(),
 });
 
-export const insertPortfolioSnapshotSchema = createInsertSchema(portfolioSnapshots).omit({
-  id: true,
-  createdAt: true,
+export const insertPortfolioSnapshotSchema = z.object({
+  userId: z.number(),
+  totalValue: z.number(),
+  allocation: z.record(z.number()),
 });
 
-export const insertUserFavoriteSchema = createInsertSchema(userFavorites).omit({
-  id: true,
-  createdAt: true,
+export const insertUserFavoriteSchema = z.object({
+  userId: z.number(),
+  symbol: z.string(),
 });
 
-export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
-  id: true,
-  createdAt: true,
+export const insertUserPreferenceSchema = z.object({
+  userId: z.number(),
+  language: z.string().default("en"),
+  currency: z.string().default("USD"),
+  theme: z.string().default("dark"),
+  notifications: z.boolean().default(true),
+  chartType: z.string().default("candlestick"),
+  lastSelectedPair: z.string().optional(),
 });
 
 // Type definitions
@@ -351,3 +398,6 @@ export type InsertUserFavorite = z.infer<typeof insertUserFavoriteSchema>;
 
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = z.infer<typeof insertUserPreferenceSchema>;
+
+export type UserWallet = typeof userWallets.$inferSelect;
+export type InsertUserWallet = z.infer<typeof insertUserWalletSchema>;
