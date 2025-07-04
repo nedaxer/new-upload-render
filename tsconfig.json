@@ -32,7 +32,6 @@
     "noImplicitThis": false,
     "noImplicitOverride": false,
     "exactOptionalPropertyTypes": false,
-    "suppressImplicitAnyIndexErrors": true,
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"],
