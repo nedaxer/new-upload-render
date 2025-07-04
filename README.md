@@ -1,11 +1,11 @@
-# Nedaxer Trading Platform - Monorepo
+# Nedaxer Trading Platform
 
-A cutting-edge mobile-first cryptocurrency trading platform built with modern web technologies. This monorepo contains both the React frontend and Node.js backend components.
+A cutting-edge mobile-first cryptocurrency trading platform built with modern web technologies. The application runs on a unified single-port architecture with Express serving both frontend and backend on port 5000.
 
 ## 🏗️ Project Structure
 
 ```
-nedaxer-monorepo/
+nedaxer/
 ├── client/                 # React Frontend (Vite)
 │   ├── src/               # React components and pages
 │   ├── public/            # Static assets
@@ -14,13 +14,15 @@ nedaxer-monorepo/
 │   ├── tailwind.config.ts # Tailwind CSS configuration
 │   └── tsconfig.json      # TypeScript configuration
 ├── server/                # Node.js Backend (Express + MongoDB)
-│   ├── api/               # API route handlers
-│   ├── models/            # MongoDB models
-│   ├── services/          # Business logic services
+│   ├── routes.mongo.ts    # API route handlers with MongoDB
+│   ├── index.ts           # Main server entry point
+│   ├── vite.ts           # Vite middleware integration
 │   ├── package.json       # Server dependencies
 │   └── tsconfig.json      # TypeScript configuration
-├── render.yaml            # Render deployment configuration
-├── package.json           # Root workspace configuration
+├── shared/                # Shared TypeScript definitions
+├── render.yaml            # Render single-service deployment
+├── package.json           # Root build scripts and dependencies
+├── vite.config.ts         # Main Vite configuration
 └── README.md              # This file
 ```
 
@@ -40,16 +42,10 @@ nedaxer-monorepo/
    cd nedaxer-monorepo
    ```
 
-2. **Install dependencies for both client and server:**
+2. **Install dependencies:**
    ```bash
-   # Install root dependencies
+   # Install all dependencies (root, client, and server)
    npm install
-   
-   # Install client dependencies
-   cd client && npm install && cd ..
-   
-   # Install server dependencies
-   cd server && npm install && cd ..
    ```
 
 3. **Set up environment variables:**

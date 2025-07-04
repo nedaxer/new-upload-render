@@ -29,15 +29,14 @@ git checkout -b feature/monorepo-restructure
 git add .
 
 # Commit the changes with your configured credentials
-git commit -m "feat: Complete monorepo restructuring for Render deployment
+git commit -m "feat: Complete single-port architecture for unified deployment
 
-- Separated frontend and backend into client/ and server/ folders
-- Created independent package.json files for client and server
-- Added comprehensive render.yaml for multi-service deployment
-- Configured proper environment variable scoping
-- Added TypeScript configurations for both services
-- Updated withdrawal restriction message to 'Withdrawal Not Permitted Until Account Funding is Complete'
-- Added comprehensive documentation and deployment guides"
+- Configured unified Express server serving both frontend and backend on port 5000
+- Updated render.yaml for single-service deployment (nedaxer-app)
+- Fixed build commands to use root package.json scripts
+- Ensured consistent port configuration across development and production
+- Resolved deployment module path issues
+- Optimized for single-port architecture with Vite middleware integration"
 
 # Push the feature branch
 git push -u origin feature/monorepo-restructure
