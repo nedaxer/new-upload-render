@@ -14,7 +14,12 @@ npx esbuild server/index.ts \
   --external:vite \
   --external:mongodb \
   --external:mongodb-memory-server \
-  --external:mongoose
+  --external:mongoose \
+  --external:mock-aws-s3 \
+  --external:aws-sdk \
+  --external:nock \
+  --external:@babel/preset-typescript \
+  --external:@mapbox/node-pre-gyp
 
 echo "Server build completed successfully!"
 echo "Built file: dist/index.js"
