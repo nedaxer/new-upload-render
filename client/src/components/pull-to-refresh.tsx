@@ -10,14 +10,14 @@ const triggerHapticFeedback = () => {
 };
 
 // Import the assets
-import refreshLogo from '@assets/Refresh  app logo_1750782062607.png';
-import letterN from '@assets/20250618_001640_1750782086856.png';
-import letterE1 from '@assets/20250618_001710_1750782086866.png';
-import letterD from '@assets/20250618_001748_1750782086877.png';
-import letterA from '@assets/20250618_001828_1750782086889.png';
-import letterX from '@assets/20250618_001859_1750782086919.png';
-import letterE2 from '@assets/20250618_001938_1750782086928.png';
-import letterR from '@assets/20250618_002006_1750782086936.png';
+import refreshLogo from '@/assets/Refresh  app logo_1750782062607.png';
+import letterN from '@/assets/20250618_001640_1750782086856.png';
+import letterE1 from '@/assets/20250618_001710_1750782086866.png';
+import letterD from '@/assets/20250618_001748_1750782086877.png';
+import letterA from '@/assets/20250618_001828_1750782086889.png';
+import letterX from '@/assets/20250618_001859_1750782086919.png';
+import letterE2 from '@/assets/20250618_001938_1750782086928.png';
+import letterR from '@/assets/20250618_002006_1750782086936.png';
 
 interface PullToRefreshProps {
   children: React.ReactNode;

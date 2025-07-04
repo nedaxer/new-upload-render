@@ -82,22 +82,26 @@ export const LightweightChart = memo(({
       }));
 
       // Add price series
-      let series;
-      if (chartType === 'candlestick') {
-        series = chart.addSeries('Candlestick', {
-          upColor: '#26a69a',
-          downColor: '#ef5350',
-          borderVisible: false,
-          wickUpColor: '#26a69a',
-          wickDownColor: '#ef5350',
-        });
-        series.setData(chartData);
-      } else {
-        series = chart.addSeries('Line', {
-          color: '#0033a0',
-          lineWidth: 2,
-        });
-        series.setData(lineData);
+      let series: any;
+      try {
+        if (chartType === 'candlestick') {
+          series = (chart as any).addCandlestickSeries({
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            borderVisible: false,
+            wickUpColor: '#26a69a',
+            wickDownColor: '#ef5350',
+          });
+          series.setData(chartData);
+        } else {
+          series = (chart as any).addLineSeries({
+            color: '#0033a0',
+            lineWidth: 2,
+          });
+          series.setData(lineData);
+        }
+      } catch (error) {
+        console.error('Error adding chart series:', error);
       }
       seriesRef.current = series;
 
@@ -109,7 +113,7 @@ export const LightweightChart = memo(({
           color: item.close >= item.open ? '#26a69a' : '#ef5350',
         }));
 
-        const volumeSeries = chart.addSeries('Histogram', {
+        const volumeSeries = (chart as any).addHistogramSeries({
           color: '#26a69a',
           priceFormat: {
             type: 'volume',

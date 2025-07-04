@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage } from './optimized-image';
 
-import nLetter from '@assets/20250618_001640_1750207793691.png';
-import eLetter1 from '@assets/20250618_001710_1750207793694.png';
-import dLetter from '@assets/20250618_001748_1750207793698.png';
-import aLetter from '@assets/20250618_001828_1750207793703.png';
-import xLetter from '@assets/20250618_001859_1750207793716.png';
-import eLetter2 from '@assets/20250618_001938_1750207793727.png';
-import rLetter from '@assets/20250618_002006_1750207793730.png';
-import backgroundImage from '@assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
-import nedaxerLogo from '@assets/20250618_042459_1750217238332.png';
+import nLetter from '@/assets/20250618_001640_1750207793691.png';
+import eLetter1 from '@/assets/20250618_001710_1750207793694.png';
+import dLetter from '@/assets/20250618_001748_1750207793698.png';
+import aLetter from '@/assets/20250618_001828_1750207793703.png';
+import xLetter from '@/assets/20250618_001859_1750207793716.png';
+import eLetter2 from '@/assets/20250618_001938_1750207793727.png';
+import rLetter from '@/assets/20250618_002006_1750207793730.png';
+import backgroundImage from '@/assets/file_00000000e0d461f9b4be5c8627966318_1750209747614.png';
+import nedaxerLogo from '@/assets/20250618_042459_1750217238332.png';
 
 interface SplashScreenProps {
   onComplete: () => void;

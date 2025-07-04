@@ -127,10 +127,7 @@ function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: Cry
 
   const addFavoriteMutation = useMutation({
     mutationFn: (crypto: { id: string; symbol: string }) => 
-      apiRequest('/api/favorites', {
-        method: 'POST',
-        body: { cryptoId: crypto.id, symbol: crypto.symbol }
-      }),
+      apiRequest('POST', '/api/favorites', { cryptoId: crypto.id, symbol: crypto.symbol }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
     }
@@ -138,18 +135,15 @@ function CryptoPairSelector({ isOpen, onClose, onSelectPair, selectedPair }: Cry
 
   const removeFavoriteMutation = useMutation({
     mutationFn: (crypto: { id: string; symbol: string }) =>
-      apiRequest('/api/favorites', {
-        method: 'DELETE',
-        body: { cryptoId: crypto.id, symbol: crypto.symbol }
-      }),
+      apiRequest('DELETE', '/api/favorites', { cryptoId: crypto.id, symbol: crypto.symbol }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
     }
   });
 
   useEffect(() => {
-    if (userFavorites?.data) {
-      setFavorites(userFavorites.data.map((fav: any) => fav.cryptoId));
+    if (userFavorites) {
+      setFavorites((userFavorites as any)?.map?.((fav: any) => fav.cryptoId) || []);
     }
   }, [userFavorites]);
 
