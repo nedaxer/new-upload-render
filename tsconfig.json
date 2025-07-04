@@ -33,9 +33,6 @@
     "exactOptionalPropertyTypes": false,
     "allowJs": true,
     "checkJs": false,
-    "suppressExcessPropertyErrors": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noStrictGenericChecks": true,
     "useUnknownInCatchVariables": false,
     "noErrorTruncation": false,
     "paths": {
