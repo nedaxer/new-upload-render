@@ -1,18 +1,18 @@
 services:
-  # Backend API Server
+  # Single Full-Stack Application (Frontend + Backend on Port 5000)
   - type: web
-    name: nedaxer-server
+    name: nedaxer-app
     env: node
     region: oregon
     plan: starter
-    buildCommand: cd client && npm install && cd ../server && npm install && npm run build
-    startCommand: cd server && npm run start
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3001
+        value: 5000
       - key: MONGODB_URI
         fromSecret: MONGODB_URI
       - key: SESSION_SECRET
@@ -33,27 +33,10 @@ services:
         fromSecret: GITHUB_TOKEN
       - key: RECAPTCHA_SECRET_KEY
         fromSecret: RECAPTCHA_SECRET_KEY
-      - key: BASE_URL
-        value: https://nedaxer-client.onrender.com
-    autoDeploy: true
-
-  # Frontend Client (Static Site)
-  - type: web
-    name: nedaxer-client
-    env: static
-    region: oregon
-    plan: starter
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: client/dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://nedaxer-server.onrender.com
       - key: VITE_RECAPTCHA_SITE_KEY
         fromSecret: VITE_RECAPTCHA_SITE_KEY
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+      - key: BASE_URL
+        value: https://nedaxer-app.onrender.com
     autoDeploy: true
 
 databases:
