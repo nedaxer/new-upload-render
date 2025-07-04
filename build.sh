@@ -1,68 +1,42 @@
 #!/bin/bash
 
-# Build script for Render deployment
-set -e
+# Nedaxer Build Script for Render Deployment
+echo "🏗️ Starting Nedaxer build process..."
 
-echo "🚀 Starting Nedaxer Trading Platform build..."
+# Install dependencies as per user's working process
+echo "📦 Installing client dependencies..."
+cd client && npm install
 
-# Set Node.js memory limit
-export NODE_OPTIONS="--max-old-space-size=4096"
+echo "📦 Installing server dependencies..."
+cd ../server && npm install
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-npm install
-
-# Create missing asset directories
-echo "🖼️ Creating asset directories..."
-mkdir -p client/src/assets
-mkdir -p client/public/assets
-
-# Create placeholder assets for missing imports
-echo "📝 Creating placeholder assets..."
-
-# Create placeholder images for pull-to-refresh component
-touch "client/src/assets/refresh-logo.png"
-touch "client/src/assets/nedaxer-1.png"
-touch "client/src/assets/nedaxer-2.png"
-touch "client/src/assets/nedaxer-3.png"
-touch "client/src/assets/nedaxer-4.png"
-touch "client/src/assets/nedaxer-5.png"
-touch "client/src/assets/nedaxer-6.png"
-touch "client/src/assets/nedaxer-7.png"
-
-# Create placeholder images for splash screen
-touch "client/src/assets/splash-background.png"
-touch "client/src/assets/nedaxer-logo.png"
-
-# Create placeholder images for verification
-touch "client/src/assets/verification-illustration.png"
-
-# Create placeholder video
-touch "client/src/assets/advanced-charts-video.mp4"
-
-# Create team photos directory
-mkdir -p client/public/team_photos
-touch "client/public/team_photos/team_main.png"
-touch "client/public/team_photos/team_1.png"
-touch "client/public/team_photos/team_2.png"
-touch "client/public/team_photos/team_3.png"
-touch "client/public/team_photos/team_4.png"
-touch "client/public/team_photos/team_5.png"
-touch "client/public/team_photos/team_6.png"
-
-echo "✅ Assets created successfully"
-
-# Build the project with relaxed TypeScript checking
-echo "🔨 Building project..."
-npx tsc --noEmit --skipLibCheck || echo "⚠️ TypeScript warnings ignored for build"
+echo "📦 Installing root dependencies..."
+cd .. && npm install
 
 # Build frontend
-echo "🎨 Building frontend..."
-npm run build:client || npx vite build
+echo "🎨 Building frontend with Vite..."
+npm run build:client || vite build
 
-# Build backend
-echo "⚙️ Building backend..."
-npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Build backend to match Render's expected path
+echo "⚙️ Building backend server..."
+mkdir -p server/dist
+esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=server/dist/index.js
 
-echo "🎉 Build completed successfully!"
-echo "🚀 Ready for deployment on Render"
+echo "✅ Build completed successfully!"
+echo "📁 Server built to: server/dist/index.js"
+echo "📁 Frontend built to: dist/"
+
+# Verify build outputs
+if [ -f "server/dist/index.js" ]; then
+    echo "✅ Server build verified"
+else
+    echo "❌ Server build failed"
+    exit 1
+fi
+
+if [ -d "dist" ]; then
+    echo "✅ Frontend build verified"
+else
+    echo "❌ Frontend build failed"
+    exit 1
+fi
