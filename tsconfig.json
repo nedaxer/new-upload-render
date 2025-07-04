@@ -25,8 +25,6 @@
     "noImplicitAny": false,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
-    "suppressImplicitAnyIndexErrors": true,
-    "suppressExcessPropertyErrors": true,
     "paths": {
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"],
