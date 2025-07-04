@@ -1,18 +1,14 @@
 #!/bin/bash
 
 # Production build script for Render deployment
-# Bypasses TypeScript checking to avoid memory issues
+# Memory-optimized approach avoiding problematic dependencies
 
 echo "🚀 Building Nedaxer for production deployment..."
 
-# Skip frontend build - use server-only approach to avoid memory issues
-echo "📦 Skipping frontend build to conserve memory..."
-
-# Build server with optimized ESBuild configuration
-echo "🔧 Building server..."
+# Build server only - avoid Vite import issues completely
+echo "🔧 Building server without problematic dependencies..."
 npx esbuild server/index.ts \
   --platform=node \
-  --packages=external \
   --bundle \
   --format=esm \
   --outdir=dist \
@@ -20,7 +16,18 @@ npx esbuild server/index.ts \
   --external:mongodb \
   --external:mongodb-memory-server \
   --external:mongoose \
+  --external:@vitejs/plugin-react \
+  --external:@replit/vite-plugin-cartographer \
+  --external:@replit/vite-plugin-runtime-error-modal \
+  --external:@replit/vite-plugin-shadcn-theme-json \
+  --external:@mapbox/node-pre-gyp \
+  --external:mock-aws-s3 \
+  --external:aws-sdk \
+  --external:nock \
+  --external:canvas \
+  --loader:.html=text \
   --minify
 
 echo "✅ Production build completed successfully!"
 echo "📄 Server built to: dist/index.js"
+echo "⚡ Ready for Render deployment"
