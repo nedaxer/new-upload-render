@@ -8,15 +8,20 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
+  options?: {
+    method?: string;
+    data?: unknown;
+  }
 ): Promise<Response> {
   try {
+    const method = options?.method || 'GET';
+    const requestData = options?.data;
+    
     const res = await fetch(url, {
       method,
-      headers: data ? { "Content-Type": "application/json" } : {},
-      body: data ? JSON.stringify(data) : undefined,
+      headers: requestData ? { "Content-Type": "application/json" } : {},
+      body: requestData ? JSON.stringify(requestData) : undefined,
       credentials: "include",
     });
 
@@ -75,7 +80,7 @@ export const queryClient = new QueryClient({
         return failureCount < 2;
       },
       // Use cached data when queries fail offline
-      placeholderData: (previousData) => previousData,
+      placeholderData: (previousData: any) => previousData,
       // Keep cached data fresh for longer when offline
       gcTime: 24 * 60 * 60 * 1000, // 24 hours
     },
