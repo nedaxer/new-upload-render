@@ -1,8 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { db } from "../db";
-import { users, currencies, userBalances, stakingRates, transactions } from "../../shared/schema";
-import { eq, desc, sum, count } from "drizzle-orm";
+import { db, eq, desc, sum, count } from "../db-stub";
 import { z } from "zod";
+import { mongoStorage as storage } from "../mongoStorage";
 
 const router = Router();
 
@@ -15,16 +14,24 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
     });
   }
 
-  const [user] = await db.select().from(users).where(eq(users.id, req.session.userId));
-  
-  if (!user || !user.isAdmin) {
-    return res.status(403).json({
+  try {
+    const user = await storage.getUser(req.session.userId);
+    
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin access required"
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Admin auth error:', error);
+    return res.status(500).json({
       success: false,
-      message: "Admin access required"
+      message: "Authentication error"
     });
   }
-
-  next();
 };
 
 // Get admin dashboard stats
