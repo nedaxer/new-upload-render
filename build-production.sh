@@ -7,11 +7,11 @@ echo "🚀 Building Nedaxer for production deployment..."
 
 # Build server only - avoid Vite import issues completely
 echo "🔧 Building server without problematic dependencies..."
-npx esbuild server/index.ts \
+npx esbuild server/index.production.ts \
   --platform=node \
   --bundle \
   --format=esm \
-  --outdir=dist \
+  --outfile=dist/index.js \
   --external:vite \
   --external:mongodb \
   --external:mongodb-memory-server \
