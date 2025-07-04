@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { mongoStorage as storage } from "./mongoStorage";
 import bcrypt from "bcrypt";
-import { insertMongoUserSchema, userDataSchema } from "../shared/mongo-schema.js";
+import { insertMongoUserSchema, userDataSchema } from "@shared/mongo-schema";
 import { z } from "zod";
 import session from "express-session";
 import MemoryStore from "memorystore";
@@ -193,15 +193,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Background image optimization failed:', error);
     }
-  });
-
-  // Health check endpoint for Render
-  app.get('/api/health', (req: Request, res: Response) => {
-    res.status(200).json({ 
-      status: 'healthy', 
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
-    });
   });
 
   // Image optimization API endpoint
