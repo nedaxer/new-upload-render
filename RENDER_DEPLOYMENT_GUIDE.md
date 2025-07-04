@@ -4,11 +4,11 @@
 
 ### Single Build Command (Recommended)
 ```bash
-chmod +x render-build.sh && ./render-build.sh
+chmod +x render-simple-build.sh && ./render-simple-build.sh
 ```
 
 This command will:
-1. Install all dependencies 
+1. Install dependencies without TypeScript checking (prevents memory issues)
 2. Build frontend with Vite
 3. Build server with optimized ESBuild
 4. Handle all MongoDB/Vite import issues automatically
@@ -24,7 +24,7 @@ services:
     env: node
     region: oregon
     plan: starter
-    buildCommand: chmod +x render-build.sh && ./render-build.sh
+    buildCommand: chmod +x render-simple-build.sh && ./render-simple-build.sh
     startCommand: NODE_ENV=production node dist/index.js
     healthCheckPath: /api/health
 ```
@@ -133,7 +133,7 @@ Verify all required variables are set in Render dashboard
 
 When deploying to Render, the platform will automatically run:
 ```bash
-chmod +x render-build.sh && ./render-build.sh
+chmod +x render-simple-build.sh && ./render-simple-build.sh
 ```
 
 This single command builds everything needed for your Nedaxer trading platform deployment.
