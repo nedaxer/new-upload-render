@@ -20,18 +20,16 @@ if [ ! -d "dist" ]; then
     exit 1
 fi
 
-# Build server with external dependencies (outputs to dist/index.js)
+# Build server with bundled dependencies (outputs to dist/index.js)
 echo "🔧 Building server..."
 npx esbuild server/index.ts \
   --platform=node \
-  --packages=external \
   --bundle \
   --format=esm \
   --outfile=dist/index.js \
-  --external:vite \
-  --external:mongodb \
-  --external:mongoose \
-  --external:mongodb-memory-server \
+  --external:sharp \
+  --external:bufferutil \
+  --external:utf-8-validate \
   --log-level=error
 
 # Verify server build
