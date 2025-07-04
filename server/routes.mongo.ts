@@ -64,7 +64,8 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     const user = await storage.getUser(userId);
     if (!user) {
       console.log(`User not found for session userId: ${userId}`);
-      return res.status(401).json({ success: false, message: "User not found" });
+      res.status(401).json({ success: false, message: "User not found" });
+      return;
     }
     
     // Store the resolved userId back in session if needed
