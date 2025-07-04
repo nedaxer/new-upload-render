@@ -151,6 +151,11 @@ export default function MobileNews() {
     return logoMap[sourceName] || `/api/news/logo/${encodeURIComponent(sourceName)}`;
   };
 
+  const getSourceIcon = (sourceName: string) => {
+    const logoUrl = getSourceLogo(sourceName);
+    return `<img src="${logoUrl}" alt="${sourceName}" class="w-full h-full object-contain p-2 bg-blue-900 rounded-lg" />`;
+  };
+
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
@@ -243,7 +248,7 @@ export default function MobileNews() {
                             const target = e.target as HTMLVideoElement;
                             const parent = target.parentElement?.parentElement;
                             if (parent) {
-                              parent.innerHTML = getSourceIcon(article.source?.name || 'Crypto News');
+                              parent.innerHTML = getSourceLogo(article.source?.name || 'Crypto News');
                             }
                           }}
                         />
